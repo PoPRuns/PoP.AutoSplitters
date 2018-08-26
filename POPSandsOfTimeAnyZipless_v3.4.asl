@@ -69,7 +69,7 @@ init {
 		int splitResult = -1;
 		//Check for each remaining split sphere if the prince is within split distance
 		vars.princePos = new Vector3f (current.xPos, current.yPos, current.zPos);
-		int fiveAhead = (lastSplit +50) * 2;
+		int fiveAhead = (lastSplit +6) * 2;
 		int maxCheck = vars.splitPositions.Length < fiveAhead ? vars.splitPositions.Length : fiveAhead;
 		for (int i = (lastSplit +1) *2; i <  maxCheck && splitResult == -1; i += 2) {
 			if (vars.IsInBox(vars.splitPositions[i], vars.splitPositions[i +1])) {
