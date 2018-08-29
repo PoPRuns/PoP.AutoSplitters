@@ -172,10 +172,10 @@ start{
 	Vector3f [] spAnyNMG = {
 	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position 0
 	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat 0
-	new Vector3f (-46.2f, -138.8f, 67.1f), new Vector3f (-42.1f, -138.7f, 67f), 				//2 The Spider Sword 2
+	new Vector3f (-46.3f, -138.8f, 67f), new Vector3f (-46f, -138f, 68f),		 				//2 The Spider Sword 2
 	new Vector3f (43.3f, -75.7f, 370f), new Vector3f (43.4f, -75.6f, 370.1f), 					//3 Chasing Shadee 7
 	new Vector3f (115f, -114f, 357f), new Vector3f (132f, -80f, 361f), 							//4 A Damsel in Distress 8
-	new Vector3f (40.1f, -95.9f, 86f), new Vector3f (40.2f, -96.1f, 86.1f), 					//5 The Dahaka 9
+	new Vector3f (40.1f, -96.1f, 86f), new Vector3f (41.5f, -95.9f, 86.1f), 					//5 The Dahaka 9
 	new Vector3f (-96.5f, 41.3f, 407.4f), new Vector3f (-96.4f, 41.4f, 407.5f), 				//6 The Serpent Sword 13
 	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//7 The Garden Hall
 	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//8 The Water Maiden
@@ -270,7 +270,7 @@ start{
 		vars.maskSplit = null;
 		vars.swordSplit = 27;		
 		vars.splitStoryValues = new int [] {
-		0, 0, 2, 2, 59, 59, 61, 66, 67
+		0, 0, 2, 7, 8, 9, 13, 66, 67
 		};
 	}
 	else if (selection == 3) {
