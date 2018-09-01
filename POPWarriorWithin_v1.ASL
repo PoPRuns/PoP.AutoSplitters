@@ -57,7 +57,7 @@ init {
 		int splitResult = -1;
 		//Check for each remaining split if the prince is within split distance and has correct story value
 		vars.princePos = new Vector3f (current.xPos, current.yPos, current.zPos);
-		int fiveAhead = (lastSplit +6) * 2;
+		int fiveAhead = (lastSplit +50) * 2;
 		int maxCheck = vars.splitPositions.Length < fiveAhead ? vars.splitPositions.Length : fiveAhead;
 		for (int i = (lastSplit +1) *2; i <  maxCheck && splitResult == -1; i += 2) {
 			if (vars.IsInBox(vars.splitPositions[i], vars.splitPositions[i +1]) && current.storyValue == vars.splitStoryValues[(i/2)]) {
@@ -78,7 +78,7 @@ init {
 		}
 		
 		//Only splitting if there is no boss or the boss is dead.
-		if(current.bossHealth != 0){
+		if(current.bossHealth != 0 && current.bossHealth <= 50000){
 			splitResult = -1;
 		}
 		
@@ -177,29 +177,29 @@ start{
 	new Vector3f (115f, -114f, 357f), new Vector3f (132f, -80f, 361f), 							//4 A Damsel in Distress 8
 	new Vector3f (40.1f, -96.1f, 86f), new Vector3f (41.5f, -95.9f, 86.1f), 					//5 The Dahaka 9
 	new Vector3f (-96.5f, 41.3f, 407.4f), new Vector3f (-96.4f, 41.4f, 407.5f), 				//6 The Serpent Sword 13
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//7 The Garden Hall
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//8 The Water Maiden
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//9 The Waterworks in Ruin
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//10 The Waterworks Restored
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//11 The Lion Sword
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//12 The Mechanical Tower
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//13 Mechanical Portal
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//14 A Tower in Ruin
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//15 A Tower Restored
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//16 The Death of a Sand Wraith
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//17 Death of the Empress
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//18 Exit the Tomb
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//19 The Scorpion Sword
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//21 The Library
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//22 The Hourglass Revisited
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//23 The Mask of the Wraith
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//24 The Sand Griffin
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//25 Mirrored Fates
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//26 A Favor Unknown
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//27 The Library Revisited
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//28 The Light Sword
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//29 The Death of a Prince
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//30 The End
+	new Vector3f (66.9f, 11.4f, 400f), new Vector3f (67.1f, 11.6f, 400.2f), 					//7 The Garden Hall 22
+	new Vector3f (65f, 60f, 402f), new Vector3f (68f, 62f, 402.1f), 							//8 Exit Water Maiden 25
+	new Vector3f (31.1f, 82.1f, 150.9f), new Vector3f (31.3f, 82.3f, 151.1f), 					//9 The Waterworks in Ruin 28
+	new Vector3f (23f, 41f, 441f), new Vector3f (29f, 43f, 450f), 								//10 The Waterworks Restored 30
+	new Vector3f (-44.7f, -27.1f, 389f), new Vector3f (44.6f, -27f, 389.1f), 					//11 The Lion Sword 21
+	new Vector3f (-181.7f, -34f, 411f), new Vector3f (-181.5f, -33.9f, 411.3f), 				//12 The Mechanical Tower 15
+	new Vector3f (-210.018f, 164.259f, 440.9f), new Vector3f (-210.016f, 164.261f, 441.1f), 	//13 The Ravages of Time 16
+	new Vector3f (-206f, 63f, 163.8f), new Vector3f (-205.8f, 63.2f, 163.9f), 					//14 Activation Room in Ruin 18
+	new Vector3f (-192.5f, 109f, 471.9f), new Vector3f (-189.5f, 111f, 472.1f), 				//15 Activation Room Restored 19
+	new Vector3f (-45.5f, -27.7f, 388.9f), new Vector3f (-45.3f, 27.5f, 389.1f), 				//16 The Death of a Sand Wraith 33
+	new Vector3f (-73f, 52f, 414.9f), new Vector3f (31f, 104f, 416f), 							//17 Death of the Empress 34
+	new Vector3f (-100f, -190f, 33f), new Vector3f (-97.5f, -187f, 33.2f), 						//18 Exit the Tomb 39
+	new Vector3f (-170.1f, -127.3f, 335.5f), new Vector3f (-170f, -127.2f, 336.5f), 			//19 Scorpion Sword 41
+	new Vector3f (-112f, -144f, 384.9f), new Vector3f (-111f, -137f, 389f), 					//20 The Library 42
+	new Vector3f (-108.3f, 40f, 407.3f), new Vector3f (-106f, 45f, 407.5f), 					//21 The Hourglass Revisited 45
+	new Vector3f (-20.5f, 236.8f, 133f), new Vector3f (-20.4f, 267f, 133.1f), 					//22 The Mask of the Wraith 46
+	new Vector3f (-23f, 163f, 429f), new Vector3f (-15f, 166.5f, 431f),							//23 The Sand Griffin 48
+	new Vector3f (136.7f, -110.6f, 377.9f), new Vector3f (136.9f, -110.4f, 378f), 				//24 Mirrored Fates 55
+	new Vector3f (41.1f, -180.1f, 368.9f), new Vector3f (41.2f, -180f, 369.1f), 				//25 A Favor Unknown 57
+	new Vector3f (-112f, -144f, 384.9f), new Vector3f (-111f, -137f, 389f), 					//26 The Library Revisited 60
+	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//27 The Light Sword 61
+	new Vector3f (-66f, -23.3f, 399.9f), new Vector3f (-65.9f, -23.2f, 400f), 					//28 The Death of a Prince 64
+	new Vector3f (-35f, 170f, 128.9f), new Vector3f (-5f, 205f, 129.1f), 						//29 The End 67
 	};
 
 
@@ -270,7 +270,7 @@ start{
 		vars.maskSplit = null;
 		vars.swordSplit = 27;		
 		vars.splitStoryValues = new int [] {
-		0, 0, 2, 7, 8, 9, 13, 66, 67
+		0, 0, 2, 7, 8, 9, 13, 22, 25, 28, 30, 21, 15, 16, 18, 19, 33, 34, 39, 41, 42, 45, 46, 48, 55, 57, 60, 61, 64, 67
 		};
 	}
 	else if (selection == 3) {
