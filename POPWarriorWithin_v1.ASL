@@ -57,7 +57,7 @@ init {
 		int splitResult = -1;
 		//Check for each remaining split if the prince is within split distance and has correct story value
 		vars.princePos = new Vector3f (current.xPos, current.yPos, current.zPos);
-		int fiveAhead = (lastSplit +50) * 2;
+		int fiveAhead = (lastSplit +6) * 2;
 		int maxCheck = vars.splitPositions.Length < fiveAhead ? vars.splitPositions.Length : fiveAhead;
 		for (int i = (lastSplit +1) *2; i <  maxCheck && splitResult == -1; i += 2) {
 			if (vars.IsInBox(vars.splitPositions[i], vars.splitPositions[i +1]) && current.storyValue == vars.splitStoryValues[(i/2)]) {
@@ -202,50 +202,84 @@ start{
 	new Vector3f (-35f, 170f, 128.9f), new Vector3f (-5f, 205f, 129.1f), 						//29 The End 67
 	};
 
-
 	//============= TE Normal (Zipful) splits ==============
 	//An array to store the positions for each split 
 	Vector3f [] spTENormal = {
-	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position
-	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//2 The Raven Man
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//3 The Time Portal
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//4 Mask of the Wraith
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//5 Scorpion Sword
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//6 Light Sword
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//7 Back to the Future
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//8 The End
+	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position 0
+	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat 0
+	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//2 The Raven Man 2
+	new Vector3f (52f, -188.7f, 381.9f), new Vector3f (52.1f, -188.6f, 382.1f), 				//3 Health 1 	2
+	new Vector3f (-112.1f, -66.1f, 360.9f), new Vector3f (-112f, -66f, 361f), 					//4 Health 2	59
+	new Vector3f (-74.8f, -102.8f, 378.9f), new Vector3f (-74.7f, -102.7f, 379f), 				//5 Health 3	60
+	new Vector3f (-161.2f, 170.3f, 471.9f), new Vector3f (-161f, 170.4f, 472.1f), 				//6 Health 4	63
+	new Vector3f (138.8f, 115.3f, 382.5f), new Vector3f (138.9f, 115.4f, 382.6f), 				//7 Health 5 	64
+	new Vector3f (76.1f, 64.8f, 461.4f), new Vector3f (76.2f, 64.9f, 461.6f), 					//8 Health 6	64
+	new Vector3f (190.2f, -131.9f, 353.9f), new Vector3f (190.3f, -131.8f, 354.1f), 			//9 Health 7	64
+	new Vector3f (162.2f, -37.5f, 392.9f), new Vector3f (162.3f, -37.4f, 393.1f), 				//10 Health 8	64
+	new Vector3f (-114.3f, -47.2f, 368.9f), new Vector3f (-114.1f, -47f, 369.1f), 				//12 Health 9	64
+	new Vector3f (-96.643f, 43.059f, 407.4f), new Vector3f (-96.641f, 43.061f, 407.5f), 		//13 The Watersword	 66
+	new Vector3f (-35f, 170f, 128.9f), new Vector3f (-5f, 205f, 129.1f), 						//14 The End 67	
 	};
-
 
 	//============= TE Zipless splits ==============
 	//An array to store the positions for each split 
 	Vector3f [] spTEZipless = {
-	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position
-	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//2 The Raven Man
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//3 The Time Portal
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//4 Mask of the Wraith
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//5 Scorpion Sword
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//6 Light Sword
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//7 Back to the Future
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//8 The End
+	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position 0
+	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat 0
+	new Vector3f (-46.3f, -138.8f, 67f), new Vector3f (-46f, -138f, 68f),		 				//2 The Raven Man 2
+	new Vector3f (-114.3f, -47.2f, 368.9f), new Vector3f (-114.1f, -47f, 369.1f), 				//3 Health 1	36
+	new Vector3f (76.1f, 64.8f, 461.4f), new Vector3f (76.2f, 64.9f, 461.6f), 					//4 Health 2	36
+	new Vector3f (138.8f, 115.3f, 382.5f), new Vector3f (138.9f, 115.4f, 382.6f), 				//5 Health 3 	36
+	new Vector3f (52f, -188.7f, 381.9f), new Vector3f (52.1f, -188.6f, 382.1f), 				//6 Health 4 	36
+	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//7 Mask of the Wraith 59
+	new Vector3f (-112.1f, -66.1f, 360.9f), new Vector3f (-112f, -66f, 361f), 					//8 Health 5	59
+	new Vector3f (-74.8f, -102.8f, 378.9f), new Vector3f (-74.7f, -102.7f, 379f), 				//9 Health 6	60
+	new Vector3f (-208f, -35.5f, 419.9f), new Vector3f (-205f, -32.5f, 423f), 					//10 The Mechanical Tower 63
+	new Vector3f (-161.2f, 170.3f, 471.9f), new Vector3f (-161f, 170.4f, 472.1f), 				//11 Health 7	63
+	new Vector3f (162.2f, -37.5f, 392.9f), new Vector3f (162.3f, -37.4f, 393.1f), 				//12 Health 8	64
+	new Vector3f (190.2f, -131.9f, 353.9f), new Vector3f (190.3f, -131.8f, 354.1f), 			//13 Health 9	64	
+	new Vector3f (-96.643f, 43.059f, 407.4f), new Vector3f (-96.641f, 43.061f, 407.5f), 		//14 The Watersword	 66
+	new Vector3f (-35f, 170f, 128.9f), new Vector3f (-5f, 205f, 129.1f), 						//15 The End 67
 	}; 
-
 
 	//============= TE NMG splits ==============
 	//An array to store the positions for each split 
 	Vector3f [] spTENMG = {
-	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position
-	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//2 The Raven Man
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//3 The Time Portal
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//4 Mask of the Wraith
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//5 Scorpion Sword
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//6 Light Sword
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//7 Back to the Future
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//8 The End
-	};
+	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position 0
+	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat 0
+	new Vector3f (-46.3f, -138.8f, 67f), new Vector3f (-46f, -138f, 68f),		 				//2 The Spider Sword 2
+	new Vector3f (52f, -188.7f, 381.9f), new Vector3f (52.1f, -188.6f, 382.1f), 				//3 Health 1 	3
+	new Vector3f (115f, -114f, 357f), new Vector3f (132f, -80f, 361f), 							//4 A Damsel in Distress 8
+	new Vector3f (190.2f, -131.9f, 353.9f), new Vector3f (190.3f, -131.8f, 354.1f), 			//5 Health 2	8
+	new Vector3f (40.1f, -96.1f, 86f), new Vector3f (41.5f, -95.9f, 86.1f), 					//6 The Dahaka 9
+	new Vector3f (-96.5f, 41.3f, 407.4f), new Vector3f (-96.4f, 41.4f, 407.5f), 				//7 The Serpent Sword 13
+	new Vector3f (138.8f, 115.3f, 382.5f), new Vector3f (138.9f, 115.4f, 382.6f), 				//8 Health 3 23
+	new Vector3f (65f, 60f, 402f), new Vector3f (68f, 62f, 402.1f), 							//9 Exit Water Maiden 25
+	new Vector3f (31.1f, 82.1f, 150.9f), new Vector3f (31.3f, 82.3f, 151.1f), 					//10 The Waterworks in Ruin 28
+	new Vector3f (23f, 41f, 441f), new Vector3f (29f, 43f, 450f), 								//11 The Waterworks Restored 30
+	new Vector3f (76.1f, 64.8f, 461.4f), new Vector3f (76.2f, 64.9f, 461.6f), 					//12 Health 4	31
+	new Vector3f (-114.3f, -47.2f, 368.9f), new Vector3f (-114.1f, -47f, 369.1f), 				//13 Health 5	21
+	new Vector3f (-181.7f, -34f, 411f), new Vector3f (-181.5f, -33.9f, 411.3f), 				//14 The Mechanical Tower 15
+	new Vector3f (-210.018f, 164.259f, 440.9f), new Vector3f (-210.016f, 164.261f, 441.1f), 	//15 The Ravages of Time 16
+	new Vector3f (-206f, 63f, 163.8f), new Vector3f (-205.8f, 63.2f, 163.9f), 					//16 Activation Room in Ruin 18
+	new Vector3f (-161.2f, 170.3f, 471.9f), new Vector3f (-161f, 170.4f, 472.1f), 				//17 Health 6	19
+	new Vector3f (-45.5f, -27.7f, 388.9f), new Vector3f (-45.3f, 27.5f, 389.1f), 				//18 The Death of a Sand Wraith 33
+	new Vector3f (-73f, 52f, 414.9f), new Vector3f (31f, 104f, 416f), 							//19 Death of the Empress 34
+	new Vector3f (-100f, -190f, 33f), new Vector3f (-97.5f, -187f, 33.2f), 						//20 Exit the Tomb 39
+	new Vector3f (-170.1f, -127.3f, 335.5f), new Vector3f (-170f, -127.2f, 336.5f), 			//21 Scorpion Sword 41
+	new Vector3f (-112.1f, -66.1f, 360.9f), new Vector3f (-112f, -66f, 361f), 					//22 Health 7	41
+	new Vector3f (-74.8f, -102.8f, 378.9f), new Vector3f (-74.7f, -102.7f, 379f), 				//23 Health 8	42
+	new Vector3f (162.2f, -37.5f, 392.9f), new Vector3f (162.3f, -37.4f, 393.1f), 				//24 Health 9	44
+	new Vector3f (-96.643f, 43.059f, 407.4f), new Vector3f (-96.641f, 43.061f, 407.5f), 		//25 The Watersword	 45
+	new Vector3f (-20.5f, 236.8f, 133f), new Vector3f (-20.4f, 267f, 133.1f), 					//26 The Mask of the Wraith 46
+	new Vector3f (-23f, 163f, 429f), new Vector3f (-15f, 166.5f, 431f),							//27 The Sand Griffin 48
+	new Vector3f (136.7f, -110.6f, 377.9f), new Vector3f (136.9f, -110.4f, 378f), 				//28 Mirrored Fates 55
+	new Vector3f (41.1f, -180.1f, 368.9f), new Vector3f (41.2f, -180f, 369.1f), 				//29 A Favor Unknown 57
+	new Vector3f (-112f, -144f, 384.9f), new Vector3f (-111f, -137f, 389f), 					//30 The Library Revisited 60
+	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//31 The Light Sword 61
+	new Vector3f (-66f, -23.3f, 399.9f), new Vector3f (-65.9f, -23.2f, 400f), 					//32 The Death of a Prince 64
+	new Vector3f (-35f, 170f, 128.9f), new Vector3f (-5f, 205f, 129.1f), 						//33 The End 67
+	}; 
 
 	//Check for category to determine which splits to use
 	int selection = vars.SetSplitsByCategory();
@@ -278,7 +312,7 @@ start{
 		vars.maskSplit = null;
 		vars.swordSplit = null;
 		vars.splitStoryValues = new int [] {
-		0, 0, 2, 2, 59, 59, 61, 66, 67
+		0, 0, 2, 2, 59, 60, 63, 64, 64, 64, 64, 64, 66, 67
 		};
 	}
 	else if (selection == 4) {
@@ -286,7 +320,7 @@ start{
 		vars.maskSplit = 7;
 		vars.swordSplit = null;
 		vars.splitStoryValues = new int [] {
-		0, 0, 2, 2, 59, 59, 61, 66, 67
+		0, 0, 2, 36, 36, 36, 36, 59, 59, 60, 63, 63, 64, 64, 66, 67
 		};
 	}
 	else if (selection == 5) {
@@ -294,7 +328,7 @@ start{
 		vars.maskSplit = null;
 		vars.swordSplit = 31;
 		vars.splitStoryValues = new int [] {
-		0, 0, 2, 2, 59, 59, 61, 66, 67
+		0, 0, 2, 3, 8, 8, 9, 13, 23, 25, 28, 30, 31, 21, 15, 16, 18, 19, 33, 34, 39, 41, 41, 42, 44, 45, 46, 48, 55, 57, 60, 61, 64, 67
 		};
 	}
 	else {
