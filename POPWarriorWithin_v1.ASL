@@ -332,7 +332,12 @@ start{
 		};
 	}
 	else {
-		selection = 1;
+		vars.splitPositions = spAnyNormal;
+		vars.swordSplit = 6;
+		vars.maskSplit = 4;
+		vars.splitStoryValues = new int [] {
+		0, 0, 2, 2, 59, 59, 61, 66, 67
+		};
 	}
 	vars.unknowStart = true;
 
