@@ -11,8 +11,6 @@
 
 
 state("POP3"){
-//The address used for all bosses' health
-	int bossHealth : 0x00604738, 0x1C, 0x53C, 0x54C, 0x750;
 
 //The Prince's coords
 	float xPos : 0x00A6A838, 0x0, 0x8, 0x54, 0x218, 0x620;	
@@ -56,11 +54,6 @@ init {
 			if (vars.IsInBox(vars.splitPositions[i], vars.splitPositions[i +1])) {
 				splitResult = i/2;
 			}
-		}
-		
-		//Only splitting if there is no boss or the boss is dead.
-		if(current.bossHealth != 0 && current.bossHealth <= 50000){
-			splitResult = -1;
 		}
 		
 		return splitResult;
@@ -182,29 +175,29 @@ start{
 	//An array to store the positions for each split 
 	Vector3f [] spAnyNMG = {
 	new Vector3f (-404.9f, 113.6f, 61.9f), new Vector3f (-404.8f, 113.7f, 62f), 				//0 Starting Position
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
+	new Vector3f (-114f, 214f, 56.2f), new Vector3f (-110f, 215.5f, 56.3f), 					//1 The Streets of Babylon
+	new Vector3f (-35.5f, 232.3f, 146.9f), new Vector3f (-35.4f, 232.4f, 147f), 				//2 The Dagger of Time
+	new Vector3f (-52.1f, 135.8f, 75.9f), new Vector3f (-52.0f, 135.9f, 76f), 					//3 The Sewers
+	new Vector3f (-88.6f, -14.8f, 4.9f), new Vector3f (-88.5f, -14.7f, 5.1f), 					//4 The Tunnels
+	new Vector3f (-71.4f, 9.6f, 44f), new Vector3f (-71.3f, 9.7f, 44.1f), 						//5 The Lower City
+	new Vector3f (-317.8f, 329.8f, 96f), new Vector3f (-317.7f, 329.9f, 96.1f), 				//6 The Lower City Rooftops
+	new Vector3f (-209.6f, 397.2f, 64.2f), new Vector3f (-209.5f, 397.3f, 64.3f), 				//7 The Balconies
+	new Vector3f (-111.9f, 333.3f, 56f), new Vector3f (-111.7f, 333.4f, 56.1f), 				//8 The Temple Rooftops
+	new Vector3f (-134f, 424.9f, 103f), new Vector3f (-133.8f, 425f, 103.1f), 					//9 The Temple
+	new Vector3f (-241.98f, 475f, 86.8f), new Vector3f (-241.9f, 477f, 86.9f), 					//10 The Market District
+	new Vector3f (-188.9f, 551.8f, 93f), new Vector3f (-188.8f, 551.9f, 93.1f), 				//11 The Bowery	
+	new Vector3f (-121.4f, 579.1f, 103.9f), new Vector3f (-121.3f, 579.2f, 104f), 				//12 Death of Mahasti
+	new Vector3f (-63.5f, 389.7f, 85.2f), new Vector3f (-63.4f, 389.8f, 85.3f), 				//13 The Stone Guardian
+	new Vector3f (-15.5f, 456.6f, 84f), new Vector3f (-15.4f, 456.7f, 84.1f), 					//14 The Royal Workshop
+	new Vector3f (60.1f, 477.5f, 80f), new Vector3f (60.2f, 477.6f, 80.1f), 					//15 The King's Road
+	new Vector3f (19.1f, 263.8f, 82f), new Vector3f (19.2f, 263.9f, 82.1f), 					//16 The Elevator
+	new Vector3f (13.5f, 204.4f, 184.9999f), new Vector3f (27.4f, 215.4f, 185.0001f), 			//17 The Structure's Mind
+	new Vector3f (7.9f, 246.2f, 104f), new Vector3f (8f, 246.3f, 104.1f), 						//18 The Well Of Ancestors	
+	new Vector3f (-25.5f, 334f, 35.9f), new Vector3f (-25f, 336f, 36.1f), 						//19 The Underground Cave	
+	new Vector3f (-5f, 316f, 139.9f), new Vector3f (-3f, 317.5f, 140.1f), 						//20 The Middle Tower
+	new Vector3f (-8f, 296f, 226.9f), new Vector3f (-7f, 298f, 227f), 							//21 The Upper Tower
+	new Vector3f (4.4851f, 240.9438f, 304.2322f), new Vector3f (4.4853f, 240.944f, 304.2324f), 	//22 Death of the Vizier
+	new Vector3f (189f, 319.135f, 542f), new Vector3f (193f, 320f, 543f), 						//23 The End
 	};
 
 	//============= AP Normal (Zipful) splits ==============
@@ -268,30 +261,33 @@ start{
 	//============= AP NMG splits ==============
 	//An array to store the positions for each split 
 	Vector3f [] spAPNMG = {
-	new Vector3f (-404.9f, 113.6f, 61.9f), new Vector3f (-404.8f, 113.7f, 62f), 				//0 Starting Position
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//
+	new Vector3f (-404.9f, 113.6f, 61.9f), new Vector3f (-404.8f, 113.7f, 62f), 				//0 Starting Position		
+	new Vector3f (-114f, 214f, 56.2f), new Vector3f (-110f, 215.5f, 56.3f), 					//1 The Streets of Babylon
+	new Vector3f (-35.5f, 232.3f, 146.9f), new Vector3f (-35.4f, 232.4f, 147f), 				//2 The Dagger of Time
+	new Vector3f (-52.1f, 135.8f, 75.9f), new Vector3f (-52.0f, 135.9f, 76f), 					//3 The Sewers
+	new Vector3f (-14.9972f, -112.8152f, 20.0732f), new Vector3f (-14.9970f, -112.8150f, 20.0734f), //4 Health 1
+	new Vector3f (-71.4f, 9.6f, 44f), new Vector3f (-71.3f, 9.7f, 44.1f), 						//5 The Lower City
+	new Vector3f (-317.8f, 329.8f, 96f), new Vector3f (-317.7f, 329.9f, 96.1f), 				//6 The Lower City Rooftops
+	new Vector3f (-302.0919f, 370.8710f, -0.9788f), new Vector3f (-302.0917f, 370.8712f, -0.9786f), //7 Health 2
+	new Vector3f (-209.6f, 397.2f, 64.2f), new Vector3f (-209.5f, 397.3f, 64.3f), 				//8 The Balconies
+	new Vector3f (-111.9f, 333.3f, 56f), new Vector3f (-111.7f, 333.4f, 56.1f), 				//9 The Temple Rooftops
+	new Vector3f (-134f, 424.9f, 103f), new Vector3f (-133.8f, 425f, 103.1f), 					//10 The Temple
+	new Vector3f (-187.3369f, 455.9863f, 78.0330f), new Vector3f (-187.3367f, 455.9865f, 78.0332f), //11 Health 3
+	new Vector3f (-241.98f, 475f, 86.8f), new Vector3f (-241.9f, 477f, 86.9f), 					//12 The Market District
+	new Vector3f (-188.9f, 551.8f, 93f), new Vector3f (-188.8f, 551.9f, 93.1f), 				//13 The Bowery	
+	new Vector3f (-121.4f, 579.1f, 103.9f), new Vector3f (-121.3f, 579.2f, 104f), 				//14 Death of Mahasti
+	new Vector3f (-55.0147f, 395.7608f, 72.0774f), new Vector3f (-55.0145f, 395.761f, 72.0776f),	//15 Health 4
+	new Vector3f (-15.5f, 456.6f, 84f), new Vector3f (-15.4f, 456.7f, 84.1f), 					//16 The Royal Workshop
+	new Vector3f (60.1f, 477.5f, 80f), new Vector3f (60.2f, 477.6f, 80.1f), 					//17 The King's Road
+	new Vector3f (-30.1223f, 281.8893f, 104.0796f), new Vector3f (-30.1221f, 281.8895f, 104.0798f), //18 Health 5
+	new Vector3f (13.5f, 204.4f, 184.9999f), new Vector3f (27.4f, 215.4f, 185.0001f), 			//19 The Structure's Mind
+	new Vector3f (7.9f, 246.2f, 104f), new Vector3f (8f, 246.3f, 104.1f), 						//20 The Well Of Ancestors	
+	new Vector3f (-25.5f, 334f, 35.9f), new Vector3f (-25f, 336f, 36.1f), 						//21 The Underground Cave	
+	new Vector3f (-5f, 316f, 139.9f), new Vector3f (-3f, 317.5f, 140.1f), 						//22 The Middle Tower
+	new Vector3f (-23.9663f, 253.9438f, 183.0634f), new Vector3f (-23.9661f, 253.944f, 183.0636f),	//23 Health 6
+	new Vector3f (-8f, 296f, 226.9f), new Vector3f (-7f, 298f, 227f), 							//24 The Upper Tower
+	new Vector3f (4.4851f, 240.9438f, 304.2322f), new Vector3f (4.4853f, 240.944f, 304.2324f), 	//25 Death of the Vizier
+	new Vector3f (189f, 319.135f, 542f), new Vector3f (193f, 320f, 543f), 						//26 The End
 	}; 
 
 	//Check for category to determine which splits to use
