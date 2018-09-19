@@ -48,7 +48,7 @@ init {
 		int splitResult = -1;
 		//Check for each remaining split if the prince is within split distance and has correct story value
 		vars.princePos = new Vector3f (current.xPos, current.yPos, current.zPos);
-		int fiveAhead = (lastSplit +6) * 2;
+		int fiveAhead = (lastSplit +60) * 2;
 		int maxCheck = vars.splitPositions.Length < fiveAhead ? vars.splitPositions.Length : fiveAhead;
 		for (int i = (lastSplit +1) *2; i <  maxCheck && splitResult == -1; i += 2) {
 			if (vars.IsInBox(vars.splitPositions[i], vars.splitPositions[i +1])) {
@@ -151,8 +151,8 @@ start{
 	new Vector3f (-114f, 336f, 56f), new Vector3f (-110f, 338f, 56.1f), 						//10 The Temple Rooftops
 	new Vector3f (-122f, 423f, 107f), new Vector3f (-118f, 424f, 109f), 						//11 The Temple
 	new Vector3f (-241.98f, 475f, 86.8f), new Vector3f (-241.9f, 477f, 86.9f), 					//12 The Market District
-	new Vector3f (-168f, 512f, 88.9f), new Vector3f (-167.5f, 518f, 93f), 						//13 The Bowery
-	new Vector3f (-104f, 548f, 105.9f), new Vector3f (-100f, 553f, 106.1f), 					//14 Death of Mahasti
+	new Vector3f (-170f, 512f, 88.9f), new Vector3f (-167.5f, 518f, 98f), 						//13 The Bowery
+	new Vector3f (-104f, 548f, 104f), new Vector3f (-100f, 553.9f, 106.1f), 					//14 Death of Mahasti
 	new Vector3f (-122f, 500f, 97.9f), new Vector3f (-120f, 505f, 98.1f),						//15 The Upper City
 	new Vector3f (-63.5f, 389.7f, 85.2f), new Vector3f (-63.4f, 389.8f, 85.3f), 				//16 The Stone Guardian
 	new Vector3f (-3f, 515f, 72f), new Vector3f (-1f, 519f, 75f),								//17 The Royal Workshop
@@ -166,7 +166,7 @@ start{
 	new Vector3f (27f, 316.5f, 99.9f), new Vector3f (29f, 318f, 100.1f), 						//25 The Lower Tower
 	new Vector3f (-5f, 316f, 139.9f), new Vector3f (-3f, 317.5f, 140.1f), 						//26 The Middle Tower
 	new Vector3f (-8f, 296f, 226.9f), new Vector3f (-7f, 298f, 227f), 							//27 The Upper Tower
-	new Vector3f (4.4851f, 240.9438f, 304.2322f), new Vector3f (4.4853f, 240.944f, 304.2324f), 	//28 Death of the Vizier
+	new Vector3f (-7.1f, 245.7f, 678f), new Vector3f (-7f, 245.8f, 678.1f), 					//28 Death of the Vizier
 	new Vector3f (189f, 319.135f, 542f), new Vector3f (193f, 320f, 543f), 						//29 The End
 	};
 				
@@ -215,7 +215,7 @@ start{
 	new Vector3f (-35.5f, 232.3f, 146.9f), new Vector3f (-35.4f, 232.4f, 147f), 				//3 The Dagger of Time
 	new Vector3f (-14.9972f, -112.8152f, 20.0732f), new Vector3f (-14.9970f, -112.8150f, 20.0734f), //5 Health 1
 	new Vector3f (-321f, 324f, 95.5f), new Vector3f (-314f, 330f, 96.5f), 						//5 The Lower City Rooftops
-	new Vector3f (-302.0919f, 370.8710f, -0.9788f), new Vector3f (-302.0917f, 370.8712f, -0.9786f), //8 Health 2
+	new Vector3f (-302.0919f, 370.8710f, 52.858f), new Vector3f (-302.0917f, 370.8712f, 52.8582f), //8 Health 2
 	new Vector3f (-250f, 372f, 66.9f), new Vector3f (-240f, 382f, 67.1f), 						//6 The Death of Klompa
 	new Vector3f (-122.6f, 419.7f, 109.6994f), new Vector3f (-122.5f, 419.8f, 109.6996f), 		//7 The Temple
 	new Vector3f (-187.3369f, 455.9863f, 78.0330f), new Vector3f (-187.3367f, 455.9865f, 78.0332f), //13 Health 3
@@ -243,15 +243,15 @@ start{
 	new Vector3f (-14.9972f, -112.8152f, 20.0732f), new Vector3f (-14.9970f, -112.8150f, 20.0734f), //5 Health 1
 	new Vector3f (-71.4f, 9.6f, 44f), new Vector3f (-71.3f, 9.7f, 44.1f), 						//6 The Lower City
 	new Vector3f (-317.8f, 329.8f, 96f), new Vector3f (-317.7f, 329.9f, 96.1f), 				//7 The Lower City Rooftops
-	new Vector3f (-302.0919f, 370.8710f, -0.9788f), new Vector3f (-302.0917f, 370.8712f, -0.9786f), //8 Health 2
+	new Vector3f (-302.0919f, 370.8710f, 52.858f), new Vector3f (-302.0917f, 370.8712f, 52.8582f), //8 Health 2
 	new Vector3f (-261.3f, 318.9f, 46.9f), new Vector3f (-261.2f, 319.1f, 47f), 				//8 The Death of Klompa
 	new Vector3f (-194f, 328f, 32.6f), new Vector3f (-190f, 329.7f, 33.6f), 					//9 The Eye of the Storm
 	new Vector3f (-114f, 336f, 56f), new Vector3f (-110f, 338f, 56.1f), 						//10 The Temple Rooftops
 	new Vector3f (-122f, 423f, 107f), new Vector3f (-118f, 424f, 109f), 						//11 The Temple
 	new Vector3f (-187.3369f, 455.9863f, 78.0330f), new Vector3f (-187.3367f, 455.9865f, 78.0332f), //13 Health 3
 	new Vector3f (-241.98f, 475f, 86.8f), new Vector3f (-241.9f, 477f, 86.9f), 					//12 The Market District
-	new Vector3f (-168f, 512f, 88.9f), new Vector3f (-167.5f, 518f, 93f), 						//13 The Bowery
-	new Vector3f (-104f, 548f, 105.9f), new Vector3f (-100f, 553f, 106.1f), 					//14 Death of Mahasti
+	new Vector3f (-170f, 512f, 88.9f), new Vector3f (-167.5f, 518f, 98f), 						//13 The Bowery
+	new Vector3f (-104f, 548f, 104f), new Vector3f (-100f, 553.9f, 106.1f), 					//14 Death of Mahasti
 	new Vector3f (-122f, 500f, 97.9f), new Vector3f (-120f, 505f, 98.1f),						//15 The Upper City
 	new Vector3f (-55.0147f, 395.7608f, 72.0774f), new Vector3f (-55.0145f, 395.761f, 72.0776f),	//19 Health 4
 	new Vector3f (-3f, 515f, 72f), new Vector3f (-1f, 519f, 75f),								//17 The Royal Workshop
@@ -266,7 +266,7 @@ start{
 	new Vector3f (-5f, 316f, 139.9f), new Vector3f (-3f, 317.5f, 140.1f), 						//26 The Middle Tower
 	new Vector3f (-23.9663f, 253.9438f, 183.0634f), new Vector3f (-23.9661f, 253.944f, 183.0636f),	//30 Health 6
 	new Vector3f (-8f, 296f, 226.9f), new Vector3f (-7f, 298f, 227f), 							//27 The Upper Tower
-	new Vector3f (4.4851f, 240.9438f, 304.2322f), new Vector3f (4.4853f, 240.944f, 304.2324f), 	//28 Death of the Vizier
+	new Vector3f (-7.1f, 245.7f, 678f), new Vector3f (-7f, 245.8f, 678.1f), 					//28 Death of the Vizier
 	new Vector3f (189f, 319.135f, 542f), new Vector3f (193f, 320f, 543f), 						//29 The End
 	}; 
 
@@ -281,7 +281,7 @@ start{
 	new Vector3f (-14.9972f, -112.8152f, 20.0732f), new Vector3f (-14.9970f, -112.8150f, 20.0734f), //5 Health 1
 	new Vector3f (-71.4f, 9.6f, 44f), new Vector3f (-71.3f, 9.7f, 44.1f), 						//6 The Lower City
 	new Vector3f (-317.8f, 329.8f, 96f), new Vector3f (-317.7f, 329.9f, 96.1f), 				//7 The Lower City Rooftops
-	new Vector3f (-302.0919f, 370.8710f, -0.9788f), new Vector3f (-302.0917f, 370.8712f, -0.9786f), //8 Health 2
+	new Vector3f (-302.0919f, 370.8710f, 52.858f), new Vector3f (-302.0917f, 370.8712f, 52.8582f), //8 Health 2
 	new Vector3f (-261.3f, 318.9f, 46.9f), new Vector3f (-261.2f, 319.1f, 47f), 				//9 The Death of Klompa
 	new Vector3f (-194f, 328f, 32.6f), new Vector3f (-190f, 329.7f, 33.6f), 					//10 The Eye of the Storm
 	new Vector3f (-111.9f, 333.3f, 56f), new Vector3f (-111.7f, 333.4f, 56.1f), 				//11 The Temple Rooftops
