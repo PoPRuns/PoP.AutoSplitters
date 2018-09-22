@@ -202,7 +202,7 @@ start{
 	new Vector3f (27f, 316.5f, 99.9f), new Vector3f (29f, 318f, 100.1f), 						//26 The Lower Tower
 	new Vector3f (-5f, 316f, 139.9f), new Vector3f (-3f, 317.5f, 140.1f), 						//27 The Middle Tower
 	new Vector3f (-8f, 296f, 226.9f), new Vector3f (-7f, 298f, 227f), 							//28 The Upper Tower
-	new Vector3f (4.4851f, 240.9438f, 304.2322f), new Vector3f (4.4853f, 240.944f, 304.2324f), 	//29 Death of the Vizier
+	new Vector3f (4.485f, 240.943f, 304.232f), new Vector3f (4.487f, 240.945f, 304.234f), 		//29 Death of the Vizier
 	new Vector3f (189f, 319.135f, 542f), new Vector3f (193f, 320f, 543f), 						//30 The End
 	};
 
@@ -305,7 +305,7 @@ start{
 	new Vector3f (-5f, 316f, 139.9f), new Vector3f (-3f, 317.5f, 140.1f), 						//29 The Middle Tower
 	new Vector3f (-23.9663f, 253.9438f, 183.0634f), new Vector3f (-23.9661f, 253.944f, 183.0636f),	//30 Health 6
 	new Vector3f (-8f, 296f, 226.9f), new Vector3f (-7f, 298f, 227f), 							//31 The Upper Tower
-	new Vector3f (4.4851f, 240.9438f, 304.2322f), new Vector3f (4.4853f, 240.944f, 304.2324f), 	//32 Death of the Vizier
+	new Vector3f (4.485f, 240.943f, 304.232f), new Vector3f (4.487f, 240.945f, 304.234f), 		//32 Death of the Vizier
 	new Vector3f (189f, 319.135f, 542f), new Vector3f (193f, 320f, 543f), 						//33 The End
 	}; 
 
