@@ -144,7 +144,7 @@ start{
 	Vector3f [] spAnyNormal = {
 	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position
 	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat
-	new Vector3f (-5.357f, -161.538f, 66.5f), new Vector3f (-5.359f, -161.539f, 67.5f), 		//2 The Raven Man
+	new Vector3f (-5.359f, -161.539f, 66.5f), new Vector3f (-5.357f, -161.538f, 67.5f), 		//2 The Raven Man
 	new Vector3f (122.8f, -156.1f, 368.5f), new Vector3f (122.9f, -156f, 369.5f), 				//3 The Time Portal
 	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//4 Mask of the Wraith
 	new Vector3f (-170.1f, -127.3f, 335.5f), new Vector3f (-170f, -127.2f, 336.5f), 			//5 Scorpion Sword
@@ -158,7 +158,7 @@ start{
 	Vector3f [] spAnyZipless = {
 	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position
 	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat
-	new Vector3f (-5.357f, -161.538f, 66.5f), new Vector3f (-5.359f, -161.539f, 67.5f), 		//2 The Raven Man
+	new Vector3f (-5.359f, -161.539f, 66.5f), new Vector3f (-5.357f, -161.538f, 67.5f), 		//2 The Raven Man
 	new Vector3f (122.8f, -156.1f, 368.5f), new Vector3f (122.9f, -156f, 369.5f), 				//3 The Time Portal
 	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//4 Mask of the Wraith
 	new Vector3f (-170.1f, -127.3f, 335.5f), new Vector3f (-170f, -127.2f, 336.5f), 			//5 Scorpion Sword
@@ -207,7 +207,7 @@ start{
 	Vector3f [] spTENormal = {
 	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position 0
 	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat 0
-	new Vector3f (-5.357f, -161.538f, 66.5f), new Vector3f (-5.359f, -161.539f, 67.5f), 		//2 The Raven Man 2
+	new Vector3f (-5.359f, -161.539f, 66.5f), new Vector3f (-5.357f, -161.538f, 67.5f), 		//2 The Raven Man 2
 	new Vector3f (52f, -188.7f, 381.9f), new Vector3f (52.1f, -188.6f, 382.1f), 				//3 Health 1 	2
 	new Vector3f (-112.1f, -66.1f, 360.9f), new Vector3f (-112f, -66f, 361f), 					//4 Health 2	59
 	new Vector3f (-74.8f, -102.8f, 378.9f), new Vector3f (-74.7f, -102.7f, 379f), 				//5 Health 3	60
@@ -226,7 +226,7 @@ start{
 	Vector3f [] spTEZipless = {
 	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position 0
 	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat 0
-	new Vector3f (-5.357f, -161.538f, 66.5f), new Vector3f (-5.359f, -161.539f, 67.5f), 		//2 The Raven Man 2
+	new Vector3f (-5.359f, -161.539f, 66.5f), new Vector3f (-5.357f, -161.538f, 67.5f), 		//2 The Raven Man 2
 	new Vector3f (-114.3f, -47.2f, 368.9f), new Vector3f (-114.1f, -47f, 369.1f), 				//3 Health 1	36
 	new Vector3f (76.1f, 64.8f, 461.4f), new Vector3f (76.2f, 64.9f, 461.6f), 					//4 Health 2	36
 	new Vector3f (138.8f, 115.3f, 382.5f), new Vector3f (138.9f, 115.4f, 382.6f), 				//5 Health 3 	36
