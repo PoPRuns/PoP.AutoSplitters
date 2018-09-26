@@ -70,7 +70,7 @@ init {
 					splitResult = vars.swordSplit;
 				}
 				//Splitting on retrieval of the wraith mask for each relevant category.
-				if(current.storyValue == 59 && (i/2) < (vars.maskSplit+1)){
+				if(current.storyValue == 59 && (i/2) < (vars.maskSplit+1) && lastSplit > 1){
 					splitResult = vars.maskSplit;
 				}
 			}
