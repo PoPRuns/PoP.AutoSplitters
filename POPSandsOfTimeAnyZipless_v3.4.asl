@@ -202,7 +202,7 @@ start{
 		new Vector3f (73f, 161f, -24.1f), new Vector3f (79f, 163f, -23.9f), 						//20 The Hall of Learning
 		new Vector3f (137f, 164f, -29.5f), new Vector3f (141f, 164.67f, -29.2f), 					//21 Exit Observatory
 		new Vector3f (72f, 90f, -27.1f), new Vector3f (77f, 95.7f, -26.9f), 						//22 Exit The Hall of Learning Courtyards
-		new Vector3f (190f, -21f, -17.6f), new Vector3f (195f, -19f, -17.3f), 						//23 The Prison
+		new Vector3f (188.156f, -20.179f, -17.5f), new Vector3f (188.458f, -20.17f, -17.3f), 		//23 The Prison
 		new Vector3f (187.5f, -39f, -119.1f), new Vector3f (192.5f, -37.5f, -118.9f), 				//24 The Torture Chamber
 		new Vector3f (74f, -46.751f, -33.501f), new Vector3f (74.171f, -43.252f, -33.499f), 		//25 The Elevator
 		new Vector3f (99f, -11f, -56f), new Vector3f (101f, -10f, -54f), 							//26 The Dream
@@ -240,7 +240,7 @@ start{
 	new Vector3f (73f, 161f, -24.1f), new Vector3f (79f, 163f, -23.9f), 						//20 The Hall of Learning
 	new Vector3f (137f, 164f, -29.5f), new Vector3f (141f, 164.67f, -29.2f), 					//21 Exit Observatory
 	new Vector3f (72f, 90f, -27.1f), new Vector3f (77f, 95.7f, -26.9f), 						//22 Exit The Hall of Learning Courtyards
-	new Vector3f (190.332f, -20.128f, -17.5f), new Vector3f (190.334f, -20.126f, -17.3f), 		//23 The Prison
+	new Vector3f (188.156f, -20.179f, -17.5f), new Vector3f (188.458f, -20.17f, -17.3f), 		//23 The Prison
 	new Vector3f (187.5f, -39f, -119.1f), new Vector3f (192.5f, -37.5f, -118.9f), 				//24 The Torture Chamber
 	new Vector3f (74f, -46.751f, -33.501f), new Vector3f (74.171f, -43.252f, -33.499f), 		//25 The Elevator
 	new Vector3f (99f, -11f, -56f), new Vector3f (101f, -10f, -54f), 							//26 The Dream
@@ -309,7 +309,7 @@ start{
 	new Vector3f (-492.608f, -248.833f, 0.219f), new Vector3f (-492.606f, -248.831f, 0.221f),	//22 Life Upgrade 7
 	new Vector3f (137f, 164f, -29.5f), new Vector3f (141f, 164.67f, -29.2f), 					//23 Exit Observatory
 	new Vector3f (72f, 90f, -27.1f), new Vector3f (77f, 95.7f, -26.9f), 						//24 Exit The Hall of Learning Courtyards
-	new Vector3f (190.332f, -20.128f, -17.5f), new Vector3f (190.334f, -20.126f, -17.3f), 		//25 The Prison
+	new Vector3f (188.156f, -20.179f, -17.5f), new Vector3f (188.458f, -20.17f, -17.3f), 		//25 The Prison
 	new Vector3f (-492.608f, -248.833f, 0.219f), new Vector3f (-492.606f, -248.831f, 0.221f),	//26 Life Upgrade 8
 	new Vector3f (-492.608f, -248.833f, 0.219f), new Vector3f (-492.606f, -248.831f, 0.221f),	//27 Life Upgrade 9
 	new Vector3f (99f, -11f, -56f), new Vector3f (101f, -10f, -54f), 							//28 The Dream
@@ -351,7 +351,7 @@ start{
 	new Vector3f (-492.608f, -248.833f, 0.219f), new Vector3f (-492.606f, -248.831f, 0.221f),	//22 Life Upgrade 7
 	new Vector3f (137f, 164f, -29.5f), new Vector3f (141f, 164.67f, -29.2f), 					//23 Exit Observatory
 	new Vector3f (72f, 90f, -27.1f), new Vector3f (77f, 95.7f, -26.9f), 						//24 Exit The Hall of Learning Courtyards
-	new Vector3f (190.332f, -20.128f, -17.5f), new Vector3f (190.334f, -20.126f, -17.3f), 		//25 The Prison
+	new Vector3f (188.156f, -20.179f, -17.5f), new Vector3f (188.458f, -20.17f, -17.3f), 		//25 The Prison
 	new Vector3f (-492.608f, -248.833f, 0.219f), new Vector3f (-492.606f, -248.831f, 0.221f),	//26 Life Upgrade 8
 	new Vector3f (-492.608f, -248.833f, 0.219f), new Vector3f (-492.606f, -248.831f, 0.221f),	//27 Life Upgrade 9
 	new Vector3f (99f, -11f, -56f), new Vector3f (101f, -10f, -54f), 							//28 The Dream
