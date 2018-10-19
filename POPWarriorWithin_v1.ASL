@@ -27,6 +27,10 @@ state("POP2"){
 	float xPos : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x30;	
 	float yPos : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x34;
 	float zPos : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x38;	
+	
+//Camera values
+	float cameraX : 0x863A90;
+	float cameraY : 0x863A94;
 }
 
 startup{
@@ -41,6 +45,7 @@ startup{
 }
 
 init {
+		
 	//init runs when the game process is found
 	vars.isGameRunning = true;
 
@@ -343,10 +348,12 @@ start{
 
 	//Detecting if the Prince is on the boat and if NewGame has been pressed.
 	if (vars.GetSplit(-1) == 0 && current.startValue == 2){
+		if(current.cameraY <= 0.603 && current.cameraY >= 0.601){
 			//Initializing variables if the game has started
 			vars.split = 0;
 			vars.unknowStart = false;
 			return true;
+		}
 	}
 }
 
