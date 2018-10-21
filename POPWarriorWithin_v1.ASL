@@ -348,7 +348,7 @@ start{
 
 	//Detecting if the Prince is on the boat and if NewGame has been pressed.
 	if (vars.GetSplit(-1) == 0 && current.startValue == 2){
-		if(current.cameraY <= 0.603 && current.cameraY >= 0.601){
+		if(current.cameraY <= 0.603 && current.cameraY >= 0.5){
 			//Initializing variables if the game has started
 			vars.split = 0;
 			vars.unknowStart = false;
