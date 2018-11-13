@@ -253,10 +253,11 @@ start{
 	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position 0
 	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat 0
 	new Vector3f (-46.3f, -138.8f, 67f), new Vector3f (-46f, -138f, 68f),		 				//2 The Spider Sword 2
-	new Vector3f (52f, -188.7f, 381.9f), new Vector3f (52.1f, -188.6f, 382.1f), 				//3 Health 1 	3
+	new Vector3f (162.2f, -37.5f, 392.9f), new Vector3f (162.3f, -37.4f, 393.1f), 				//24 Health 9	7
 	new Vector3f (115f, -114f, 357f), new Vector3f (132f, -80f, 361f), 							//4 A Damsel in Distress 8
 	new Vector3f (190.2f, -131.9f, 353.9f), new Vector3f (190.3f, -131.8f, 354.1f), 			//5 Health 2	8
 	new Vector3f (40.1f, -96.1f, 86f), new Vector3f (41.5f, -95.9f, 86.1f), 					//6 The Dahaka 9
+	new Vector3f (52f, -188.7f, 381.9f), new Vector3f (52.1f, -188.6f, 382.1f), 				//3 Health 1 	11
 	new Vector3f (-96.5f, 41.3f, 407.4f), new Vector3f (-96.4f, 41.4f, 407.5f), 				//7 The Serpent Sword 13
 	new Vector3f (138.8f, 115.3f, 382.5f), new Vector3f (138.9f, 115.4f, 382.6f), 				//8 Health 3 23
 	new Vector3f (65f, 60f, 402f), new Vector3f (68f, 62f, 402.1f), 							//9 Exit Water Maiden 25
@@ -274,7 +275,6 @@ start{
 	new Vector3f (-170.1f, -127.3f, 335.5f), new Vector3f (-170f, -127.2f, 336.5f), 			//21 Scorpion Sword 41
 	new Vector3f (-112.1f, -66.1f, 360.9f), new Vector3f (-112f, -66f, 361f), 					//22 Health 7	41
 	new Vector3f (-74.8f, -102.8f, 378.9f), new Vector3f (-74.7f, -102.7f, 379f), 				//23 Health 8	42
-	new Vector3f (162.2f, -37.5f, 392.9f), new Vector3f (162.3f, -37.4f, 393.1f), 				//24 Health 9	44
 	new Vector3f (-96.643f, 43.059f, 407.4f), new Vector3f (-96.641f, 43.061f, 407.5f), 		//25 The Watersword	 45
 	new Vector3f (-20.5f, 236.8f, 133f), new Vector3f (-20.4f, 267f, 133.1f), 					//26 The Mask of the Wraith 46
 	new Vector3f (-23f, 163f, 429f), new Vector3f (-15f, 166.5f, 431f),							//27 The Sand Griffin 48
@@ -317,7 +317,7 @@ start{
 		vars.maskSplit = null;
 		vars.swordSplit = null;
 		vars.splitStoryValues = new int [] {
-		0, 0, 2, 2, 59, 60, 63, 64, 64, 64, 64, 64, 66, 67
+		0, 0, 2, 2, 59, 60, 63, 64, 64, 64, 64, 64, 66, 68
 		};
 	}
 	else if (selection == 4) {
@@ -325,7 +325,7 @@ start{
 		vars.maskSplit = 7;
 		vars.swordSplit = null;
 		vars.splitStoryValues = new int [] {
-		0, 0, 2, 36, 36, 36, 36, 59, 59, 60, 63, 63, 64, 64, 66, 67
+		0, 0, 2, 36, 36, 36, 36, 59, 59, 60, 63, 63, 64, 64, 66, 68
 		};
 	}
 	else if (selection == 5) {
@@ -333,7 +333,7 @@ start{
 		vars.maskSplit = null;
 		vars.swordSplit = 31;
 		vars.splitStoryValues = new int [] {
-		0, 0, 2, 3, 8, 8, 9, 13, 23, 25, 28, 30, 31, 21, 15, 16, 18, 19, 33, 34, 39, 41, 41, 42, 44, 45, 46, 48, 55, 57, 60, 61, 64, 67
+		0, 0, 2, 7, 8, 8, 9, 11, 13, 23, 25, 28, 30, 31, 21, 15, 16, 18, 19, 33, 34, 39, 41, 41, 42, 45, 46, 48, 55, 57, 60, 61, 64, 68
 		};
 	}
 	else {
