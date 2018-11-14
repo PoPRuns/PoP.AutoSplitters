@@ -259,7 +259,7 @@ start{
 	new Vector3f (40.1f, -96.1f, 86f), new Vector3f (41.5f, -95.9f, 86.1f), 					//6 The Dahaka 9
 	new Vector3f (52f, -188.7f, 381.9f), new Vector3f (52.1f, -188.6f, 382.1f), 				//3 Health 1 	11
 	new Vector3f (-96.5f, 41.3f, 407.4f), new Vector3f (-96.4f, 41.4f, 407.5f), 				//7 The Serpent Sword 13
-	new Vector3f (138.8f, 115.3f, 382.5f), new Vector3f (138.9f, 115.4f, 382.6f), 				//8 Health 3 23
+	new Vector3f (138.8f, 115.3f, 382.5f), new Vector3f (139f, 115.6f, 382.6f), 				//8 Health 3 23
 	new Vector3f (65f, 60f, 402f), new Vector3f (68f, 62f, 402.1f), 							//9 Exit Water Maiden 25
 	new Vector3f (31.1f, 82.1f, 150.9f), new Vector3f (31.3f, 82.3f, 151.1f), 					//10 The Waterworks in Ruin 28
 	new Vector3f (23f, 41f, 441f), new Vector3f (29f, 43f, 450f), 								//11 The Waterworks Restored 30
