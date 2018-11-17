@@ -223,7 +223,7 @@ start{
 	new Vector3f (162.2f, -37.5f, 392.9f), new Vector3f (162.3f, -37.4f, 393.1f), 				//10 Health 8	64
 	new Vector3f (-114.3f, -47.2f, 368.9f), new Vector3f (-114.1f, -47f, 369.1f), 				//12 Health 9	64
 	new Vector3f (-96.643f, 43.059f, 407.4f), new Vector3f (-96.641f, 43.061f, 407.5f), 		//13 The Watersword	 66
-	new Vector3f (-35f, 170f, 128.9f), new Vector3f (-5f, 205f, 129.1f), 						//14 The End 67	
+	new Vector3f (-18.959f, 203.667f, 129f), new Vector3f (-18.956f, 203.755f, 129.2f), 		//33 The End 68
 	};
 
 	//============= TE Zipless splits ==============
@@ -244,7 +244,7 @@ start{
 	new Vector3f (162.2f, -37.5f, 392.9f), new Vector3f (162.3f, -37.4f, 393.1f), 				//12 Health 8	64
 	new Vector3f (190.2f, -131.9f, 353.9f), new Vector3f (190.3f, -131.8f, 354.1f), 			//13 Health 9	64	
 	new Vector3f (-96.643f, 43.059f, 407.4f), new Vector3f (-96.641f, 43.061f, 407.5f), 		//14 The Watersword	 66
-	new Vector3f (-35f, 170f, 128.9f), new Vector3f (-5f, 205f, 129.1f), 						//15 The End 67
+	new Vector3f (-18.959f, 203.667f, 129f), new Vector3f (-18.956f, 203.755f, 129.2f), 		//33 The End 68
 	}; 
 
 	//============= TE NMG splits ==============
@@ -270,7 +270,7 @@ start{
 	new Vector3f (-206f, 63f, 163.8f), new Vector3f (-205.8f, 63.2f, 163.9f), 					//16 Activation Room in Ruin 18
 	new Vector3f (-161.2f, 170.3f, 471.9f), new Vector3f (-161f, 170.4f, 472.1f), 				//17 Health 6	19
 	new Vector3f (-45.5f, -27.7f, 388.9f), new Vector3f (-45.3f, 27.5f, 389.1f), 				//18 The Death of a Sand Wraith 33
-	new Vector3f (-73f, 53f, 414.9f), new Vector3f (31f, 104f, 416f), 							//19 Death of the Empress 34
+	new Vector3f (-74f, 53.5f, 414f), new Vector3f (-31f, 104f, 422f), 							//19 Death of the Empress 34
 	new Vector3f (-100f, -190f, 33f), new Vector3f (-97.5f, -187f, 33.2f), 						//20 Exit the Tomb 39
 	new Vector3f (-170.1f, -127.3f, 335.5f), new Vector3f (-170f, -127.2f, 336.5f), 			//21 Scorpion Sword 41
 	new Vector3f (-112.1f, -66.1f, 360.9f), new Vector3f (-112f, -66f, 361f), 					//22 Health 7	41
@@ -283,7 +283,7 @@ start{
 	new Vector3f (-112f, -144f, 384.9f), new Vector3f (-111f, -137f, 389f), 					//30 The Library Revisited 60
 	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//31 The Light Sword 61
 	new Vector3f (-66f, -23.3f, 399.9f), new Vector3f (-65.9f, -23.2f, 400f), 					//32 The Death of a Prince 64
-	new Vector3f (-35f, 170f, 128.9f), new Vector3f (-5f, 205f, 129.1f), 						//33 The End 67
+	new Vector3f (-18.959f, 203.667f, 129f), new Vector3f (-18.956f, 203.755f, 129.2f), 		//33 The End 68
 	}; 
 
 	//Check for category to determine which splits to use
@@ -333,7 +333,7 @@ start{
 		vars.maskSplit = null;
 		vars.swordSplit = 31;
 		vars.splitStoryValues = new int [] {
-		0, 0, 2, 7, 8, 8, 9, 11, 13, 23, 25, 28, 30, 31, 21, 15, 16, 18, 19, 33, 34, 39, 41, 41, 42, 45, 46, 48, 55, 57, 60, 61, 64, 68
+		0, 0, 2, 7, 8, 8, 9, 11, 13, 23, 25, 28, 30, 31, 21, 15, 16, 18, 19, 33, 38, 39, 41, 41, 42, 45, 46, 48, 55, 57, 60, 61, 64, 68
 		};
 	}
 	else {
