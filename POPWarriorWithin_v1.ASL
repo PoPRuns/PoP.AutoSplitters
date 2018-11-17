@@ -144,6 +144,7 @@ exit {
 }
 
 start{
+	
 	//============= Any% Normal (Zipful) splits ==============
 	//An array to store the positions for each split 
 	Vector3f [] spAnyNormal = {
@@ -269,7 +270,7 @@ start{
 	new Vector3f (-210.018f, 164.259f, 440.9f), new Vector3f (-210.016f, 164.261f, 441.1f), 	//15 The Ravages of Time 16
 	new Vector3f (-206f, 63f, 163.8f), new Vector3f (-205.8f, 63.2f, 163.9f), 					//16 Activation Room in Ruin 18
 	new Vector3f (-161.2f, 170.3f, 471.9f), new Vector3f (-161f, 170.4f, 472.1f), 				//17 Health 6	19
-	new Vector3f (-45.5f, -27.7f, 388.9f), new Vector3f (-45.3f, 27.5f, 389.1f), 				//18 The Death of a Sand Wraith 33
+	new Vector3f (-45.5f, -29.5f, 388.9f), new Vector3f (-45.3f, -28.2f, 389.1f), 				//18 The Death of a Sand Wraith 33
 	new Vector3f (-74f, 53.5f, 414f), new Vector3f (-31f, 104f, 422f), 							//19 Death of the Empress 34
 	new Vector3f (-100f, -190f, 33f), new Vector3f (-97.5f, -187f, 33.2f), 						//20 Exit the Tomb 39
 	new Vector3f (-170.1f, -127.3f, 335.5f), new Vector3f (-170f, -127.2f, 336.5f), 			//21 Scorpion Sword 41
@@ -363,7 +364,7 @@ split{
 		vars.split = 0;
 		vars.unknowStart = false;
 	}
-
+	
 	//Get the current split (-1 if we haven't hit a split trigger this update or if the game is not running)
 	int currSplit = vars.isGameRunning ? vars.GetSplit(vars.split) : -1;
 
@@ -384,5 +385,7 @@ split{
 		//Split normally
 		vars.split = currSplit;
 		return true;
+		
+		
 	}
 }
