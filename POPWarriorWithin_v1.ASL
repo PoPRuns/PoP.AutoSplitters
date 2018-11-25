@@ -178,21 +178,19 @@ start{
 	Vector3f [] spAnyNMG = {
 	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position 0
 	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat 0
-	new Vector3f (-46.3f, -138.8f, 67f), new Vector3f (-46f, -138f, 68f),		 				//2 The Spider Sword 2
+	new Vector3f (-46.3f, -139.7f, 67f), new Vector3f (-46f, -138f, 68f),		 				//2 The Spider Sword 2
 	new Vector3f (43.3f, -75.7f, 370f), new Vector3f (43.4f, -75.6f, 370.1f), 					//3 Chasing Shadee 7
 	new Vector3f (115f, -114f, 357f), new Vector3f (132f, -80f, 361f), 							//4 A Damsel in Distress 8
-	new Vector3f (40.1f, -96.1f, 86f), new Vector3f (41.5f, -95.9f, 86.1f), 					//5 The Dahaka 9
-	new Vector3f (-96.5f, 41.3f, 407.4f), new Vector3f (-96.4f, 41.4f, 407.5f), 				//6 The Serpent Sword 13
+	new Vector3f (40.1f, -96.1f, 86f), new Vector3f (42.4f, -95.9f, 86.1f), 					//6 The Dahaka 9
+	new Vector3f (-96.5f, 41.3f, 407.4f), new Vector3f (-96.4f, 41.4f, 407.5f), 				//7 The Serpent Sword 13
 	new Vector3f (66.9f, 11.4f, 400f), new Vector3f (67.1f, 11.6f, 400.2f), 					//7 The Garden Hall 22
-	//new Vector3f (65f, 60f, 402f), new Vector3f (68f, 62f, 402.1f), 							//8 Exit Water Maiden 25
-	//new Vector3f (31.1f, 82.1f, 150.9f), new Vector3f (31.3f, 82.3f, 151.1f), 					//9 The Waterworks in Ruin 28
-	new Vector3f (23f, 41f, 441f), new Vector3f (29f, 43f, 450f), 								//10 The Waterworks Restored 22
+	new Vector3f (23f, 41f, 441f), new Vector3f (29f, 43f, 450f), 								//11 The Waterworks Restored 22
 	new Vector3f (-44.7f, -27.1f, 389f), new Vector3f (44.6f, -27f, 389.1f), 					//11 The Lion Sword 21
-	new Vector3f (-181.7f, -34f, 411f), new Vector3f (-181.5f, -33.9f, 411.3f), 				//12 The Mechanical Tower 15
+	new Vector3f (-181.7f, -34f, 411f), new Vector3f (-181.5f, -33.9f, 411.3f), 				//14 The Mechanical Tower 15
 	new Vector3f (-210.018f, 164.259f, 440.9f), new Vector3f (-210.016f, 164.261f, 441.1f), 	//13 The Ravages of Time 16
-	new Vector3f (-206f, 63f, 163.8f), new Vector3f (-205.8f, 63.2f, 163.9f), 					//14 Activation Room in Ruin 18
+	new Vector3f (-206f, 59.8f, 162.6f), new Vector3f (-205.8f, 67.4f, 163.1f), 				//16 Activation Room in Ruin 18
 	new Vector3f (-192.5f, 109f, 471.9f), new Vector3f (-189.5f, 111f, 472.1f), 				//15 Activation Room Restored 19
-	new Vector3f (-45.5f, -27.7f, 388.9f), new Vector3f (-45.3f, 27.5f, 389.1f), 				//16 The Death of a Sand Wraith 33
+	new Vector3f (-50f, -13f, 388.9f), new Vector3f (-39f, -5f, 389.8f), 					//16 The Death of a Sand Wraith 33
 	new Vector3f (-73f, 52f, 414.9f), new Vector3f (31f, 104f, 416f), 							//17 Death of the Empress 34
 	new Vector3f (-100f, -190f, 33f), new Vector3f (-97.5f, -187f, 33.2f), 						//18 Exit the Tomb 39
 	new Vector3f (-170.1f, -127.3f, 335.5f), new Vector3f (-170f, -127.2f, 336.5f), 			//19 Scorpion Sword 41
@@ -204,7 +202,7 @@ start{
 	new Vector3f (41.1f, -180.1f, 368.9f), new Vector3f (41.2f, -180f, 369.1f), 				//25 A Favor Unknown 57
 	new Vector3f (-112f, -144f, 384.9f), new Vector3f (-111f, -137f, 389f), 					//26 The Library Revisited 60
 	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//27 The Light Sword 61
-	new Vector3f (-66f, -23.3f, 399.9f), new Vector3f (-65.9f, -23.2f, 400f), 					//28 The Death of a Prince 64
+	new Vector3f (-67f, -23.3f, 399.9f), new Vector3f (-65.1f, -23.1f, 400f), 					//32 The Death of a Prince 64
 	new Vector3f (-35f, 170f, 128.9f), new Vector3f (-5f, 205f, 129.1f), 						//29 The End 67
 	};
 
@@ -253,27 +251,27 @@ start{
 	Vector3f [] spTENMG = {
 	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position 0
 	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat 0
-	new Vector3f (-46.3f, -138.8f, 67f), new Vector3f (-46f, -138f, 68f),		 				//2 The Spider Sword 2
-	new Vector3f (162.2f, -37.5f, 392.9f), new Vector3f (162.3f, -37.4f, 393.1f), 				//24 Health 9	7
+	new Vector3f (-46.3f, -139.7f, 67f), new Vector3f (-46f, -138f, 68f),		 				//2 The Spider Sword 2
+	new Vector3f (162.2f, -37.5f, 392.9f), new Vector3f (162.7f, -37.3f, 393.1f), 				//24 Health 9	7
 	new Vector3f (115f, -114f, 357f), new Vector3f (132f, -80f, 361f), 							//4 A Damsel in Distress 8
-	new Vector3f (190.2f, -131.9f, 353.9f), new Vector3f (190.3f, -131.8f, 354.1f), 			//5 Health 2	8
-	new Vector3f (40.1f, -96.1f, 86f), new Vector3f (41.5f, -95.9f, 86.1f), 					//6 The Dahaka 9
-	new Vector3f (52f, -188.7f, 381.9f), new Vector3f (52.1f, -188.6f, 382.1f), 				//3 Health 1 	11
+	new Vector3f (190.2f, -131.9f, 353.9f), new Vector3f (190.4f, -131.8f, 354.1f), 			//5 Health 2	8
+	new Vector3f (40.1f, -96.1f, 86f), new Vector3f (42.4f, -95.9f, 86.1f), 					//6 The Dahaka 9
+	new Vector3f (52f, -188.7f, 381.9f), new Vector3f (52.8f, -188.6f, 382.1f), 				//3 Health 1 	11
 	new Vector3f (-96.5f, 41.3f, 407.4f), new Vector3f (-96.4f, 41.4f, 407.5f), 				//7 The Serpent Sword 13
 	new Vector3f (23f, 41f, 441f), new Vector3f (29f, 43f, 450f), 								//11 The Waterworks Restored 22
-	new Vector3f (76.1f, 64.8f, 461.4f), new Vector3f (76.2f, 64.9f, 461.6f), 					//12 Health 4	22
-	new Vector3f (138.8f, 115.3f, 382.5f), new Vector3f (139f, 115.6f, 382.6f), 				//8 Health 3 32
-	new Vector3f (-114.3f, -47.2f, 368.9f), new Vector3f (-114.1f, -47f, 369.1f), 				//13 Health 5	21
+	new Vector3f (76.1f, 64.1f, 461.4f), new Vector3f (76.2f, 64.9f, 461.6f), 					//12 Health 4	22
+	new Vector3f (138.8f, 115.3f, 382.5f), new Vector3f (139f, 116.7f, 382.6f), 				//8 Health 3 32
+	new Vector3f (-114.7f, -47.2f, 368.9f), new Vector3f (-114.1f, -47f, 369.1f), 				//13 Health 5	21
 	new Vector3f (-181.7f, -34f, 411f), new Vector3f (-181.5f, -33.9f, 411.3f), 				//14 The Mechanical Tower 15
 	new Vector3f (-210.018f, 164.259f, 440.9f), new Vector3f (-210.016f, 164.261f, 441.1f), 	//15 The Ravages of Time 16
-	new Vector3f (-206f, 63f, 163.8f), new Vector3f (-205.8f, 63.2f, 163.9f), 					//16 Activation Room in Ruin 18
-	new Vector3f (-161.2f, 170.3f, 471.9f), new Vector3f (-161f, 170.4f, 472.1f), 				//17 Health 6	19
-	new Vector3f (-45.5f, -29.5f, 388.9f), new Vector3f (-45.3f, -28.2f, 389.1f), 				//18 The Death of a Sand Wraith 33
+	new Vector3f (-206f, 59.8f, 162.6f), new Vector3f (-205.8f, 67.4f, 163.1f), 				//16 Activation Room in Ruin 18
+	new Vector3f (-161.2f, 170.3f, 471.9f), new Vector3f (-161f, 171f, 472.1f), 				//17 Health 6	19
+	new Vector3f (-50f, -13f, 388.9f), new Vector3f (-39f, -5f, 389.8f), 						//16 The Death of a Sand Wraith 33
 	new Vector3f (-74f, 53.5f, 414f), new Vector3f (-31f, 104f, 422f), 							//19 Death of the Empress 34
 	new Vector3f (-100f, -190f, 33f), new Vector3f (-97.5f, -187f, 33.2f), 						//20 Exit the Tomb 39
 	new Vector3f (-170.1f, -127.3f, 335.5f), new Vector3f (-170f, -127.2f, 336.5f), 			//21 Scorpion Sword 41
-	new Vector3f (-112.1f, -66.1f, 360.9f), new Vector3f (-112f, -66f, 361f), 					//22 Health 7	41
-	new Vector3f (-74.8f, -102.8f, 378.9f), new Vector3f (-74.7f, -102.7f, 379f), 				//23 Health 8	42
+	new Vector3f (-112.1f, -66.1f, 360.9f), new Vector3f (-112f, -65.2f, 361f), 				//22 Health 7	41
+	new Vector3f (-74.8f, -102.8f, 378.9f), new Vector3f (-74.2f, -102.7f, 379f), 				//23 Health 8	42
 	new Vector3f (-96.643f, 43.059f, 407.4f), new Vector3f (-96.641f, 43.061f, 407.5f), 		//25 The Watersword	 45
 	new Vector3f (-20.5f, 236.8f, 133f), new Vector3f (-20.4f, 267f, 133.1f), 					//26 The Mask of the Wraith 46
 	new Vector3f (-23f, 163f, 429f), new Vector3f (-15f, 166.5f, 431f),							//27 The Sand Griffin 48
@@ -281,7 +279,7 @@ start{
 	new Vector3f (41.1f, -180.1f, 368.9f), new Vector3f (41.2f, -180f, 369.1f), 				//29 A Favor Unknown 57
 	new Vector3f (-112f, -144f, 384.9f), new Vector3f (-111f, -137f, 389f), 					//30 The Library Revisited 60
 	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//31 The Light Sword 61
-	new Vector3f (-66f, -23.3f, 399.9f), new Vector3f (-65.9f, -23.2f, 400f), 					//32 The Death of a Prince 64
+	new Vector3f (-67f, -23.3f, 399.9f), new Vector3f (-65.1f, -23.1f, 400f), 					//32 The Death of a Prince 64
 	new Vector3f (-18.959f, 203.667f, 129f), new Vector3f (-18.956f, 203.755f, 129.2f), 		//33 The End 68
 	}; 
 
