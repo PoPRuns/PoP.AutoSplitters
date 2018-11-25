@@ -184,9 +184,9 @@ start{
 	new Vector3f (40.1f, -96.1f, 86f), new Vector3f (41.5f, -95.9f, 86.1f), 					//5 The Dahaka 9
 	new Vector3f (-96.5f, 41.3f, 407.4f), new Vector3f (-96.4f, 41.4f, 407.5f), 				//6 The Serpent Sword 13
 	new Vector3f (66.9f, 11.4f, 400f), new Vector3f (67.1f, 11.6f, 400.2f), 					//7 The Garden Hall 22
-	new Vector3f (65f, 60f, 402f), new Vector3f (68f, 62f, 402.1f), 							//8 Exit Water Maiden 25
-	new Vector3f (31.1f, 82.1f, 150.9f), new Vector3f (31.3f, 82.3f, 151.1f), 					//9 The Waterworks in Ruin 28
-	new Vector3f (23f, 41f, 441f), new Vector3f (29f, 43f, 450f), 								//10 The Waterworks Restored 30
+	//new Vector3f (65f, 60f, 402f), new Vector3f (68f, 62f, 402.1f), 							//8 Exit Water Maiden 25
+	//new Vector3f (31.1f, 82.1f, 150.9f), new Vector3f (31.3f, 82.3f, 151.1f), 					//9 The Waterworks in Ruin 28
+	new Vector3f (23f, 41f, 441f), new Vector3f (29f, 43f, 450f), 								//10 The Waterworks Restored 22
 	new Vector3f (-44.7f, -27.1f, 389f), new Vector3f (44.6f, -27f, 389.1f), 					//11 The Lion Sword 21
 	new Vector3f (-181.7f, -34f, 411f), new Vector3f (-181.5f, -33.9f, 411.3f), 				//12 The Mechanical Tower 15
 	new Vector3f (-210.018f, 164.259f, 440.9f), new Vector3f (-210.016f, 164.261f, 441.1f), 	//13 The Ravages of Time 16
@@ -260,11 +260,9 @@ start{
 	new Vector3f (40.1f, -96.1f, 86f), new Vector3f (41.5f, -95.9f, 86.1f), 					//6 The Dahaka 9
 	new Vector3f (52f, -188.7f, 381.9f), new Vector3f (52.1f, -188.6f, 382.1f), 				//3 Health 1 	11
 	new Vector3f (-96.5f, 41.3f, 407.4f), new Vector3f (-96.4f, 41.4f, 407.5f), 				//7 The Serpent Sword 13
-	new Vector3f (138.8f, 115.3f, 382.5f), new Vector3f (139f, 115.6f, 382.6f), 				//8 Health 3 23
-	new Vector3f (65f, 60f, 402f), new Vector3f (68f, 62f, 402.1f), 							//9 Exit Water Maiden 25
-	new Vector3f (31.1f, 82.1f, 150.9f), new Vector3f (31.3f, 82.3f, 151.1f), 					//10 The Waterworks in Ruin 28
-	new Vector3f (23f, 41f, 441f), new Vector3f (29f, 43f, 450f), 								//11 The Waterworks Restored 30
-	new Vector3f (76.1f, 64.8f, 461.4f), new Vector3f (76.2f, 64.9f, 461.6f), 					//12 Health 4	31
+	new Vector3f (23f, 41f, 441f), new Vector3f (29f, 43f, 450f), 								//11 The Waterworks Restored 22
+	new Vector3f (76.1f, 64.8f, 461.4f), new Vector3f (76.2f, 64.9f, 461.6f), 					//12 Health 4	22
+	new Vector3f (138.8f, 115.3f, 382.5f), new Vector3f (139f, 115.6f, 382.6f), 				//8 Health 3 32
 	new Vector3f (-114.3f, -47.2f, 368.9f), new Vector3f (-114.1f, -47f, 369.1f), 				//13 Health 5	21
 	new Vector3f (-181.7f, -34f, 411f), new Vector3f (-181.5f, -33.9f, 411.3f), 				//14 The Mechanical Tower 15
 	new Vector3f (-210.018f, 164.259f, 440.9f), new Vector3f (-210.016f, 164.261f, 441.1f), 	//15 The Ravages of Time 16
@@ -310,7 +308,7 @@ start{
 		vars.maskSplit = null;
 		vars.swordSplit = 27;		
 		vars.splitStoryValues = new int [] {
-		0, 0, 2, 7, 8, 9, 13, 22, 25, 28, 30, 21, 15, 16, 18, 19, 33, 34, 39, 41, 42, 45, 46, 48, 55, 57, 60, 61, 64, 67
+		0, 0, 2, 7, 8, 9, 13, 22, 22, 21, 15, 16, 18, 19, 33, 34, 39, 41, 42, 45, 46, 48, 55, 57, 60, 61, 64, 67
 		};
 	}
 	else if (selection == 3) {
@@ -334,7 +332,7 @@ start{
 		vars.maskSplit = null;
 		vars.swordSplit = 31;
 		vars.splitStoryValues = new int [] {
-		0, 0, 2, 7, 8, 8, 9, 11, 13, 23, 25, 28, 30, 31, 21, 15, 16, 18, 19, 33, 38, 39, 41, 41, 42, 45, 46, 48, 55, 57, 60, 61, 64, 68
+		0, 0, 2, 7, 8, 8, 9, 11, 13, 22, 22, 32, 21, 15, 16, 18, 19, 33, 38, 39, 41, 41, 42, 45, 46, 48, 55, 57, 60, 61, 64, 68
 		};
 	}
 	else {
