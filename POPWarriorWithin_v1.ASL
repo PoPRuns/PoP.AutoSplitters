@@ -191,7 +191,7 @@ start{
 	new Vector3f (-206f, 59.8f, 162.6f), new Vector3f (-205.8f, 67.4f, 163.1f), 				//16 Activation Room in Ruin 18
 	new Vector3f (-192.5f, 109f, 471.9f), new Vector3f (-189.5f, 111f, 472.1f), 				//15 Activation Room Restored 19
 	new Vector3f (-50f, -13f, 388.9f), new Vector3f (-39f, -5f, 389.8f), 					//16 The Death of a Sand Wraith 33
-	new Vector3f (-73f, 52f, 414.9f), new Vector3f (31f, 104f, 416f), 							//17 Death of the Empress 34
+	new Vector3f (-74f, 53.5f, 414f), new Vector3f (-31f, 104f, 422f), 							//19 Death of the Empress 34
 	new Vector3f (-100f, -190f, 33f), new Vector3f (-97.5f, -187f, 33.2f), 						//18 Exit the Tomb 39
 	new Vector3f (-170.1f, -127.3f, 335.5f), new Vector3f (-170f, -127.2f, 336.5f), 			//19 Scorpion Sword 41
 	new Vector3f (-112f, -144f, 384.9f), new Vector3f (-111f, -137f, 389f), 					//20 The Library 42
@@ -275,7 +275,7 @@ start{
 	new Vector3f (-96.643f, 43.059f, 407.4f), new Vector3f (-96.641f, 43.061f, 407.5f), 		//25 The Watersword	 45
 	new Vector3f (-20.5f, 236.8f, 133f), new Vector3f (-20.4f, 267f, 133.1f), 					//26 The Mask of the Wraith 46
 	new Vector3f (-23f, 163f, 429f), new Vector3f (-15f, 166.5f, 431f),							//27 The Sand Griffin 48
-	new Vector3f (136.7f, -110.6f, 377.9f), new Vector3f (136.9f, -110.4f, 378f), 				//28 Mirrored Fates 55
+	new Vector3f (136.7f, -111.4f, 377.9f), new Vector3f (137.12f, -110.4f, 378f), 				//28 Mirrored Fates 55
 	new Vector3f (41.1f, -180.1f, 368.9f), new Vector3f (41.2f, -180f, 369.1f), 				//29 A Favor Unknown 57
 	new Vector3f (-112f, -144f, 384.9f), new Vector3f (-111f, -137f, 389f), 					//30 The Library Revisited 60
 	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//31 The Light Sword 61
@@ -304,9 +304,9 @@ start{
 	else if (selection == 2) {
 		vars.splitPositions = spAnyNMG;
 		vars.maskSplit = null;
-		vars.swordSplit = 27;		
+		vars.swordSplit = 25;		
 		vars.splitStoryValues = new int [] {
-		0, 0, 2, 7, 8, 9, 13, 22, 22, 21, 15, 16, 18, 19, 33, 34, 39, 41, 42, 45, 46, 48, 55, 57, 60, 61, 64, 67
+		0, 0, 2, 7, 8, 9, 13, 22, 22, 21, 15, 16, 18, 19, 33, 38, 39, 41, 42, 45, 46, 48, 55, 57, 60, 61, 64, 67
 		};
 	}
 	else if (selection == 3) {
@@ -328,7 +328,7 @@ start{
 	else if (selection == 5) {
 		vars.splitPositions = spTENMG;
 		vars.maskSplit = null;
-		vars.swordSplit = 31;
+		vars.swordSplit = 29;
 		vars.splitStoryValues = new int [] {
 		0, 0, 2, 7, 8, 8, 9, 11, 13, 22, 22, 32, 21, 15, 16, 18, 19, 33, 38, 39, 41, 41, 42, 45, 46, 48, 55, 57, 60, 61, 64, 68
 		};
