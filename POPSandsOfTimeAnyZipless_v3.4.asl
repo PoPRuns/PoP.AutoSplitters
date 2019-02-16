@@ -601,23 +601,18 @@ split{
 					return true;
 				}
 				break;
-			//The Setting Sun
-			case 17:	
-				if(current.xPos >=60 			&& current.yPos >= -58 				&& current.zPos >= 30 			&& current.xPos <= 61 				&& current.yPos <= -57 			&& current.zPos <= 32)
-					return true;
-				break;
 			//Honor and Glory
-			case 18:	
+			case 17:	
 				if(current.xPos >=81 			&& current.yPos >= -60.3 			&& current.zPos >= 89 			&& current.xPos <= 82 				&& current.yPos <= -59.7 		&& current.zPos <= 90)
 					return true;
 				break;
 			//The Grand Rewind
-			case 19:	
+			case 18:	
 				if(current.xPos >=660.376 		&& current.yPos >= 190.980 			&& current.zPos >= 0.432 		&& current.xPos <= 660.378 			&& current.yPos <= 190.983 		&& current.zPos <= 0.434)
 					return true;
 				break;
 			//The End
-			case 20:
+			case 19:
 				if(current.xPos >= 658.26 		&& current.yPos >= 210.92 			&& current.zPos >= 12.5 		&& current.xPos <= 661.46 			&& current.yPos <= 213.72)
 					vars.aboveCredits = true;
 				if(current.xPos >= 658.26 		&& current.yPos >= 210.92 			&& current.zPos >= 9.8 			&& current.xPos <= 661.46 			&& current.yPos <= 213.72 		&& current.zPos <= 12.5 && vars.aboveCredits)
