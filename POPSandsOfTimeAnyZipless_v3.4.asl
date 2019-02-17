@@ -9,6 +9,8 @@ state("POP"){
 
 //The Vizier's health where 0 is unharmed and 4 is dead.
 	int vizierHealth : 0x0040E518, 0x6C, 0x18, 0x4, 0x44, 0x0;
+	
+	int resetValue : 0x0040E388, 0x4, 0x398;
 
 }
 
@@ -32,7 +34,10 @@ start{
 }
 
 reset{
-	
+	if(old.resetValue == 1 && current.resetValue == 2){
+		if(current.xPos >= -103.264 && current.yPos >= -4.8 && current.zPos >= 1.341 && current.xPos <= -103.262 && current.yPos <= -4.798 && current.zPos <= 1.343)
+			return true;
+	}
 }
 
 split{
