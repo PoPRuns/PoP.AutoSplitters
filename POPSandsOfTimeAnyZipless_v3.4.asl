@@ -478,7 +478,7 @@ split{
 				break;
 			//Life Upgrade 1
 			case 2:
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -488,7 +488,7 @@ split{
 				break;
 			//Life Upgrade 2
 			case 3:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -498,7 +498,7 @@ split{
 				break;
 			//Life Upgrade 3
 			case 4:
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -513,7 +513,7 @@ split{
 				break;
 			//Life Upgrade 4
 			case 6:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -528,7 +528,7 @@ split{
 				break;
 			//Life Upgrade 5
 			case 8:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -543,7 +543,7 @@ split{
 				break;
 			//Life Upgrade 6
 			case 10:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -553,7 +553,7 @@ split{
 				break;
 			//Life Upgrade 7
 			case 11:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -568,7 +568,7 @@ split{
 				break;
 			//Life Upgrade 8
 			case 13:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -578,7 +578,7 @@ split{
 				break;
 			//Life Upgrade 9
 			case 14:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -593,7 +593,7 @@ split{
 				break;
 			//Life Upgrade 10
 			case 16:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -643,7 +643,7 @@ split{
 				break;
 			//Life Upgrade 1
 			case 3:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -658,7 +658,7 @@ split{
 				break;
 			//Life Upgrade 2
 			case 5:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -673,7 +673,7 @@ split{
 				break;
 			//Life Upgrade 3
 			case 7:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -703,7 +703,7 @@ split{
 				break;
 			//Life Upgrade 4
 			case 12:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -728,7 +728,7 @@ split{
 				break;
 			//Life Upgrade 5
 			case 16:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -748,7 +748,7 @@ split{
 				break;
 			//Life Upgrade 6
 			case 19:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -763,7 +763,7 @@ split{
 				break;
 			//Life Upgrade 7
 			case 21:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -788,7 +788,7 @@ split{
 				break;
 			//Life Upgrade 8
 			case 25:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -798,7 +798,7 @@ split{
 				break;
 			//Life Upgrade 9
 			case 26:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -818,7 +818,7 @@ split{
 				break;
 			//Life Upgrade 10
 			case 29:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -876,7 +876,7 @@ split{
 				break;
 			//Life Upgrade 1
 			case 3:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -891,7 +891,7 @@ split{
 				break;
 			//Life Upgrade 2
 			case 5:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -906,7 +906,7 @@ split{
 				break;
 			//Life Upgrade 3
 			case 7:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -936,7 +936,7 @@ split{
 				break;
 			//Life Upgrade 4
 			case 12:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -961,7 +961,7 @@ split{
 				break;
 			//Life Upgrade 5
 			case 16:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -981,7 +981,7 @@ split{
 				break;
 			//Life Upgrade 6
 			case 19:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -996,7 +996,7 @@ split{
 				break;
 			//Life Upgrade 7
 			case 21:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -1021,7 +1021,7 @@ split{
 				break;
 			//Life Upgrade 8
 			case 25:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -1031,7 +1031,7 @@ split{
 				break;
 			//Life Upgrade 9
 			case 26:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
@@ -1051,7 +1051,7 @@ split{
 				break;
 			//Life Upgrade 10
 			case 29:	
-				if(current.xPos >= -477.38 		&& current.yPos >= -297.69 			&& current.zPos >= -0.48 		&& current.xPos <= -477.36 			&& current.yPos <= -297.67 		&& current.zPos <= -0.46){
+				if(current.xPos >= -477.88 		&& current.yPos >= -298 			&& current.zPos >= -0.5 		&& current.xPos <= -477 			&& current.yPos <= -297.1 		&& current.zPos <= -0.4){
 					vars.newFountain = true;
 				}
 				if(current.xPos >=-492.608 		&& current.yPos >= -248.833 		&& current.zPos >= 0.219 		&& current.xPos <= -492.606 		&& current.yPos <= -248.831 	&& current.zPos <= 0.221 && vars.newFountain){  
