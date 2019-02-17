@@ -1,15 +1,3 @@
-//Authors: 		@Samabam#8840
-//
-//Last Updated:	2018/09/15	(ISO date format)
-//
-//Instructions:	If you're updating this script it means I'm probably dead. Thank god for that. The concept is fairly simple.
-//				By monitoring the Prince's coordinates we're able to create what I call 'virtual hitboxes.' I attempted to
-//				place my VHBs in places that no sane person would skip using the current route.
-//				IMPORTANT: The 'f's in the split coordinates are necessary and the script won't run without them.
-//
-//Notes: 		This script is based on the Sands of Time splitter, which was primarily written by @Ynscription#6173. 
-
-
 state("POP3"){
 
 //The Prince's coords
@@ -21,354 +9,858 @@ state("POP3"){
 }
 
 startup{
-	//Int used to keep track of how many splits should have triggered by a given point.
-	int split;
-
-	//A flag that determines if the game process is running
-	bool isGameRunning = false;
-
-	//A flag to ensure initialization happens regardless of how the timer was started.
-	bool unknownStart = true;
-}
-
-init {
-	//init runs when the game process is found
-	vars.isGameRunning = true;
-
-	//Function that determines if the prince is within a bounding box ASSUMES min IS LESS THAN max IN ALL COMPONENTS
-	vars.IsInBox = (Func <Vector3f, Vector3f, bool>) ((min, max) => {
-		bool x = vars.princePos.X >= min.X && vars.princePos.X <= max.X;
-		bool y = vars.princePos.Y >= min.Y && vars.princePos.Y <= max.Y;
-		bool z = vars.princePos.Z >= min.Z && vars.princePos.Z <= max.Z;
-		return x && y && z;
-	});
-	
-	//Function that determines the current split number
-	vars.GetSplit = (Func<int, int>) ((lastSplit) => {
-		int splitResult = -1;
-		//Check for each remaining split if the prince is within split distance and has correct story value
-		vars.princePos = new Vector3f (current.xPos, current.yPos, current.zPos);
-		int fiveAhead = (lastSplit +60) * 2;
-		int maxCheck = vars.splitPositions.Length < fiveAhead ? vars.splitPositions.Length : fiveAhead;
-		for (int i = (lastSplit +1) *2; i <  maxCheck && splitResult == -1; i += 2) {
-			if (vars.IsInBox(vars.splitPositions[i], vars.splitPositions[i +1])) {
-				splitResult = i/2;
-			}
-		}
-		
-		return splitResult;
-	});
-
-	//Function that skips a split
-	vars.SkipSplit = (Func<int>)(() => {
-		timer.CurrentSplit.SplitTime = default(Time);
-        timer.CurrentSplitIndex++;
-        timer.Run.HasChanged = true;
-		return 0;
-	});
-
-	//Function to select splits based on category
-	vars.SetSplitsByCategory = (Func<int>)(() => {
-		//Get the category and subcategory names
-		string cat = timer.Run.CategoryName;
-		string subCat = timer.Run.GetExtendedCategoryName();
-		if (subCat == string.Empty || subCat == null) {
-			return -1;
-		}
-		int parenthesisStart = subCat.IndexOf('(') + 1;
-		subCat = subCat.Substring(parenthesisStart, subCat.IndexOf(')') - parenthesisStart);
-
-		//Return a code based on category
-		int result = -1;
-		if (cat == "Any%") {
-			result = 0;
-		}
-		else if (cat == "All Powers") {
-			result = 3;
-		}
-		else {
-			return -1;
-		}
-
-		if (subCat == "Normal") {
-			result += 0;
-		}
-		else if (subCat == "Zipless") {
-			result += 1;
-		}
-		else if (subCat == "No Major Glitches") {
-			result += 2;
-		}
-		else {
-			return -1;
-		}
-		return result;
-	});
-
-}
-
-exit {
-	//Exit runs when the game process exits
-	vars.isGameRunning = false;
 }
 
 start{
-	//============= Any% Normal (Zipful) splits ==============
-	//An array to store the positions for each split 
-	Vector3f [] spAnyNormal = {
-	new Vector3f (-404.9f, 113.6f, 61.9f), new Vector3f (-404.8f, 113.7f, 62f), 				//0 Starting Position
-	new Vector3f (-271f, 187f, 74f), new Vector3f (-265f, 188f, 75f), 							//1 The Harbor District
-	new Vector3f (-93f, 236.2f, 83f), new Vector3f (-88f, 238f, 88f), 							//2 The Palace
-	new Vector3f (-35.5f, 232.3f, 146.9f), new Vector3f (-35.4f, 232.4f, 147f), 				//3 The Dagger of Time
-	new Vector3f (-100f, -83f, 19.9f), new Vector3f (-96f, -79f, 20f), 							//4 The Tunnels
-	new Vector3f (-319f, 317f, 95.1f), new Vector3f (-316.5f, 332.6f, 98f), 					//5 The Lower City Rooftops
-	new Vector3f (-246f, 373.5f, 66f), new Vector3f (-241.5f, 383.6f, 69f), 					//6 The Death of Klompa
-	new Vector3f (-122.6f, 421.6f, 107f), new Vector3f (-117.7f, 423f, 108.1f), 				//7 The Temple
-	new Vector3f (-213f, 484f, 101f), new Vector3f (-207f, 490f, 103f), 						//8 The Market District
-	new Vector3f (-104f, 548f, 105.9f), new Vector3f (-100f, 553f, 106.1f), 					//9 The Death of Mahasti
-	new Vector3f (-63.5f, 389.7f, 85.2f), new Vector3f (-63.4f, 389.8f, 85.3f), 				//10 The Stone Guardian
-	new Vector3f (58f, 470f, 79f), new Vector3f (62f, 480f, 81f), 								//11 The King's Road
-	new Vector3f (53f, 240f, 70f), new Vector3f (70f, 250f, 73f),	 							//12 The Death of the Twins
-	new Vector3f (5f, 243f, 104f), new Vector3f (12f, 265f, 104.1f), 							//13 The Well of Ancestors
-	new Vector3f (-25.5f, 332f, 35.9f), new Vector3f (-23f, 338f, 36.1f), 						//14 The Underground Cave
-	new Vector3f (-8f, 296f, 226.9f), new Vector3f (-7f, 298f, 227f), 							//15 The Upper Tower
-	new Vector3f (189f, 319.135f, 542f), new Vector3f (193f, 320f, 543f), 						//16 The End
-	};
+	//Detecting if the game has started on the boat.
+	if(current.xPos >= -404.9 && current.xPos <= -404.8 && current.yCam <= 0.1082 && current.yCam >= 0.1080 && current.xCam <= 0.832 && current.xCam >= 0.8318)
+		return true;
+}
 
-	//============= Any% Zipless splits ==============
-	//An array to store the positions for each split 
-	Vector3f [] spAnyZipless = {
-	new Vector3f (-404.9f, 113.6f, 61.9f), new Vector3f (-404.8f, 113.7f, 62f), 				//0 Starting Position
-	new Vector3f (-271f, 187f, 74f), new Vector3f (-265f, 188f, 75f), 							//1 The Harbor District
-	new Vector3f (-93f, 236.2f, 83f), new Vector3f (-88f, 238f, 88f), 							//2 The Palace
-	new Vector3f (-35.5f, 232.3f, 146.9f), new Vector3f (-35.4f, 232.4f, 147f), 				//3 The Dagger of Time
-	new Vector3f (-52.1f, 135.8f, 75.9f), new Vector3f (-52.0f, 135.9f, 76f), 					//4 The Sewers
-	new Vector3f (-88.6f, -14.8f, 4.9f), new Vector3f (-88.5f, -14.7f, 5.1f), 					//5 The Tunnels
-	new Vector3f (-71.4f, 9.6f, 44f), new Vector3f (-71.3f, 9.7f, 44.1f), 						//6 The Lower City
-	new Vector3f (-319f, 317f, 95.1f), new Vector3f (-316.5f, 332.6f, 98f), 					//5 The Lower City Rooftops
-	new Vector3f (-261.5f, 318f, 46f), new Vector3f (-261f, 319.5f, 48f),	 					//8 The Death of Klompa
-	new Vector3f (-194f, 328f, 32.6f), new Vector3f (-190f, 329.7f, 33.6f), 					//9 The Eye of the Storm
-	new Vector3f (-114f, 328f, 55f), new Vector3f (-110f, 338f, 59f),	 						//10 The Temple Rooftops
-	new Vector3f (-122.6f, 421.6f, 107f), new Vector3f (-117.7f, 423f, 108.1f), 				//7 The Temple
-	new Vector3f (-213f, 484f, 101f), new Vector3f (-207f, 490f, 103f), 						//8 The Market District
-	new Vector3f (-185.5f, 524f, 90f), new Vector3f (-175.5f, 530f, 92f), 						//13 The Bowery
-	new Vector3f (-104f, 548f, 104f), new Vector3f (-100f, 553.9f, 106.1f), 					//14 Death of Mahasti
-	new Vector3f (-124.5f, 500f, 97f), new Vector3f (-122.5f, 505f, 99f),						//15 The Upper City
-	new Vector3f (-63.5f, 389.7f, 85.2f), new Vector3f (-63.4f, 389.8f, 85.3f), 				//16 The Stone Guardian
-	new Vector3f (-3f, 515f, 72f), new Vector3f (-1f, 519f, 75f),								//17 The Royal Workshop
-	new Vector3f (58f, 470f, 79f), new Vector3f (62f, 480f, 81f), 								//11 The King's Road
-	new Vector3f (91.7802f, 229.6516f, 70.9877f), new Vector3f (91.7804f, 229.6518f, 70.9879f), //19 The Death of the Twins
-	new Vector3f (30.8f, 271.2f, 126f), new Vector3f (30.9f, 271.3f, 126.1f), 					//20 The Elevator
-	new Vector3f (13.5f, 204.4f, 184.9999f), new Vector3f (27.4f, 215.4f, 185.0001f), 			//21 The Structure's Mind
-	new Vector3f (-28f, 250f, 20.9f), new Vector3f (-26.5f, 255f, 30f),							//22 The Well Of Ancestors	
-	new Vector3f (-12.6f, 241.2f, 0.9f), new Vector3f (-12.5f, 241.3f, 1f), 					//23 The Labyrinth
-	new Vector3f (-25.5f, 332f, 35.9f), new Vector3f (-23f, 338f, 36.1f), 						//14 The Underground Cave
-	new Vector3f (27f, 316.5f, 99.9f), new Vector3f (29f, 318f, 100.1f), 						//25 The Lower Tower
-	new Vector3f (-5f, 316f, 139.9f), new Vector3f (-3f, 317.5f, 140.1f), 						//26 The Middle Tower
-	new Vector3f (-8f, 296f, 226.9f), new Vector3f (-7f, 298f, 227f), 							//27 The Upper Tower
-	new Vector3f (-7.2f, 245.6f, 677f), new Vector3f (-6.9f, 245.9f, 679f), 					//28 Death of the Vizier
-	new Vector3f (189f, 319.135f, 542f), new Vector3f (193f, 320f, 543f), 						//29 The End
-	};
-				
-	//============= Any% NMG splits ==============
-	//An array to store the positions for each split 
-	Vector3f [] spAnyNMG = {
-	new Vector3f (-404.9f, 113.6f, 61.9f), new Vector3f (-404.8f, 113.7f, 62f), 				//0 Starting Position
-	new Vector3f (-271f, 187f, 74f), new Vector3f (-265f, 188f, 75f), 							//1 The Harbor District
-	new Vector3f (-93f, 236.2f, 83f), new Vector3f (-88f, 238f, 88f), 							//2 The Palace
-	new Vector3f (-35.5f, 232.3f, 146.9f), new Vector3f (-35.4f, 232.4f, 147f), 				//3 The Dagger of Time
-	new Vector3f (-52.1f, 135.8f, 75.9f), new Vector3f (-52.0f, 135.9f, 76f), 					//4 The Sewers
-	new Vector3f (-88.6f, -14.8f, 4.9f), new Vector3f (-88.5f, -14.7f, 5.1f), 					//5 The Tunnels
-	new Vector3f (-71.4f, 9.6f, 44f), new Vector3f (-71.3f, 9.7f, 44.1f), 						//6 The Lower City
-	new Vector3f (-319f, 317f, 95.1f), new Vector3f (-316.5f, 332.6f, 98f), 					//5 The Lower City Rooftops
-	new Vector3f (-261.5f, 318f, 46f), new Vector3f (-261f, 319.5f, 48f),	 					//8 The Death of Klompa
-	new Vector3f (-194f, 328f, 32.6f), new Vector3f (-190f, 329.7f, 33.6f), 					//9 The Eye of the Storm
-	new Vector3f (-114f, 328f, 55f), new Vector3f (-110f, 338f, 59f),	 						//10 The Temple Rooftops
-	new Vector3f (-122.6f, 421.6f, 107f), new Vector3f (-117.7f, 423f, 108.1f), 				//7 The Temple
-	new Vector3f (-213f, 484f, 101f), new Vector3f (-207f, 490f, 103f), 						//8 The Market District
-	new Vector3f (-185.5f, 524f, 90f), new Vector3f (-175.5f, 530f, 92f), 						//13 The Bowery
-	new Vector3f (-152.6f, 549.8f, 91.9f), new Vector3f (-152.5f, 549.9f, 92f), 				//14 The Brothel
-	new Vector3f (-121.4f, 579.1f, 103.9f), new Vector3f (-121.3f, 579.2f, 104f), 				//15 Death of Mahasti
-	new Vector3f (-124.5f, 500f, 97f), new Vector3f (-122.5f, 505f, 99f),						//15 The Upper City
-	new Vector3f (-63.5f, 389.7f, 85.2f), new Vector3f (-63.4f, 389.8f, 85.3f), 				//17 The Stone Guardian
-	new Vector3f (-15.5f, 456.6f, 84f), new Vector3f (-15.4f, 456.7f, 84.1f), 					//18 The Royal Workshop
-	new Vector3f (58f, 470f, 79f), new Vector3f (62f, 480f, 81f), 								//11 The King's Road
-	new Vector3f (91.7802f, 229.6516f, 70.9877f), new Vector3f (91.7804f, 229.6518f, 70.9879f), //20 The Death of the Twins
-	new Vector3f (30.8f, 271.2f, 126f), new Vector3f (30.9f, 271.3f, 126.1f), 					//21 The Elevator
-	new Vector3f (13.5f, 204.4f, 184.9999f), new Vector3f (27.4f, 215.4f, 185.0001f), 			//22 The Structure's Mind
-	new Vector3f (7.9f, 246.2f, 104f), new Vector3f (8f, 246.3f, 104.1f), 						//23 The Well Of Ancestors	
-	new Vector3f (-12.6f, 241.2f, 0.9f), new Vector3f (-12.5f, 241.3f, 1f), 					//24 The Labyrinth
-	new Vector3f (-25.5f, 332f, 35.9f), new Vector3f (-23f, 338f, 36.1f), 						//14 The Underground Cave	
-	new Vector3f (27f, 316.5f, 99.9f), new Vector3f (29f, 318f, 100.1f), 						//26 The Lower Tower
-	new Vector3f (-5f, 316f, 139.9f), new Vector3f (-3f, 317.5f, 140.1f), 						//27 The Middle Tower
-	new Vector3f (-8f, 296f, 226.9f), new Vector3f (-7f, 298f, 227f), 							//28 The Upper Tower
-	new Vector3f (4.485f, 240.943f, 304.232f), new Vector3f (4.487f, 240.945f, 304.234f), 		//29 Death of the Vizier
-	new Vector3f (189f, 319.135f, 542f), new Vector3f (193f, 320f, 543f), 						//30 The End
-	};
-
-	//============= AP Normal (Zipful) splits ==============
-	//An array to store the positions for each split 
-	Vector3f [] spAPNormal = {
-	new Vector3f (-404.9f, 113.6f, 61.9f), new Vector3f (-404.8f, 113.7f, 62f), 				//0 Starting Position
-	new Vector3f (-271f, 187f, 74f), new Vector3f (-265f, 188f, 75f), 							//1 The Harbor District
-	new Vector3f (-93f, 236.2f, 83f), new Vector3f (-88f, 238f, 88f), 							//2 The Palace
-	new Vector3f (-35.5f, 232.3f, 146.9f), new Vector3f (-35.4f, 232.4f, 147f), 				//3 The Dagger of Time
-	new Vector3f (-14.9972f, -112.8152f, 20.0732f), new Vector3f (-14.9970f, -112.8150f, 20.0734f), //5 Health 1
-	new Vector3f (-319f, 317f, 95.1f), new Vector3f (-316.5f, 332.6f, 98f), 					//5 The Lower City Rooftops
-	new Vector3f (-302.0919f, 370.8710f, 52.858f), new Vector3f (-302.0917f, 370.8712f, 52.8582f), //8 Health 2
-	new Vector3f (-246f, 373.5f, 66f), new Vector3f (-241.5f, 383.6f, 69f), 					//6 The Death of Klompa
-	new Vector3f (-122.6f, 421.6f, 107f), new Vector3f (-117.7f, 423f, 108.1f), 				//7 The Temple
-	new Vector3f (-187.3369f, 455.9863f, 78.0330f), new Vector3f (-187.3367f, 455.9865f, 78.0332f), //13 Health 3
-	new Vector3f (-213f, 484f, 101f), new Vector3f (-207f, 490f, 103f), 						//8 The Market District
-	new Vector3f (-104f, 548f, 105.9f), new Vector3f (-100f, 553f, 106.1f), 					//9 The Death of Mahasti
-	new Vector3f (-55.0147f, 395.7608f, 72.0774f), new Vector3f (-55.0145f, 395.761f, 72.0776f),	//19 Health 4
-	new Vector3f (58f, 470f, 79f), new Vector3f (62f, 480f, 81f), 								//11 The King's Road
-	new Vector3f (53f, 240f, 71f), new Vector3f (70f, 250f, 71.1f), 							//12 The Death of the Twins
-	new Vector3f (-30.1223f, 281.8893f, 104.0796f), new Vector3f (-30.1221f, 281.8895f, 104.0798f), //23 Health 5
-	new Vector3f (5f, 243f, 104f), new Vector3f (12f, 265f, 104.1f), 							//13 The Well of Ancestors
-	new Vector3f (-25.5f, 332f, 35.9f), new Vector3f (-23f, 338f, 36.1f), 						//14 The Underground Cave
-	new Vector3f (-23.9663f, 253.9438f, 183.0634f), new Vector3f (-23.9661f, 253.944f, 183.0636f),	//30 Health 6
-	new Vector3f (-8f, 296f, 226.9f), new Vector3f (-7f, 298f, 227f), 							//15 The Upper Tower
-	new Vector3f (189f, 319.135f, 542f), new Vector3f (193f, 320f, 543f), 						//16 The End
-	};
-
-	//============= AP Zipless splits ==============
-	//An array to store the positions for each split 
-	Vector3f [] spAPZipless = {
-	new Vector3f (-404.9f, 113.6f, 61.9f), new Vector3f (-404.8f, 113.7f, 62f), 				//0 Starting Position
-	new Vector3f (-271f, 187f, 74f), new Vector3f (-265f, 188f, 75f), 							//1 The Harbor District
-	new Vector3f (-93f, 236.2f, 83f), new Vector3f (-88f, 238f, 88f), 							//2 The Palace
-	new Vector3f (-35.5f, 232.3f, 146.9f), new Vector3f (-35.4f, 232.4f, 147f), 				//3 The Dagger of Time
-	new Vector3f (-52.1f, 135.8f, 75.9f), new Vector3f (-52.0f, 135.9f, 76f), 					//4 The Sewers
-	new Vector3f (-14.9972f, -112.8152f, 20.0732f), new Vector3f (-14.9970f, -112.8150f, 20.0734f), //5 Health 1
-	new Vector3f (-71.4f, 9.6f, 44f), new Vector3f (-71.3f, 9.7f, 44.1f), 						//6 The Lower City
-	new Vector3f (-319f, 317f, 95.1f), new Vector3f (-316.5f, 332.6f, 98f), 					//5 The Lower City Rooftops
-	new Vector3f (-302.0919f, 370.8710f, 52.858f), new Vector3f (-302.0917f, 370.8712f, 52.8582f), //8 Health 2
-	new Vector3f (-261.5f, 318f, 46f), new Vector3f (-261f, 319.5f, 48f),	 					//8 The Death of Klompa
-	new Vector3f (-194f, 328f, 32.6f), new Vector3f (-190f, 329.7f, 33.6f), 					//9 The Eye of the Storm
-	new Vector3f (-114f, 328f, 55f), new Vector3f (-110f, 338f, 59f),	 						//10 The Temple Rooftops
-	new Vector3f (-122.6f, 421.6f, 107f), new Vector3f (-117.7f, 423f, 108.1f), 				//7 The Temple
-	new Vector3f (-187.3369f, 455.9863f, 78.0330f), new Vector3f (-187.3367f, 455.9865f, 78.0332f), //13 Health 3
-	new Vector3f (-213f, 484f, 101f), new Vector3f (-207f, 490f, 103f), 						//8 The Market District
-	new Vector3f (-185.5f, 524f, 90f), new Vector3f (-175.5f, 530f, 92f), 						//13 The Bowery
-	new Vector3f (-104f, 548f, 104f), new Vector3f (-100f, 553.9f, 106.1f), 					//14 Death of Mahasti
-	new Vector3f (-124.5f, 500f, 97f), new Vector3f (-122.5f, 505f, 99f),						//15 The Upper City
-	new Vector3f (-55.0147f, 395.7608f, 72.0774f), new Vector3f (-55.0145f, 395.761f, 72.0776f),	//19 Health 4
-	new Vector3f (-3f, 515f, 72f), new Vector3f (-1f, 519f, 75f),								//17 The Royal Workshop
-	new Vector3f (58f, 470f, 79f), new Vector3f (62f, 480f, 81f), 								//11 The King's Road
-	new Vector3f (91.7802f, 229.6516f, 70.9877f), new Vector3f (91.7804f, 229.6518f, 70.9879f), //19 The Death of the Twins
-	new Vector3f (-30.1223f, 281.8893f, 104.0796f), new Vector3f (-30.1221f, 281.8895f, 104.0798f), //23 Health 5
-	new Vector3f (13.5f, 204.4f, 184.9999f), new Vector3f (27.4f, 215.4f, 185.0001f), 			//21 The Structure's Mind
-	new Vector3f (-28f, 250f, 20.9f), new Vector3f (-26.5f, 255f, 30f),							//22 The Well Of Ancestors	
-	new Vector3f (-12.6f, 241.2f, 0.9f), new Vector3f (-12.5f, 241.3f, 1f), 					//23 The Labyrinth
-	new Vector3f (-25.5f, 332f, 35.9f), new Vector3f (-23f, 338f, 36.1f), 						//14 The Underground Cave	
-	new Vector3f (27f, 316.5f, 99.9f), new Vector3f (29f, 318f, 100.1f), 						//25 The Lower Tower
-	new Vector3f (-5f, 316f, 139.9f), new Vector3f (-3f, 317.5f, 140.1f), 						//26 The Middle Tower
-	new Vector3f (-23.9663f, 253.9438f, 183.0634f), new Vector3f (-23.9661f, 253.944f, 183.0636f),	//30 Health 6
-	new Vector3f (-8f, 296f, 226.9f), new Vector3f (-7f, 298f, 227f), 							//27 The Upper Tower
-	new Vector3f (-7.2f, 245.6f, 677f), new Vector3f (-6.9f, 245.9f, 679f), 					//28 Death of the Vizier
-	new Vector3f (189f, 319.135f, 542f), new Vector3f (193f, 320f, 543f), 						//29 The End
-	}; 
-
-	//============= AP NMG splits ==============
-	//An array to store the positions for each split 
-	Vector3f [] spAPNMG = {		
-	new Vector3f (-404.9f, 113.6f, 61.9f), new Vector3f (-404.8f, 113.7f, 62f), 				//0 Starting Position
-	new Vector3f (-271f, 187f, 74f), new Vector3f (-265f, 188f, 75f), 							//1 The Harbor District
-	new Vector3f (-93f, 236.2f, 83f), new Vector3f (-88f, 238f, 88f), 							//2 The Palace
-	new Vector3f (-35.5f, 232.3f, 146.9f), new Vector3f (-35.4f, 232.4f, 147f), 				//3 The Dagger of Time
-	new Vector3f (-52.1f, 135.8f, 75.9f), new Vector3f (-52.0f, 135.9f, 76f), 					//4 The Sewers
-	new Vector3f (-14.9972f, -112.8152f, 20.0732f), new Vector3f (-14.9970f, -112.8150f, 20.0734f), //5 Health 1
-	new Vector3f (-71.4f, 9.6f, 44f), new Vector3f (-71.3f, 9.7f, 44.1f), 						//6 The Lower City
-	new Vector3f (-319f, 317f, 95.1f), new Vector3f (-316.5f, 332.6f, 98f), 					//5 The Lower City Rooftops
-	new Vector3f (-302.0919f, 370.8710f, 52.858f), new Vector3f (-302.0917f, 370.8712f, 52.8582f), //8 Health 2
-	new Vector3f (-261.5f, 318f, 46f), new Vector3f (-261f, 319.5f, 48f),	 					//8 The Death of Klompa
-	new Vector3f (-194f, 328f, 32.6f), new Vector3f (-190f, 329.7f, 33.6f), 					//10 The Eye of the Storm
-	new Vector3f (-114f, 328f, 55f), new Vector3f (-110f, 338f, 59f),	 						//10 The Temple Rooftops
-	new Vector3f (-122.6f, 421.6f, 107f), new Vector3f (-117.7f, 423f, 108.1f), 				//7 The Temple
-	new Vector3f (-187.3369f, 455.9863f, 78.0330f), new Vector3f (-187.3367f, 455.9865f, 78.0332f), //13 Health 3
-	new Vector3f (-213f, 484f, 101f), new Vector3f (-207f, 490f, 103f), 						//8 The Market District
-	new Vector3f (-185.5f, 524f, 90f), new Vector3f (-175.5f, 530f, 92f), 						//13 The Bowery
-	new Vector3f (-152.6f, 549.8f, 91.9f), new Vector3f (-152.5f, 549.9f, 92f), 				//16 The Brothel
-	new Vector3f (-121.4f, 579.1f, 103.9f), new Vector3f (-121.3f, 579.2f, 104f), 				//17 Death of Mahasti
-	new Vector3f (-124.5f, 500f, 97f), new Vector3f (-122.5f, 505f, 99f),						//15 The Upper City
-	new Vector3f (-55.0147f, 395.7608f, 72.0774f), new Vector3f (-55.0145f, 395.761f, 72.0776f),	//19 Health 4
-	new Vector3f (-15.5f, 456.6f, 84f), new Vector3f (-15.4f, 456.7f, 84.1f), 					//20 The Royal Workshop
-	new Vector3f (58f, 470f, 79f), new Vector3f (62f, 480f, 81f), 								//11 The King's Road
-	new Vector3f (91.7802f, 229.6516f, 70.9877f), new Vector3f (91.7804f, 229.6518f, 70.9879f), //21 The Death of the Twins
-	new Vector3f (-30.1223f, 281.8893f, 104.0796f), new Vector3f (-30.1221f, 281.8895f, 104.0798f), //23 Health 5
-	new Vector3f (13.5f, 204.4f, 184.9999f), new Vector3f (27.4f, 215.4f, 185.0001f), 			//24 The Structure's Mind
-	new Vector3f (7.9f, 246.2f, 104f), new Vector3f (8f, 246.3f, 104.1f), 						//25 The Well Of Ancestors	
-	new Vector3f (-12.6f, 241.2f, 0.9f), new Vector3f (-12.5f, 241.3f, 1f), 					//26 The Labyrinth
-	new Vector3f (-25.5f, 332f, 35.9f), new Vector3f (-23f, 338f, 36.1f), 						//14 The Underground Cave
-	new Vector3f (27f, 316.5f, 99.9f), new Vector3f (29f, 318f, 100.1f), 						//28 The Lower Tower
-	new Vector3f (-5f, 316f, 139.9f), new Vector3f (-3f, 317.5f, 140.1f), 						//29 The Middle Tower
-	new Vector3f (-23.9663f, 253.9438f, 183.0634f), new Vector3f (-23.9661f, 253.944f, 183.0636f),	//30 Health 6
-	new Vector3f (-8f, 296f, 226.9f), new Vector3f (-7f, 298f, 227f), 							//31 The Upper Tower
-	new Vector3f (4.485f, 240.943f, 304.232f), new Vector3f (4.487f, 240.945f, 304.234f), 		//32 Death of the Vizier
-	new Vector3f (189f, 319.135f, 542f), new Vector3f (193f, 320f, 543f), 						//33 The End
-	}; 
-
-	//Check for category to determine which splits to use
-	int selection = vars.SetSplitsByCategory();
-	if (selection == 0) {
-		vars.splitPositions = spAnyNormal;
-	}
-	else if (selection == 1) {
-		vars.splitPositions = spAnyZipless;
-	}
-	else if (selection == 2) {
-		vars.splitPositions = spAnyNMG;
-	}
-	else if (selection == 3) {
-		vars.splitPositions = spAPNormal;
-	}
-	else if (selection == 4) {
-		vars.splitPositions = spAPZipless;
-	}
-	else if (selection == 5) {
-		vars.splitPositions = spAPNMG;
-	}
-	else {
-		vars.splitPositions = spAnyNormal;
-	}
-	vars.unknowStart = true;
-	
-	//Detecting if the control has been gained at start of run
-	if (vars.GetSplit(-1) == 0 && current.yCam <= 0.1082 && current.yCam >= 0.1080 && current.xCam <= 0.832 && current.xCam >= 0.8318){
-			//Initializing variables if the game has started
-			vars.split = 0;
-			vars.unknowStart = false;
+reset{
+	//Detecting if the game has started on the boat.
+		if(current.xPos >= -443 && current.xPos <= -442.9 && current.yCam == 0)
 			return true;
-	}
 }
 
 split{
-	//The run was started without running the start block
-	if (vars.unknowStart) {
-		vars.split = 0;
-		vars.unknowStart = false;
-	}
-
-	//Get the current split (-1 if we haven't hit a split trigger this update or if the game is not running)
-	int currSplit = vars.isGameRunning ? vars.GetSplit(vars.split) : -1;
-
-	//Check if we have hit a split trigger
-	if (currSplit > 0) {
-
-		//Difference between last split and current split
-		int diff = currSplit - vars.split;
-
-		//We have missed a split at some point
-		if (diff > 1) {
-			//We must skip (diff - 1) splits that we have missed
-			for (int i = 1; i < diff; i++) {
-				vars.SkipSplit();
-			}
+	
+	switch(timer.Run.GetExtendedCategoryName())
+	{
+		case "Any% (Normal)":
+			switch (timer.CurrentSplitIndex)
+			{
+			//The Harbor District
+			case 0:
+				if(current.xPos >= -271			&& current.yPos >= 187			&& current.zPos >= 74			&& current.xPos <= -265			&& current.yPos <= 188			&& current.zPos <= 75)
+					return true;
+				break;
+			//The Palace
+			case 1:	
+				if(current.xPos >= -93			&& current.yPos >= 236.2		&& current.zPos >= 83			&& current.xPos <= -88			&& current.yPos <= 238			&& current.zPos <= 88)
+					return true;	
+				break;
+			//The Dagger of Time
+			case 2:	
+				if(current.xPos >= -35.5		&& current.yPos >= 232.3		&& current.zPos >= 146.9		&& current.xPos <= -35.4		&& current.yPos <= 232.4		&& current.zPos <= 147)
+					return true;	
+				break;
+			//The Tunnels
+			case 3:	
+				if(current.xPos >= -100			&& current.yPos >= -83			&& current.zPos >= 19.9			&& current.xPos <= -96			&& current.yPos <= -79			&& current.zPos <= 20)
+					return true;	
+				break;
+			//The Lower City Rooftops
+			case 4:	
+				if(current.xPos >= -319			&& current.yPos >= 317			&& current.zPos >= 95.1			&& current.xPos <= -316.5		&& current.yPos <= 332.6		&& current.zPos <= 98)
+					return true;	
+				break;
+			//The Death of Klompa
+			case 5:	
+				if(current.xPos >= -246			&& current.yPos >= 373.5		&& current.zPos >= 66			&& current.xPos <= -241.5		&& current.yPos <= 383.6		&& current.zPos <= 69)
+					return true;	
+				break;
+			//The Temple
+			case 6:	
+				if(current.xPos >= -122.6		&& current.yPos >= 421.6		&& current.zPos >= 107			&& current.xPos <= -117.7		&& current.yPos <= 423			&& current.zPos <= 108.1)
+					return true;	
+				break;
+			//The Market District
+			case 7:	
+				if(current.xPos >= -213			&& current.yPos >= 484			&& current.zPos >= 101			&& current.xPos <= -207			&& current.yPos <= 490			&& current.zPos <= 103)
+					return true;	
+				break;
+			//The Death of Mahasti
+			case 8:	
+				if(current.xPos >= -104			&& current.yPos >= 548			&& current.zPos >= 105.9		&& current.xPos <= -100			&& current.yPos <= 553			&& current.zPos <= 106.1)
+					return true;	
+				break;
+			//The Stone Guardian
+			case 9:	
+				if(current.xPos >= -63.5		&& current.yPos >= 389.7		&& current.zPos >= 85.2			&& current.xPos <= -63.4		&& current.yPos <= 389.8		&& current.zPos <= 85.3)
+					return true;	
+				break;
+			//The King's Road
+			case 10:	
+				if(current.xPos >= 58			&& current.yPos >= 470			&& current.zPos >= 79			&& current.xPos <= 62			&& current.yPos <= 480			&& current.zPos <= 81)
+					return true;	
+				break;
+			//The Death of the Twins
+			case 11:	
+				if(current.xPos >= 53			&& current.yPos >= 240			&& current.zPos >= 70			&& current.xPos <= 70			&& current.yPos <= 250			&& current.zPos <= 73)
+					return true;	
+				break;
+			//The Well of Ancestors
+			case 12:	
+				if(current.xPos >= 5			&& current.yPos >= 243			&& current.zPos >= 104			&& current.xPos <= 12			&& current.yPos <= 265			&& current.zPos <= 104.1)
+					return true;	
+				break;
+			//The Underground Cave
+			case 13:	
+				if(current.xPos >= -25.5		&& current.yPos >= 332			&& current.zPos >= 35.9			&& current.xPos <= -23			&& current.yPos <= 338			&& current.zPos <= 36.1)
+					return true;	
+				break;
+			//The Upper Tower
+			case 14:	
+				if(current.xPos >= -8			&& current.yPos >= 296			&& current.zPos >= 226.9		&& current.xPos <= -7			&& current.yPos <= 298			&& current.zPos <= 227)
+					return true;	
+				break;
+			//The End
+			case 15:	
+				if(current.xPos >= 189			&& current.yPos >= 319.135		&& current.zPos >= 542			&& current.xPos <= 193			&& current.yPos <= 320			&& current.zPos <= 543)
+					return true;	
+				break;
 		}
-
-		//Split normally
-		vars.split = currSplit;
-		return true;
-	}
+		break;
+		
+		case "Any% (Zipless)":
+			switch (timer.CurrentSplitIndex)
+			{
+			//The Harbor District
+			case 0:
+				if(current.xPos >= -271			&& current.yPos >= 187			&& current.zPos >= 74			&& current.xPos <= -265			&& current.yPos <= 188			&& current.zPos <= 75)
+					return true;
+				break;
+			//The Palace
+			case 1:	
+				if(current.xPos >= -93			&& current.yPos >= 236.2		&& current.zPos >= 83			&& current.xPos <= -88			&& current.yPos <= 238			&& current.zPos <= 88)
+					return true;	
+				break;
+			//The Dagger of Time
+			case 2:	
+				if(current.xPos >= -35.5		&& current.yPos >= 232.3		&& current.zPos >= 146.9		&& current.xPos <= -35.4		&& current.yPos <= 232.4		&& current.zPos <= 147)
+					return true;	
+				break;
+			//The Sewers
+			case 3:
+				if(current.xPos >= -52.1		&& current.yPos >= 135.8		&& current.zPos >= 75.9			&& current.xPos <= -52.0		&& current.yPos <= 135.9		&& current.zPos <= 76)
+					return true;
+				break;
+			//The Tunnels
+			case 4:
+				if(current.xPos >= -88.6		&& current.yPos >= -14.8		&& current.zPos >= 4.9			&& current.xPos <= -88.5		&& current.yPos <= -14.7		&& current.zPos <= 5.1)
+					return true;
+				break;
+			//The Lower City
+			case 5:
+				if(current.xPos >= -71.4		&& current.yPos >= 9.6			&& current.zPos >= 44			&& current.xPos <= -71.3		&& current.yPos <= 9.7			&& current.zPos <= 44.1)
+					return true;
+				break;
+			//The Lower City Rooftops
+			case 6:
+				if(current.xPos >= -319			&& current.yPos >= 317			&& current.zPos >= 95.1			&& current.xPos <= -316.5		&& current.yPos <= 332.6		&& current.zPos <= 98)
+					return true;
+				break;
+			//The Death of Klompa
+			case 7:
+				if(current.xPos >= -261.5		&& current.yPos >= 318			&& current.zPos >= 46			&& current.xPos <= -261			&& current.yPos <= 319.5		&& current.zPos <= 48)
+					return true;
+				break;
+			//The Eye of the Storm
+			case 8:
+				if(current.xPos >= -194			&& current.yPos >= 328			&& current.zPos >= 32.6			&& current.xPos <= -190			&& current.yPos <= 329.7		&& current.zPos <= 33.6)
+					return true;
+				break;
+			//The Temple Rooftops
+			case 9:
+				if(current.xPos >= -114			&& current.yPos >= 328			&& current.zPos >= 55			&& current.xPos <= -110			&& current.yPos <= 338			&& current.zPos <= 59)
+					return true;
+				break;
+			//The Temple
+			case 10:
+				if(current.xPos >= -122.6		&& current.yPos >= 421.6		&& current.zPos >= 107			&& current.xPos <= -117.7		&& current.yPos <= 423			&& current.zPos <= 108.1)
+					return true;
+				break;
+			//The Market District
+			case 11:
+				if(current.xPos >= -213			&& current.yPos >= 484			&& current.zPos >= 101			&& current.xPos <= -207			&& current.yPos <= 490			&& current.zPos <= 103)
+					return true;
+				break;
+			//The Bowery
+			case 12:
+				if(current.xPos >= -185.5		&& current.yPos >= 524			&& current.zPos >= 90			&& current.xPos <= -175.5		&& current.yPos <= 530			&& current.zPos <= 92)
+					return true;
+				break;
+			//The Death of Mahasti
+			case 13:
+				if(current.xPos >= -104			&& current.yPos >= 548			&& current.zPos >= 104			&& current.xPos <= -100			&& current.yPos <= 553.9		&& current.zPos <= 106.1)
+					return true;
+				break;
+			//The Upper City
+			case 14:
+				if(current.xPos >= -124.5		&& current.yPos >= 500			&& current.zPos >= 97			&& current.xPos <= -122.5		&& current.yPos <= 505			&& current.zPos <= 99)
+					return true;
+				break;
+			//The Stone Guardian
+			case 15:
+				if(current.xPos >= -63.5		&& current.yPos >= 389.7		&& current.zPos >= 85.2			&& current.xPos <= -63.4		&& current.yPos <= 389.8		&& current.zPos <= 85.3)
+					return true;
+				break;
+			//The Royal Workshop
+			case 16:
+				if(current.xPos >= -3			&& current.yPos >= 515			&& current.zPos >= 72			&& current.xPos <= -1			&& current.yPos <= 519			&& current.zPos <= 75)
+					return true;
+				break;
+			//The King's Road
+			case 17:
+				if(current.xPos >= 58			&& current.yPos >= 470			&& current.zPos >= 79			&& current.xPos <= 62			&& current.yPos <= 480			&& current.zPos <= 81)
+					return true;
+				break;
+			//The Death of the Twins
+			case 18:
+				if(current.xPos >= 91.7802		&& current.yPos >= 229.6516		&& current.zPos >= 70.9877		&& current.xPos <= 91.7804		&& current.yPos <= 229.6518		&& current.zPos <= 70.9879)
+					return true;
+				break;
+			//The Elevator
+			case 19:
+				if(current.xPos >= 30.8			&& current.yPos >= 271.2		&& current.zPos >= 126			&& current.xPos <= 30.9			&& current.yPos <= 271.3		&& current.zPos <= 126.1)
+					return true;
+				break;
+			//The Structure's Mind
+			case 20:
+				if(current.xPos >= 13.5			&& current.yPos >= 204.4		&& current.zPos >= 184.9999		&& current.xPos <= 27.4			&& current.yPos <= 215.4		&& current.zPos <= 185.0001)
+					return true;
+				break;
+			//The Well of Ancestors
+			case 21:
+				if(current.xPos >= -28			&& current.yPos >= 250			&& current.zPos >= 20.9			&& current.xPos <= -26.5		&& current.yPos <= 255			&& current.zPos <= 30)
+					return true;
+				break;
+			//The Labyrinth
+			case 22:
+				if(current.xPos >= -12.6		&& current.yPos >= 241.2		&& current.zPos >= 0.9			&& current.xPos <= -12.5		&& current.yPos <= 241.3		&& current.zPos <= 1)
+					return true;
+				break;
+			//The Underground Cave
+			case 23:
+				if(current.xPos >= -25.5		&& current.yPos >= 332			&& current.zPos >= 35.9			&& current.xPos <= -23			&& current.yPos <= 338			&& current.zPos <= 36.1)
+					return true;
+				break;
+			//The Lower Tower
+			case 24:
+				if(current.xPos >= 27			&& current.yPos >= 316.5		&& current.zPos >= 99.9			&& current.xPos <= 29			&& current.yPos <= 318			&& current.zPos <= 100.1)
+					return true;
+				break;
+			//The Middle Tower
+			case 25:
+				if(current.xPos >= -5			&& current.yPos >= 316			&& current.zPos >= 139.9		&& current.xPos <= -3			&& current.yPos <= 317.5		&& current.zPos <= 140.1)
+					return true;
+				break;
+			//The Upper Tower
+			case 26:
+				if(current.xPos >= -8			&& current.yPos >= 296			&& current.zPos >= 226.9		&& current.xPos <= -7			&& current.yPos <= 298			&& current.zPos <= 227)
+					return true;
+				break;
+			//The Death of the Vizier
+			case 27:
+				if(current.xPos >= -7.2			&& current.yPos >= 245.6		&& current.zPos >= 677			&& current.xPos <= -6.9			&& current.yPos <= 245.9		&& current.zPos <= 679)
+					return true;
+				break;
+			//The End
+			case 28:	
+				if(current.xPos >= 189			&& current.yPos >= 319.135		&& current.zPos >= 542			&& current.xPos <= 193			&& current.yPos <= 320			&& current.zPos <= 543)
+					return true;	
+				break;
+		}
+		break;
+		
+		case "Any% (No Major Glitches)":
+			switch (timer.CurrentSplitIndex)
+			{
+			//The Harbor District
+			case 0:
+				if(current.xPos >= -271			&& current.yPos >= 187			&& current.zPos >= 74			&& current.xPos <= -265			&& current.yPos <= 188			&& current.zPos <= 75)
+					return true;
+				break;
+			//The Palace
+			case 1:	
+				if(current.xPos >= -93			&& current.yPos >= 236.2		&& current.zPos >= 83			&& current.xPos <= -88			&& current.yPos <= 238			&& current.zPos <= 88)
+					return true;	
+				break;
+			//The Dagger of Time
+			case 2:	
+				if(current.xPos >= -35.5		&& current.yPos >= 232.3		&& current.zPos >= 146.9		&& current.xPos <= -35.4		&& current.yPos <= 232.4		&& current.zPos <= 147)
+					return true;	
+				break;
+			//The Sewers
+			case 3:
+				if(current.xPos >= -52.1		&& current.yPos >= 135.8		&& current.zPos >= 75.9			&& current.xPos <= -52.0		&& current.yPos <= 135.9		&& current.zPos <= 76)
+					return true;
+				break;
+			//The Tunnels
+			case 4:
+				if(current.xPos >= -88.6		&& current.yPos >= -14.8		&& current.zPos >= 4.9			&& current.xPos <= -88.5		&& current.yPos <= -14.7		&& current.zPos <= 5.1)
+					return true;
+				break;
+			//The Lower City
+			case 5:
+				if(current.xPos >= -71.4		&& current.yPos >= 9.6			&& current.zPos >= 44			&& current.xPos <= -71.3		&& current.yPos <= 9.7			&& current.zPos <= 44.1)
+					return true;
+				break;
+			//The Lower City Rooftops
+			case 6:
+				if(current.xPos >= -319			&& current.yPos >= 317			&& current.zPos >= 95.1			&& current.xPos <= -316.5		&& current.yPos <= 332.6		&& current.zPos <= 98)
+					return true;
+				break;
+			//The Death of Klompa
+			case 7:
+				if(current.xPos >= -261.5		&& current.yPos >= 318			&& current.zPos >= 46			&& current.xPos <= -261			&& current.yPos <= 319.5		&& current.zPos <= 48)
+					return true;
+				break;
+			//The Eye of the Storm
+			case 8:
+				if(current.xPos >= -194			&& current.yPos >= 328			&& current.zPos >= 32.6			&& current.xPos <= -190			&& current.yPos <= 329.7		&& current.zPos <= 33.6)
+					return true;
+				break;
+			//The Temple Rooftops
+			case 9:
+				if(current.xPos >= -114			&& current.yPos >= 328			&& current.zPos >= 55			&& current.xPos <= -110			&& current.yPos <= 338			&& current.zPos <= 59)
+					return true;
+				break;
+			//The Temple
+			case 10:
+				if(current.xPos >= -122.6		&& current.yPos >= 421.6		&& current.zPos >= 107			&& current.xPos <= -117.7		&& current.yPos <= 423			&& current.zPos <= 108.1)
+					return true;
+				break;
+			//The Market District
+			case 11:
+				if(current.xPos >= -213			&& current.yPos >= 484			&& current.zPos >= 101			&& current.xPos <= -207			&& current.yPos <= 490			&& current.zPos <= 103)
+					return true;
+				break;
+			//The Bowery
+			case 12:
+				if(current.xPos >= -185.5		&& current.yPos >= 524			&& current.zPos >= 90			&& current.xPos <= -175.5		&& current.yPos <= 530			&& current.zPos <= 92)
+					return true;
+				break;
+			//The Brothel
+			case 13:
+				if(current.xPos >= -152.6		&& current.yPos >= 549.8		&& current.zPos >= 91.9			&& current.xPos <= -152.5		&& current.yPos <= 549.9		&& current.zPos <= 92)
+					return true;
+				break;
+			//The Death of Mahasti
+			case 14:
+				if(current.xPos >= -104			&& current.yPos >= 548			&& current.zPos >= 104			&& current.xPos <= -100			&& current.yPos <= 553.9		&& current.zPos <= 106.1)
+					return true;
+				break;
+			//The Upper City
+			case 15:
+				if(current.xPos >= -124.5		&& current.yPos >= 500			&& current.zPos >= 97			&& current.xPos <= -122.5		&& current.yPos <= 505			&& current.zPos <= 99)
+					return true;
+				break;
+			//The Stone Guardian
+			case 16:
+				if(current.xPos >= -63.5		&& current.yPos >= 389.7		&& current.zPos >= 85.2			&& current.xPos <= -63.4		&& current.yPos <= 389.8		&& current.zPos <= 85.3)
+					return true;
+				break;
+			//The Royal Workshop
+			case 17:
+				if(current.xPos >= -3			&& current.yPos >= 515			&& current.zPos >= 72			&& current.xPos <= -1			&& current.yPos <= 519			&& current.zPos <= 75)
+					return true;
+				break;
+			//The King's Road
+			case 18:
+				if(current.xPos >= 58			&& current.yPos >= 470			&& current.zPos >= 79			&& current.xPos <= 62			&& current.yPos <= 480			&& current.zPos <= 81)
+					return true;
+				break;
+			//The Death of the Twins
+			case 19:
+				if(current.xPos >= 91.7802		&& current.yPos >= 229.6516		&& current.zPos >= 70.9877		&& current.xPos <= 91.7804		&& current.yPos <= 229.6518		&& current.zPos <= 70.9879)
+					return true;
+				break;
+			//The Elevator
+			case 20:
+				if(current.xPos >= 30.8			&& current.yPos >= 271.2		&& current.zPos >= 126			&& current.xPos <= 30.9			&& current.yPos <= 271.3		&& current.zPos <= 126.1)
+					return true;
+				break;
+			//The Structure's Mind
+			case 21:
+				if(current.xPos >= 13.5			&& current.yPos >= 204.4		&& current.zPos >= 184.9999		&& current.xPos <= 27.4			&& current.yPos <= 215.4		&& current.zPos <= 185.0001)
+					return true;
+				break;
+			//The Well of Ancestors
+			case 22:
+				if(current.xPos >= -28			&& current.yPos >= 250			&& current.zPos >= 20.9			&& current.xPos <= -26.5		&& current.yPos <= 255			&& current.zPos <= 30)
+					return true;
+				break;
+			//The Labyrinth
+			case 23:
+				if(current.xPos >= -12.6		&& current.yPos >= 241.2		&& current.zPos >= 0.9			&& current.xPos <= -12.5		&& current.yPos <= 241.3		&& current.zPos <= 1)
+					return true;
+				break;
+			//The Underground Cave
+			case 24:
+				if(current.xPos >= -25.5		&& current.yPos >= 332			&& current.zPos >= 35.9			&& current.xPos <= -23			&& current.yPos <= 338			&& current.zPos <= 36.1)
+					return true;
+				break;
+			//The Lower Tower
+			case 25:
+				if(current.xPos >= 27			&& current.yPos >= 316.5		&& current.zPos >= 99.9			&& current.xPos <= 29			&& current.yPos <= 318			&& current.zPos <= 100.1)
+					return true;
+				break;
+			//The Middle Tower
+			case 26:
+				if(current.xPos >= -5			&& current.yPos >= 316			&& current.zPos >= 139.9		&& current.xPos <= -3			&& current.yPos <= 317.5		&& current.zPos <= 140.1)
+					return true;
+				break;
+			//The Upper Tower
+			case 27:
+				if(current.xPos >= -8			&& current.yPos >= 296			&& current.zPos >= 226.9		&& current.xPos <= -7			&& current.yPos <= 298			&& current.zPos <= 227)
+					return true;
+				break;
+			//The Death of the Vizier
+			case 28:
+				if(current.xPos >= -4.485		&& current.yPos >= 240.943		&& current.zPos >= 304.232		&& current.xPos <= -4.487		&& current.yPos <= 240.945		&& current.zPos <= 304.234)
+					return true;
+				break;
+			//The End
+			case 29:	
+				if(current.xPos >= 189			&& current.yPos >= 319.135		&& current.zPos >= 542			&& current.xPos <= 193			&& current.yPos <= 320			&& current.zPos <= 543)
+					return true;	
+				break;
+		}
+		break;
+		
+		case "All Powers (Normal)":
+			switch (timer.CurrentSplitIndex)
+			{
+			//The Harbor District
+			case 0:
+				if(current.xPos >= -271			&& current.yPos >= 187			&& current.zPos >= 74			&& current.xPos <= -265			&& current.yPos <= 188			&& current.zPos <= 75)
+					return true;
+				break;
+			//The Palace
+			case 1:	
+				if(current.xPos >= -93			&& current.yPos >= 236.2		&& current.zPos >= 83			&& current.xPos <= -88			&& current.yPos <= 238			&& current.zPos <= 88)
+					return true;	
+				break;
+			//The Dagger of Time
+			case 2:	
+				if(current.xPos >= -35.5		&& current.yPos >= 232.3		&& current.zPos >= 146.9		&& current.xPos <= -35.4		&& current.yPos <= 232.4		&& current.zPos <= 147)
+					return true;	
+				break;
+			//Life Upgrade 1
+			case 3:	
+				if(current.xPos >= -14.9972		&& current.yPos >= -112.8152	&& current.zPos >= 20.0732		&& current.xPos <= -14.9970		&& current.yPos <= -112.8150	&& current.zPos <= 20.0734)
+					return true;	
+				break;
+			//The Lower City Rooftops
+			case 4:	
+				if(current.xPos >= -319			&& current.yPos >= 317			&& current.zPos >= 95.1			&& current.xPos <= -316.5		&& current.yPos <= 332.6		&& current.zPos <= 98)
+					return true;	
+				break;
+			//Life Upgrade 2
+			case 5:	
+				if(current.xPos >= -302.0919	&& current.yPos >= 370.8710		&& current.zPos >= 52.858		&& current.xPos <= -302.0917	&& current.yPos <= 370.8712		&& current.zPos <= 52.8582)
+					return true;	
+				break;	
+			//The Death of Klompa
+			case 6:	
+				if(current.xPos >= -246			&& current.yPos >= 373.5		&& current.zPos >= 66			&& current.xPos <= -241.5		&& current.yPos <= 383.6		&& current.zPos <= 69)
+					return true;	
+				break;
+			//The Temple
+			case 7:	
+				if(current.xPos >= -122.6		&& current.yPos >= 421.6		&& current.zPos >= 107			&& current.xPos <= -117.7		&& current.yPos <= 423			&& current.zPos <= 108.1)
+					return true;	
+				break;
+			//Life Upgrade 3
+			case 8:	
+				if(current.xPos >= -187.3369	&& current.yPos >= -455.9863	&& current.zPos >= 78.0330		&& current.xPos <= -187.3367	&& current.yPos <= 455.9865		&& current.zPos <= 78.0332)
+					return true;	
+				break;
+			//The Market District
+			case 9:	
+				if(current.xPos >= -213			&& current.yPos >= 484			&& current.zPos >= 101			&& current.xPos <= -207			&& current.yPos <= 490			&& current.zPos <= 103)
+					return true;	
+				break;
+			//The Death of Mahasti
+			case 10:	
+				if(current.xPos >= -104			&& current.yPos >= 548			&& current.zPos >= 105.9		&& current.xPos <= -100			&& current.yPos <= 553			&& current.zPos <= 106.1)
+					return true;	
+				break;
+			//Life Upgrade 4
+			case 11:	
+				if(current.xPos >= -55.0147		&& current.yPos >= 395.7608		&& current.zPos >= 72.0774		&& current.xPos <= -55.0145		&& current.yPos <= 395.761		&& current.zPos <= 72.0776)
+					return true;	
+				break;
+			//The King's Road
+			case 12:	
+				if(current.xPos >= 58			&& current.yPos >= 470			&& current.zPos >= 79			&& current.xPos <= 62			&& current.yPos <= 480			&& current.zPos <= 81)
+					return true;	
+				break;
+			//The Death of the Twins
+			case 13:	
+				if(current.xPos >= 53			&& current.yPos >= 240			&& current.zPos >= 70			&& current.xPos <= 70			&& current.yPos <= 250			&& current.zPos <= 73)
+					return true;	
+				break;
+			//Life Upgrade 5
+			case 14:	
+				if(current.xPos >= -30.1223		&& current.yPos >= 281.8893		&& current.zPos >= 104.0796		&& current.xPos <= -30.1221		&& current.yPos <= 281.8895		&& current.zPos <= 104.0798)
+					return true;	
+				break;
+			//The Well of Ancestors
+			case 15:	
+				if(current.xPos >= 5			&& current.yPos >= 243			&& current.zPos >= 104			&& current.xPos <= 12			&& current.yPos <= 265			&& current.zPos <= 104.1)
+					return true;	
+				break;
+			//The Underground Cave
+			case 16:	
+				if(current.xPos >= -25.5		&& current.yPos >= 332			&& current.zPos >= 35.9			&& current.xPos <= -23			&& current.yPos <= 338			&& current.zPos <= 36.1)
+					return true;	
+				break;
+			//Life Upgrade 6
+			case 17:	
+				if(current.xPos >= -23.9663		&& current.yPos >= 253.9438		&& current.zPos >= 183.0634		&& current.xPos <= -23.9661		&& current.yPos <= 253.944		&& current.zPos <= 183.0636)
+					return true;	
+				break;
+			//The Upper Tower
+			case 18:	
+				if(current.xPos >= -8			&& current.yPos >= 296			&& current.zPos >= 226.9		&& current.xPos <= -7			&& current.yPos <= 298			&& current.zPos <= 227)
+					return true;	
+				break;
+			//The End
+			case 19:	
+				if(current.xPos >= 189			&& current.yPos >= 319.135		&& current.zPos >= 542			&& current.xPos <= 193			&& current.yPos <= 320			&& current.zPos <= 543)
+					return true;	
+				break;
+		}
+		break;
+		
+		case "All Powers (Zipless)":
+			switch (timer.CurrentSplitIndex)
+			{
+			//The Harbor District
+			case 0:
+				if(current.xPos >= -271			&& current.yPos >= 187			&& current.zPos >= 74			&& current.xPos <= -265			&& current.yPos <= 188			&& current.zPos <= 75)
+					return true;
+				break;
+			//The Palace
+			case 1:	
+				if(current.xPos >= -93			&& current.yPos >= 236.2		&& current.zPos >= 83			&& current.xPos <= -88			&& current.yPos <= 238			&& current.zPos <= 88)
+					return true;	
+				break;
+			//The Dagger of Time
+			case 2:	
+				if(current.xPos >= -35.5		&& current.yPos >= 232.3		&& current.zPos >= 146.9		&& current.xPos <= -35.4		&& current.yPos <= 232.4		&& current.zPos <= 147)
+					return true;	
+				break;
+			//The Sewers
+			case 3:
+				if(current.xPos >= -52.1		&& current.yPos >= 135.8		&& current.zPos >= 75.9			&& current.xPos <= -52.0		&& current.yPos <= 135.9		&& current.zPos <= 76)
+					return true;
+				break;
+			//Life Upgrade 1
+			case 4:	
+				if(current.xPos >= -14.9972		&& current.yPos >= -112.8152	&& current.zPos >= 20.0732		&& current.xPos <= -14.9970		&& current.yPos <= -112.8150	&& current.zPos <= 20.0734)
+					return true;	
+				break;
+			//The Lower City
+			case 5:
+				if(current.xPos >= -71.4		&& current.yPos >= 9.6			&& current.zPos >= 44			&& current.xPos <= -71.3		&& current.yPos <= 9.7			&& current.zPos <= 44.1)
+					return true;
+				break;
+			//The Lower City Rooftops
+			case 6:
+				if(current.xPos >= -319			&& current.yPos >= 317			&& current.zPos >= 95.1			&& current.xPos <= -316.5		&& current.yPos <= 332.6		&& current.zPos <= 98)
+					return true;
+				break;
+			//Life Upgrade 2
+			case 7:	
+				if(current.xPos >= -302.0919	&& current.yPos >= 370.8710		&& current.zPos >= 52.858		&& current.xPos <= -302.0917	&& current.yPos <= 370.8712		&& current.zPos <= 52.8582)
+					return true;	
+				break;	
+			//The Death of Klompa
+			case 8:
+				if(current.xPos >= -261.5		&& current.yPos >= 318			&& current.zPos >= 46			&& current.xPos <= -261			&& current.yPos <= 319.5		&& current.zPos <= 48)
+					return true;
+				break;
+			//The Eye of the Storm
+			case 9:
+				if(current.xPos >= -194			&& current.yPos >= 328			&& current.zPos >= 32.6			&& current.xPos <= -190			&& current.yPos <= 329.7		&& current.zPos <= 33.6)
+					return true;
+				break;
+			//The Temple Rooftops
+			case 10:
+				if(current.xPos >= -114			&& current.yPos >= 328			&& current.zPos >= 55			&& current.xPos <= -110			&& current.yPos <= 338			&& current.zPos <= 59)
+					return true;
+				break;
+			//The Temple
+			case 11:
+				if(current.xPos >= -122.6		&& current.yPos >= 421.6		&& current.zPos >= 107			&& current.xPos <= -117.7		&& current.yPos <= 423			&& current.zPos <= 108.1)
+					return true;
+				break;
+			//Life Upgrade 3
+			case 12:	
+				if(current.xPos >= -187.3369	&& current.yPos >= -455.9863	&& current.zPos >= 78.0330		&& current.xPos <= -187.3367	&& current.yPos <= 455.9865		&& current.zPos <= 78.0332)
+					return true;	
+				break;
+			//The Market District
+			case 13:
+				if(current.xPos >= -213			&& current.yPos >= 484			&& current.zPos >= 101			&& current.xPos <= -207			&& current.yPos <= 490			&& current.zPos <= 103)
+					return true;
+				break;
+			//The Bowery
+			case 14:
+				if(current.xPos >= -185.5		&& current.yPos >= 524			&& current.zPos >= 90			&& current.xPos <= -175.5		&& current.yPos <= 530			&& current.zPos <= 92)
+					return true;
+				break;
+			//The Death of Mahasti
+			case 15:
+				if(current.xPos >= -104			&& current.yPos >= 548			&& current.zPos >= 104			&& current.xPos <= -100			&& current.yPos <= 553.9		&& current.zPos <= 106.1)
+					return true;
+				break;
+			//The Upper City
+			case 16:
+				if(current.xPos >= -124.5		&& current.yPos >= 500			&& current.zPos >= 97			&& current.xPos <= -122.5		&& current.yPos <= 505			&& current.zPos <= 99)
+					return true;
+				break;
+			//Life Upgrade 4
+			case 17:	
+				if(current.xPos >= -55.0147		&& current.yPos >= 395.7608		&& current.zPos >= 72.0774		&& current.xPos <= -55.0145		&& current.yPos <= 395.761		&& current.zPos <= 72.0776)
+					return true;	
+				break;
+			//The Royal Workshop
+			case 18:
+				if(current.xPos >= -3			&& current.yPos >= 515			&& current.zPos >= 72			&& current.xPos <= -1			&& current.yPos <= 519			&& current.zPos <= 75)
+					return true;
+				break;
+			//The King's Road
+			case 19:
+				if(current.xPos >= 58			&& current.yPos >= 470			&& current.zPos >= 79			&& current.xPos <= 62			&& current.yPos <= 480			&& current.zPos <= 81)
+					return true;
+				break;
+			//The Death of the Twins
+			case 20:
+				if(current.xPos >= 91.7802		&& current.yPos >= 229.6516		&& current.zPos >= 70.9877		&& current.xPos <= 91.7804		&& current.yPos <= 229.6518		&& current.zPos <= 70.9879)
+					return true;
+				break;
+			//Life Upgrade 5
+			case 21:	
+				if(current.xPos >= -30.1223		&& current.yPos >= 281.8893		&& current.zPos >= 104.0796		&& current.xPos <= -30.1221		&& current.yPos <= 281.8895		&& current.zPos <= 104.0798)
+					return true;	
+				break;
+			//The Structure's Mind
+			case 22:
+				if(current.xPos >= 13.5			&& current.yPos >= 204.4		&& current.zPos >= 184.9999		&& current.xPos <= 27.4			&& current.yPos <= 215.4		&& current.zPos <= 185.0001)
+					return true;
+				break;
+			//The Well of Ancestors
+			case 23:
+				if(current.xPos >= -28			&& current.yPos >= 250			&& current.zPos >= 20.9			&& current.xPos <= -26.5		&& current.yPos <= 255			&& current.zPos <= 30)
+					return true;
+				break;
+			//The Labyrinth
+			case 24:
+				if(current.xPos >= -12.6		&& current.yPos >= 241.2		&& current.zPos >= 0.9			&& current.xPos <= -12.5		&& current.yPos <= 241.3		&& current.zPos <= 1)
+					return true;
+				break;
+			//The Underground Cave
+			case 25:
+				if(current.xPos >= -25.5		&& current.yPos >= 332			&& current.zPos >= 35.9			&& current.xPos <= -23			&& current.yPos <= 338			&& current.zPos <= 36.1)
+					return true;
+				break;
+			//The Lower Tower
+			case 26:
+				if(current.xPos >= 27			&& current.yPos >= 316.5		&& current.zPos >= 99.9			&& current.xPos <= 29			&& current.yPos <= 318			&& current.zPos <= 100.1)
+					return true;
+				break;
+			//The Middle Tower
+			case 27:
+				if(current.xPos >= -5			&& current.yPos >= 316			&& current.zPos >= 139.9		&& current.xPos <= -3			&& current.yPos <= 317.5		&& current.zPos <= 140.1)
+					return true;
+				break;
+			//Life Upgrade 6
+			case 28:	
+				if(current.xPos >= -23.9663		&& current.yPos >= 253.9438		&& current.zPos >= 183.0634		&& current.xPos <= -23.9661		&& current.yPos <= 253.944		&& current.zPos <= 183.0636)
+					return true;	
+				break;
+			//The Upper Tower
+			case 29:
+				if(current.xPos >= -8			&& current.yPos >= 296			&& current.zPos >= 226.9		&& current.xPos <= -7			&& current.yPos <= 298			&& current.zPos <= 227)
+					return true;
+				break;
+			//The Death of the Vizier
+			case 30:
+				if(current.xPos >= -7.2			&& current.yPos >= 245.6		&& current.zPos >= 677			&& current.xPos <= -6.9			&& current.yPos <= 245.9		&& current.zPos <= 679)
+					return true;
+				break;
+			//The End
+			case 31:	
+				if(current.xPos >= 189			&& current.yPos >= 319.135		&& current.zPos >= 542			&& current.xPos <= 193			&& current.yPos <= 320			&& current.zPos <= 543)
+					return true;	
+				break;
+		}
+		break;
+		
+		case "All Powers (No Major Glitches)":
+			switch (timer.CurrentSplitIndex)
+			{
+			//The Harbor District
+			case 0:
+				if(current.xPos >= -271			&& current.yPos >= 187			&& current.zPos >= 74			&& current.xPos <= -265			&& current.yPos <= 188			&& current.zPos <= 75)
+					return true;
+				break;
+			//The Palace
+			case 1:	
+				if(current.xPos >= -93			&& current.yPos >= 236.2		&& current.zPos >= 83			&& current.xPos <= -88			&& current.yPos <= 238			&& current.zPos <= 88)
+					return true;	
+				break;
+			//The Dagger of Time
+			case 2:	
+				if(current.xPos >= -35.5		&& current.yPos >= 232.3		&& current.zPos >= 146.9		&& current.xPos <= -35.4		&& current.yPos <= 232.4		&& current.zPos <= 147)
+					return true;	
+				break;
+			//The Sewers
+			case 3:
+				if(current.xPos >= -52.1		&& current.yPos >= 135.8		&& current.zPos >= 75.9			&& current.xPos <= -52.0		&& current.yPos <= 135.9		&& current.zPos <= 76)
+					return true;
+				break;
+			//Life Upgrade 1
+			case 4:	
+				if(current.xPos >= -14.9972		&& current.yPos >= -112.8152	&& current.zPos >= 20.0732		&& current.xPos <= -14.9970		&& current.yPos <= -112.8150	&& current.zPos <= 20.0734)
+					return true;	
+				break;
+			//The Lower City
+			case 5:
+				if(current.xPos >= -71.4		&& current.yPos >= 9.6			&& current.zPos >= 44			&& current.xPos <= -71.3		&& current.yPos <= 9.7			&& current.zPos <= 44.1)
+					return true;
+				break;
+			//The Lower City Rooftops
+			case 6:
+				if(current.xPos >= -319			&& current.yPos >= 317			&& current.zPos >= 95.1			&& current.xPos <= -316.5		&& current.yPos <= 332.6		&& current.zPos <= 98)
+					return true;
+				break;
+			//Life Upgrade 2
+			case 7:	
+				if(current.xPos >= -302.0919	&& current.yPos >= 370.8710		&& current.zPos >= 52.858		&& current.xPos <= -302.0917	&& current.yPos <= 370.8712		&& current.zPos <= 52.8582)
+					return true;	
+				break;	
+			//The Death of Klompa
+			case 8:
+				if(current.xPos >= -261.5		&& current.yPos >= 318			&& current.zPos >= 46			&& current.xPos <= -261			&& current.yPos <= 319.5		&& current.zPos <= 48)
+					return true;
+				break;
+			//The Eye of the Storm
+			case 9:
+				if(current.xPos >= -194			&& current.yPos >= 328			&& current.zPos >= 32.6			&& current.xPos <= -190			&& current.yPos <= 329.7		&& current.zPos <= 33.6)
+					return true;
+				break;
+			//The Temple Rooftops
+			case 10:
+				if(current.xPos >= -114			&& current.yPos >= 328			&& current.zPos >= 55			&& current.xPos <= -110			&& current.yPos <= 338			&& current.zPos <= 59)
+					return true;
+				break;
+			//The Temple
+			case 11:
+				if(current.xPos >= -122.6		&& current.yPos >= 421.6		&& current.zPos >= 107			&& current.xPos <= -117.7		&& current.yPos <= 423			&& current.zPos <= 108.1)
+					return true;
+				break;
+			//Life Upgrade 3
+			case 12:	
+				if(current.xPos >= -187.3369	&& current.yPos >= -455.9863	&& current.zPos >= 78.0330		&& current.xPos <= -187.3367	&& current.yPos <= 455.9865		&& current.zPos <= 78.0332)
+					return true;	
+				break;
+			//The Market District
+			case 13:
+				if(current.xPos >= -213			&& current.yPos >= 484			&& current.zPos >= 101			&& current.xPos <= -207			&& current.yPos <= 490			&& current.zPos <= 103)
+					return true;
+				break;
+			//The Bowery
+			case 14:
+				if(current.xPos >= -185.5		&& current.yPos >= 524			&& current.zPos >= 90			&& current.xPos <= -175.5		&& current.yPos <= 530			&& current.zPos <= 92)
+					return true;
+				break;
+			//The Brothel
+			case 15:
+				if(current.xPos >= -152.6		&& current.yPos >= 549.8		&& current.zPos >= 91.9			&& current.xPos <= -152.5		&& current.yPos <= 549.9		&& current.zPos <= 92)
+					return true;
+				break;
+			//The Death of Mahasti
+			case 16:
+				if(current.xPos >= -104			&& current.yPos >= 548			&& current.zPos >= 104			&& current.xPos <= -100			&& current.yPos <= 553.9		&& current.zPos <= 106.1)
+					return true;
+				break;
+			//The Upper City
+			case 17:
+				if(current.xPos >= -124.5		&& current.yPos >= 500			&& current.zPos >= 97			&& current.xPos <= -122.5		&& current.yPos <= 505			&& current.zPos <= 99)
+					return true;
+				break;
+			//Life Upgrade 4
+			case 18:	
+				if(current.xPos >= -55.0147		&& current.yPos >= 395.7608		&& current.zPos >= 72.0774		&& current.xPos <= -55.0145		&& current.yPos <= 395.761		&& current.zPos <= 72.0776)
+					return true;	
+				break;
+			//The Royal Workshop
+			case 19:
+				if(current.xPos >= -3			&& current.yPos >= 515			&& current.zPos >= 72			&& current.xPos <= -1			&& current.yPos <= 519			&& current.zPos <= 75)
+					return true;
+				break;
+			//The King's Road
+			case 20:
+				if(current.xPos >= 58			&& current.yPos >= 470			&& current.zPos >= 79			&& current.xPos <= 62			&& current.yPos <= 480			&& current.zPos <= 81)
+					return true;
+				break;
+			//The Death of the Twins
+			case 21:
+				if(current.xPos >= 91.7802		&& current.yPos >= 229.6516		&& current.zPos >= 70.9877		&& current.xPos <= 91.7804		&& current.yPos <= 229.6518		&& current.zPos <= 70.9879)
+					return true;
+				break;
+			//Life Upgrade 5
+			case 22:	
+				if(current.xPos >= -30.1223		&& current.yPos >= 281.8893		&& current.zPos >= 104.0796		&& current.xPos <= -30.1221		&& current.yPos <= 281.8895		&& current.zPos <= 104.0798)
+					return true;	
+				break;
+			//The Structure's Mind
+			case 23:
+				if(current.xPos >= 13.5			&& current.yPos >= 204.4		&& current.zPos >= 184.9999		&& current.xPos <= 27.4			&& current.yPos <= 215.4		&& current.zPos <= 185.0001)
+					return true;
+				break;
+			//The Well of Ancestors
+			case 24:
+				if(current.xPos >= -28			&& current.yPos >= 250			&& current.zPos >= 20.9			&& current.xPos <= -26.5		&& current.yPos <= 255			&& current.zPos <= 30)
+					return true;
+				break;
+			//The Labyrinth
+			case 25:
+				if(current.xPos >= -12.6		&& current.yPos >= 241.2		&& current.zPos >= 0.9			&& current.xPos <= -12.5		&& current.yPos <= 241.3		&& current.zPos <= 1)
+					return true;
+				break;
+			//The Underground Cave
+			case 26:
+				if(current.xPos >= -25.5		&& current.yPos >= 332			&& current.zPos >= 35.9			&& current.xPos <= -23			&& current.yPos <= 338			&& current.zPos <= 36.1)
+					return true;
+				break;
+			//The Lower Tower
+			case 27:
+				if(current.xPos >= 27			&& current.yPos >= 316.5		&& current.zPos >= 99.9			&& current.xPos <= 29			&& current.yPos <= 318			&& current.zPos <= 100.1)
+					return true;
+				break;
+			//The Middle Tower
+			case 28:
+				if(current.xPos >= -5			&& current.yPos >= 316			&& current.zPos >= 139.9		&& current.xPos <= -3			&& current.yPos <= 317.5		&& current.zPos <= 140.1)
+					return true;
+				break;
+			//Life Upgrade 6
+			case 29:	
+				if(current.xPos >= -23.9663		&& current.yPos >= 253.9438		&& current.zPos >= 183.0634		&& current.xPos <= -23.9661		&& current.yPos <= 253.944		&& current.zPos <= 183.0636)
+					return true;	
+				break;
+			//The Upper Tower
+			case 30:
+				if(current.xPos >= -8			&& current.yPos >= 296			&& current.zPos >= 226.9		&& current.xPos <= -7			&& current.yPos <= 298			&& current.zPos <= 227)
+					return true;
+				break;
+			//The Death of the Vizier
+			case 31:
+				if(current.xPos >= -4.485		&& current.yPos >= 240.943		&& current.zPos >= 304.232		&& current.xPos <= -4.487		&& current.yPos <= 240.945		&& current.zPos <= 304.234)
+					return true;
+				break;
+			//The End
+			case 32:	
+				if(current.xPos >= 189			&& current.yPos >= 319.135		&& current.zPos >= 542			&& current.xPos <= 193			&& current.yPos <= 320			&& current.zPos <= 543)
+					return true;	
+				break;
+		}
+		break;
+	}	
 }
