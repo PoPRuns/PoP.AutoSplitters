@@ -1,15 +1,3 @@
-//Authors: 		@Samabam#8840
-//
-//Last Updated:	2018/08/25	(ISO date format)
-//
-//Instructions:	If you're updating this script it means I'm probably dead. Thank god for that. The concept is fairly simple.
-//				By monitoring the Prince's coordinates we're able to create what I call 'virtual hitboxes.' I attempted to
-//				place my VHBs in places that no sane person would skip using the current route.
-//				IMPORTANT: The 'f's in the split coordinates are necessary and the script won't run without them.
-//
-//Notes: 		This script is based on the Sands of Time splitter, which was primarily written by @Ynscription#6173. 
-
-
 state("POP2"){
 //Some memory value that reliably changes when you gain control after a load.
 	int startValue : 0x0096602C, 0x8, 0x28, 0xA8, 0x3E0;
@@ -27,361 +15,575 @@ state("POP2"){
 	float xPos : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x30;	
 	float yPos : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x34;
 	float zPos : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x38;	
-	
-//Camera values
-	float cameraX : 0x863A90;
-	float cameraY : 0x863A94;
 }
 
 startup{
-	//Int used to keep track of how many splits should have triggered by a given point.
-	int split;
-
-	//A flag that determines if the game process is running
-	bool isGameRunning = false;
-
-	//A flag to ensure initialization happens regardless of how the timer was started.
-	bool unknownStart = true;
-}
-
-init {
-		
-	//init runs when the game process is found
-	vars.isGameRunning = true;
-
-	//Function that determines if the prince is within a bounding box ASSUMES min IS LESS THAN max IN ALL COMPONENTS
-	vars.IsInBox = (Func <Vector3f, Vector3f, bool>) ((min, max) => {
-		bool x = vars.princePos.X >= min.X && vars.princePos.X <= max.X;
-		bool y = vars.princePos.Y >= min.Y && vars.princePos.Y <= max.Y;
-		bool z = vars.princePos.Z >= min.Z && vars.princePos.Z <= max.Z;
-		return x && y && z;
-	});
-
-	//Function that determines the current split number
-	vars.GetSplit = (Func<int, int>) ((lastSplit) => {
-		int splitResult = -1;
-		//Check for each remaining split if the prince is within split distance and has correct story value
-		vars.princePos = new Vector3f (current.xPos, current.yPos, current.zPos);
-		int fiveAhead = (lastSplit +6) * 2;
-		int maxCheck = vars.splitPositions.Length < fiveAhead ? vars.splitPositions.Length : fiveAhead;
-		for (int i = (lastSplit +1) *2; i <  maxCheck && splitResult == -1; i += 2) {
-			if (vars.IsInBox(vars.splitPositions[i], vars.splitPositions[i +1]) && current.storyValue == vars.splitStoryValues[(i/2)]) {
-				splitResult = i/2;
-			}
-			//Checking splits that aren't location based
-			else if(vars.splitPositions[i].X == 0){
-				//Splitting on retrieval of the light sword for each relevant category.
-				if(current.secondaryWeapon == 50 && current.storyValue == 61 && (i/2) < vars.swordSplit+1){
-					splitResult = vars.swordSplit;
-				}
-				//Splitting on retrieval of the wraith mask for each relevant category.
-				if(current.storyValue == 59 && (i/2) < (vars.maskSplit+1) && lastSplit > 1){
-					splitResult = vars.maskSplit;
-				}
-			}
-			
-		}
-		
-		//Only splitting if there is no boss or the boss is dead.
-		if(current.bossHealth != 0 && current.bossHealth <= 50000){
-			splitResult = -1;
-		}
-		
-		return splitResult;
-	});
-
-	//Function that skips a split
-	vars.SkipSplit = (Func<int>)(() => {
-		timer.CurrentSplit.SplitTime = default(Time);
-        timer.CurrentSplitIndex++;
-        timer.Run.HasChanged = true;
-		return 0;
-	});
-
-	//Function to select splits based on category
-	vars.SetSplitsByCategory = (Func<int>)(() => {
-		//Get the category and subcategory names
-		string cat = timer.Run.CategoryName;
-		string subCat = timer.Run.GetExtendedCategoryName();
-		if (subCat == string.Empty || subCat == null) {
-			return -1;
-		}
-		int parenthesisStart = subCat.IndexOf('(') + 1;
-		subCat = subCat.Substring(parenthesisStart, subCat.IndexOf(')') - parenthesisStart);
-
-		//Return a code based on category
-		int result = -1;
-		if (cat == "Any%") {
-			result = 0;
-		}
-		else if (cat == "True Ending") {
-			result = 3;
-		}
-		else {
-			return -1;
-		}
-
-		if (subCat == "Normal") {
-			result += 0;
-		}
-		else if (subCat == "Zipless") {
-			result += 1;
-		}
-		else if (subCat == "No Major Glitches") {
-			result += 2;
-		}
-		else {
-			return -1;
-		}
-		return result;
-	});
-
-}
-
-exit {
-	//Exit runs when the game process exits
-	vars.isGameRunning = false;
 }
 
 start{
-	
-	//============= Any% Normal (Zipful) splits ==============
-	//An array to store the positions for each split 
-	Vector3f [] spAnyNormal = {
-	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position
-	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat
-	new Vector3f (-5.359f, -161.539f, 66.5f), new Vector3f (-4.913f, -161.500f, 67.5f), 		//2 The Raven Man
-	new Vector3f (122.8f, -156.1f, 368.5f), new Vector3f (122.9f, -156f, 369.5f), 				//3 The Time Portal
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//4 Mask of the Wraith
-	new Vector3f (-170.1f, -127.3f, 335.5f), new Vector3f (-170f, -127.2f, 336.5f), 			//5 Scorpion Sword
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//6 Light Sword
-	new Vector3f (-52.7f, 137.2f, 418f), new Vector3f (-52.6f, 137.3f, 419f), 					//7 Back to the Future
-	new Vector3f (-35f, 170f, 128.9f), new Vector3f (-5f, 205f, 129.1f), 						//8 The End
-	};
-
-	//============= Any% Zipless splits ==============
-	//An array to store the positions for each split 
-	Vector3f [] spAnyZipless = {
-	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position
-	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat
-	new Vector3f (-5.359f, -161.539f, 66.5f), new Vector3f (-4.913f, -161.500f, 67.5f), 		//2 The Raven Man
-	new Vector3f (122.8f, -156.1f, 368.5f), new Vector3f (122.9f, -156f, 369.5f), 				//3 The Time Portal
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//4 Mask of the Wraith
-	new Vector3f (-170.1f, -127.3f, 335.5f), new Vector3f (-170f, -127.2f, 336.5f), 			//5 Scorpion Sword
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//6 Light Sword
-	new Vector3f (-52.7f, 137.2f, 418f), new Vector3f (-52.6f, 137.3f, 419f), 					//7 Back to the Future
-	new Vector3f (-35f, 170f, 128.9f), new Vector3f (-5f, 205f, 129.1f), 						//8 The End
-	};
-				
-	//============= Any% NMG splits ==============
-	//An array to store the positions for each split 
-	Vector3f [] spAnyNMG = {
-	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position 0
-	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat 0
-	new Vector3f (-46.3f, -139.7f, 67f), new Vector3f (-46f, -138f, 68f),		 				//2 The Spider Sword 2
-	new Vector3f (43.3f, -75.7f, 370f), new Vector3f (43.4f, -75.6f, 370.1f), 					//3 Chasing Shadee 7
-	new Vector3f (115f, -114f, 357f), new Vector3f (132f, -80f, 361f), 							//4 A Damsel in Distress 8
-	new Vector3f (40.1f, -96.1f, 86f), new Vector3f (42.4f, -95.9f, 86.1f), 					//6 The Dahaka 9
-	new Vector3f (-96.5f, 41.3f, 407.4f), new Vector3f (-96.4f, 41.4f, 407.5f), 				//7 The Serpent Sword 13
-	new Vector3f (66.9f, 11.4f, 400f), new Vector3f (67.1f, 11.6f, 400.2f), 					//7 The Garden Hall 22
-	new Vector3f (23f, 41f, 441f), new Vector3f (29f, 43f, 450f), 								//11 The Waterworks Restored 22
-	new Vector3f (-44.7f, -27.1f, 389f), new Vector3f (44.6f, -27f, 389.1f), 					//11 The Lion Sword 21
-	new Vector3f (-181.7f, -34f, 411f), new Vector3f (-181.5f, -33.9f, 411.3f), 				//14 The Mechanical Tower 15
-	new Vector3f (-210.018f, 164.259f, 440.9f), new Vector3f (-210.016f, 164.261f, 441.1f), 	//13 The Ravages of Time 16
-	new Vector3f (-206f, 59.8f, 162.6f), new Vector3f (-205.8f, 67.4f, 163.1f), 				//16 Activation Room in Ruin 18
-	new Vector3f (-192.5f, 109f, 471.9f), new Vector3f (-189.5f, 111f, 472.1f), 				//15 Activation Room Restored 19
-	new Vector3f (-50f, -13f, 388.9f), new Vector3f (-39f, -5f, 389.8f), 					//16 The Death of a Sand Wraith 33
-	new Vector3f (-74f, 53.5f, 414f), new Vector3f (-31f, 104f, 422f), 							//19 Death of the Empress 34
-	new Vector3f (-100f, -190f, 33f), new Vector3f (-97.5f, -187f, 33.2f), 						//18 Exit the Tomb 39
-	new Vector3f (-170.1f, -127.3f, 335.5f), new Vector3f (-170f, -127.2f, 336.5f), 			//19 Scorpion Sword 41
-	new Vector3f (-112f, -144f, 384.9f), new Vector3f (-111f, -137f, 389f), 					//20 The Library 42
-	new Vector3f (-108.3f, 40f, 407.3f), new Vector3f (-106f, 45f, 407.5f), 					//21 The Hourglass Revisited 45
-	new Vector3f (-20.5f, 236.8f, 133f), new Vector3f (-20.4f, 267f, 133.1f), 					//22 The Mask of the Wraith 46
-	new Vector3f (-23f, 163f, 429f), new Vector3f (-15f, 166.5f, 431f),							//23 The Sand Griffin 48
-	new Vector3f (136.7f, -110.6f, 377.9f), new Vector3f (136.9f, -110.4f, 378f), 				//24 Mirrored Fates 55
-	new Vector3f (41.1f, -180.1f, 368.9f), new Vector3f (41.2f, -180f, 369.1f), 				//25 A Favor Unknown 57
-	new Vector3f (-112f, -144f, 384.9f), new Vector3f (-111f, -137f, 389f), 					//26 The Library Revisited 60
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//27 The Light Sword 61
-	new Vector3f (-67f, -23.3f, 399.9f), new Vector3f (-65.1f, -23.1f, 400f), 					//32 The Death of a Prince 64
-	new Vector3f (-35f, 170f, 128.9f), new Vector3f (-5f, 205f, 129.1f), 						//29 The End 67
-	};
-
-	//============= TE Normal (Zipful) splits ==============
-	//An array to store the positions for each split 
-	Vector3f [] spTENormal = {
-	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position 0
-	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat 0
-	new Vector3f (-5.359f, -161.539f, 66.5f), new Vector3f (-4.913f, -161.500f, 67.5f), 		//2 The Raven Man
-	new Vector3f (52f, -188.7f, 381.9f), new Vector3f (52.1f, -188.6f, 382.1f), 				//3 Health 1 	2
-	new Vector3f (-112.1f, -66.1f, 360.9f), new Vector3f (-112f, -66f, 361f), 					//4 Health 2	59
-	new Vector3f (-74.8f, -102.8f, 378.9f), new Vector3f (-74.7f, -102.7f, 379f), 				//5 Health 3	60
-	new Vector3f (-161.2f, 170.3f, 471.9f), new Vector3f (-161f, 170.4f, 472.1f), 				//6 Health 4	63
-	new Vector3f (138.8f, 115.3f, 382.5f), new Vector3f (138.9f, 115.4f, 382.6f), 				//7 Health 5 	64
-	new Vector3f (76.1f, 64.8f, 461.4f), new Vector3f (76.2f, 64.9f, 461.6f), 					//8 Health 6	64
-	new Vector3f (190.2f, -131.9f, 353.9f), new Vector3f (190.3f, -131.8f, 354.1f), 			//9 Health 7	64
-	new Vector3f (162.2f, -37.5f, 392.9f), new Vector3f (162.3f, -37.4f, 393.1f), 				//10 Health 8	64
-	new Vector3f (-114.3f, -47.2f, 368.9f), new Vector3f (-114.1f, -47f, 369.1f), 				//12 Health 9	64
-	new Vector3f (-96.643f, 43.059f, 407.4f), new Vector3f (-96.641f, 43.061f, 407.5f), 		//13 The Watersword	 66
-	new Vector3f (-18.959f, 203.667f, 129f), new Vector3f (-18.956f, 203.755f, 129.2f), 		//33 The End 68
-	};
-
-	//============= TE Zipless splits ==============
-	//An array to store the positions for each split 
-	Vector3f [] spTEZipless = {
-	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position 0
-	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat 0
-	new Vector3f (-5.359f, -161.539f, 66.5f), new Vector3f (-4.913f, -161.500f, 67.5f), 		//2 The Raven Man
-	new Vector3f (-114.3f, -47.2f, 368.9f), new Vector3f (-114.1f, -47f, 369.1f), 				//3 Health 1	36
-	new Vector3f (76.1f, 64.8f, 461.4f), new Vector3f (76.2f, 64.9f, 461.6f), 					//4 Health 2	36
-	new Vector3f (138.8f, 115.3f, 382.5f), new Vector3f (138.9f, 115.4f, 382.6f), 				//5 Health 3 	36
-	new Vector3f (52f, -188.7f, 381.9f), new Vector3f (52.1f, -188.6f, 382.1f), 				//6 Health 4 	36
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//7 Mask of the Wraith 59
-	new Vector3f (-112.1f, -66.1f, 360.9f), new Vector3f (-112f, -66f, 361f), 					//8 Health 5	59
-	new Vector3f (-74.8f, -102.8f, 378.9f), new Vector3f (-74.7f, -102.7f, 379f), 				//9 Health 6	60
-	new Vector3f (-208f, -35.5f, 419.9f), new Vector3f (-205f, -32.5f, 423f), 					//10 The Mechanical Tower 63
-	new Vector3f (-161.2f, 170.3f, 471.9f), new Vector3f (-161f, 170.4f, 472.1f), 				//11 Health 7	63
-	new Vector3f (162.2f, -37.5f, 392.9f), new Vector3f (162.3f, -37.4f, 393.1f), 				//12 Health 8	64
-	new Vector3f (190.2f, -131.9f, 353.9f), new Vector3f (190.3f, -131.8f, 354.1f), 			//13 Health 9	64	
-	new Vector3f (-96.643f, 43.059f, 407.4f), new Vector3f (-96.641f, 43.061f, 407.5f), 		//14 The Watersword	 66
-	new Vector3f (-18.959f, 203.667f, 129f), new Vector3f (-18.956f, 203.755f, 129.2f), 		//33 The End 68
-	}; 
-
-	//============= TE NMG splits ==============
-	//An array to store the positions for each split 
-	Vector3f [] spTENMG = {
-	new Vector3f (-998f, -977f, 409f), new Vector3f (-997f, -975f, 410f), 						//0 Starting Position 0
-	new Vector3f (-1003f, -1028f, 14f), new Vector3f (-995f, -1016f, 15f), 						//1 The Boat 0
-	new Vector3f (-46.3f, -139.7f, 67f), new Vector3f (-46f, -138f, 68f),		 				//2 The Spider Sword 2
-	new Vector3f (162.2f, -37.5f, 392.9f), new Vector3f (162.7f, -37.3f, 393.1f), 				//24 Health 9	7
-	new Vector3f (115f, -114f, 357f), new Vector3f (132f, -80f, 361f), 							//4 A Damsel in Distress 8
-	new Vector3f (190.2f, -131.9f, 353.9f), new Vector3f (190.4f, -131.8f, 354.1f), 			//5 Health 2	8
-	new Vector3f (40.1f, -96.1f, 86f), new Vector3f (42.4f, -95.9f, 86.1f), 					//6 The Dahaka 9
-	new Vector3f (52f, -188.7f, 381.9f), new Vector3f (52.8f, -188.6f, 382.1f), 				//3 Health 1 	11
-	new Vector3f (-96.5f, 41.3f, 407.4f), new Vector3f (-96.4f, 41.4f, 407.5f), 				//7 The Serpent Sword 13
-	new Vector3f (23f, 41f, 441f), new Vector3f (29f, 43f, 450f), 								//11 The Waterworks Restored 22
-	new Vector3f (76.1f, 64.1f, 461.4f), new Vector3f (76.2f, 64.9f, 461.6f), 					//12 Health 4	22
-	new Vector3f (138.8f, 115.3f, 382.5f), new Vector3f (139f, 116.7f, 382.6f), 				//8 Health 3 32
-	new Vector3f (-114.7f, -47.2f, 368.9f), new Vector3f (-114.1f, -47f, 369.1f), 				//13 Health 5	21
-	new Vector3f (-181.7f, -34f, 411f), new Vector3f (-181.5f, -33.9f, 411.3f), 				//14 The Mechanical Tower 15
-	new Vector3f (-210.018f, 164.259f, 440.9f), new Vector3f (-210.016f, 164.261f, 441.1f), 	//15 The Ravages of Time 16
-	new Vector3f (-206f, 59.8f, 162.6f), new Vector3f (-205.8f, 67.4f, 163.1f), 				//16 Activation Room in Ruin 18
-	new Vector3f (-161.2f, 170.3f, 471.9f), new Vector3f (-161f, 171f, 472.1f), 				//17 Health 6	19
-	new Vector3f (-50f, -13f, 388.9f), new Vector3f (-39f, -5f, 389.8f), 						//16 The Death of a Sand Wraith 33
-	new Vector3f (-74f, 53.5f, 414f), new Vector3f (-31f, 104f, 422f), 							//19 Death of the Empress 34
-	new Vector3f (-100f, -190f, 33f), new Vector3f (-97.5f, -187f, 33.2f), 						//20 Exit the Tomb 39
-	new Vector3f (-170.1f, -127.3f, 335.5f), new Vector3f (-170f, -127.2f, 336.5f), 			//21 Scorpion Sword 41
-	new Vector3f (-112.1f, -66.1f, 360.9f), new Vector3f (-112f, -65.2f, 361f), 				//22 Health 7	41
-	new Vector3f (-74.8f, -102.8f, 378.9f), new Vector3f (-74.2f, -102.7f, 379f), 				//23 Health 8	42
-	new Vector3f (-96.643f, 43.059f, 407.4f), new Vector3f (-96.641f, 43.061f, 407.5f), 		//25 The Watersword	 45
-	new Vector3f (-20.5f, 236.8f, 133f), new Vector3f (-20.4f, 267f, 133.1f), 					//26 The Mask of the Wraith 46
-	new Vector3f (-23f, 163f, 429f), new Vector3f (-15f, 166.5f, 431f),							//27 The Sand Griffin 48
-	new Vector3f (136.7f, -111.4f, 377.9f), new Vector3f (137.12f, -110.4f, 378f), 				//28 Mirrored Fates 55
-	new Vector3f (41.1f, -180.1f, 368.9f), new Vector3f (41.2f, -180f, 369.1f), 				//29 A Favor Unknown 57
-	new Vector3f (-112f, -144f, 384.9f), new Vector3f (-111f, -137f, 389f), 					//30 The Library Revisited 60
-	new Vector3f (0f, 0f, 0f), new Vector3f (0f, 0f, 0f), 										//31 The Light Sword 61
-	new Vector3f (-67f, -23.3f, 399.9f), new Vector3f (-65.1f, -23.1f, 400f), 					//32 The Death of a Prince 64
-	new Vector3f (-18.959f, 203.667f, 129f), new Vector3f (-18.956f, 203.755f, 129.2f), 		//33 The End 68
-	}; 
-
-	//Check for category to determine which splits to use
-	int selection = vars.SetSplitsByCategory();
-	if (selection == 0) {
-		vars.splitPositions = spAnyNormal;
-		vars.swordSplit = 6;
-		vars.maskSplit = 4;
-		vars.splitStoryValues = new int [] {
-		0, 0, 2, 2, 59, 59, 61, 66, 67
-		};
-	}
-	else if (selection == 1) {
-		vars.splitPositions = spAnyZipless;
-		vars.maskSplit = 4;
-		vars.swordSplit = 6;		
-		vars.splitStoryValues = new int [] {
-		0, 0, 2, 2, 59, 59, 61, 66, 67
-		};
-	}
-	else if (selection == 2) {
-		vars.splitPositions = spAnyNMG;
-		vars.maskSplit = null;
-		vars.swordSplit = 25;		
-		vars.splitStoryValues = new int [] {
-		0, 0, 2, 7, 8, 9, 13, 22, 22, 21, 15, 16, 18, 19, 33, 38, 39, 41, 42, 45, 46, 48, 55, 57, 60, 61, 64, 67
-		};
-	}
-	else if (selection == 3) {
-		vars.splitPositions = spTENormal;
-		vars.maskSplit = null;
-		vars.swordSplit = null;
-		vars.splitStoryValues = new int [] {
-		0, 0, 2, 2, 59, 60, 63, 64, 64, 64, 64, 64, 66, 68
-		};
-	}
-	else if (selection == 4) {
-		vars.splitPositions = spTEZipless;
-		vars.maskSplit = 7;
-		vars.swordSplit = null;
-		vars.splitStoryValues = new int [] {
-		0, 0, 2, 36, 36, 36, 36, 59, 59, 60, 63, 63, 64, 64, 66, 68
-		};
-	}
-	else if (selection == 5) {
-		vars.splitPositions = spTENMG;
-		vars.maskSplit = null;
-		vars.swordSplit = 29;
-		vars.splitStoryValues = new int [] {
-		0, 0, 2, 7, 8, 8, 9, 11, 13, 22, 22, 32, 21, 15, 16, 18, 19, 33, 38, 39, 41, 41, 42, 45, 46, 48, 55, 57, 60, 61, 64, 68
-		};
-	}
-	else {
-		vars.splitPositions = spAnyNormal;
-		vars.swordSplit = 6;
-		vars.maskSplit = 4;
-		vars.splitStoryValues = new int [] {
-		0, 0, 2, 2, 59, 59, 61, 66, 67
-		};
-	}
-	vars.unknowStart = true;
-
-	//Detecting if the Prince is on the boat and if NewGame has been pressed.
-	if (vars.GetSplit(-1) == 0 && current.startValue == 2){
-		if(current.cameraX > 0.0001 || current.cameraX < -0.0001){
-			//Initializing variables if the game has started
-			vars.split = 0;
-			vars.unknowStart = false;
+	//Detecting if the game has started on the boat.
+	if(old.startValue == 1 && current.startValue == 2){
+		if(current.xPos == -997.6756592)
 			return true;
-		}
+	}
+}
+
+reset{
+	//Detecting if the game has started on the boat.
+	if(old.startValue == 1 && current.startValue == 2){
+		if(current.xPos == -997.6756592)
+			return true;
 	}
 }
 
 split{
-	//The run was started without running the start block
-	if (vars.unknowStart) {
-		vars.split = 0;
-		vars.unknowStart = false;
-	}
 	
-	//Get the current split (-1 if we haven't hit a split trigger this update or if the game is not running)
-	int currSplit = vars.isGameRunning ? vars.GetSplit(vars.split) : -1;
-
-	//Check if we have hit a split trigger
-	if (currSplit > 0) {
-
-		//Difference between last split and current split
-		int diff = currSplit - vars.split;
-
-		//We have missed a split at some point
-		if (diff > 1) {
-			//We must skip (diff - 1) splits that we have missed
-			for (int i = 1; i < diff; i++) {
-				vars.SkipSplit();
-			}
+	switch(timer.Run.GetExtendedCategoryName())
+	{
+		case "Any% (Normal)":
+			switch (timer.CurrentSplitIndex)
+			{
+			//The Boat
+			case 0:
+				if(current.xPos >= -1003 		&& current.yPos >= -1028 		&& current.zPos >= 14 			&& current.xPos <= -995 		&& current.yPos <= -1016 		&& current.zPos <= 15 		&& current.storyValue == 0 && current.bossHealth == 0)
+					return true;
+				break;
+			//The Raven Man
+			case 1:
+				if(current.xPos >= -5.359 		&& current.yPos >= -161.539 	&& current.zPos >= 66.5 		&& current.xPos <= -4.913 		&& current.yPos <= -161.500 	&& current.zPos <= 67.5 	&& current.storyValue == 2)
+					return true;
+				break;
+			//The Time Portal
+			case 2:
+				if(current.xPos >= 122.8 		&& current.yPos >= -156.1 		&& current.zPos >= 368.5 		&& current.xPos <= 122.9 		&& current.yPos <= -156 		&& current.zPos <= 369.5 	&& current.storyValue == 2)			
+					return true;
+				break;
+			//Mask of the Wraith (59)
+			case 3:
+				if(current.storyValue == 59)
+					return true;
+				break;
+			//The Scorpion Sword
+			case 4:
+				if(current.xPos >= -170.1 		&& current.yPos >= -127.3 		&& current.zPos >= 335.5 		&& current.xPos <= -170 		&& current.yPos <= -127.2 		&& current.zPos <= 336.5 	&& current.storyValue == 59)
+					return true;
+				break;
+			//The Light Sword
+			case 5:
+				if(current.secondaryWeapon == 50 && current.storyValue == 61)
+					return true;
+				break;
+			//Back to the Future
+			case 6:
+				if(current.xPos >= -52.7 		&& current.yPos >= 137.2 		&& current.zPos >= 418 		&& current.xPos <= -52.6 		&& current.yPos <= 137.3 		&& current.zPos <= 419 		&& current.storyValue == 66)
+					return true;
+				break;
+			//The End
+			case 7:
+				if(current.xPos >= -35 			&& current.yPos >= 170 			&& current.zPos >= 128.9 		&& current.xPos <= -5 			&& current.yPos <= 205 			&& current.zPos <= 129.1 	&& current.storyValue == 67 && current.bossHealth == 0)
+					return true;
+				break;
 		}
-
-		//Split normally
-		vars.split = currSplit;
-		return true;
+		break;
 		
+		case "Any% (Zipless)":
+			switch (timer.CurrentSplitIndex)
+			{
+			//The Boat
+			case 0:
+				if(current.xPos >= -1003 		&& current.yPos >= -1028 		&& current.zPos >= 14 			&& current.xPos <= -995 		&& current.yPos <= -1016 		&& current.zPos <= 15 		&& current.storyValue == 0 && current.bossHealth == 0)
+					return true;
+				break;
+			//The Raven Man
+			case 1:
+				if(current.xPos >= -5.359 		&& current.yPos >= -161.539 	&& current.zPos >= 66.5 		&& current.xPos <= -4.913 		&& current.yPos <= -161.500 	&& current.zPos <= 67.5 	&& current.storyValue == 2)
+					return true;
+				break;
+			//The Time Portal
+			case 2:
+				if(current.xPos >= 122.8 		&& current.yPos >= -156.1 		&& current.zPos >= 368.5 		&& current.xPos <= 122.9 		&& current.yPos <= -156 		&& current.zPos <= 369.5 	&& current.storyValue == 2)			
+					return true;
+				break;
+			//Mask of the Wraith (59)
+			case 3:
+				if(current.storyValue == 59)
+					return true;
+				break;
+			//The Scorpion Sword
+			case 4:
+				if(current.xPos >= -170.1 		&& current.yPos >= -127.3 		&& current.zPos >= 335.5 		&& current.xPos <= -170 		&& current.yPos <= -127.2 		&& current.zPos <= 336.5 	&& current.storyValue == 59)
+					return true;
+				break;
+			//The Light Sword
+			case 5:
+				if(current.secondaryWeapon == 50 && current.storyValue == 61)
+					return true;
+				break;
+			//Back to the Future
+			case 6:
+				if(current.xPos >= -52.7 		&& current.yPos >= 137.2 		&& current.zPos >= 418 		&& current.xPos <= -52.6 		&& current.yPos <= 137.3 		&& current.zPos <= 419 		&& current.storyValue == 66)
+					return true;
+				break;
+			//The End
+			case 7:
+				if(current.xPos >= -35 			&& current.yPos >= 170 			&& current.zPos >= 128.9 		&& current.xPos <= -5 			&& current.yPos <= 205 			&& current.zPos <= 129.1 	&& current.storyValue == 67 && current.bossHealth == 0)
+					return true;
+				break;
+		}
+		break;
 		
-	}
+		case "Any% (No Major Glitches)":
+			switch (timer.CurrentSplitIndex)
+			{
+			//The Boat
+			case 0:
+				if(current.xPos >= -1003 		&& current.yPos >=  -1028 		&& current.zPos >=  14 			&& current.xPos <=  -995 		&& current.yPos <=  -1016 		&& current.zPos <=  15			&& current.storyValue == 0		&& current.bossHealth == 0)
+					return true;
+				break;
+			//The Spider Sword
+			case 1:
+				if(current.xPos >= -46.3 		&& current.yPos >=  -139.7 		&& current.zPos >=  67 			&& current.xPos <=  -46 		&& current.yPos <=  -138 		&& current.zPos <=  68			&& current.storyValue == 2)
+					return true;
+				break;
+			//Chasing Shadee
+			case 2:
+				if(current.xPos >= 43.3 		&& current.yPos >=  -75.7 		&& current.zPos >=  370 		&& current.xPos <=  43.4 		&& current.yPos <=  -75.6 		&& current.zPos <=  370.1		&& current.storyValue == 7)
+					return true;
+				break;
+			//A Damsel in Distress
+			case 3:
+				if(current.xPos >= 115 			&& current.yPos >=  -114 		&& current.zPos >=  357 		&& current.xPos <=  132 		&& current.yPos <=  -80 		&& current.zPos <=  361			&& current.storyValue == 8		&& current.bossHealth == 0)
+					return true;
+				break;
+			//The Dahaka
+			case 4:
+				if(current.xPos >= 40.1 		&& current.yPos >=  -96.1 		&& current.zPos >=  86 			&& current.xPos <=  42.4 		&& current.yPos <=  -95.9 		&& current.zPos <=  86.1		&& current.storyValue == 9)
+					return true;
+				break;
+			//The Serpent Sword
+			case 5:
+				if(current.xPos >= -96.5 		&& current.yPos >=  41.3 		&& current.zPos >=  407.4 		&& current.xPos <=  -96.4 		&& current.yPos <=  41.4 		&& current.zPos <=  407.5		&& current.storyValue == 13)
+					return true;
+				break;
+			//The Garden Hall
+			case 6:
+				if(current.xPos >= 66.9 		&& current.yPos >=  11.4 		&& current.zPos >=  400 		&& current.xPos <=  67.1 		&& current.yPos <=  11.6 		&& current.zPos <=  400.2		&& current.storyValue == 22)
+					return true;
+				break;
+			//The Waterworks Restored
+			case 7:
+				if(current.xPos >= 23 			&& current.yPos >=  41 			&& current.zPos >=  441 		&& current.xPos <=  29 			&& current.yPos <=  43 			&& current.zPos <=  450			&& current.storyValue == 22)
+					return true;
+				break;
+			//The Lion Sword
+			case 8:
+				if(current.xPos >= -44.7 		&& current.yPos >=  -27.1 		&& current.zPos >=  389 		&& current.xPos <=  -44.6 		&& current.yPos <=  -27 		&& current.zPos <=  389.1		&& current.storyValue == 21)
+					return true;
+				break;
+			//The Mechanical Tower
+			case 9:
+				if(current.xPos >= -167 		&& current.yPos >=  -47.5 		&& current.zPos >=  409.6363 	&& current.xPos <=  -162 		&& current.yPos <=  -46 		&& current.zPos <=  412			&& current.storyValue == 15)
+					return true;
+				break;
+			//Breath of Fate
+			case 10:
+				if(current.xPos >= -210.018 	&& current.yPos >=  164.259 	&& current.zPos >=  440.9 		&& current.xPos <=  -210.016 	&& current.yPos <=  164.261 	&& current.zPos <=  441.1		&& current.storyValue == 16)
+					return true;
+				break;
+			//Activation Room in Ruin
+			case 11:
+				if(current.xPos >= -206 		&& current.yPos >=  59.8 		&& current.zPos >=  162.6 		&& current.xPos <=  -205.8 		&& current.yPos <=  67.4 		&& current.zPos <=  163.1		&& current.storyValue == 18)
+					return true;
+				break;
+			//Activation Room Restored
+			case 12:
+				if(current.xPos >= -192.5 		&& current.yPos >=  109 		&& current.zPos >=  471.9 		&& current.xPos <=  -189.5 		&& current.yPos <=  111 		&& current.zPos <=  472.1		&& current.storyValue == 19)
+					return true;
+				break;
+			//The Death of a Sand Wraith
+			case 13:
+				if(current.xPos >= -50 			&& current.yPos >=  -13 		&& current.zPos >=  388.9 		&& current.xPos <=  -39 		&& current.yPos <=  -5 			&& current.zPos <=  389.8		&& current.storyValue == 33)
+					return true;
+				break;
+			//Death of the Empress
+			case 14:
+				if(current.xPos >= -74 			&& current.yPos >=  53.5 		&& current.zPos >=  414 		&& current.xPos <=  -31 		&& current.yPos <=  104 		&& current.zPos <=  422			&& current.storyValue == 38		&& current.bossHealth == 0)
+					return true;
+				break;
+			//Exit the Tomb
+			case 15:
+				if(current.xPos >= -100 		&& current.yPos >=  -190 		&& current.zPos >=  33 			&& current.xPos <=  -97.5 		&& current.yPos <=  -187 		&& current.zPos <=  33.2		&& current.storyValue == 39)
+					return true;
+				break;
+			//The Scorpion Sword
+			case 16:
+				if(current.xPos >= -170.1 		&& current.yPos >=  -127.3 		&& current.zPos >=  335.5 		&& current.xPos <=  -170 		&& current.yPos <=  -127.2 		&& current.zPos <=  336.5		&& current.storyValue == 41)
+					return true;
+				break;
+			//The Library
+			case 17:
+				if(current.xPos >= -112 		&& current.yPos >=  -144 		&& current.zPos >=  384.9 		&& current.xPos <=  -111 		&& current.yPos <=  -137 		&& current.zPos <=  389			&& current.storyValue == 42)
+					return true;
+				break;
+			//The Hourglass Revisited
+			case 18:
+				if(current.xPos >= -108.3 		&& current.yPos >=  40 			&& current.zPos >=  407.3 		&& current.xPos <=  -106 		&& current.yPos <=  45 			&& current.zPos <=  407.5		&& current.storyValue == 45)
+					return true;
+				break;
+			//The Mask of the Wraith
+			case 19:
+				if(current.xPos >= -20.5 		&& current.yPos >=  236.8 		&& current.zPos >=  133 		&& current.xPos <=  -20.4 		&& current.yPos <=  267 		&& current.zPos <=  133.1		&& current.storyValue == 46)
+					return true;
+				break;
+			//The Sand Griffin
+			case 20:
+				if(current.xPos >= -23 			&& current.yPos >=  163 		&& current.zPos >=  429 		&& current.xPos <=  -15 		&& current.yPos <=  166.5 		&& current.zPos <=  431			&& current.storyValue == 48)
+					return true;
+				break;
+			//Mirrored Fates
+			case 21:
+				if(current.xPos >= 136.7 		&& current.yPos >=  -110.6 		&& current.zPos >=  377.9 		&& current.xPos <=  136.9 		&& current.yPos <=  -110.4 		&& current.zPos <=  378			&& current.storyValue == 55)
+					return true;
+				break;
+			//A Favor Unknown
+			case 22:
+				if(current.xPos >= 41.1 		&& current.yPos >=  -180.1 		&& current.zPos >=  368.9 		&& current.xPos <=  41.2 		&& current.yPos <=  -180 		&& current.zPos <=  369.1		&& current.storyValue == 57)
+					return true;
+				break;
+			//The Library Revisited
+			case 23:
+				if(current.xPos >= -112 		&& current.yPos >=  -144 		&& current.zPos >=  384.9 		&& current.xPos <=  -111 		&& current.yPos <=  -137 		&& current.zPos <=  389			&& current.storyValue == 60)
+					return true;
+				break;
+			//The Light Sword
+			case 24:
+				if(current.secondaryWeapon == 50 && current.storyValue == 61)
+					return true;
+				break;
+			//The Death of a Prince
+			case 25:
+				if(current.xPos >= -67 			&& current.yPos >=  -23.3 		&& current.zPos >=  399.9 		&& current.xPos <=  -65.1 		&& current.yPos <=  -23.1 		&& current.zPos <=  400			&& current.storyValue == 64)
+					return true;
+				break;
+			//The End
+			case 26:
+				if(current.xPos >= -35 			&& current.yPos >=  170 		&& current.zPos >=  128.9 		&& current.xPos <=  -5 			&& current.yPos <=  205 		&& current.zPos <=  129.1		&& current.storyValue == 67		&& current.bossHealth == 0)
+					return true;
+				break;
+		}
+		break;
+		
+		case "True Ending (Normal)":
+			switch (timer.CurrentSplitIndex)
+			{
+			//The Boat
+			case 0:
+				if(current.xPos >= -1003 		&& current.yPos >= -1028 		&& current.zPos >= 14 			&& current.xPos <= -995 		&& current.yPos <= -1016 		&& current.zPos <= 15 		&& current.storyValue == 0 && current.bossHealth == 0)
+					return true;
+				break;
+			//The Raven Man
+			case 1:
+				if(current.xPos >= -5.359 		&& current.yPos >= -161.539 	&& current.zPos >= 66.5 		&& current.xPos <= -4.913 		&& current.yPos <= -161.500 	&& current.zPos <= 67.5 	&& current.storyValue == 2)
+					return true;
+				break;
+			//Life Upgrade 1
+			case 2:
+				if(current.xPos >= 52			&& current.yPos >= -188.7		&& current.zPos >= 381.9		&& current.xPos <= 52.8			&& current.yPos <= -188.6		&& current.zPos <= 382.1		&& current.storyValue == 2)
+					return true;
+				break;
+			//Life Upgrade 2
+			case 3:
+				if(current.xPos >= -112.1		&& current.yPos >= -66.1		&& current.zPos >= 360.9		&& current.xPos <= -112			&& current.yPos <= -65.2		&& current.zPos <= 361			&& current.storyValue == 59)
+					return true;
+				break;
+			//Life Upgrade 3
+			case 4:
+				if(current.xPos >= -74.8		&& current.yPos >= -102.8		&& current.zPos >= 378.9		&& current.xPos <= -74.2		&& current.yPos <= -102.7		&& current.zPos <= 379			&& current.storyValue == 60)
+					return true;
+				break;
+			//Life Upgrade 4
+			case 5:
+				if(current.xPos >= -161.2		&& current.yPos >= 170.3		&& current.zPos >= 471.9		&& current.xPos <= -161			&& current.yPos <= 171			&& current.zPos <= 472.1		&& current.storyValue == 63)
+					return true;
+				break;
+			//Life Upgrade 5
+			case 6:
+				if(current.xPos >= 138.8		&& current.yPos >= 115.3		&& current.zPos >= 382.5		&& current.xPos <= 139			&& current.yPos <= 116.7		&& current.zPos <= 382.6		&& current.storyValue == 64)
+					return true;
+				break;
+			//Life Upgrade 6
+			case 7:
+				if(current.xPos >= 76.1			&& current.yPos >= 64.1			&& current.zPos >= 461.4		&& current.xPos <= 76.2			&& current.yPos <= 64.9			&& current.zPos <= 461.6		&& current.storyValue == 64)
+					return true;
+				break;
+			//Life Upgrade 7
+			case 8:
+				if(current.xPos >= 190.2		&& current.yPos >= -131.9		&& current.zPos >= 353.9		&& current.xPos <= 190.4		&& current.yPos <= -131.8		&& current.zPos <= 354.1		&& current.storyValue == 64)
+					return true;
+				break;
+			//Life Upgrade 8
+			case 9:
+				if(current.xPos >= 162.2		&& current.yPos >= -37.5		&& current.zPos >= 392.9		&& current.xPos <= 162.7		&& current.yPos <= -37.3		&& current.zPos <= 393.1		&& current.storyValue == 64)
+					return true;
+				break;
+			//Life Upgrade 9
+			case 10:
+				if(current.xPos >= -114.7		&& current.yPos >= -47.2		&& current.zPos >= 368.9		&& current.xPos <= -114.1		&& current.yPos <= -47			&& current.zPos <= 369.1		&& current.storyValue == 64)
+					return true;
+				break;
+			//The Water Sword
+			case 11:
+				if(current.xPos >= -96.643		&& current.yPos >= 43.059		&& current.zPos >= 407.4		&& current.xPos <= -96.641		&& current.yPos <= 43.061		&& current.zPos <= 407.5		&& current.storyValue == 66)
+					return true;
+				break;
+			//The End
+			case 12:
+				if(current.xPos >= -18.959 		&& current.yPos >= 203.667 		&& current.zPos >= 129 			&& current.xPos <= -18.956 		&& current.yPos <= 203.755 		&& current.zPos <=129.2 		&& current.storyValue == 68)
+					return true;
+				break;
+		}
+		break;
+		
+		case "True Ending (Zipless)":
+			switch (timer.CurrentSplitIndex)
+			{
+			//The Boat
+			case 0:
+				if(current.xPos >= -1003 		&& current.yPos >= -1028 		&& current.zPos >= 14 			&& current.xPos <= -995 		&& current.yPos <= -1016 		&& current.zPos <= 15 			&& current.storyValue == 0 && current.bossHealth == 0)
+					return true;
+				break;
+			//The Raven Man
+			case 1:
+				if(current.xPos >= -5.359 		&& current.yPos >= -161.539 	&& current.zPos >= 66.5 		&& current.xPos <= -4.913 		&& current.yPos <= -161.500 	&& current.zPos <= 67.5 		&& current.storyValue == 2)
+					return true;
+				break;
+			//Life Upgrade 1
+			case 2:
+				if(current.xPos >= -114.7		&& current.yPos >= -47.2		&& current.zPos >= 368.9		&& current.xPos <= -114.1		&& current.yPos <= -47			&& current.zPos <= 369.1		&& current.storyValue == 36)
+					return true;
+				break;
+			//Life Upgrade 2
+			case 3:
+				if(current.xPos >= 76.1			&& current.yPos >= 64.1			&& current.zPos >= 461.4		&& current.xPos <= 76.2			&& current.yPos <= 64.9			&& current.zPos <= 461.6		&& current.storyValue == 36)
+					return true;
+				break;
+			//Life Upgrade 3
+			case 4:
+				if(current.xPos >= 138.8		&& current.yPos >= 115.3		&& current.zPos >= 382.5		&& current.xPos <= 139			&& current.yPos <= 116.7		&& current.zPos <= 382.6		&& current.storyValue == 36)
+					return true;
+				break;
+			//Life Upgrade 4
+			case 5:
+				if(current.xPos >= 52			&& current.yPos >= -188.7		&& current.zPos >= 381.9		&& current.xPos <= 52.8			&& current.yPos <= -188.6		&& current.zPos <= 382.1		&& current.storyValue == 36)
+					return true;
+				break;
+			//Mask of the Wraith (59)
+			case 6:
+				if(current.storyValue == 59)
+					return true;
+				break;
+			//Life Upgrade 5
+			case 7:
+				if(current.xPos >= -112.1		&& current.yPos >= -66.1		&& current.zPos >= 360.9		&& current.xPos <= -112			&& current.yPos <= -65.2		&& current.zPos <= 361			&& current.storyValue == 59)
+					return true;
+				break;			
+			//Life Upgrade 6
+			case 8:
+				if(current.xPos >= -74.8		&& current.yPos >= -102.8		&& current.zPos >= 378.9		&& current.xPos <= -74.2		&& current.yPos <= -102.7		&& current.zPos <= 379			&& current.storyValue == 60)
+					return true;
+				break;
+			//The Mechanical Tower
+			case 9:
+				if(current.xPos >= -208		&& current.yPos >= -35.5		&& current.zPos >= 419.9		&& current.xPos <= -205		&& current.yPos <= -32.5		&& current.zPos <= 423			&& current.storyValue == 63)
+					return true;
+				break;					
+			//Life Upgrade 7
+			case 10:
+				if(current.xPos >= -161.2		&& current.yPos >= 170.3		&& current.zPos >= 471.9		&& current.xPos <= -161			&& current.yPos <= 171			&& current.zPos <= 472.1		&& current.storyValue == 63)
+					return true;
+				break;
+			//Life Upgrade 8
+			case 11:
+				if(current.xPos >= 162.2		&& current.yPos >= -37.5		&& current.zPos >= 392.9		&& current.xPos <= 162.7		&& current.yPos <= -37.3		&& current.zPos <= 393.1		&& current.storyValue == 64)
+					return true;
+				break;
+			//Life Upgrade 9
+			case 12:
+				if(current.xPos >= 190.2		&& current.yPos >= -131.9		&& current.zPos >= 353.9		&& current.xPos <= 190.4		&& current.yPos <= -131.8		&& current.zPos <= 354.1		&& current.storyValue == 64)
+					return true;
+				break;
+			//The Water Sword
+			case 13:
+				if(current.xPos >= -96.643		&& current.yPos >= 43.059		&& current.zPos >= 407.4		&& current.xPos <= -96.641		&& current.yPos <= 43.061		&& current.zPos <= 407.5		&& current.storyValue == 66)
+					return true;
+				break;
+			//The End
+			case 14:
+				if(current.xPos >= -18.959 		&& current.yPos >= 203.667 		&& current.zPos >= 129 			&& current.xPos <= -18.956 		&& current.yPos <= 203.755 		&& current.zPos <=129.2 		&& current.storyValue == 68)
+					return true;
+				break;
+		}
+		break;
+		
+		case "True Ending (No Major Glitches)":
+			switch (timer.CurrentSplitIndex)
+			{
+			//The Boat
+			case 0:
+				if(current.xPos >= -1003 		&& current.yPos >=  -1028 		&& current.zPos >=  14 			&& current.xPos <=  -995 		&& current.yPos <=  -1016 		&& current.zPos <=  15			&& current.storyValue == 0		&& current.bossHealth == 0)
+					return true;
+				break;
+			//The Spider Sword
+			case 1:
+				if(current.xPos >= -46.3 		&& current.yPos >=  -139.7 		&& current.zPos >=  67 			&& current.xPos <=  -46 		&& current.yPos <=  -138 		&& current.zPos <=  68			&& current.storyValue == 2)
+					return true;
+				break;
+			//Life Upgrade 1
+			case 2:
+				if(current.xPos >= 162.2		&& current.yPos >= -37.5		&& current.zPos >= 392.9		&& current.xPos <= 162.7		&& current.yPos <= -37.3		&& current.zPos <= 393.1		&& current.storyValue == 7)
+					return true;
+				break;
+			//A Damsel in Distress
+			case 3:
+				if(current.xPos >= 115 			&& current.yPos >=  -114 		&& current.zPos >=  357 		&& current.xPos <=  132 		&& current.yPos <=  -80 		&& current.zPos <=  361			&& current.storyValue == 8		&& current.bossHealth == 0)
+					return true;
+				break;
+			//Life Upgrade 2
+			case 4:
+				if(current.xPos >= 190.2		&& current.yPos >= -131.9		&& current.zPos >= 353.9		&& current.xPos <= 190.4		&& current.yPos <= -131.8		&& current.zPos <= 354.1		&& current.storyValue == 8)
+					return true;
+				break;
+			//The Dahaka
+			case 5:
+				if(current.xPos >= 40.1 		&& current.yPos >=  -96.1 		&& current.zPos >=  86 			&& current.xPos <=  42.4 		&& current.yPos <=  -95.9 		&& current.zPos <=  86.1		&& current.storyValue == 9)
+					return true;
+				break;
+			//Life Upgrade 3
+			case 6:
+				if(current.xPos >= 52			&& current.yPos >= -188.7		&& current.zPos >= 381.9		&& current.xPos <= 52.8			&& current.yPos <= -188.6		&& current.zPos <= 382.1		&& current.storyValue == 11)
+					return true;
+				break;
+			//The Serpent Sword
+			case 7:
+				if(current.xPos >= -96.5 		&& current.yPos >=  41.3 		&& current.zPos >=  407.4 		&& current.xPos <=  -96.4 		&& current.yPos <=  41.4 		&& current.zPos <=  407.5		&& current.storyValue == 13)
+					return true;
+				break;
+			//The Waterworks Restored
+			case 8:
+				if(current.xPos >= 23 			&& current.yPos >=  41 			&& current.zPos >=  441 		&& current.xPos <=  29 			&& current.yPos <=  43 			&& current.zPos <=  450			&& current.storyValue == 22)
+					return true;
+				break;
+			//Life Upgrade 4
+			case 9:
+				if(current.xPos >= 76.1			&& current.yPos >= 64.1			&& current.zPos >= 461.4		&& current.xPos <= 76.2			&& current.yPos <= 64.9			&& current.zPos <= 461.6		&& current.storyValue == 22)
+					return true;
+				break;
+			//Life Upgrade 5
+			case 10:
+				if(current.xPos >= 138.8		&& current.yPos >= 115.3		&& current.zPos >= 382.5		&& current.xPos <= 139			&& current.yPos <= 116.7		&& current.zPos <= 382.6		&& current.storyValue == 32)
+					return true;
+				break;
+			//Life Upgrade 6
+			case 11:
+				if(current.xPos >= -114.7		&& current.yPos >= -47.2		&& current.zPos >= 368.9		&& current.xPos <= -114.1		&& current.yPos <= -47			&& current.zPos <= 369.1		&& current.storyValue == 21)
+					return true;
+				break;
+			//The Mechanical Tower
+			case 12:
+				if(current.xPos >= -167 		&& current.yPos >=  -47.5 		&& current.zPos >=  409.6363 	&& current.xPos <=  -162 		&& current.yPos <=  -46 		&& current.zPos <=  412			&& current.storyValue == 15)
+					return true;
+				break;
+			//Breath of Fate
+			case 13:
+				if(current.xPos >= -210.018 	&& current.yPos >=  164.259 	&& current.zPos >=  440.9 		&& current.xPos <=  -210.016 	&& current.yPos <=  164.261 	&& current.zPos <=  441.1		&& current.storyValue == 16)
+					return true;
+				break;
+			//Activation Room in Ruin
+			case 14:
+				if(current.xPos >= -206 		&& current.yPos >=  59.8 		&& current.zPos >=  162.6 		&& current.xPos <=  -205.8 		&& current.yPos <=  67.4 		&& current.zPos <=  163.1		&& current.storyValue == 18)
+					return true;
+				break;
+			//Life Upgrade 7
+			case 15:
+				if(current.xPos >= -161.2		&& current.yPos >= 170.3		&& current.zPos >= 471.9		&& current.xPos <= -161			&& current.yPos <= 171			&& current.zPos <= 472.1		&& current.storyValue == 19)
+					return true;
+				break;
+			//The Death of a Sand Wraith
+			case 16:
+				if(current.xPos >= -50 			&& current.yPos >=  -13 		&& current.zPos >=  388.9 		&& current.xPos <=  -39 		&& current.yPos <=  -5 			&& current.zPos <=  389.8		&& current.storyValue == 33)
+					return true;
+				break;
+			//Death of the Empress
+			case 17:
+				if(current.xPos >= -74 			&& current.yPos >=  53.5 		&& current.zPos >=  414 		&& current.xPos <=  -31 		&& current.yPos <=  104 		&& current.zPos <=  422			&& current.storyValue == 38		&& current.bossHealth == 0)
+					return true;
+				break;
+			//Exit the Tomb
+			case 18:
+				if(current.xPos >= -100 		&& current.yPos >=  -190 		&& current.zPos >=  33 			&& current.xPos <=  -97.5 		&& current.yPos <=  -187 		&& current.zPos <=  33.2		&& current.storyValue == 39)
+					return true;
+				break;
+			//The Scorpion Sword
+			case 19:
+				if(current.xPos >= -170.1 		&& current.yPos >=  -127.3 		&& current.zPos >=  335.5 		&& current.xPos <=  -170 		&& current.yPos <=  -127.2 		&& current.zPos <=  336.5		&& current.storyValue == 41)
+					return true;
+				break;
+			//Life Upgrade 8
+			case 20:
+				if(current.xPos >= -112.1		&& current.yPos >= -66.1		&& current.zPos >= 360.9		&& current.xPos <= -112			&& current.yPos <= -65.2		&& current.zPos <= 361			&& current.storyValue == 41)
+					return true;
+				break;
+			//Life Upgrade 9
+			case 21:
+				if(current.xPos >= -74.8		&& current.yPos >= -102.8		&& current.zPos >= 378.9		&& current.xPos <= -74.2		&& current.yPos <= -102.7		&& current.zPos <= 379			&& current.storyValue == 42)
+					return true;
+				break;
+			//The Water Sword
+			case 22:
+				if(current.xPos >= -96.643		&& current.yPos >= 43.059		&& current.zPos >= 407.4		&& current.xPos <= -96.641		&& current.yPos <= 43.061		&& current.zPos <= 407.5		&& current.storyValue == 45)
+					return true;
+				break;
+			//The Mask of the Wraith
+			case 23:
+				if(current.xPos >= -20.5 		&& current.yPos >=  236.8 		&& current.zPos >=  133 		&& current.xPos <=  -20.4 		&& current.yPos <=  267 		&& current.zPos <=  133.1		&& current.storyValue == 46)
+					return true;
+				break;
+			//The Sand Griffin
+			case 24:
+				if(current.xPos >= -23 			&& current.yPos >=  163 		&& current.zPos >=  429 		&& current.xPos <=  -15 		&& current.yPos <=  166.5 		&& current.zPos <=  431			&& current.storyValue == 48)
+					return true;
+				break;
+			//Mirrored Fates
+			case 25:
+				if(current.xPos >= 136.7 		&& current.yPos >=  -110.6 		&& current.zPos >=  377.9 		&& current.xPos <=  136.9 		&& current.yPos <=  -110.4 		&& current.zPos <=  378			&& current.storyValue == 55)
+					return true;
+				break;
+			//A Favor Unknown
+			case 26:
+				if(current.xPos >= 41.1 		&& current.yPos >=  -180.1 		&& current.zPos >=  368.9 		&& current.xPos <=  41.2 		&& current.yPos <=  -180 		&& current.zPos <=  369.1		&& current.storyValue == 57)
+					return true;
+				break;
+			//The Library Revisited
+			case 27:
+				if(current.xPos >= -112 		&& current.yPos >=  -144 		&& current.zPos >=  384.9 		&& current.xPos <=  -111 		&& current.yPos <=  -137 		&& current.zPos <=  389			&& current.storyValue == 60)
+					return true;
+				break;
+			//The Light Sword
+			case 28:
+				if(current.secondaryWeapon == 50 && current.storyValue == 61)
+					return true;
+				break;
+			//The Death of a Prince
+			case 29:
+				if(current.xPos >= -67 			&& current.yPos >=  -23.3 		&& current.zPos >=  399.9 		&& current.xPos <=  -65.1 		&& current.yPos <=  -23.1 		&& current.zPos <=  400			&& current.storyValue == 64)
+					return true;
+				break;
+			//The End
+			case 30:
+				if(current.xPos >= -18.959 		&& current.yPos >= 203.667 		&& current.zPos >= 129 			&& current.xPos <= -18.956 		&& current.yPos <= 203.755 		&& current.zPos <=129.2 		&& current.storyValue == 68)
+					return true;
+				break;
+		}
+		break;
+	}	
 }
