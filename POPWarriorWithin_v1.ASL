@@ -23,17 +23,15 @@ startup{
 start{
 	//Detecting if the game has started on the boat.
 	if(old.startValue == 1 && current.startValue == 2){
-		if(current.xPos == -997.6756592)
+		if(current.xPos >= -997.6757 && current.xPos <= -997.6755)
 			return true;
 	}
 }
 
 reset{
 	//Detecting if the game has started on the boat.
-	if(old.startValue == 1 && current.startValue == 2){
-		if(current.xPos == -997.6756592)
+		if(current.startValue == 1 && current.yPos <= -976.0555 && current.yPos >= -976.0557)
 			return true;
-	}
 }
 
 split{
