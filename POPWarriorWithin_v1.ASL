@@ -75,7 +75,7 @@ split{
 				break;
 			//Back to the Future
 			case 6:
-				if(current.xPos >= -52.7 		&& current.yPos >= 137.2 		&& current.zPos >= 418 		&& current.xPos <= -52.6 		&& current.yPos <= 137.3 		&& current.zPos <= 419 		&& current.storyValue == 66)
+				if(current.xPos >= -52.7 		&& current.yPos >= 137.2 		&& current.zPos >= 418 			&& current.xPos <= -52.6 		&& current.yPos <= 137.3 		&& current.zPos <= 419 		&& current.storyValue == 66)
 					return true;
 				break;
 			//The End
@@ -121,7 +121,7 @@ split{
 				break;
 			//Back to the Future
 			case 6:
-				if(current.xPos >= -52.7 		&& current.yPos >= 137.2 		&& current.zPos >= 418 		&& current.xPos <= -52.6 		&& current.yPos <= 137.3 		&& current.zPos <= 419 		&& current.storyValue == 66)
+				if(current.xPos >= -52.7 		&& current.yPos >= 137.2 		&& current.zPos >= 418 			&& current.xPos <= -52.6 		&& current.yPos <= 137.3 		&& current.zPos <= 419 		&& current.storyValue == 66)
 					return true;
 				break;
 			//The End
@@ -278,12 +278,12 @@ split{
 			{
 			//The Boat
 			case 0:
-				if(current.xPos >= -1003 		&& current.yPos >= -1028 		&& current.zPos >= 14 			&& current.xPos <= -995 		&& current.yPos <= -1016 		&& current.zPos <= 15 		&& current.storyValue == 0 && current.bossHealth == 0)
+				if(current.xPos >= -1003 		&& current.yPos >= -1028 		&& current.zPos >= 14 			&& current.xPos <= -995 		&& current.yPos <= -1016 		&& current.zPos <= 15 			&& current.storyValue == 0 && current.bossHealth == 0)
 					return true;
 				break;
 			//The Raven Man
 			case 1:
-				if(current.xPos >= -5.359 		&& current.yPos >= -161.539 	&& current.zPos >= 66.5 		&& current.xPos <= -4.913 		&& current.yPos <= -161.500 	&& current.zPos <= 67.5 	&& current.storyValue == 2)
+				if(current.xPos >= -5.359 		&& current.yPos >= -161.539 	&& current.zPos >= 66.5 		&& current.xPos <= -4.913 		&& current.yPos <= -161.500 	&& current.zPos <= 67.5 		&& current.storyValue == 2)
 					return true;
 				break;
 			//Life Upgrade 1
@@ -394,7 +394,7 @@ split{
 				break;
 			//The Mechanical Tower
 			case 9:
-				if(current.xPos >= -208		&& current.yPos >= -35.5		&& current.zPos >= 419.9		&& current.xPos <= -205		&& current.yPos <= -32.5		&& current.zPos <= 423			&& current.storyValue == 63)
+				if(current.xPos >= -208			&& current.yPos >= -35.5		&& current.zPos >= 419.9		&& current.xPos <= -205			&& current.yPos <= -32.5		&& current.zPos <= 423			&& current.storyValue == 63)
 					return true;
 				break;					
 			//Life Upgrade 7
@@ -468,9 +468,9 @@ split{
 				if(current.xPos >= -96.5 		&& current.yPos >=  41.3 		&& current.zPos >=  407.4 		&& current.xPos <=  -96.4 		&& current.yPos <=  41.4 		&& current.zPos <=  407.5		&& current.storyValue == 13)
 					return true;
 				break;
-			//The Waterworks Restored
+			//The Garden Hall
 			case 8:
-				if(current.xPos >= 23 			&& current.yPos >=  41 			&& current.zPos >=  441 		&& current.xPos <=  29 			&& current.yPos <=  43 			&& current.zPos <=  450			&& current.storyValue == 22)
+				if(current.xPos >= 66.9 		&& current.yPos >=  11.4 		&& current.zPos >=  400 		&& current.xPos <=  67.1 		&& current.yPos <=  11.6 		&& current.zPos <=  400.2		&& current.storyValue == 22)
 					return true;
 				break;
 			//Life Upgrade 4
