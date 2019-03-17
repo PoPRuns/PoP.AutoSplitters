@@ -81,7 +81,7 @@ split{
 				break;
 			//The End
 			case 7:
-				if(current.xPos >= -35 			&& current.yPos >= 170 			&& current.zPos >= 128.9 		&& current.xPos <= -5 			&& current.yPos <= 205 			&& current.zPos <= 129.1 	&& current.storyValue == 67 && current.bossHealth == 0)
+				if(current.xPos >= -35 			&& current.yPos >= 170 			&& current.zPos >= 128.9 		&& current.xPos <= -5 			&& current.yPos <= 205 			&& current.zPos <= 129.1 	&& current.storyValue >= 66 && current.bossHealth == 0)
 					return true;
 				break;
 		}
