@@ -18,6 +18,7 @@ state("POP2"){
 }
 
 startup{
+	settings.Add("RNG 63", true, "RNG 63");
 }
 
 start{
@@ -68,6 +69,8 @@ split{
 				break;
 			//The Light Sword
 			case 5:
+				if (settings["RNG 63"] && current.storyValue == 63)
+					return true;
 				if(current.secondaryWeapon == 50 && current.storyValue == 61)
 					return true;
 				break;
@@ -114,6 +117,8 @@ split{
 				break;
 			//The Light Sword
 			case 5:
+				if (settings["RNG 63"] && current.storyValue == 63)
+					return true;
 				if(current.secondaryWeapon == 50 && current.storyValue == 61)
 					return true;
 				break;
