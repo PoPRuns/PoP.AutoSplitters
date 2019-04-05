@@ -97,7 +97,7 @@ split{
 				break;
 			//The Underground Cave
 			case 13:	
-				if(current.xPos >= -25.5		&& current.yPos >= 332			&& current.zPos >= 35.9			&& current.xPos <= -23			&& current.yPos <= 338			&& current.zPos <= 36.1)
+				if(current.xPos >= -25.5		&& current.yPos >= 325			&& current.zPos >= 35.9			&& current.xPos <= -23			&& current.yPos <= 338			&& current.zPos <= 36.1)
 					return true;	
 				break;
 			//The Upper Tower
@@ -105,8 +105,13 @@ split{
 				if(current.xPos >= -8			&& current.yPos >= 296			&& current.zPos >= 226.9		&& current.xPos <= -7			&& current.yPos <= 298			&& current.zPos <= 227)
 					return true;	
 				break;
-			//The End
+			//The Death of the Vizier
 			case 15:	
+				if(current.xPos >= -7.2			&& current.yPos >= 245.6		&& current.zPos >= 677			&& current.xPos <= -6.9			&& current.yPos <= 245.9		&& current.zPos <= 679)
+					return true;
+				break;
+			//The End
+			case 16:	
 				if(current.xPos >= 189			&& current.yPos >= 319.135		&& current.zPos >= 542			&& current.xPos <= 193			&& current.yPos <= 320			&& current.zPos <= 543)
 					return true;	
 				break;
