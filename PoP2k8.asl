@@ -40,7 +40,6 @@ split{
 	
 	if(old.combat == 2 && current.combat == 0){
 		vars.kill = true;
-		print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 	}
 	
 switch (timer.CurrentSplitIndex)
