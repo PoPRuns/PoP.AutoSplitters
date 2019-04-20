@@ -17,18 +17,20 @@ init {
 }
 
 reset {
-	if(old.xPos == 0 && current.xPos == -465){
+	if(old.xPos != -465 && current.xPos == -465){
 		return true;
 	}
 }
 start {
 	
+	if(old.xPos != -351 && current.yPos == -351){
+	return true;
+}
+
 	vars.kill = false;
 	vars.startUp = true;
 	
-if(old.xPos == 0 && current.yPos == -351){
-	return true;
-}
+
 }
 
 split{
