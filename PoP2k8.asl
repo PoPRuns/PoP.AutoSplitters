@@ -151,11 +151,11 @@ switch (timer.CurrentSplitIndex)
 						return true;
 					break;
 				case 26:
-					if(current.xPos <= -322 && current.xPos >= -284 && current.yPos >= 628 && current.yPos <= 675 && current.zPos >= 99.2 && vars.kill)
+					if(current.xPos <= -322 && current.xPos >= -260 && current.yPos >= 628 && current.yPos <= 675 && current.zPos >= 99.2 && vars.kill)
 						return true;
 					break;
 				case 27:
-					if(current.xPos >= -303.66 && current.xPos <= -303.64 && current.zPos >= 99.2)
+					if(old.zPos <= 0 && current.zPos >= 99.2)
 						return true;
 					break;
 				case 28:
@@ -167,7 +167,7 @@ switch (timer.CurrentSplitIndex)
 						return true;
 					break;
 				case 30:
-					if(current.xPos <= 20 && current.xPos >= -10 && current.yPos >= -375 && current.yPos <= -355 && current.zPos <= -333 && vars.kill)
+					if(current.xPos <= 20 && current.xPos >= -10 && current.yPos >= -375 && current.yPos <= -355 && current.zPos <= -32 && vars.kill)
 						return true;
 					break;
 				case 31:
