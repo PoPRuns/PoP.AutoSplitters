@@ -22,7 +22,7 @@ start {
 }
 
 isLoading{
-	if(current.loading == 2 || (current.xPos == 0 && current.yPos == 0)){
+	if(current.loading != 0 || (current.xPos == 0 && current.yPos == 0)){
 	return true;
 	}else{
 		return false;
