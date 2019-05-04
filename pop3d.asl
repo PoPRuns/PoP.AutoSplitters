@@ -18,9 +18,7 @@ init {
 }
 
 reset {
-	if(old.lXPos != 22 && current.lXPos == 22){
-		return true;
-	}
+
 }
 
 start {
