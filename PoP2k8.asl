@@ -91,11 +91,11 @@ switch (timer.CurrentSplitIndex)
 						return true;
 					break;
 				case 11:
-					if(current.seedCount == 250)
+					if(current.seedCount == 251)
 						return true;
 					break;
 				case 12:
-					if(current.seedCount == 280)
+					if(current.seedCount == 281)
 						return true;
 					break;
 				case 13:
