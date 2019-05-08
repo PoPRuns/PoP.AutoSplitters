@@ -413,8 +413,8 @@ split{
 					return true;
 				break;
 			//The Death of the Vizier
-			case 28:
-				if(current.xPos >= -4.485		&& current.yPos >= 240.943		&& current.zPos >= 304.232		&& current.xPos <= -4.487		&& current.yPos <= 240.945		&& current.zPos <= 304.234)
+			case 28:	
+				if(current.xPos >= -7.2			&& current.yPos >= 245.6		&& current.zPos >= 677			&& current.xPos <= -6.9			&& current.yPos <= 245.9		&& current.zPos <= 679)
 					return true;
 				break;
 			//The End
@@ -523,8 +523,13 @@ split{
 				if(current.xPos >= -8			&& current.yPos >= 296			&& current.zPos >= 226.9		&& current.xPos <= -7			&& current.yPos <= 298			&& current.zPos <= 227)
 					return true;	
 				break;
-			//The End
+			//The Death of the Vizier
 			case 19:	
+				if(current.xPos >= -7.2			&& current.yPos >= 245.6		&& current.zPos >= 677			&& current.xPos <= -6.9			&& current.yPos <= 245.9		&& current.zPos <= 679)
+					return true;
+				break;
+			//The End
+			case 20:	
 				if(current.xPos >= 189			&& current.yPos >= 319.135		&& current.zPos >= 542			&& current.xPos <= 193			&& current.yPos <= 320			&& current.zPos <= 543)
 					return true;	
 				break;
@@ -856,8 +861,8 @@ split{
 					return true;
 				break;
 			//The Death of the Vizier
-			case 31:
-				if(current.xPos >= -4.485		&& current.yPos >= 240.943		&& current.zPos >= 304.232		&& current.xPos <= -4.487		&& current.yPos <= 240.945		&& current.zPos <= 304.234)
+			case 31:	
+				if(current.xPos >= -7.2			&& current.yPos >= 245.6		&& current.zPos >= 677			&& current.xPos <= -6.9			&& current.yPos <= 245.9		&& current.zPos <= 679)
 					return true;
 				break;
 			//The End
