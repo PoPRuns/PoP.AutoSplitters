@@ -79,7 +79,7 @@ split{
 						return true;
 					break;
 				case 9:
-					if (old.lYPos == 0 && current.lYPos > -77.77 && current.lYPos < -77.75)
+					if (old.lZPos == 0 && current.lZPos > -77.77 && current.lZPos < -77.75)
 						return true;
 					break;
 				case 10:
