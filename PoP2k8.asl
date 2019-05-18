@@ -158,9 +158,9 @@ switch (timer.CurrentSplitIndex)
 						return true;
 					break;
 				case 14: //City Gate
-					vars.xTarget = 535.856;
-					vars.yTarget = 6.569;
-					vars.zTarget = -33.603;
+					vars.xTarget = 547.488;
+					vars.yTarget = 45.41;
+					vars.zTarget = -27.107;
 					if(current.xPos <= (vars.xTarget+2) && current.xPos >= (vars.xTarget-2) && current.yPos <= (vars.yTarget+2) && current.yPos >= (vars.yTarget-2) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.seedGet)
 						return true;
 					break;
