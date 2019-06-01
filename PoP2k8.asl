@@ -133,7 +133,7 @@ switch (timer.CurrentSplitIndex)
 					vars.xTarget = -28.088;
 					vars.yTarget = 544.298;
 					vars.zTarget = 34.942;
-					if(current.xPos <= (vars.xTarget+2) && current.xPos >= (vars.xTarget-2) && current.yPos <= (vars.yTarget+2) && current.yPos >= (vars.yTarget-2) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.seedGet)
+					if(current.xPos <= (vars.xTarget+3) && current.xPos >= (vars.xTarget-3) && current.yPos <= (vars.yTarget+3) && current.yPos >= (vars.yTarget-3) && current.zPos <= (vars.zTarget+3) && current.zPos >= (vars.zTarget-3) && vars.seedGet)
 						return true;
 					break;
 				case 11: //Reservoir
