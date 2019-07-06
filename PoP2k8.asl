@@ -101,7 +101,7 @@ switch (timer.CurrentSplitIndex)
 					if(current.xPos <= (vars.xTarget+2) && current.xPos >= (vars.xTarget-2) && current.yPos <= (vars.yTarget+2) && current.yPos >= (vars.yTarget-2) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.seedGet)
 						return true;
 					break;
-				case 6: //Martyr's Tower
+				case 6: //Martyrs' Tower
 					vars.xTarget = -564.202;
 					vars.yTarget = 207.312;
 					vars.zTarget = 22;
@@ -137,115 +137,118 @@ switch (timer.CurrentSplitIndex)
 						return true;
 					break;
 				case 11: //Reservoir
-					vars.xTarget = -179.922;
-					vars.yTarget = 394.969;
-					vars.zTarget = 33.252;
+					vars.xTarget = -150.082;
+					vars.yTarget = 406.606;
+					vars.zTarget = 34.673;
 					if(current.xPos <= (vars.xTarget+2) && current.xPos >= (vars.xTarget-2) && current.yPos <= (vars.yTarget+2) && current.yPos >= (vars.yTarget-2) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.seedGet)
 						return true;
 					break;
-				case 12: //Cauldron
+				case 12: //Construction Yard
+					vars.xTarget = -151.121;
+					vars.yTarget = 303.514;
+					vars.zTarget = 27.95;
+					if(current.xPos <= (vars.xTarget+2) && current.xPos >= (vars.xTarget-2) && current.yPos <= (vars.yTarget+2) && current.yPos >= (vars.yTarget-2) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.seedGet)
+						return true;
+					break;
+				case 13: //Cauldron
 					vars.xTarget = 107.123;
 					vars.yTarget = 183.394;
 					vars.zTarget = -5.628;
 					if(current.xPos <= (vars.xTarget+2) && current.xPos >= (vars.xTarget-2) && current.yPos <= (vars.yTarget+2) && current.yPos >= (vars.yTarget-2) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.seedGet)
 						return true;
 					break;
-				case 13: //Cavern
+				case 14: //Cavern
 					vars.xTarget = 251.741;
 					vars.yTarget = 65.773;
 					vars.zTarget = -13.616;
 					if(current.xPos <= (vars.xTarget+2) && current.xPos >= (vars.xTarget-2) && current.yPos <= (vars.yTarget+2) && current.yPos >= (vars.yTarget-2) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.seedGet)
 						return true;
 					break;
-				case 14: //City Gate
+				case 15: //City Gate
 					vars.xTarget = 547.488;
 					vars.yTarget = 45.41;
 					vars.zTarget = -27.107;
 					if(current.xPos <= (vars.xTarget+2) && current.xPos >= (vars.xTarget-2) && current.yPos <= (vars.yTarget+2) && current.yPos >= (vars.yTarget-2) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.seedGet)
 						return true;
 					break;
-				case 15: //Tower of Ormazd
+				case 16: //Tower of Ormazd
 					vars.xTarget = 609.907;
 					vars.yTarget = 61.905;
 					vars.zTarget = -35.001;
 					if(current.xPos <= (vars.xTarget+2) && current.xPos >= (vars.xTarget-2) && current.yPos <= (vars.yTarget+2) && current.yPos >= (vars.yTarget-2) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.seedGet)
 						return true;
 					break;
-				case 16: //Queen's Tower
+				case 17: //Queen's Tower
 					vars.xTarget = 637.262;
 					vars.yTarget = 27.224;
 					vars.zTarget = -28.603;
 					if(current.xPos <= (vars.xTarget+2) && current.xPos >= (vars.xTarget-2) && current.yPos <= (vars.yTarget+2) && current.yPos >= (vars.yTarget-2) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.seedGet)
 						return true;
 					break;
-				case 17: //The Temple (Arrive)
+				case 18: //The Temple (Arrive)
 					if(current.yPos <= -234.5 && current.zPos >= -33.1 && current.xPos >= 3.9 && current.xPos <= 8)
 						return true;
 					break;
-				case 18: //Double Jump
+				case 19: //Double Jump
 					if(current.xPos <= 6.19 && current.xPos >= 6.12 && current.yPos >= -233.49 && current.yPos <= -225.18 && current.zPos >= -33.01 && current.zPos <= -32.5)
 						return true;
 					break;
-				case 19: //Wings of Ormazd
+				case 20: //Wings of Ormazd
 					if(current.xPos >= 6.6 && current.xPos <= 6.8 && current.yPos >= -171.8 && current.yPos <= -171.6 && current.zPos == -49)
 						return true;
 					break;
-				case 20: //The Warrior
+				case 21: //The Warrior
 					vars.xTarget = 1070.478;
 					vars.yTarget = 279.147;
 					vars.zTarget = -29.571;
 					if(current.xPos <= (vars.xTarget+23) && current.xPos >= (vars.xTarget-23) && current.yPos <= (vars.yTarget+23) && current.yPos >= (vars.yTarget-23) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.kill)
 						return true;
 					break;
-				case 21: //Heal City of Light
-					if(current.xPos <= 815 && current.xPos >= 795 && current.yPos <= 105 && current.yPos >= 95 && current.zPos >= -42.6 && vars.kill)
-						return true;
-					break;
-				case 22: //City of Light
-					vars.xTarget = 768.74;
-					vars.yTarget = 162.381;
-					vars.zTarget = -45.142;
-					if(current.xPos <= (vars.xTarget+2) && current.xPos >= (vars.xTarget-2) && current.yPos <= (vars.yTarget+2) && current.yPos >= (vars.yTarget-2) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.seedGet)
-						return true;
-					break;
-				case 23: //The Concubine
-					vars.xTarget = 352.792;
-					vars.yTarget = 801.051;
-					vars.zTarget = 150.260;
-					if(current.xPos <= (vars.xTarget+26) && current.xPos >= (vars.xTarget-26) && current.yPos <= (vars.yTarget+26) && current.yPos >= (vars.yTarget-26) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.kill)
-						return true;
-					break;
-				case 24: //Heal Coronation Hall
+				case 22: //Heal Coronation Hall
 					if(current.xPos >= 328 && current.xPos <= 352 && current.yPos >= 570 && current.yPos <= 595 && current.zPos >= 32.4 && vars.kill)
 						return true;
 					break;
-				case 25: //Coronation Hall
+				case 23: //Coronation Hall (Seeds)
 					vars.xTarget = 264.497;
 					vars.yTarget = 589.336;
 					vars.zTarget = 38.67;
 					if(current.xPos <= (vars.xTarget+2) && current.xPos >= (vars.xTarget-2) && current.yPos <= (vars.yTarget+2) && current.yPos >= (vars.yTarget-2) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.seedGet)
 						return true;
 					break;
-				case 26: //Heal Heaven's Stair
+				case 24: //Heal Heaven's Stair
 					if(current.xPos >= -322 && current.xPos <= -260 && current.yPos >= 628 && current.yPos <= 675 && current.zPos >= 99.2 && vars.kill)
 						return true;
 					break;
-				case 27: //Step of Ormazd
-					if(old.zPos <= 0 && current.zPos >= 99.2)
+				case 25: //Heaven's Stair (Seeds)
+					vars.xTarget = -279.466;
+					vars.yTarget = 695.742;
+					vars.zTarget = 87.415;
+					if(current.xPos <= (vars.xTarget+2) && current.xPos >= (vars.xTarget-2) && current.yPos <= (vars.yTarget+2) && current.yPos >= (vars.yTarget-2) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.seedGet)
 						return true;
 					break;
-				case 28: //The Alchemist
+				case 26: //The Alchemist
 					vars.xTarget = -296.593;
 					vars.yTarget = 697.233;
 					vars.zTarget = 296.199;
 					if(current.xPos <= (vars.xTarget+10) && current.xPos >= (vars.xTarget-10) && current.yPos <= (vars.yTarget+10) && current.yPos >= (vars.yTarget-10) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.kill)
 						return true;
 					break;
-				case 29: //The Hunter
+				case 27: //The Hunter
 					vars.xTarget = -929.415;
 					vars.yTarget = 320.888;
 					vars.zTarget = -89.038;
 					if(current.xPos <= (vars.xTarget+10) && current.xPos >= (vars.xTarget-10) && current.yPos <= (vars.yTarget+10) && current.yPos >= (vars.yTarget-10) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.kill)
+						return true;
+					break;
+				case 28: //Hand of Ormazd
+					if(old.zPos <= 0 && current.zPos >= 32.4)
+						return true;
+					break;
+				case 29: //The Concubine
+					vars.xTarget = 352.792;
+					vars.yTarget = 801.051;
+					vars.zTarget = 150.260;
+					if(current.xPos <= (vars.xTarget+26) && current.xPos >= (vars.xTarget-26) && current.yPos <= (vars.yTarget+26) && current.yPos >= (vars.yTarget-26) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.kill)
 						return true;
 					break;
 				case 30: //The King
