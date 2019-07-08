@@ -208,7 +208,7 @@ switch (timer.CurrentSplitIndex)
 					if(current.xPos >= 328 && current.xPos <= 352 && current.yPos >= 570 && current.yPos <= 595 && current.zPos >= 32.4 && vars.kill)
 						return true;
 					break;
-				case 23: //Coronation Hall (Seeds)
+				case 23: //Coronation Hall
 					vars.xTarget = 264.497;
 					vars.yTarget = 589.336;
 					vars.zTarget = 38.67;
@@ -219,47 +219,40 @@ switch (timer.CurrentSplitIndex)
 					if(current.xPos >= -322 && current.xPos <= -260 && current.yPos >= 628 && current.yPos <= 675 && current.zPos >= 99.2 && vars.kill)
 						return true;
 					break;
-				case 25: //Heaven's Stair (Seeds)
-					vars.xTarget = -279.466;
-					vars.yTarget = 695.742;
-					vars.zTarget = 87.415;
-					if(current.xPos <= (vars.xTarget+2) && current.xPos >= (vars.xTarget-2) && current.yPos <= (vars.yTarget+2) && current.yPos >= (vars.yTarget-2) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.seedGet)
-						return true;
-					break;
-				case 26: //The Alchemist
+				case 25: //The Alchemist
 					vars.xTarget = -296.593;
 					vars.yTarget = 697.233;
 					vars.zTarget = 296.199;
 					if(current.xPos <= (vars.xTarget+10) && current.xPos >= (vars.xTarget-10) && current.yPos <= (vars.yTarget+10) && current.yPos >= (vars.yTarget-10) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.kill)
 						return true;
 					break;
-				case 27: //The Hunter
+				case 26: //The Hunter
 					vars.xTarget = -929.415;
 					vars.yTarget = 320.888;
 					vars.zTarget = -89.038;
 					if(current.xPos <= (vars.xTarget+10) && current.xPos >= (vars.xTarget-10) && current.yPos <= (vars.yTarget+10) && current.yPos >= (vars.yTarget-10) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.kill)
 						return true;
 					break;
-				case 28: //Hand of Ormazd
+				case 27: //Hand of Ormazd
 					if(old.zPos <= 0 && current.zPos >= 32.4)
 						return true;
 					break;
-				case 29: //The Concubine
+				case 28: //The Concubine
 					vars.xTarget = 352.792;
 					vars.yTarget = 801.051;
 					vars.zTarget = 150.260;
 					if(current.xPos <= (vars.xTarget+26) && current.xPos >= (vars.xTarget-26) && current.yPos <= (vars.yTarget+26) && current.yPos >= (vars.yTarget-26) && current.zPos <= (vars.zTarget+2) && current.zPos >= (vars.zTarget-2) && vars.kill)
 						return true;
 					break;
-				case 30: //The King
+				case 29: //The King
 					if(current.xPos <= 20 && current.xPos >= -10 && current.yPos >= -375 && current.yPos <= -355 && current.zPos <= -32 && vars.kill)
 						return true;
 					break;
-				case 31: //The God
+				case 30: //The God
 					if(current.xPos <= 7.131 && current.xPos >= 7.129 && current.yPos >= -401.502 && current.yPos <= -401.5 && current.zPos >= -31.4)
 						return true;
 					break;
-				case 32: //Resurrection
+				case 31: //Resurrection
 					if(current.xPos <= 5.566 && current.xPos >= 5.562 && current.yPos >= -222.745 && current.yPos <= -222.517 && current.zPos >= -33.1)
 						return true;
 					break;
