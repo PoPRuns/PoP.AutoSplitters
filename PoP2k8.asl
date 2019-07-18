@@ -186,7 +186,7 @@ switch (timer.CurrentSplitIndex)
 						return true;
 					break;
 				case 18: //The Temple (Arrive)
-					if(current.yPos <= -234.5 && current.zPos >= -33.1 && current.xPos >= 3.9 && current.xPos <= 8)
+					if(current.yPos <= -234.5 && current.zPos >= -37 && current.xPos >= -0.5 && current.xPos <= 12)
 						return true;
 					break;
 				case 19: //Double Jump
