@@ -413,7 +413,7 @@ split{
 				break;
 			//The Prison
 			case 22:
-				if(current.xPos >=190.332 		&& current.yPos >= -20.128 		&& current.zPos >= -17.5 		&& current.xPos <= 190.334 		&& current.yPos <= -20.126 		&& current.zPos <= -17.3) 
+				if(current.xPos >= 190 			&& current.yPos >= -21 			&& current.zPos >= -17.6 		&& current.xPos <= 195 			&& current.yPos <= -19 			&& current.zPos <= -17.3) 		
 					return true;
 				break;
 			//The Torture Chamber
