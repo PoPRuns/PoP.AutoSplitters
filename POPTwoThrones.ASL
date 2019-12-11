@@ -272,68 +272,65 @@ split{
 		case "Any% (No Major Glitches)":
 			switch (timer.CurrentSplitIndex)
 			{
-			//The Harbor District
-			case 0:
+			//The Ramparts			case 0:
 				if(current.xPos >= -271			&& current.yPos >= 187			&& current.zPos >= 74			&& current.xPos <= -265			&& current.yPos <= 188			&& current.zPos <= 75)
 					return true;
 				break;
-			//The Palace
+			//The Harbor District
 			case 1:	
 				if(current.xPos >= -93			&& current.yPos >= 236.2		&& current.zPos >= 83			&& current.xPos <= -88			&& current.yPos <= 238			&& current.zPos <= 88)
 					return true;	
 				break;
-			//The Dagger of Time
+			//The Palace
+
 			case 2:	
 				if(current.xPos >= -35.5		&& current.yPos >= 232.3		&& current.zPos >= 146.9		&& current.xPos <= -35.4		&& current.yPos <= 232.4		&& current.zPos <= 147)
 					return true;	
 				break;
-			//The Sewers
+			//The Trapped Hallway
 			case 3:
 				if(current.xPos >= -52.1		&& current.yPos >= 135.8		&& current.zPos >= 75.9			&& current.xPos <= -52.0		&& current.yPos <= 135.9		&& current.zPos <= 76)
 					return true;
 				break;
-			//The Tunnels
+			//The Sewers
 			case 4:
 				if(current.xPos >= -88.6		&& current.yPos >= -14.8		&& current.zPos >= 4.9			&& current.xPos <= -88.5		&& current.yPos <= -14.7		&& current.zPos <= 5.1)
 					return true;
 				break;
-			//The Lower City
-			case 5:
+			//The Fortress			case 5:
 				if(current.xPos >= -71.4		&& current.yPos >= 9.6			&& current.zPos >= 44			&& current.xPos <= -71.3		&& current.yPos <= 9.7			&& current.zPos <= 44.1)
 					return true;
 				break;
-			//The Lower City Rooftops
-			case 6:
+			//The Lower City			case 6:
 				if(current.xPos >= -319			&& current.yPos >= 317			&& current.zPos >= 95.1			&& current.xPos <= -316.5		&& current.yPos <= 332.6		&& current.zPos <= 98)
 					return true;
 				break;
-			//The Death of Klompa
+			//The Lower City Rooftops
 			case 7:
 				if(current.xPos >= -261.5		&& current.yPos >= 318			&& current.zPos >= 46			&& current.xPos <= -261			&& current.yPos <= 319.5		&& current.zPos <= 48)
 					return true;
 				break;
-			//The Eye of the Storm
+			//The Balconies
 			case 8:
 				if(current.xPos >= -194			&& current.yPos >= 328			&& current.zPos >= 32.6			&& current.xPos <= -190			&& current.yPos <= 329.7		&& current.zPos <= 33.6)
 					return true;
 				break;
-			//The Temple Rooftops
-			case 9:
+			//The Dark Alley			case 9:
 				if(current.xPos >= -114			&& current.yPos >= 328			&& current.zPos >= 55			&& current.xPos <= -110			&& current.yPos <= 338			&& current.zPos <= 59)
 					return true;
 				break;
-			//The Temple
+			//The Temple Rooftops
 			case 10:
 				if(current.xPos >= -122.6		&& current.yPos >= 421.6		&& current.zPos >= 107			&& current.xPos <= -117.7		&& current.yPos <= 423			&& current.zPos <= 108.1)
 					return true;
 				break;
-			//The Market District
+			//The Temple
+
 			case 11:
 				if(current.xPos >= -213			&& current.yPos >= 484			&& current.zPos >= 101			&& current.xPos <= -207			&& current.yPos <= 490			&& current.zPos <= 103)
 					return true;
 				break;
-			//The Bowery
-			case 12:
+			//The Market District			case 12:
 				if(current.xPos >= -185.5		&& current.yPos >= 524			&& current.zPos >= 90			&& current.xPos <= -175.5		&& current.yPos <= 530			&& current.zPos <= 92)
 					return true;
 				break;
@@ -342,7 +339,7 @@ split{
 				if(current.xPos >= -152.6		&& current.yPos >= 549.8		&& current.zPos >= 91.9			&& current.xPos <= -152.5		&& current.yPos <= 549.9		&& current.zPos <= 92)
 					return true;
 				break;
-			//The Death of Mahasti
+			//The Plaza
 			case 14:
 				if(current.xPos >= -104			&& current.yPos >= 548			&& current.zPos >= 104			&& current.xPos <= -100			&& current.yPos <= 553.9		&& current.zPos <= 106.1)
 					return true;
@@ -352,73 +349,74 @@ split{
 				if(current.xPos >= -124.5		&& current.yPos >= 500			&& current.zPos >= 97			&& current.xPos <= -122.5		&& current.yPos <= 505			&& current.zPos <= 99)
 					return true;
 				break;
-			//The Stone Guardian
-			case 16:
+			//The City Gardens			case 16:
 				if(current.xPos >= -63.5		&& current.yPos >= 389.7		&& current.zPos >= 85.2			&& current.xPos <= -63.4		&& current.yPos <= 389.8		&& current.zPos <= 85.3)
 					return true;
 				break;
-			//The Royal Workshop
+			//The Promenade
 			case 17:
 				if(current.xPos >= -3			&& current.yPos >= 515			&& current.zPos >= 72			&& current.xPos <= -1			&& current.yPos <= 519			&& current.zPos <= 75)
 					return true;
 				break;
-			//The King's Road
+			//The Royal Workshop
 			case 18:
 				if(current.xPos >= 58			&& current.yPos >= 470			&& current.zPos >= 79			&& current.xPos <= 62			&& current.yPos <= 480			&& current.zPos <= 81)
 					return true;
 				break;
-			//The Death of the Twins
+			//The King's Road
 			case 19:
 				if(current.xPos >= 91.7802		&& current.yPos >= 229.6516		&& current.zPos >= 70.9877		&& current.xPos <= 91.7804		&& current.yPos <= 229.6518		&& current.zPos <= 70.9879)
 					return true;
 				break;
-			//The Elevator
-			case 20:
+			//The Palace Entrance			case 20:
 				if(current.xPos >= 30.8			&& current.yPos >= 271.2		&& current.zPos >= 126			&& current.xPos <= 30.9			&& current.yPos <= 271.3		&& current.zPos <= 126.1)
 					return true;
 				break;
-			//The Structure's Mind
+			//The Hanging Gardens
 			case 21:
-				if(current.xPos >= 13.5			&& current.yPos >= 204.4		&& current.zPos >= 184.9999		&& current.xPos <= 27.4			&& current.yPos <= 215.4		&& current.zPos <= 185.0001)
+				if(current.xPos >= 4			&& current.yPos >= 211		&& current.zPos >= 194.8		&& current.xPos <= 7			&& current.yPos <= 217		&& current.zPos <= 195.2)
+					return true;
+				break;
+			//The Structure's Mind
+			case 22:
+				if(current.xPos >= -34			&& current.yPos >= 240			&& current.zPos >= 178			&& current.xPos <= -27		&& current.yPos <= 250			&& current.zPos <= 180)
 					return true;
 				break;
 			//The Well of Ancestors
-			case 22:
-				if(current.xPos >= -28			&& current.yPos >= 250			&& current.zPos >= 20.9			&& current.xPos <= -26.5		&& current.yPos <= 255			&& current.zPos <= 30)
-					return true;
-				break;
-			//The Labyrinth
 			case 23:
 				if(current.xPos >= -12.6		&& current.yPos >= 241.2		&& current.zPos >= 0.9			&& current.xPos <= -12.5		&& current.yPos <= 241.3		&& current.zPos <= 1)
 					return true;
 				break;
-			//The Underground Cave
+			//The Labyrinth
 			case 24:
 				if(current.xPos >= -25.5		&& current.yPos >= 332			&& current.zPos >= 35.9			&& current.xPos <= -23			&& current.yPos <= 338			&& current.zPos <= 36.1)
 					return true;
 				break;
-			//The Lower Tower
+			//The Underground Cave
 			case 25:
-				if(current.xPos >= 27			&& current.yPos >= 316.5		&& current.zPos >= 99.9			&& current.xPos <= 29			&& current.yPos <= 318			&& current.zPos <= 100.1)
+				if(current.xPos >= -11			&& current.yPos >= 327		&& current.zPos >= 73			&& current.xPos <= -9			&& current.yPos <= 334			&& current.zPos <= 74)
 					return true;
 				break;
-			//The Middle Tower
+			//The Lower Tower
 			case 26:
 				if(current.xPos >= -5			&& current.yPos >= 316			&& current.zPos >= 139.9		&& current.xPos <= -3			&& current.yPos <= 317.5		&& current.zPos <= 140.1)
 					return true;
 				break;
-			//The Upper Tower
+			//The Middle Tower
 			case 27:
+				if(current.xPos >= -18			&& current.yPos >= 303			&& current.zPos >= 184.8		&& current.xPos <= -12			&& current.yPos <= 305		&& current.zPos <= 185.1)
+					return true;
+				break;			//The Upper Tower
+			case 28:
 				if(current.xPos >= -8			&& current.yPos >= 296			&& current.zPos >= 226.9		&& current.xPos <= -7			&& current.yPos <= 298			&& current.zPos <= 227)
 					return true;
 				break;
-			//The Death of the Vizier
-			case 28:	
+			//The Terrace
+			case 29:	
 				if(current.xPos >= -7.2			&& current.yPos >= 245.6		&& current.zPos >= 677			&& current.xPos <= -6.9			&& current.yPos <= 245.9		&& current.zPos <= 679)
 					return true;
 				break;
-			//The End
-			case 29:	
+			//The Mental Realm			case 30:	
 				if(current.xPos >= 189			&& current.yPos >= 319.135		&& current.zPos >= 542			&& current.xPos <= 193			&& current.yPos <= 320			&& current.zPos <= 543)
 					return true;	
 				break;
