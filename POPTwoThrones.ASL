@@ -30,267 +30,223 @@ split{
 	vars.TheRamparts = (Func <bool>)(() => {
 		if(current.xPos >= -271			&& current.yPos >= 187			&& current.zPos >= 74			&& current.xPos <= -265			&& current.yPos <= 188			&& current.zPos <= 75)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.HarbourDistrict = (Func <bool>)(() => {
 		if(current.xPos >= -93			&& current.yPos >= 236.2		&& current.zPos >= 83			&& current.xPos <= -88			&& current.yPos <= 238			&& current.zPos <= 88)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.ThePalace = (Func <bool>)(() => {
 		if(current.xPos >= -35.5		&& current.yPos >= 232.3		&& current.zPos >= 146.9		&& current.xPos <= -35.4		&& current.yPos <= 232.4		&& current.zPos <= 147)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TrappedHallway = (Func <bool>)(() => {
 		if(current.xPos >= -52.1		&& current.yPos >= 135.8		&& current.zPos >= 75.9			&& current.xPos <= -52.0		&& current.yPos <= 135.9		&& current.zPos <= 76)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheSewerz = (Func <bool>)(() => {
 		if(current.xPos >= -100			&& current.yPos >= -83			&& current.zPos >= 19.9			&& current.xPos <= -96			&& current.yPos <= -79			&& current.zPos <= 20)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheSewers = (Func <bool>)(() => {
 		if(current.xPos >= -88.6		&& current.yPos >= -14.8		&& current.zPos >= 4.9			&& current.xPos <= -88.5		&& current.yPos <= -14.7		&& current.zPos <= 5.1)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheFortress = (Func <bool>)(() => {
 		if(current.xPos >= -71.4		&& current.yPos >= 9.6			&& current.zPos >= 44			&& current.xPos <= -71.3		&& current.yPos <= 9.7			&& current.zPos <= 44.1)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.LowerCity = (Func <bool>)(() => {
 		if(current.xPos >= -319			&& current.yPos >= 317			&& current.zPos >= 95.1			&& current.xPos <= -316.5		&& current.yPos <= 332.6		&& current.zPos <= 98)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.LowerCityRooftops = (Func <bool>)(() => {
 		if(current.xPos >= -261.5		&& current.yPos >= 318			&& current.zPos >= 46			&& current.xPos <= -261			&& current.yPos <= 319.5		&& current.zPos <= 48)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.LCRooftopZips = (Func <bool>)(() => {
 		if(current.xPos >= -246			&& current.yPos >= 373.5		&& current.zPos >= 66			&& current.xPos <= -241.5		&& current.yPos <= 383.6		&& current.zPos <= 69)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheBalconies = (Func <bool>)(() => {
 		if(current.xPos >= -194			&& current.yPos >= 328			&& current.zPos >= 32.6			&& current.xPos <= -190			&& current.yPos <= 329.7		&& current.zPos <= 33.6)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.DarkAlley = (Func <bool>)(() => {
 		if(current.xPos >= -114			&& current.yPos >= 328			&& current.zPos >= 55			&& current.xPos <= -110			&& current.yPos <= 338			&& current.zPos <= 59)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheTempleRooftops = (Func <bool>)(() => {
 		if(current.xPos >= -122.6		&& current.yPos >= 421.6		&& current.zPos >= 107			&& current.xPos <= -117.7		&& current.yPos <= 423			&& current.zPos <= 108.1)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheTemple = (Func <bool>)(() => {
 		if(current.xPos >= -217			&& current.yPos >= 416			&& current.zPos >= 81			&& current.xPos <= -207			&& current.yPos <= 418			&& current.zPos <= 82)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheMarketplace= (Func <bool>)(() => {
 		if(current.xPos >= -213			&& current.yPos >= 484			&& current.zPos >= 101			&& current.xPos <= -207			&& current.yPos <= 490			&& current.zPos <= 103)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.MarketDistrict = (Func <bool>)(() => {
 		if(current.xPos >= -185.5		&& current.yPos >= 524			&& current.zPos >= 90			&& current.xPos <= -175.5		&& current.yPos <= 530			&& current.zPos <= 92)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheBrothel = (Func <bool>)(() => {
 		if(current.xPos >= -152.6		&& current.yPos >= 549.8		&& current.zPos >= 91.9			&& current.xPos <= -152.5		&& current.yPos <= 549.9		&& current.zPos <= 92)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.ThePlaza = (Func <bool>)(() => {
 		if(current.xPos >= -104			&& current.yPos >= 548			&& current.zPos >= 105.9		&& current.xPos <= -100			&& current.yPos <= 553			&& current.zPos <= 106.1)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheUpperCity = (Func <bool>)(() => {
 		if(current.xPos >= -124.5		&& current.yPos >= 500			&& current.zPos >= 97			&& current.xPos <= -122.5		&& current.yPos <= 505			&& current.zPos <= 99)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.CityGarderns = (Func <bool>)(() => {
 		if(current.xPos >= -63.5		&& current.yPos >= 389.7		&& current.zPos >= 85.2			&& current.xPos <= -63.4		&& current.yPos <= 389.8		&& current.zPos <= 85.3)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.ThePromenade = (Func <bool>)(() => {
 		if(current.xPos >= -3			&& current.yPos >= 515			&& current.zPos >= 72			&& current.xPos <= -1			&& current.yPos <= 519			&& current.zPos <= 75)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.RoyalWorkshop = (Func <bool>)(() => {
 		if(current.xPos >= 58			&& current.yPos >= 470			&& current.zPos >= 79			&& current.xPos <= 62			&& current.yPos <= 480			&& current.zPos <= 81)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.KingsRoad = (Func <bool>)(() => {
 		if(current.xPos >= 91.7802		&& current.yPos >= 229.6516		&& current.zPos >= 70.9877		&& current.xPos <= 91.7804		&& current.yPos <= 229.6518		&& current.zPos <= 70.9879)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.KingzRoad = (Func <bool>)(() => {
 		if(current.xPos >= 53			&& current.yPos >= 240			&& current.zPos >= 70			&& current.xPos <= 70			&& current.yPos <= 250			&& current.zPos <= 73)
 			return true;	
-		else
-			return false;
+		return false;
 	});
 	vars.PalaceEntrance = (Func <bool>)(() => {
 		if(current.xPos >= 30.8			&& current.yPos >= 271.2		&& current.zPos >= 126			&& current.xPos <= 30.9			&& current.yPos <= 271.3		&& current.zPos <= 126.1)
 			return true;	
-		else
-			return false;
+		return false;
 	});
 	vars.HangingGardens = (Func <bool>)(() => {
 		if(current.xPos >= 26			&& current.yPos >= 211		&& current.zPos >= 191		&& current.xPos <= 28			&& current.yPos <= 213		&& current.zPos <= 193)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.StructuresMind = (Func <bool>)(() => {
 		if(current.xPos >= -34			&& current.yPos >= 240			&& current.zPos >= 178			&& current.xPos <= -27		&& current.yPos <= 250			&& current.zPos <= 180)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.StructurezMind = (Func <bool>)(() => {
 		if(current.xPos >= 5			&& current.yPos >= 243			&& current.zPos >= 104			&& current.xPos <= 12			&& current.yPos <= 265			&& current.zPos <= 104.1)
 			return true;	
-		else
-			return false;
+		return false;
 	});
 	vars.WellofZipless = (Func <bool>)(() => {
 		if(current.xPos >= -28			&& current.yPos >= 250			&& current.zPos >= 20.9			&& current.xPos <= -26.5		&& current.yPos <= 255			&& current.zPos <= 30)
 			return true;	
-		else
-			return false;
+		return false;
 	});
 	vars.WellofAncestors = (Func <bool>)(() => {
 		if(current.xPos >= -12.6		&& current.yPos >= 241.2		&& current.zPos >= 0.9			&& current.xPos <= -12.5		&& current.yPos <= 241.3		&& current.zPos <= 1)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheLabyrinth = (Func <bool>)(() => {
 		if(current.xPos >= -25.5		&& current.yPos >= 325			&& current.zPos >= 35.9			&& current.xPos <= -23			&& current.yPos <= 338			&& current.zPos <= 36.1)
 			return true;	
-		else
-			return false;
+		return false;
 	});
 	vars.UndergroundCave = (Func <bool>)(() => {
 		if(current.xPos >= -11			&& current.yPos >= 327		&& current.zPos >= 73			&& current.xPos <= -9			&& current.yPos <= 334			&& current.zPos <= 74)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.UndergroundCaveZipnt = (Func <bool>)(() => {
 		if(current.xPos >= 27			&& current.yPos >= 316.5		&& current.zPos >= 99.9			&& current.xPos <= 29			&& current.yPos <= 318			&& current.zPos <= 100.1)
 			return true;	
-		else
-			return false;
+		return false;
 	});
 	vars.LowerTower = (Func <bool>)(() => {
 		if(current.xPos >= -5			&& current.yPos >= 316			&& current.zPos >= 139.9		&& current.xPos <= -3			&& current.yPos <= 317.5		&& current.zPos <= 140.1)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.MiddleTower = (Func <bool>)(() => {
 		if(current.xPos >= -18			&& current.yPos >= 303			&& current.zPos >= 184.8		&& current.xPos <= -12			&& current.yPos <= 305		&& current.zPos <= 185.1)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.UpperTower = (Func <bool>)(() => {
 		if(current.xPos >= -8			&& current.yPos >= 296			&& current.zPos >= 226.9		&& current.xPos <= -7			&& current.yPos <= 298			&& current.zPos <= 227)
 			return true;		
-		else
-			return false;
+		return false;
 	});
 	vars.TheTerrace = (Func <bool>)(() => {
 		if(current.xPos >= -7.2			&& current.yPos >= 245.6		&& current.zPos >= 677			&& current.xPos <= -6.9			&& current.yPos <= 245.9		&& current.zPos <= 679)
 			return true;		
-		else
-			return false;
+		return false;
 	});
 	vars.MentalRealm = (Func <bool>)(() => {
 		if(current.xPos >= 189			&& current.yPos >= 319.135		&& current.zPos >= 542			&& current.xPos <= 193			&& current.yPos <= 320			&& current.zPos <= 543)
 			return true;		
-		else
-			return false;
+		return false;
 	});
 	vars.T2TLU1 = (Func <bool>)(() => {
 		if(current.xPos >= -14.9972		&& current.yPos >= -112.8152	&& current.zPos >= 20.0732		&& current.xPos <= -14.9970		&& current.yPos <= -112.8150	&& current.zPos <= 20.0734)
 			return true;		
-		else
-			return false;
+		return false;
 	});
 	vars.T2TLU2 = (Func <bool>)(() => {
 		if(current.xPos >= -302.0919	&& current.yPos >= 370.8710		&& current.zPos >= 52.858		&& current.xPos <= -302.0917	&& current.yPos <= 370.8712		&& current.zPos <= 52.8582)
 			return true;		
-		else
-			return false;
+		return false;
 	});
 	vars.T2TLU3 = (Func <bool>)(() => {
 		if(current.xPos >= -187.3369	&& current.yPos >= -455.9863	&& current.zPos >= 78.0330		&& current.xPos <= -187.3367	&& current.yPos <= 455.9865		&& current.zPos <= 78.0332)
 			return true;		
-		else
-			return false;
+		return false;
 	});
 	vars.T2TLU4 = (Func <bool>)(() => {
 		if(current.xPos >= -55.0147		&& current.yPos >= 395.7608		&& current.zPos >= 72.0774		&& current.xPos <= -55.0145		&& current.yPos <= 395.761		&& current.zPos <= 72.0776)
 			return true;		
-		else
-			return false;
+		return false;
 	});
 	vars.T2TLU5 = (Func <bool>)(() => {
 		if(current.xPos >= -30.1223		&& current.yPos >= 281.8893		&& current.zPos >= 104.0796		&& current.xPos <= -30.1221		&& current.yPos <= 281.8895		&& current.zPos <= 104.0798)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.T2TLU6 = (Func <bool>)(() => {
 		if(current.xPos >= -23.9663		&& current.yPos >= 253.9438		&& current.zPos >= 183.0634		&& current.xPos <= -23.9661		&& current.yPos <= 253.944		&& current.zPos <= 183.0636)
 			return true;		
-		else
-			return false;
-	});	
+		return false;
+	});
 	
 	//Checking Categories
 	
