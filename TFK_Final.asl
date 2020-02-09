@@ -41,7 +41,7 @@ exit {
 
 start {
 	//Detecting first load screen over
-	if(current.loadone == 1 && current.loadtwo == 1 && current.loadthr == 1)
+	if(vars.hasStarted = false && current.loadone == 1 && current.loadtwo == 1 && current.loadthr == 1)
 			return true;
 }
 
