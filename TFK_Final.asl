@@ -1,5 +1,8 @@
 state("DeSmuME_0.9.9_x64") {
     int frameCount : 0x51D04A8;
+	int loadone : 0x5304E34;	//0 at loads and 1 at all other screens
+	int loadtwo : 0x55BB464;	//Weird at ubi screen/profile screen, 0 at lang screen/erase screen/loads, 1 at gameplay (including dialouge)
+	int loadthr : 0x82365C4;	//0 at world dialouge/quit screen/loads, 1 at gameplay
 }
 
 startup {
@@ -34,6 +37,12 @@ exit {
         // pausing the timer
         vars.timerModel.Pause();
     }
+}
+
+start {
+	//Detecting first load screen over
+	if(current.loadone == 1 && current.loadtwo == 1 && current.loadthr == 1)
+			return true;
 }
 
 update {
