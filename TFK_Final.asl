@@ -3,6 +3,7 @@ state("DeSmuME_0.9.9_x64") {
 	int loadone : 0x5304E34;	//0 at loads and 1 at all other screens
 	int loadtwo : 0x55BB464;	//Weird at ubi screen/profile screen, 0 at lang screen/erase screen/loads, 1 at gameplay (including dialouge)
 	int loadthr : 0x82365C4;	//0 at world dialouge/quit screen/loads, 1 at gameplay
+	int bosshp : 0x55AB0D4;		//Boss health
 }
 
 startup {
@@ -13,6 +14,7 @@ startup {
     vars.timerModel = new TimerModel { CurrentState = timer };
     // setting refresh rate of the memory check cycle
     refreshRate = 60;
+	bool finalBoss = false;
 }
 
 init {
@@ -68,4 +70,16 @@ gameTime {
     if(vars.framesPassed > 0) {
         return TimeSpan.FromMilliseconds((1000*vars.framesPassed)/60);
     }
+}
+
+split {
+	switch (timer.CurrentSplitIndex)
+	{
+	case 53:
+		if(current.bosshp == 24)
+			vars.finalBoss = true;
+		if(vars.finalBoss == true && current.bosshp == 0)
+			return true;
+		break;
+	}
 }
