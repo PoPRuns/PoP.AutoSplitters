@@ -50,7 +50,7 @@ split{
 	
 	switch(timer.Run.GetExtendedCategoryName())
 	{
-		case "Any% (Normal)":
+		case "Any% (Standard)":
 			switch (timer.CurrentSplitIndex)
 			{
 			//The Treasure Vaults
@@ -468,7 +468,7 @@ split{
 			}
 			break;
 			
-		case "All Collectibles (Normal)":
+		case "All Collectibles (Standard)":
 			switch (timer.CurrentSplitIndex)
 			{
 			//The Treasure Vaults
