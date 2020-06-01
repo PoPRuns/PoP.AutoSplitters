@@ -20,6 +20,8 @@ startup{
 	bool newFountain = false;
 	
 	bool startUp = false;
+	
+	settings.Add("Lastfightskip", false, "Last Fight Skip Route");
 }
 
 start{
@@ -110,6 +112,8 @@ split{
 				break;
 			//Honor and Glory
 			case 11:
+				if (settings["Lastfightskip"] 	&& current.xPos >= 66 			&& current.yPos >= -39 		&& current.zPos >= 90 			&& current.xPos <= 69 			&& current.yPos <= -36 		&& current.zPos <= 92)
+					return true;
 				if(current.xPos >= 81 			&& current.yPos >= -60.3 		&& current.zPos >= 89 			&& current.xPos <= 82 			&& current.yPos <= -59.7 		&& current.zPos <= 90)
 					return true;
 				break;
@@ -607,8 +611,10 @@ split{
 				}
 				break;
 			//Honor and Glory
-			case 17:	
-				if(current.xPos >=81 			&& current.yPos >= -60.3 			&& current.zPos >= 89 			&& current.xPos <= 82 				&& current.yPos <= -59.7 		&& current.zPos <= 90)
+			case 17:
+				if (settings["Lastfightskip"] 	&& current.xPos >= 66 			&& current.yPos >= -39 		&& current.zPos >= 90 			&& current.xPos <= 69 			&& current.yPos <= -36 		&& current.zPos <= 92)
+					return true;
+				if(current.xPos >= 81 			&& current.yPos >= -60.3 		&& current.zPos >= 89 			&& current.xPos <= 82 			&& current.yPos <= -59.7 		&& current.zPos <= 90)
 					return true;
 				break;
 			//The Grand Rewind
