@@ -22,7 +22,9 @@ startup {
 init {
     if(vars.hasCrashed) {
         // unpause the timer
+		/*
         vars.timerModel.Pause();
+		*/
         vars.hasCrashed = false;
         vars.hasStarted = true;
     }
@@ -39,7 +41,9 @@ exit {
         vars.hasStarted = false;
 
         // pausing the timer
+		/*
         vars.timerModel.Pause();
+		*/
     }
 }
 
