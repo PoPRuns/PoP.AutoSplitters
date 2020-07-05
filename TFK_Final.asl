@@ -142,7 +142,7 @@ split {
 	else if(
 	timer.Run.GetExtendedCategoryName() == "2-5: Any% (Emulator)" ||
 	timer.Run.GetExtendedCategoryName() == "3-5: Any% (Emulator)" ||
-	timer.Run.GetExtendedCategoryName() == "3-5: Any% (Emulator)"
+	timer.Run.GetExtendedCategoryName() == "4-5: Any% (Emulator)"
 	) {
 		vars.levelType = 2;
 	}
