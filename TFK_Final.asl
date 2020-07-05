@@ -17,6 +17,9 @@ startup {
     refreshRate = 60;
 	bool finalBoss = false;
 	bool loadType = false;
+	
+	int levelType = 0;	//0:full_game; 1:standard_IL; 2:kidnap_IL; 3:worldEnd_IL; 4:lastLevel_IL
+	
 }
 
 init {
@@ -90,6 +93,84 @@ gameTime {
 }
 
 split {
+	//standard_IL
+	if(
+	timer.Run.GetExtendedCategoryName() == "1-1: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "1-2: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "1-3: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "1-4: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "1-5: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "2-1: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "2-2: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "2-3: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "2-4: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "2-6: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "2-7: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "2-8: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "2-9: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "3-1: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "3-2: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "3-3: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "3-4: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "3-6: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "3-7: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "3-8: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "3-9: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "4-1: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "4-2: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "4-3: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "4-4: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "4-6: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "4-7: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "4-8: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "5-1 I: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "5-2 I: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "5-3: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "5-4: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "5-5: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "5-1 II: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "5-2 II: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "5-6: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "5-7: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "6-1: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "6-2: Any% (Emulator)"
+	) {
+		vars.levelType = 1;
+	}
+	
+	//kidnap_IL
+	else if(
+	timer.Run.GetExtendedCategoryName() == "2-5: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "3-5: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "3-5: Any% (Emulator)"
+	) {
+		vars.levelType = 2;
+	}
+	
+	//worldEnd_IL
+	else if(
+	timer.Run.GetExtendedCategoryName() == "1-6: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "2-10: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "3-10: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "4-9: Any% (Emulator)" ||
+	timer.Run.GetExtendedCategoryName() == "5-8: Any% (Emulator)"
+	) {
+		vars.levelType = 3;
+	}
+	
+	//lastLevel_IL
+	else if(
+	timer.Run.GetExtendedCategoryName() == "6-3: Any% (Emulator)"
+	) {
+		vars.levelType = 4;
+	}
+	
+	//full_game
+	else {
+		vars.levelType = 0;
+	}
+
+
 	// setting up loadType to be alternate between true and false every time there's a loading screen
 	if(!(old.load1 == 0 && old.load2 == 0 && old.load3 == 0 && old.load4 == 1 && old.frameCount > 0)
 	&& (current.load1 == 0 && current.load2 == 0 && current.load3 == 0 && current.load4 == 1 && current.frameCount > 0)) {
@@ -106,8 +187,26 @@ split {
 		vars.loadType = false;
 	}
 	
-	// split when exiting a level
-	if(timer.CurrentSplitIndex < 53) {		// the number here must be [number of splits]-1
+	
+	// split when exiting a level:
+		
+	// end of a standard or kidnap IL
+	if(vars.levelType == 1 || (vars.levelType == 2 && timer.CurrentSplitIndex == 2)) {
+		if(!(old.load1 == 0 && old.load2 == 0 && old.load3 == 0 && old.load4 == 1 && old.frameCount > 0)
+		&& (current.load1 == 0 && current.load2 == 0 && current.load3 == 0 && current.load4 == 1 && current.frameCount > 0)) {
+			if(vars.levelType == 1) {
+				return true;
+			}
+			else {
+				if(vars.loadType == true) {
+					return true;
+				}
+			}
+		}
+	}
+	
+	// full game or middle of kidnap IL
+	if(vars.levelType == 0 && timer.CurrentSplitIndex < 53 || (vars.levelType == 2 && timer.CurrentSplitIndex < 2)) {	//the first mention of timer.CurrentSplitIndex here should correspond to [number of splits]-1
 		if((old.load1 == 0 && old.load2 == 0 && old.load3 == 0 && old.load4 == 1 && old.frameCount > 0)
 		&& !(current.load1 == 0 && current.load2 == 0 && current.load3 == 0 && current.load4 == 1 && current.frameCount > 0)
 		&& vars.loadType == true) {
@@ -115,8 +214,16 @@ split {
 		}
 	}
 	
-	// split when final boss dies
-	else {
+	// world end IL
+	if(vars.levelType == 3) {
+		if(!(old.load1 == 1 && old.load2 == 0 && old.load3 == 1)
+		&& (current.load1 == 1 && current.load2 == 0 && current.load3 == 1)) {
+			return true;
+		}
+	}
+	
+	// split when final boss dies in full game or IL
+	if(vars.levelType == 0 && timer.CurrentSplitIndex == 53 || vars.levelType == 4) {
 		if(current.bosshp == 24) {
 			vars.finalBoss = true;
 		}
