@@ -144,7 +144,7 @@ switch (timer.CurrentSplitIndex)
 					vars.xTarget = 89;
 					vars.yTarget = -477;
 					vars.zTarget = -83;
-					if(current.xPos <= (vars.xTarget+10) && current.xPos >= (vars.xTarget-10) && current.yPos <= (vars.yTarget+10) && current.yPos >= (vars.yTarget-10) && current.zPos <= (vars.zTarget+10) && current.zPos >= (vars.zTarget-10) && vars.cpGet)
+					if(current.xPos <= (vars.xTarget+1) && current.xPos >= (vars.xTarget-1) && current.yPos <= (vars.yTarget+1) && current.yPos >= (vars.yTarget-1) && current.zPos <= (vars.zTarget+1) && current.zPos >= (vars.zTarget-1) && vars.cpGet)
 						return true;
 					break;
 				case 11: //The Power of Knowledge
