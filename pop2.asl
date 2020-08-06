@@ -22,7 +22,7 @@ start{
 }
 
 reset{
-	if(current.GameRunning == 0 || (current.Start == 238 && vars.Resetting == false && current.Level == 1)){
+	if(current.Start == 238 && vars.Resetting == false && current.Level == 1){
 		vars.Resetting = true;
 		return true;
 	}
