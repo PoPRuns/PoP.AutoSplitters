@@ -1,8 +1,8 @@
 state("DOSBox")
 {
-    byte Level : 0x193C370, 0x3A72C;
-	byte Start : 0x193C370, 0x3AFEC;
-	short FrameCount : 0x193C370, 0x3A744;
+    byte Level : 0x193C370, 0x38796;
+	byte Start : 0x193C370, 0x38FF2;
+	short FrameCount : 0x193C370, 0x387B0;
 	byte GameRunning : 0x19175EA;
 }
 
