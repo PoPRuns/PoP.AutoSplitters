@@ -1017,7 +1017,7 @@ split
 	
 	switch(timer.Run.GetExtendedCategoryName())
 	{
-		case "Sands Trilogy (Any%, Normal)":
+		case "Sands Trilogy (Any%, Standard)":
 		//SoT
 			switch (timer.CurrentSplitIndex)
 			{
@@ -2102,7 +2102,7 @@ split
 			}
 		break;
 			
-		case "Sands Trilogy (Completionist, Normal)":
+		case "Sands Trilogy (Completionist, Standard)":
 		//SoT
 			switch (timer.CurrentSplitIndex)
 			{
@@ -4144,6 +4144,6 @@ split
 			}
 			//Unmarking flags at the end of each cycle.
 			vars.cpGet = false;
-	break;
+		break;
 	}
 }
