@@ -1,3 +1,37 @@
+state("DOSBOX")
+{
+//Memory values in PoP1
+    byte Level          : 0x0074F6D0, 0x1D0F4;          // shows level 1-14 changes as door is entered
+    byte Scene          : 0x0074F6D0, 0x1A4BA;          // shows level 1-14 changes as scenes end 
+    byte EndGame        : 0x0074F6D0, 0x1D74A;          // 0 before endgame, 255 at endgame cutscene
+    byte Start	        : 0x0074F6D0, 0x1D694;          // the level you start the game at
+    byte GameRunning    : "DOSBox.exe", 0x19195EA;      // 0 if game isn't running 
+    byte Time           : 0x0074F6D0, 0x1E350;          // Minutes
+    int  Count          : 0x0074F6D0, 0x1E354;          // Seconds
+    byte Sound          : 0x0074F6D0, 0x2F233;          // 0 if sound is on, 1 if sound is off
+
+	
+//Memory values in PoP2
+	byte Level2			: 0x193C370, 0x38796;
+	byte Start2			: 0x193C370, 0x38FF2;
+	byte GameRunning2	: 0x19175EA;
+}
+
+
+//Memory values in PoP3D
+state("pop3d")
+{
+	int health : 0x004062E4, 0x130;
+	int eHealth : 0x3FBC84;
+	float lXPos : 0x004062E4, 0xD0, 0xC4, 0x18, 0x44;
+	float lYPos : 0x004062E4, 0xD0, 0xC4, 0x18, 0x48;
+	float lZPos : 0x004062E4, 0xD0, 0xC4, 0x18, 0x4C;
+	float xPos3d : 0x003EF854, 0x160, 0x2F8, 0x8, 0x18, 0x44;
+	float yPos3d : 0x003EF854, 0x160, 0x2F8, 0x8, 0x18, 0x48;
+	float zPos3d : 0x003EF854, 0x160, 0x2F8, 0x8, 0x18, 0x4C;
+}
+
+
 //Memory values in SoT
 state("POP")
 {
@@ -50,20 +84,72 @@ state("POP3")
 }
 
 
+//Memory values in 2k8
+state("PrinceOfPersia_Launcher")
+{
+	int seedCount : 0x00B37F64, 0xDC;
+	float xPos2k8 : 0x00B30D08, 0x40;
+	float yPos2k8 : 0x00B30D08, 0x44;
+	float zPos2k8 : 0x00B30D08, 0x48;
+	int combat : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
+}
+
+
+//Memory values in TFS
+state("prince of persia")
+{
+	float xPostfs : 0xDA4D20;
+	float yPostfs : 0xDA4D24;
+	float zPostfs : 0xDA4D28;
+	int gameState : 0x00DA52EC, 0x18, 0xF8, 0x150;
+	int cpIcon : 0x00064D34, 0x0, 0x0, 0x24, 0x18, 0x50, 0x870;
+	int isMenu : 0xDA2F70;
+	bool isLoading: "", 0x00DA5724, 0x50;
+}
+
 
 startup
 {
+//PoP1
+	settings.Add("sound", false, "Sound for PoP1 ON At Start?");
+	
+//PoP2
+	short ResetDelta = 0;
+	bool Resetting = false;
+		
 //SoT
 	bool aboveCredits = false;
-	
 	bool newFountain = false;
-	
-	bool startUp = false;		
+	bool startUp = false;
+
+//2k8
+	bool kill = false;
+	bool seedGet = false;
+	bool startUp2k8 = false;
+	int xTarget = 0;
+	int yTarget = 0;
+	int zTarget = 0;
+
+//TFS
+	bool cpGet = false;
+	bool startUptfs = false;
+	int xTarget2 = 0;
+	int yTarget2 = 0;
+	int zTarget2 = 0;	
 }
  
 
 start
 {
+	//PoP1
+	// start (sound) && if starting level = 1 AND if level = 1 AND if Minutes = 60 AND count is = 47120384
+    return
+ 	((current.Sound == 0 && settings["sound"] == true) || (settings["sound"] == false)) &&
+        (current.Start == 0x1) && 
+        (current.Level == 0x1) && 
+        (current.Time == 0x3C) && 
+        (current.Count >= 0x2CE0000);
+	
 	//SoT
 	vars.aboveCredits = false;
 	vars.newFountain = false;
@@ -72,24 +158,25 @@ start
 	//Detecting if the game has started on the balcony.
 	if(current.xPos1 >= -103.264 && current.yPos1 >= -4.8 && current.zPos1 >= 1.341 && current.xPos1 <= -103.262 && current.yPos1 <= -4.798 && current.zPos1 <= 1.343 && current.startValue == 1)
 			return true;
-	/*
-	//WW
-	//Detecting if the game has started on the boat.
-	if(old.startValue2 == 1 && current.startValue2 == 2){
-		if(current.xPos2 >= -997.6757 && current.xPos2 <= -997.6755)
-			return true;
-	}
-		
-	//T2T	
-	//Detecting if the game has started on the ramparts.
-	if(current.xPos3 >= -404.9 && current.xPos3 <= -404.8 && current.yCam <= 0.1082 && current.yCam >= 0.1080 && current.xCam <= 0.832 && current.xCam >= 0.8318)
-		return true;	
-	*/
 }
 
 
+isLoading
+{
+	if(current.xPos3d == 0 && current.yPos3d == 0 && current.zPos3d == 0)
+	{
+		return true;
+	}
+	if(current.isMenu == 0 || current.isLoading)
+	{
+		return true;
+	}
+	return false;
+}
 
-split{	
+
+split
+{	
 	if(!vars.startUp){
 	vars.aboveCredits = false;
 	vars.newFountain = false;
@@ -3279,5 +3366,784 @@ split{
 				break;
 			}
 		break;
+		
+		case "Anthology":
+		//PoP1
+			return 
+			(old.Level !=  current.Level) || // if level changes
+			(current.Level == 0xE && current.EndGame == 0xFF);	// if currently on level 14 and EndGame changes to 255
+		//Setup 1
+			if (timer.CurrentSplitIndex == 14)
+			{
+				if(current.Start == 238 && current.Level2 == 1)
+				{
+					vars.ResetDelta = current.FrameCount;
+					return true;
+				}
+			}
+			vars.ResetDelta = 0;
+			vars.Resetting = false;
+		//PoP2
+			if(current.Start == 231){
+				vars.Resetting = false;
+			}
+			return (old.Level2 == current.Level2 - 1);
+		//Setup 2
+			if (timer.CurrentSplitIndex == 29)
+			{
+				if(current.lXPos > 20.554 && current.lXPos < 20.556 && current.lZPos > 1.448 && current.lZPos < 1.45)
+				{
+					return true;
+				}
+			}
+		//PoP3D
+			switch (timer.CurrentSplitIndex - 30)
+			{
+			//Dungeon
+			case 0:
+				if (old.lYPos == 0 && current.lYPos == -2)
+					return true;
+					break;
+			//Ivory Tower
+			case 1:
+				if (old.lXPos == 0 && current.lXPos > 13.485 && current.lXPos < 13.487)
+					return true;
+					break;
+			//Cistern
+			case 2:
+				if (old.lXPos == 0 && current.lXPos > 216.904 && current.lXPos < 216.906)
+					return true;
+				break;
+			//Palace 1
+			case 3:
+				if (old.lXPos == 0 && current.lXPos == -7)
+					return true;
+				break;
+			//Palace 2
+			case 4:
+				if (old.lYPos == 0 && current.lYPos == -23)
+					return true;
+				break;
+			//Palace 3
+			case 5:
+				if (current.lXPos == 0 && current.lYPos == 0 && current.lZPos == 0 && old.health == 0 && current.health != 0)
+					return true;
+				break;
+			//Rooftops	
+			case 6:
+				if (old.lXPos == 0 && current.lXPos == -42)
+					return true;
+				break;
+			//Streets and Docks
+			case 7:
+				if (old.lYPos == 0 && current.lYPos == -20)
+					return true;
+				break;
+			//Lower Dirigible 1
+			case 8:
+				if (old.lYPos == 0 && current.lYPos == 99)
+					return true;
+				break;
+			//Lower Dirigible 2
+			case 9:
+				if (old.lZPos == 0 && current.lZPos > -77.77 && current.lZPos < -77.75)
+					return true;
+				break;
+			//Upper Dirigible
+			case 10:
+				if (old.lYPos == 0 && current.lYPos == 103)
+					return true;
+				break;
+			//Dirigible Finale
+			case 11:
+				if (old.lYPos == 0 && current.lYPos == 61)
+					return true;
+				break;
+			//Floating Ruins
+			case 12:
+				if (old.lYPos == 0 && current.lYPos == -85)
+					return true;
+				break;
+			//Cliffs
+			case 13:
+				if (old.lYPos == 0 && current.lYPos > -2.36 && current.lYPos < -2.34)
+					return true;
+				break;
+			//Sun Temple
+			case 14:
+				if (old.lYPos == 0 && current.lYPos > -19.966 && current.lYPos < -19.964)
+					return true;
+				break;
+			//Moon Temple
+			case 15:
+				if (old.lYPos == 0 && current.lYPos > -27.4 && current.lYPos < -27.38)
+					return true;
+				break;
+			//Finale
+			case 16:
+				if(current.xPos == 0 && current.yPos == 0 && current.zPos == 0 && current.eHealth ==0)
+					return true;
+				break;
+			}
+		//Setup 3
+			if (timer.CurrentSplitIndex == 47)
+			{
+				if(current.xPos1 >= -103.264 && current.yPos1 >= -4.8 && current.zPos1 >= 1.341 && current.xPos1 <= -103.262 && current.yPos1 <= -4.798 && current.zPos1 <= 1.343 && current.startValue == 1)
+					return true;
+			}
+		//SoT
+			switch (timer.CurrentSplitIndex - 48)
+			{
+			//The Treasure Vaults
+			case 0:
+				if(vars.GasStation())
+					return true;
+				break;
+			//The Sands of Time
+			case 1:
+				if(vars.SandsUnleashed())
+					return true;
+				break;
+			//The Sultan's Chamber (Death)
+			case 2:
+				if(vars.SultanChamber())
+					return true;
+				break;
+			//Death of the Sand King
+			case 3:
+				if(vars.DadDead())
+							return true;
+				break;
+			//The Baths (Death)
+			case 4:
+				if(vars.TheBaths())
+					return true;
+				break;
+			//The Messhall (Death)
+			case 5:
+				if(vars.TheMesshall())
+					return true;
+				break;
+			//The Caves
+			case 6:
+				if(vars.TheCaves())
+					return true;
+				break;
+			//Exit Underground Reservoir
+			case 7:
+				if(vars.TheUGReservoir())
+					return true;
+				break;
+			//The Observatory (Death)
+			case 8:
+				if(vars.TheObservatory())
+					return true;
+				break;
+			//The Torture Chamber (Death)
+			case 9:
+				if(vars.TortureChamber())
+					return true;
+				break;
+			//The Dream
+			case 10:
+				if(vars.TheDream())
+					return true;
+				break;
+			//Honor and Glory
+			case 11:
+				if(vars.HonorGlory())
+					return true;
+				break;
+			//The Grand Rewind
+			case 12:
+				if(vars.GrandRewind())
+					return true;
+				break;
+			//The End
+			case 13:
+				if(vars.SoTEnd())				
+					return true;
+				break;
+			}
+		//Setup 4
+			if (timer.CurrentSplitIndex == 62)			
+			{
+				if(old.startValue2 == 1 && current.startValue2 == 2)
+				{
+					if(current.xPos2 >= -997.6757 && current.xPos2 <= -997.6755)
+					return true;
+				}
+			}
+		//WW
+			switch (timer.CurrentSplitIndex - 63)											//63? Ironic!
+			{
+			//The Boat
+			case 0:
+				if(vars.TheBoat())
+					return true;
+				break;
+			//The Raven Man
+			case 1:
+				if(vars.TheRavenMan())
+					return true;
+				break;
+			//The Time Portal
+			case 2:
+				if(vars.TimePortal())			
+					return true;
+				break;
+			//Mask of the Wraith (59)
+			case 3:
+				if(vars.RNGStorygate())
+					return true;
+				break;
+			//The Scorpion Sword
+			case 4:
+				if(vars.ScorpionSword())
+					return true;
+				break;
+			//Storygate 63
+			case 5:
+				if(vars.WWEndgame())
+					return true;
+				break;
+			//Back to the Future
+			case 6:
+				if(vars.SlomoPortal())
+					return true;
+				break;
+			//The End
+			case 7:
+				if(vars.WWEnd())
+					return true;
+				break;
+			}
+		//Setup 5
+			if (timer.CurrentSplitIndex == 71)													
+			{
+				if(current.xPos3 >= -409.9 && current.xPos3 <= -404.8 && current.yCam <= 0.1082 && current.yCam >= 0.1080 && current.xCam <= 0.832 && current.xCam >= 0.8318)
+					return true;
+			}
+		//T2T
+			switch (timer.CurrentSplitIndex - 72)												
+			{
+			//The Ramparts
+			case 0:
+				if(vars.TheRamparts())
+					return true;
+				break;
+			//The Harbor District
+			case 1:	
+				if(vars.HarbourDistrict())
+					return true;	
+				break;
+			//The Palace
+			case 2:	
+				if(vars.ThePalace())
+					return true;	
+				break;
+			//Exit Sewers
+			case 3:	
+				if(vars.TheSewerz())
+					return true;	
+				break;
+			//Exit Lower City
+			case 4:	
+				if(vars.LowerCity())
+					return true;	
+				break;
+			//The Lower City Rooftops
+			case 5:	
+				if(vars.LCRooftopZips())
+					return true;	
+				break;
+			//Exit Temple Rooftops
+			case 6:	
+				if(vars.TheTempleRooftops())
+					return true;	
+				break;
+			//Exit Marketplace
+			case 7:	
+				if(vars.TheMarketplace())
+					return true;	
+				break;
+			//Exit Plaza
+			case 8:	
+				if(vars.ThePlaza())
+					return true;	
+				break;
+			//Exit City Gardens
+			case 9:	
+				if(vars.CityGarderns())
+					return true;	
+				break;
+			//Exit Royal Workshop
+			case 10:	
+				if(vars.RoyalWorkshop())
+					return true;	
+				break;
+			//The King's Road
+			case 11:	
+				if(vars.KingzRoad())
+					return true;	
+				break;
+			//Exit Structure's Mind
+			case 12:	
+				if(vars.StructurezMind())
+					return true;	
+				break;
+			//Exit Labyrinth
+			case 13:	
+				if(vars.TheLabyrinth())
+					return true;	
+				break;
+			//The Towers
+			case 14:	
+				if(vars.UpperTower())
+					return true;	
+				break;
+			//The Terrace
+			case 15:	
+				if(vars.TheTerrace())
+					return true;
+				break;
+			//The Mental Realm
+			case 16:	
+				if(vars.MentalRealm())
+					return true;	
+				break;
+			}
+		//Setup 6
+			if (timer.CurrentSplitIndex == 89)
+			{
+				if(old.yPos2k8 != -351 && current.yPos2k8 == -351)
+				{
+					return true;
+				}
+				//Initializing flags & targets:
+				vars.kill = false;
+				vars.seedGet = false;
+				vars.startUp2k8 = true;
+				vars.xTarget = 0;
+				vars.yTarget = 0;
+				vars.zTarget = 0;
+			}
+		//2k8
+			if(!vars.startUp2k8)
+			{
+				vars.kill = false;
+				vars.seedGet = false;
+				vars.startUp2k8 = true;
+				vars.xTarget = 0;
+				vars.yTarget = 0;
+				vars.zTarget = 0;
+			}
+			//Setting kill to true any time you exit combat:
+			if(old.combat == 2 && current.combat == 0)
+			{
+				vars.kill = true;
+			}
+			//Setting seedGet to true any time you collect a seed.
+			if(current.seedCount == old.seedCount+1)
+			{
+				vars.seedGet = true;
+			}
+				//In the case of each split, looking for qualifications to complete the split. There are three kinds of splits in this script.
+				//Location Based: If you're inside the outlined zone, the split fires.
+				//Seed Based: If you're inside the outlined zone AND collect a seed, the split fires.
+				//Combat Based: If you're inside the outlined zone AND exit combat, the split fires.
+			switch (timer.CurrentSplitIndex - 90)
+			{
+			//First Fight Skip			
+			case 0: 
+				if (current.zPos2k8 >= -31 && current.zPos2k8 <= -28 && current.yPos2k8 >= -331)
+					return true;
+				break;
+			//The Canyon
+			case 1: 
+				if (current.xPos2k8 <= -200 && current.xPos2k8 >= -208 && current.yPos2k8 <= -27.5 && current.yPos2k8 >= -38 && current.zPos2k8 >= -511)
+					return true;
+				break;
+			//King's Gate
+			case 2:
+				vars.xTarget = -538.834;
+				vars.yTarget = -67.159;
+				vars.zTarget = 12.732;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//Sun Temple
+			case 3:
+				vars.xTarget = -670.471;
+				vars.yTarget = -56.147;
+				vars.zTarget = 16.46;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//Marshalling Grounds
+			case 4:
+				vars.xTarget = -806.671;
+				vars.yTarget = 112.803;
+				vars.zTarget = 21.645;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//Windmills
+			case 5:
+				vars.xTarget = -597.945;
+				vars.yTarget = 209.241;
+				vars.zTarget = 23.339;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//Martyrs' Tower
+			case 6:
+				vars.xTarget = -564.202;
+				vars.yTarget = 207.312;
+				vars.zTarget = 22;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;					
+			//MT -> MG
+			case 7:
+				vars.xTarget = -454.824;
+				vars.yTarget = 398.571;
+				vars.zTarget = 27.028;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//Machinery Ground
+			case 8:
+				vars.xTarget = -361.121;
+				vars.yTarget = 480.114;
+				vars.zTarget = 12.928;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//Heaven's Stair
+			case 9:
+				vars.xTarget = -85.968;
+				vars.yTarget = 573.338;
+				vars.zTarget = 30.558;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//Spire of Dreams
+			case 10:
+				vars.xTarget = -28.088;
+				vars.yTarget = 544.298;
+				vars.zTarget = 34.942;
+				if(current.xPos2k8 <= (vars.xTarget+3) && current.xPos2k8 >= (vars.xTarget-3) && current.yPos2k8 <= (vars.yTarget+3) && current.yPos2k8 >= (vars.yTarget-3) && current.zPos2k8 <= (vars.zTarget+3) && current.zPos2k8 >= (vars.zTarget-3) && vars.seedGet)
+					return true;
+				break;
+			//Reservoir
+			case 11:
+				vars.xTarget = -150.082;
+				vars.yTarget = 406.606;
+				vars.zTarget = 34.673;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//Construction Yard
+			case 12:
+				vars.xTarget = -151.121;
+				vars.yTarget = 303.514;
+				vars.zTarget = 27.95;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//Cauldron
+			case 13: 
+				vars.xTarget = 107.123;
+				vars.yTarget = 183.394;
+				vars.zTarget = -5.628;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//Cavern
+			case 14:
+				vars.xTarget = 251.741;
+				vars.yTarget = 65.773;
+				vars.zTarget = -13.616;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//City Gate
+			case 15:
+				vars.xTarget = 547.488;
+				vars.yTarget = 45.41;
+				vars.zTarget = -27.107;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//Tower of Ormazd
+			case 16:
+				vars.xTarget = 609.907;
+				vars.yTarget = 61.905;
+				vars.zTarget = -35.001;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//Queen's Tower
+			case 17:
+				vars.xTarget = 637.262;
+				vars.yTarget = 27.224;
+				vars.zTarget = -28.603;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//The Temple (Arrive)
+			case 18:
+				if(current.yPos2k8 <= -234.5 && current.zPos2k8 >= -37 && current.xPos2k8 >= -0.5 && current.xPos2k8 <= 12)
+					return true;
+				break;
+			//Double Jump
+			case 19:
+				if(current.xPos2k8 <= 6.19 && current.xPos2k8 >= 6.12 && current.yPos2k8 >= -233.49 && current.yPos2k8 <= -225.18 && current.zPos2k8 >= -33.01 && current.zPos2k8 <= -32.5)
+					return true;
+				break;
+			//Wings of Ormazd
+			case 20:
+				if(current.xPos2k8 >= 6.6 && current.xPos2k8 <= 6.8 && current.yPos2k8 >= -171.8 && current.yPos2k8 <= -171.6 && current.zPos2k8 == -49)
+					return true;
+				break;
+			//The Warrior
+			case 21:
+				vars.xTarget = 1070.478;
+				vars.yTarget = 279.147;
+				vars.zTarget = -29.571;
+				if(current.xPos2k8 <= (vars.xTarget+23) && current.xPos2k8 >= (vars.xTarget-23) && current.yPos2k8 <= (vars.yTarget+23) && current.yPos2k8 >= (vars.yTarget-23) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.kill)
+					return true;
+				break;
+			//Heal Coronation Hall
+			case 22:
+				if(current.xPos2k8 >= 328 && current.xPos2k8 <= 352 && current.yPos2k8 >= 570 && current.yPos2k8 <= 595 && current.zPos2k8 >= 32.4 && vars.kill)
+					return true;
+				break;
+			//Coronation Hall
+			case 23:
+				vars.xTarget = 264.497;
+				vars.yTarget = 589.336;
+				vars.zTarget = 38.67;
+				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+					return true;
+				break;
+			//Heal Heaven's Stair
+			case 24:
+				if(current.xPos2k8 >= -322 && current.xPos2k8 <= -260 && current.yPos2k8 >= 628 && current.yPos2k8 <= 675 && current.zPos2k8 >= 99.2 && vars.kill)
+					return true;
+				break;
+			//The Alchemist
+			case 25:
+				vars.xTarget = -296.593;
+				vars.yTarget = 697.233;
+				vars.zTarget = 296.199;
+				if(current.xPos2k8 <= (vars.xTarget+10) && current.xPos2k8 >= (vars.xTarget-10) && current.yPos2k8 <= (vars.yTarget+10) && current.yPos2k8 >= (vars.yTarget-10) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.kill)
+					return true;
+				break;
+			//The Hunter
+			case 26:
+				vars.xTarget = -929.415;
+				vars.yTarget = 320.888;
+				vars.zTarget = -89.038;
+				if(current.xPos2k8 <= (vars.xTarget+10) && current.xPos2k8 >= (vars.xTarget-10) && current.yPos2k8 <= (vars.yTarget+10) && current.yPos2k8 >= (vars.yTarget-10) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.kill)
+					return true;
+				break;
+			//Hand of Ormazd
+			case 27:
+				if(old.zPos2k8 <= 0 && current.zPos2k8 >= 32.4)
+					return true;
+				break;
+			//The Concubine
+			case 28:
+				vars.xTarget = 352.792;
+				vars.yTarget = 801.051;
+				vars.zTarget = 150.260;
+				if(current.xPos2k8 <= (vars.xTarget+26) && current.xPos2k8 >= (vars.xTarget-26) && current.yPos2k8 <= (vars.yTarget+26) && current.yPos2k8 >= (vars.yTarget-26) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.kill)
+					return true;
+				break;
+			//The King
+			case 29:
+				if(current.xPos2k8 <= 20 && current.xPos2k8 >= -10 && current.yPos2k8 >= -375 && current.yPos2k8 <= -355 && current.zPos2k8 <= -32 && vars.kill)
+					return true;
+				break;
+			//The God
+			case 30:
+				if(current.xPos2k8 <= 7.131 && current.xPos2k8 >= 7.129 && current.yPos2k8 >= -401.502 && current.yPos2k8 <= -401.5 && current.zPos2k8 >= -31.4)
+					return true;
+				break;
+			//Resurrection
+			case 31:
+				if(current.xPos2k8 <= 5.566 && current.xPos2k8 >= 5.562 && current.yPos2k8 >= -222.745 && current.yPos2k8 <= -222.517 && current.zPos2k8 >= -33.1)
+					return true;
+				break;
+			}
+			//Unmarking flags at the end of each cycle.
+				vars.kill = false;
+				vars.seedGet = true;
+		//Setup 7
+			if (timer.CurrentSplitIndex == 122)
+			{
+				if(current.xPos <= 268.93 && current.xPos >= 268.929 && current.gameState == 4){
+					return true;
+				}
+			}
+		//TFS
+			//Initializing flags & targets in the event the start function wasn't used.
+			if(!vars.startUp)
+			{
+				vars.cpGet = false;
+				vars.startUptfs = true;
+				vars.xTarget2 = 0;
+				vars.yTarget2 = 0;
+				vars.zTarget2 = 0;
+			}
+			//Setting cpGet to true any time you acquire a checkpoint.
+			if(current.cpIcon >= 1)
+			{
+				vars.cpGet = true;
+			}
+			//In the case of each split, looking for qualifications to complete the split.
+			switch (timer.CurrentSplitIndex - 123)
+			{
+			case 0: //Malik
+				vars.xTarget2 = -37;
+				vars.yTarget2 = 231;
+				vars.zTarget2 = -148;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+				break;
+			//The Power of Time
+			case 1:
+				vars.xTarget2 = 597;
+				vars.yTarget2 = -217;
+				vars.zTarget2 = -2;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+					break;
+			//The Works
+			case 2:
+				vars.xTarget2 = -513;
+				vars.yTarget2 = -408;
+				vars.zTarget2 = -167;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+				break;
+			//The Courtyard
+			case 3:
+				vars.xTarget2 = -434;
+				vars.yTarget2 = -533;
+				vars.zTarget2 = -127;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+				break;
+			//The Power of Water
+			case 4:
+				vars.xTarget2 = 519;
+				vars.yTarget2 = -227;
+				vars.zTarget2 = 6;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+				break;
+			//The Sewers
+			case 5:
+				vars.xTarget2 = -228;
+				vars.yTarget2 = 245;
+				vars.zTarget2 = 20;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+				break;
+			//Ratash
+			case 6:
+				vars.xTarget2 = -406;
+				vars.yTarget2 = 403;
+				vars.zTarget2 = 64;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+				break;
+			//The Observatory
+			case 7:
+				vars.xTarget2 = -510;
+				vars.yTarget2 = 460;
+				vars.zTarget2 = 104;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+				break;
+			//The Power of Light
+			case 8:
+				vars.xTarget2 = 540;
+				vars.yTarget2 = -219;
+				vars.zTarget2 = 6;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+				break;
+			//The Gardens
+			case 9:
+				vars.xTarget2 = 240;
+				vars.yTarget2 = -227;
+				vars.zTarget2 = -114;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+				break;
+			//Possession
+			case 10:
+				vars.xTarget2 = 89;
+				vars.yTarget2 = -477;
+				vars.zTarget2 = -83;
+				if(current.xPostfs <= (vars.xTarget2+1) && current.xPostfs >= (vars.xTarget2-1) && current.yPostfs <= (vars.yTarget2+1) && current.yPostfs >= (vars.yTarget2-1) && current.zPostfs <= (vars.zTarget2+1) && current.zPostfs >= (vars.zTarget2-1) && vars.cpGet)
+					return true;
+				break;
+			//The Power of Knowledge
+			case 11:
+				vars.xTarget2 = 548;
+				vars.yTarget2 = -217;
+				vars.zTarget2 = 4;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+				break;
+			//The Reservoir
+			case 12:
+				vars.xTarget2 = 644;
+				vars.yTarget2 = 385;
+				vars.zTarget2 = -63;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+				break;
+			//The Power of Razia
+			case 13:
+				vars.xTarget2 = 430;
+				vars.yTarget2 = 268;
+				vars.zTarget2 = -99;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+				break;
+			//The Climb
+			case 14:
+				vars.xTarget2 = 912;
+				vars.yTarget2 = 256;
+				vars.zTarget2 = -56;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+				break;
+			//The Storm
+			case 15:
+				vars.xTarget2 = 948;
+				vars.yTarget2 = -284;
+				vars.zTarget2 = 86;
+				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+					return true;
+				break;
+			//The End
+			case 16:
+				vars.xTarget2 = 821;
+				vars.yTarget2 = -257;
+				vars.zTarget2 = -51;
+				if(current.xPostfs <= (vars.xTarget2+1) && current.xPostfs >= (vars.xTarget2-1) && current.yPostfs <= (vars.yTarget2+1) && current.yPostfs >= (vars.yTarget2-1) && current.zPostfs <= (vars.zTarget2+1) && current.zPostfs >= (vars.zTarget2-1))
+					return true;
+				break;
+			}
+			//Unmarking flags at the end of each cycle.
+			vars.cpGet = false;
+	break;
 	}
 }
