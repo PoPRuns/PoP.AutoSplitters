@@ -37,7 +37,7 @@ split{
 }
 
 gameTime{
-	return TimeSpan.FromSeconds((current.FrameCount-vars.ResetDelta)/12);
+	return TimeSpan.FromSeconds((current.FrameCount-vars.ResetDelta)/12.0);
 }
 
 isLoading{
