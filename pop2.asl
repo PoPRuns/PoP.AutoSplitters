@@ -13,7 +13,7 @@ startup{
 }
 
 start{
-	if(current.Start == 238){
+	if(current.Start == 238 && current.Level == 1){
 		vars.ResetDelta = current.FrameCount;
 		return true;
 	}
