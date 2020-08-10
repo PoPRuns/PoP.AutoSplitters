@@ -8,6 +8,8 @@ state("DOSBox")
 
 startup{
 	short ResetDelta = 0;
+	short RestartDelta = 0;
+	short CorrectFrames = 0;
 	bool Resetting = false;
     refreshRate = 24; 
 }
@@ -18,12 +20,15 @@ start{
 		return true;
 	}
 	vars.ResetDelta = 0;
+	vars.RestartDelta = 0;
+	vars.CorrectFrames = 0;
 	vars.Resetting = false;
 }
 
 reset{
 	if(current.Start == 238 && vars.Resetting == false && current.Level == 1){
 		vars.Resetting = true;
+		vars.RestartDelta = 0;
 		return true;
 	}
 }
@@ -33,14 +38,23 @@ split{
 		vars.Resetting = false;
 	}
 	
+	if(old.GameRunning != 0 && current.GameRunning == 0){
+		vars.RestartDelta += current.FrameCount;
+	}
+	
     return (old.Level == current.Level-1);
 }
 
 gameTime{
-	return TimeSpan.FromSeconds((current.FrameCount-vars.ResetDelta)/12.0);
+	vars.CorrectFrames = current.FrameCount - vars.ResetDelta + vars.RestartDelta;
+	
+	if(current.GameRunning == 0){
+		vars.CorrectFrames = vars.RestartDelta - vars.ResetDelta;
+	}
+	
+	return TimeSpan.FromSeconds((vars.CorrectFrames)/12.0);
 }
 
 isLoading{
 	return true;
 }
- 
