@@ -99,3 +99,8 @@ split
         ((old.Level != current.Level) && !skipSplit)|| // if level changes
         (current.Level == 0xE && current.EndGame == 0xFF);    // if currently on level 14 and EndGame changes to 255
 }
+
+isLoading
+{
+    return true;
+}
