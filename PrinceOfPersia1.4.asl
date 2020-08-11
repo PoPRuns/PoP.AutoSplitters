@@ -1,9 +1,10 @@
 // Game:        Prince of Persia v1.4
 // Emulator:    DOSBox 0.74-3
-// Created by:  ThePedMeister
+// Original by: ThePedMeister
 // Updated by:  Karlgamer
-// Updated by:  WinterThunder
-// Updated:     2020-05-17
+// Overhaul by: WinterThunder
+// Tweaks by:   Smathlax
+// Updated:     2020-08-11
 // IGT timing:  YES
 //
 // Base memory path is everything before final offset
@@ -36,7 +37,24 @@ state("DOSBOX")
 startup
 {
     refreshRate = 24; // Prince of Persia runs at 12 fps, let's update twice as often to be sure
-    settings.Add("sound", false, "Sound On At Start?");
+	
+	settings.Add("sound_settings", true, "Checking sound");
+		settings.Add("sound", false, "Sound On At Start?", "sound_settings");
+		
+	settings.Add("split_settings", true, "Additional split configuration");
+		settings.Add("disable_levelskip_detection", false, "Disable 'Level Skip' category detection (keep splits for levels 1-3)", "split_settings");
+		settings.Add("merge_level_12", false, "Don't split between levels 12 and 13 (treat tower Level and Jaffar level as one segment)", "split_settings");
+	
+	vars.isLevelSkipMode = (Func<bool>) (() => {
+		string categoryName = timer.Run.GetExtendedCategoryName().ToLower();
+		//print("POPASL.isLevelSkipEnabled(): categoryName = " + categoryName);
+		bool isLevelSkip = categoryName.Contains("level skip") || categoryName.Contains("levelskip");
+		return isLevelSkip;
+	});
+	
+	vars.getBaseFramesRemaining = (Func<int>) (() => {
+        return (vars.isLevelSkipMode() ? (15) : (60)) * 720; 
+    });
 }
 
 start
@@ -61,7 +79,7 @@ gameTime
 {
     int minutesLeft = current.MinutesLeft - 1;
     int totalFramesLeft = (minutesLeft * 720) + current.FrameSeconds;
-    int elapsedFrames = (60 * 720) - totalFramesLeft;
+    int elapsedFrames = (vars.getBaseFramesRemaining()) - totalFramesLeft;
     double secondsElapsed = elapsedFrames / 12.0;
     //print("POPASL[gameTime]: secondsElapsed = " + secondsElapsed);
     return TimeSpan.FromSeconds(secondsElapsed);
@@ -69,12 +87,15 @@ gameTime
 
 split
 {
+	bool suppressFirstLevels = (settings["disable_levelskip_detection"] == false && vars.isLevelSkipMode() == true);
+	bool suppressJaffarLevel = (settings["merge_level_12"] == true);
+	
+	bool skipFirstLevelsSplit  = suppressFirstLevels && (old.Level <= 3);
+	bool skipJaffarLevelsSplit = suppressJaffarLevel && (old.Level == 12);
+	
+	bool skipSplit = (skipFirstLevelsSplit || skipJaffarLevelsSplit);
+	
     return 
-        (old.Level !=  current.Level) || // if level changes
+        ((old.Level != current.Level) && !skipSplit)|| // if level changes
         (current.Level == 0xE && current.EndGame == 0xFF);    // if currently on level 14 and EndGame changes to 255
-}
-
-isLoading
-{
-    return true;
 }
