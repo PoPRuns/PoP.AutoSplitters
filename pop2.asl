@@ -42,7 +42,7 @@ split{
 		vars.RestartDelta += current.FrameCount;
 	}
 
-	if((old.Level == current.Level-1) && current.Level > 0){
+	if((old.Level == current.Level-1) && current.Level > 1){
    		return true;
     	}
 }
