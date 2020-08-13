@@ -41,8 +41,10 @@ split{
 	if(old.GameRunning != 0 && current.GameRunning == 0){
 		vars.RestartDelta += current.FrameCount;
 	}
-	
-    return (old.Level == current.Level-1);
+
+	if((old.Level == current.Level-1) && current.Level > 0){
+   		return true;
+    	}
 }
 
 gameTime{
