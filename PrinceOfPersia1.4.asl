@@ -4,7 +4,7 @@
 // Updated by:  Karlgamer
 // Overhaul by: WinterThunder
 // Tweaks by:   Smathlax
-// Updated:     2020-08-11
+// Updated:     2020-08-17
 // IGT timing:  YES
 //
 // Base memory path is everything before final offset
@@ -79,7 +79,8 @@ gameTime
 {
     int minutesLeft = current.MinutesLeft - 1;
     int totalFramesLeft = (minutesLeft * 720) + current.FrameSeconds;
-    int elapsedFrames = (vars.getBaseFramesRemaining()) - totalFramesLeft;
+	int adjustedFramesLeft = (minutesLeft < 0) ? 0 : totalFramesLeft; //time has expired
+    int elapsedFrames = (vars.getBaseFramesRemaining()) - adjustedFramesLeft;	
     double secondsElapsed = elapsedFrames / 12.0;
     //print("POPASL[gameTime]: secondsElapsed = " + secondsElapsed);
     return TimeSpan.FromSeconds(secondsElapsed);
