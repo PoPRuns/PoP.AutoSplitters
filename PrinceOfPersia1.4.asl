@@ -79,7 +79,7 @@ gameTime
 {
     int minutesLeft = current.MinutesLeft - 1;
     int totalFramesLeft = (minutesLeft * 720) + current.FrameSeconds;
-	int adjustedFramesLeft = (minutesLeft < 0) ? 0 : totalFramesLeft; //time has expired
+    int adjustedFramesLeft = (minutesLeft < 0) ? 0 : totalFramesLeft; //time has expired
     int elapsedFrames = (vars.getBaseFramesRemaining()) - adjustedFramesLeft;	
     double secondsElapsed = elapsedFrames / 12.0;
     //print("POPASL[gameTime]: secondsElapsed = " + secondsElapsed);
