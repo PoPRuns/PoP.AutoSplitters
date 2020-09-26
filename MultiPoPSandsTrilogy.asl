@@ -141,23 +141,34 @@ startup
 
 start
 {
-	//PoP1
-	// start (sound) && if starting level = 1 AND if level = 1 AND if Minutes = 60 AND count is = 47120384
-    return
- 	((current.Sound == 0 && settings["sound"] == true) || (settings["sound"] == false)) &&
-        (current.Start == 0x1) && 
-        (current.Level == 0x1) && 
-        (current.Time == 0x3C) && 
-        (current.Count >= 0x2CE0000);
+	switch(timer.Run.GetExtendedCategoryName()
+	{
+	 case "Anthology":
+		//PoP1 Start
+		// start (sound) && if starting level = 1 AND if level = 1 AND if Minutes = 60 AND count is = 47120384
+		return
+		((current.Sound == 0 && settings["sound"] == true) || (settings["sound"] == false)) &&
+			(current.Start == 0x1) && 
+			(current.Level == 0x1) && 
+			(current.Time == 0x3C) && 
+			(current.Count >= 0x2CE0000);
+		break;
 	
-	//SoT
-	vars.aboveCredits = false;
-	vars.newFountain = false;
-	vars.startUp = true;
+	case "Sands Trilogy (Any%, Standard)":
+	case "Sands Trilogy (Any%, Zipless)":
+	case "Sands Trilogy (Any%, No Major Glitches)":
+	case "Sands Trilogy (Completionist, Standard)":
+	case "Sands Trilogy (Completionist, Zipless)":
+	case "Sands Trilogy (Completionist, No Major Glitches)":
+		vars.aboveCredits = false;
+		vars.newFountain = false;
+		vars.startUp = true;
 	
-	//Detecting if the game has started on the balcony.
-	if(current.xPos1 >= -103.264 && current.yPos1 >= -4.8 && current.zPos1 >= 1.341 && current.xPos1 <= -103.262 && current.yPos1 <= -4.798 && current.zPos1 <= 1.343 && current.startValue == 1)
+		//Detecting if the game has started on the balcony.
+		if(current.xPos1 >= -103.264 && current.yPos1 >= -4.8 && current.zPos1 >= 1.341 && current.xPos1 <= -103.262 && current.yPos1 <= -4.798 && current.zPos1 <= 1.343 && current.startValue == 1)
 			return true;
+		break;
+	}
 }
 
 
