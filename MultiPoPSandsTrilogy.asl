@@ -174,15 +174,26 @@ start
 
 isLoading
 {
-	if(current.xPos3d == 0 && current.yPos3d == 0 && current.zPos3d == 0)
+	switch(timer.Run.GetExtendedCategoryName())
 	{
-		return true;
+	 case "Anthology":
+		if(current.xPos3d == 0 && current.yPos3d == 0 && current.zPos3d == 0)
+		{
+			return true;
+		}
+		if(current.isMenu == 0 || current.isLoading)
+		{
+			return true;
+		}
+	break;
+	case "Sands Trilogy (Any%, Standard)":
+	case "Sands Trilogy (Any%, Zipless)":
+	case "Sands Trilogy (Any%, No Major Glitches)":
+	case "Sands Trilogy (Completionist, Standard)":
+	case "Sands Trilogy (Completionist, Zipless)":
+	case "Sands Trilogy (Completionist, No Major Glitches)":
+	break;
 	}
-	if(current.isMenu == 0 || current.isLoading)
-	{
-		return true;
-	}
-	return false;
 }
 
 
