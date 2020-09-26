@@ -141,7 +141,7 @@ startup
 
 start
 {
-	switch(timer.Run.GetExtendedCategoryName()
+	switch(timer.Run.GetExtendedCategoryName())
 	{
 	 case "Anthology":
 		//PoP1 Start
