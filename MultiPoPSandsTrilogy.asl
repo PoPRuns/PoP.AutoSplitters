@@ -472,256 +472,330 @@ split
 	//List of WW Splits across categories
 	
 	vars.TheBoat = (Func <bool>)(() => {
-		if(current.xPos2 >= -1003 		&& current.yPos2 >=  -1028 		&& current.zPos2 >=  14 			&& current.xPos2 <=  -995 		&& current.yPos2 <=  -1016 		&& current.zPos2 <=  15			&& current.storyValue == 0		&& current.bossHealth == 0)
+		if(current.xPos2 >= -1003 && current.xPos2 <=  -995 &&
+		   current.yPos2 >=  -1028 && current.yPos2 <=  -1016 &&
+		   current.zPos2 >=  14 && current.zPos2 <=  15 &&
+		   current.storyValue == 0 && current.bossHealth == 0)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.SpiderSword = (Func <bool>)(() => {
-		if(current.xPos2 >= 43.3 		&& current.yPos2 >=  -75.7 		&& current.zPos2 >=  370 		&& current.xPos2 <=  43.4 		&& current.yPos2 <=  -75.6 		&& current.zPos2 <=  370.1		&& current.storyValue == 7)
+		if(current.xPos2 >= 43.3 && current.xPos2 <= 43.4 &&
+		   current.yPos2 >= -75.7 && current.yPos2 <= -75.6 &&
+		   current.zPos2 >= 370 && current.zPos2 <= 370.1 &&
+		   current.storyValue == 7)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheRavenMan = (Func <bool>)(() => {
-		if(current.xPos2 >= -5.359 		&& current.yPos2 >= -161.539 	&& current.zPos2 >= 66.5 		&& current.xPos2 <= -4.913 		&& current.yPos2 <= -161.500 	&& current.zPos2 <= 67.5 	&& current.storyValue == 2)
+		if(current.xPos2 >= -5.359 && current.xPos2 <= -4.913 &&
+		   current.yPos2 >= -161.539 && current.yPos2 <= -161.500 &&
+		   current.zPos2 >= 66.5 && current.zPos2 <= 67.5 &&
+		   current.storyValue == 2)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TimePortal = (Func <bool>)(() => {
-		if(current.xPos2 >= 122.8 		&& current.yPos2 >= -156.1 		&& current.zPos2 >= 368.5 		&& current.xPos2 <= 122.9 		&& current.yPos2 <= -156 		&& current.zPos2 <= 369.5 	&& current.storyValue == 2)			
+		if(current.xPos2 >= 122.8 && current.xPos2 <= 122.9 &&
+		   current.yPos2 >= -156.1 && current.yPos2 <= -156 &&
+		   current.zPos2 >= 368.5 && current.zPos2 <= 369.5 &&
+		   current.storyValue == 2)			
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.ChaseShadee = (Func <bool>)(() => {
-		if(current.xPos2 >= 43.3 		&& current.yPos2 >=  -75.7 		&& current.zPos2 >=  370 		&& current.xPos2 <=  43.4 		&& current.yPos2 <=  -75.6 		&& current.zPos2 <=  370.1		&& current.storyValue == 7)
+		if(current.xPos2 >= 43.3 && current.xPos2 <= 43.4 &&
+		   current.yPos2 >= -75.7 && current.yPos2 <= -75.6 &&
+		   current.zPos2 >= 370 && current.zPos2 <= 370.1 &&
+		   current.storyValue == 7)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.DamselDistress = (Func <bool>)(() => {
-		if(current.xPos2 >= 115 			&& current.yPos2 >=  -114 		&& current.zPos2 >=  357 		&& current.xPos2 <=  132 		&& current.yPos2 <=  -80 		&& current.zPos2 <=  361			&& current.storyValue == 8		&& current.bossHealth == 0)
+		if(current.xPos2 >= 115 && current.xPos2 <= 132 &&
+		   current.yPos2 >= -114 && current.yPos2 <= -80 &&
+		   current.zPos2 >= 357 && current.zPos2 <= 361 &&
+		   current.storyValue == 8 && current.bossHealth == 0)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheDahaka = (Func <bool>)(() => {
-		if(current.xPos2 >= 40.1 		&& current.yPos2 >=  -96.1 		&& current.zPos2 >=  86 			&& current.xPos2 <=  42.4 		&& current.yPos2 <=  -95.9 		&& current.zPos2 <=  86.1		&& current.storyValue == 9)
+		if(current.xPos2 >= 40.1 && current.xPos2 <= 42.4 &&
+		   current.yPos2 >= -96.1 && current.yPos2 <= -95.9 &&
+		   current.zPos2 >= 86 && current.zPos2 <= 86.1 &&
+		   current.storyValue == 9)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.SerpentSword = (Func <bool>)(() => {
-		if(current.xPos2 >= -96.5 		&& current.yPos2 >=  41.3 		&& current.zPos2 >=  407.4 		&& current.xPos2 <=  -96.4 		&& current.yPos2 <=  41.4 		&& current.zPos2 <=  407.5		&& current.storyValue == 13)
+		if(current.xPos2 >= -96.5 && current.xPos2 <= -96.4 &&
+		   current.yPos2 >= 41.3 && current.yPos2 <= 41.4 &&
+		   current.zPos2 >= 407.4 && current.zPos2 <= 407.5 &&
+		   current.storyValue == 13)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.GardenHall = (Func <bool>)(() => {
-		if(current.xPos2 >= 66.9 		&& current.yPos2 >=  11.4 		&& current.zPos2 >=  400 		&& current.xPos2 <=  67.1 		&& current.yPos2 <=  11.6 		&& current.zPos2 <=  400.2		&& current.storyValue == 22)
+		if(current.xPos2 >= 66.9 && current.xPos2 <= 67.1 &&
+		   current.yPos2 >= 11.4 && current.yPos2 <= 11.6 &&
+		   current.zPos2 >= 400 && current.zPos2 <= 400.2 &&
+		   current.storyValue == 22)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.WaterworksDone = (Func <bool>)(() => {
-		if(current.xPos2 >= 23 			&& current.yPos2 >=  41 			&& current.zPos2 >=  441 		&& current.xPos2 <=  29 			&& current.yPos2 <=  43 			&& current.zPos2 <=  450			&& current.storyValue == 22)
+		if(current.xPos2 >= 23 && current.xPos2 <= 29 &&
+		   current.yPos2 >= 41 && current.yPos2 <= 43 &&
+		   current.zPos2 >= 441 && current.zPos2 <= 450 &&
+		   current.storyValue == 22)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.LionSword = (Func <bool>)(() => {
-		if(current.xPos2 >= -44.7 		&& current.yPos2 >=  -27.1 		&& current.zPos2 >=  389 		&& current.xPos2 <=  -44.6 		&& current.yPos2 <=  -27 		&& current.zPos2 <=  389.1		&& current.storyValue == 21)
+		if(current.xPos2 >= -44.7 && current.xPos2 <= -44.6 &&
+		   current.yPos2 >= -27.1 && current.yPos2 <= -27 &&
+		   current.zPos2 >= 389 && current.zPos2 <= 389.1 &&
+		   current.storyValue == 21)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheMechTower = (Func <bool>)(() => {
-		if(current.xPos2 >= -167 		&& current.yPos2 >=  -47.5 		&& current.zPos2 >=  409.6363 	&& current.xPos2 <=  -162 		&& current.yPos2 <=  -46 		&& current.zPos2 <=  412			&& current.storyValue == 15)
+		if(current.xPos2 >= -167 && current.xPos2 <= -162 &&
+		   current.yPos2 >= -47.5 && current.yPos2 <= -46 &&
+		   current.zPos2 >= 409.6363 && current.zPos2 <= 412 &&
+		   current.storyValue == 15)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheMechTowTENMG = (Func <bool>)(() => {
-		if(current.xPos >= -208			&& current.yPos >= -35.5		&& current.zPos >= 419.9		&& current.xPos <= -205			&& current.yPos <= -32.5		&& current.zPos <= 423			&& current.storyValue == 63)
+		if(current.xPos >= -208 && current.xPos <= -205 &&
+		   current.yPos >= -35.5 && current.yPos <= -32.5 &&
+		   current.zPos >= 419.9 && current.zPos <= 423 &&
+		   current.storyValue == 63)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.RavagesPortal = (Func <bool>)(() => {
-		if(current.xPos2 >= -210.018 	&& current.yPos2 >=  164.259 	&& current.zPos2 >=  440.9 		&& current.xPos2 <=  -210.016 	&& current.yPos2 <=  164.261 	&& current.zPos2 <=  441.1		&& current.storyValue == 16)
+		if(current.xPos2 >= -210.018 && current.xPos2 <= -210.016 &&
+		   current.yPos2 >= 164.259 && current.yPos2 <= 164.261 &&
+		   current.zPos2 >= 440.9 && current.zPos2 <= 441.1 &&
+		   current.storyValue == 16)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.ActivationRuins = (Func <bool>)(() => {
-		if(current.xPos2 >= -206 		&& current.yPos2 >=  59.8 		&& current.zPos2 >=  162.6 		&& current.xPos2 <=  -205.8 		&& current.yPos2 <=  67.4 		&& current.zPos2 <=  163.1		&& current.storyValue == 18)
+		if(current.xPos2 >= -206 && current.xPos2 <= -205.8 &&
+		   current.yPos2 >= 59.8 && current.yPos2 <= 67.4 &&
+		   current.zPos2 >= 162.6 && current.zPos2 <= 163.1 &&
+		   current.storyValue == 18)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.ActivationDone = (Func <bool>)(() => {
-		if(current.xPos2 >= -192.5 		&& current.yPos2 >=  109 		&& current.zPos2 >=  471.9 		&& current.xPos2 <=  -189.5 		&& current.yPos2 <=  111 		&& current.zPos2 <=  472.1		&& current.storyValue == 19)
+		if(current.xPos2 >= -192.5 && current.xPos2 <= -189.5 &&
+		   current.yPos2 >= 109 && current.yPos2 <= 111 &&
+		   current.zPos2 >= 471.9 && current.zPos2 <= 472.1 &&
+		   current.storyValue == 19)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.SandWraithDead = (Func <bool>)(() => {
-		if(current.xPos2 >= -50 			&& current.yPos2 >=  -13 		&& current.zPos2 >=  388.9 		&& current.xPos2 <=  -39 		&& current.yPos2 <=  -5 			&& current.zPos2 <=  389.8		&& current.storyValue == 33)
+		if(current.xPos2 >= -50 && current.xPos2 <= -39 &&
+		   current.yPos2 >= -13 && current.yPos2 <= -5 &&
+		   current.zPos2 >= 388.9 && current.zPos2 <= 389.8 &&
+		   current.storyValue == 33)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.KaileenaDead = (Func <bool>)(() => {
-		if(current.xPos2 >= -74 			&& current.yPos2 >=  53.5 		&& current.zPos2 >=  414 		&& current.xPos2 <=  -31 		&& current.yPos2 <=  104 		&& current.zPos2 <=  422			&& current.storyValue == 38		&& current.bossHealth == 0)
+		if(current.xPos2 >= -74 && current.xPos2 <= -31 &&
+		   current.yPos2 >= 53.5 && current.yPos2 <= 104 &&
+		   current.zPos2 >= 414 && current.zPos2 <= 422 &&
+		   current.storyValue == 38 && current.bossHealth == 0)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.CatacombsExit = (Func <bool>)(() => {
-		if(current.xPos2 >= -100 		&& current.yPos2 >=  -190 		&& current.zPos2 >=  33 			&& current.xPos2 <=  -97.5 		&& current.yPos2 <=  -187 		&& current.zPos2 <=  33.2		&& current.storyValue == 39)
+		if(current.xPos2 >= -100 && current.xPos2 <= -97.5 &&
+		   current.yPos2 >= -190 && current.yPos2 <= -187 &&
+		   current.zPos2 >= 33 && current.zPos2 <= 33.2 &&
+		   current.storyValue == 39)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.ScorpionSword = (Func <bool>)(() => {
-		if(current.xPos2 >= -170.1 		&& current.yPos2 >= -127.3 		&& current.zPos2 >= 335.5 		&& current.xPos2 <= -170 		&& current.yPos2 <= -127.2 		&& current.zPos2 <= 336.5 	&& current.storyValue == 59)
+		if(current.xPos2 >= -170.1 && current.xPos2 <= -170 &&
+		   current.yPos2 >= -127.3 && current.yPos2 <= -127.2 &&
+		   current.zPos2 >= 335.5 && current.zPos2 <= 336.5 &&
+		   current.storyValue == 59)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.TheLibrary = (Func <bool>)(() => {
-		if(current.xPos2 >= -112 		&& current.yPos2 >=  -144 		&& current.zPos2 >=  384.9 		&& current.xPos2 <=  -111 		&& current.yPos2 <=  -137 		&& current.zPos2 <=  389)
+		if(current.xPos2 >= -112 && current.xPos2 <= -111 &&
+		   current.yPos2 >= -144 && current.yPos2 <= -137 &&
+		   current.zPos2 >= 384.9 && current.zPos2 <= 389)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.HourglassRevisited = (Func <bool>)(() => {
-		if(current.xPos2 >= -108.3 		&& current.yPos2 >=  40 			&& current.zPos2 >=  407.3 		&& current.xPos2 <=  -106 		&& current.yPos2 <=  45 			&& current.zPos2 <=  407.5		&& current.storyValue == 45)
+		if(current.xPos2 >= -108.3 && current.xPos2 <= -106 &&
+		   current.yPos2 >= 40 && current.yPos2 <= 45 &&
+		   current.zPos2 >= 407.3 && current.zPos2 <= 407.5 &&
+		   current.storyValue == 45)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.MaskofWraith = (Func <bool>)(() => {
-		if(current.xPos2 >= -20.5 		&& current.yPos2 >=  236.8 		&& current.zPos2 >=  133 		&& current.xPos2 <=  -20.4 		&& current.yPos2 <=  267 		&& current.zPos2 <=  133.1		&& current.storyValue == 46)
+		if(current.xPos2 >= -20.5 && current.xPos2 <= -20.4 &&
+		   current.yPos2 >= 236.8 && current.yPos2 <= 267 &&
+		   current.zPos2 >= 133 && current.zPos2 <= 133.1 &&
+		   current.storyValue == 46)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.SandGriffin = (Func <bool>)(() => {
-		if(current.xPos2 >= -23 			&& current.yPos2 >=  163 		&& current.zPos2 >=  429 		&& current.xPos2 <=  -15 		&& current.yPos2 <=  166.5 		&& current.zPos2 <=  431			&& current.storyValue == 48)
+		if(current.xPos2 >= -23 && current.xPos2 <= -15 &&
+		   current.yPos2 >= 163 && current.yPos2 <= 166.5 &&
+		   current.zPos2 >= 429 && current.zPos2 <= 431 &&
+		   current.storyValue == 48)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.MirroredFates = (Func <bool>)(() => {
-		if(current.xPos2 >= 136.7 		&& current.yPos2 >=  -110.6 		&& current.zPos2 >=  377.9 		&& current.xPos2 <=  136.9 		&& current.yPos2 <=  -110.4 		&& current.zPos2 <=  378			&& current.storyValue == 55)
+		if(current.xPos2 >= 136.7 && current.xPos2 <= 136.9 &&
+		   current.yPos2 >= -110.6 && current.yPos2 <= -110.4 &&
+		   current.zPos2 >= 377.9 && current.zPos2 <= 378 &&
+		   current.storyValue == 55)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.FavourUnknown = (Func <bool>)(() => {
-		if(current.xPos2 >= 41.1 		&& current.yPos2 >=  -180.1 		&& current.zPos2 >=  368.9 		&& current.xPos2 <=  41.2 		&& current.yPos2 <=  -180 		&& current.zPos2 <=  369.1		&& current.storyValue == 57)
+		if(current.xPos2 >= 41.1 && current.xPos2 <= 41.2 &&
+		   current.yPos2 >= -180.1 && current.yPos2 <= -180 &&
+		   current.zPos2 >= 368.9 && current.zPos2 <= 369.1 &&
+		   current.storyValue == 57)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.RNGStorygate = (Func <bool>)(() => {
-		if(current.storyValue == 59)
+		if(old.storyValue != 59 && current.storyValue == 59)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.LightSword = (Func <bool>)(() => {
 		if(current.secondaryWeapon == 50 && current.storyValue == 61)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.WWEndgame = (Func <bool>)(() => {
-		if((current.storyValue == 63))
-					return true;
-		else
-			return false;
+		if((old.storyValue != 63 && current.storyValue == 63))
+		    return true;
+		return false;
 	});
 	vars.DeathofaPrince = (Func <bool>)(() => {
-		if(current.xPos2 >= -67 			&& current.yPos2 >=  -23.3 		&& current.zPos2 >=  399.9 		&& current.xPos2 <=  -65.1 		&& current.yPos2 <=  -23.1 		&& current.zPos2 <=  400			&& current.storyValue == 64)
+		if(current.xPos2 >= -67 && current.xPos2 <= -65.1 &&
+		   current.yPos2 >= -23.3 && current.yPos2 <= -23.1 &&
+		   current.zPos2 >= 399.9 && current.zPos2 <= 400 &&
+		   current.storyValue == 64)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.SlomoPortal = (Func <bool>)(() => {
-		if(current.xPos2 >= -52.7 		&& current.yPos2 >= 137.2 		&& current.zPos2 >= 418 			&& current.xPos2 <= -52.6 		&& current.yPos2 <= 137.3 		&& current.zPos2 <= 419 		&& current.storyValue == 66)
+		if(current.xPos2 >= -52.7 && current.xPos2 <= -52.6 &&
+		   current.yPos2 >= 137.2 && current.yPos2 <= 137.3 &&
+		   current.zPos2 >= 418 && current.zPos2 <= 419 &&
+		   current.storyValue == 66)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.WWEnd = (Func <bool>)(() => {
-		if(current.xPos2 >= -35 			&& current.yPos2 >= 170 			&& current.zPos2 >= 128.9 		&& current.xPos2 <= -5 			&& current.yPos2 <= 205 			&& current.zPos2 <= 129.1 	&& current.storyValue >= 66 && current.bossHealth == 0)
+		if(current.xPos2 >= -35 && current.xPos2 <= -5 &&
+		   current.yPos2 >= 170 && current.yPos2 <= 205 &&
+		   current.zPos2 >= 128.9 && current.zPos2 <= 129.1 &&
+		   current.storyValue >= 66 && current.bossHealth == 0)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.WWLU1 = (Func <bool>)(() => {
-		if(current.xPos2 >= 52			&& current.yPos2 >= -188.7		&& current.zPos2 >= 381.9		&& current.xPos2 <= 52.8			&& current.yPos2 <= -188.6		&& current.zPos2 <= 382.1		&& current.storyValue == 2)
+		if(current.xPos2 >= 52 && current.xPos2 <= 52.8 &&
+		   current.yPos2 >= -188.7 && current.yPos2 <= -188.6 &&
+		   current.zPos2 >= 381.9 && current.zPos2 <= 382.1 &&
+		   current.storyValue == 2)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.WWLU2 = (Func <bool>)(() => {
-		if(current.xPos2 >= -112.1		&& current.yPos2 >= -66.1		&& current.zPos2 >= 360.9		&& current.xPos2 <= -112			&& current.yPos2 <= -65.2		&& current.zPos2 <= 361			&& current.storyValue == 59)
+		if(current.xPos2 >= -112.1 && current.xPos2 <= -112 &&
+		   current.yPos2 >= -66.1 && current.yPos2 <= -65.2 &&
+		   current.zPos2 >= 360.9 && current.zPos2 <= 361 &&
+		   current.storyValue == 59)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.WWLU3 = (Func <bool>)(() => {
-		if(current.xPos2 >= -74.8		&& current.yPos2 >= -102.8		&& current.zPos2 >= 378.9		&& current.xPos2 <= -74.2		&& current.yPos2 <= -102.7		&& current.zPos2 <= 379			&& current.storyValue == 60)
+		if(current.xPos2 >= -74.8 && current.xPos2 <= -74.2 &&
+		   current.yPos2 >= -102.8 && current.yPos2 <= -102.7 &&
+		   current.zPos2 >= 378.9 && current.zPos2 <= 379 &&
+		   current.storyValue == 60)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.WWLU4 = (Func <bool>)(() => {
-		if(current.xPos2 >= -161.2		&& current.yPos2 >= 170.3		&& current.zPos2 >= 471.9		&& current.xPos2 <= -161			&& current.yPos2 <= 171			&& current.zPos2 <= 472.1		&& current.storyValue == 63)
+		if(current.xPos2 >= -161.2 && current.xPos2 <= -161 &&
+		   current.yPos2 >= 170.3 && current.yPos2 <= 171 &&
+		   current.zPos2 >= 471.9 && current.zPos2 <= 472.1 &&
+		   current.storyValue == 63)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.WWLU5 = (Func <bool>)(() => {
-		if(current.xPos2 >= 138.8		&& current.yPos2 >= 115.3		&& current.zPos2 >= 382.5		&& current.xPos2 <= 139			&& current.yPos2 <= 116.7		&& current.zPos2 <= 382.6		&& current.storyValue == 64)
+		if(current.xPos2 >= 138.8 && current.xPos2 <= 139 &&
+		   current.yPos2 >= 115.3 && current.yPos2 <= 116.7 &&
+		   current.zPos2 >= 382.5 && current.zPos2 <= 382.6 &&
+		   current.storyValue == 64)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.WWLU6 = (Func <bool>)(() => {
-		if(current.xPos2 >= 76.1			&& current.yPos2 >= 64.1			&& current.zPos2 >= 461.4		&& current.xPos2 <= 76.2			&& current.yPos2 <= 64.9			&& current.zPos2 <= 461.6		&& current.storyValue == 64)
+		if(current.xPos2 >= 76.1 && current.xPos2 <= 76.2 &&
+		   current.yPos2 >= 64.1 && current.yPos2 <= 64.9 &&
+		   current.zPos2 >= 461.4 && current.zPos2 <= 461.6 &&
+		   current.storyValue == 64)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.WWLU7 = (Func <bool>)(() => {
-		if(current.xPos2 >= 190.2		&& current.yPos2 >= -131.9		&& current.zPos2 >= 353.9		&& current.xPos2 <= 190.4		&& current.yPos2 <= -131.8		&& current.zPos2 <= 354.1		&& current.storyValue == 64)
+		if(current.xPos2 >= 190.2 && current.xPos2 <= 190.4 &&
+		   current.yPos2 >= -131.9 && current.yPos2 <= -131.8 &&
+		   current.zPos2 >= 353.9 && current.zPos2 <= 354.1 &&
+		   current.storyValue == 64)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.WWLU8 = (Func <bool>)(() => {
-		if(current.xPos2 >= 162.2		&& current.yPos2 >= -37.5		&& current.zPos2 >= 392.9		&& current.xPos2 <= 162.7		&& current.yPos2 <= -37.3		&& current.zPos2 <= 393.1		&& current.storyValue == 64)
+		if(current.xPos2 >= 162.2 && current.xPos2 <= 162.7 &&
+		   current.yPos2 >= -37.5 && current.yPos2 <= -37.3 &&
+		   current.zPos2 >= 392.9 && current.zPos2 <= 393.1 &&
+		   current.storyValue == 64)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.WWLU9 = (Func <bool>)(() => {
-		if(current.xPos2 >= -114.7		&& current.yPos2 >= -47.2		&& current.zPos2 >= 368.9		&& current.xPos2 <= -114.1		&& current.yPos2 <= -47			&& current.zPos2 <= 369.1		&& current.storyValue == 64)
+		if(current.xPos2 >= -114.7 && current.xPos2 <= -114.1 &&
+		   current.yPos2 >= -47.2 && current.yPos2 <= -47 &&
+		   current.zPos2 >= 368.9 && current.zPos2 <= 369.1 &&
+		   current.storyValue == 64)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	vars.WaterSword = (Func <bool>)(() => {
-		if(current.xPos2 >= -96.643		&& current.yPos2 >= 43.059		&& current.zPos2 >= 407.4		&& current.xPos2 <= -96.641		&& current.yPos2 <= 43.061		&& current.zPos2 <= 407.5		&& current.storyValue == 66)
+		if(current.xPos2 >= -96.643 && current.xPos2 <= -96.641
+		   current.yPos2 >= 43.059 && current.yPos2 <= 43.061 &&
+           current.zPos2 >= 407.4 && current.zPos2 <= 407.5 &&
+		   current.storyValue == 66)
 			return true;
-		else
-			return false;
+		return false;
 	});
 	
 	//List of T2T Splits across categories
