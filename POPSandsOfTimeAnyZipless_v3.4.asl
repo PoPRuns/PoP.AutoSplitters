@@ -507,7 +507,7 @@ split{
 				break;
 			//The Baths
 			case 11:
-				if(vars.TheBaths()) 		
+				if(vars.TheBathsZipless()) 		
 					return true;
 				break;
 			//Sword of the Mighty Warrior
@@ -673,7 +673,7 @@ split{
 				break;
 			//The Baths
 			case 11:
-				if(vars.TheBaths()) 		
+				if(vars.TheBathsZipless()) 		
 					return true;
 				break;
 			//Sword of the Mighty Warrior
