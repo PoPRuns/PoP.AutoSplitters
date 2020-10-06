@@ -8,13 +8,10 @@ state("PrinceOfPersia_Launcher"){
 
 
 startup{	
-//Delcaring flags & targets.
+//Delcaring flags & targets
 	bool kill = false;
 	bool seedGet = false;
 	bool startUp = false;
-	int xTarget = 0;
-	int yTarget = 0;
-	int zTarget = 0;
 }
 
 
@@ -34,9 +31,6 @@ start{
 	vars.kill = false;
 	vars.seedGet = false;
 	vars.startUp = true;
-	vars.xTarget = 0;
-	vars.yTarget = 0;
-	vars.zTarget = 0;
 }
 
 
@@ -92,29 +86,8 @@ vars.SplitSeed = (Func <float, float, float, bool>)((float xTarg, float yTarg, f
 			return true;		
 		return false;
 	});	
-	vars.HealCoronation = (Func <bool>)(() => {
-		if(current.xPos >= 328 && current.xPos <= 352 &&
-		   current.yPos >= 570 && current.yPos <= 595 &&
-		   current.zPos >= 32.4 && vars.kill)
-			return true;		
-		return false;
-	});
-	vars.HealHeavensStair = (Func <bool>)(() => {
-		if(current.xPos >= -322 && current.xPos <= -260 &&
-		   current.yPos >= 628 && current.yPos <= 675 &&
-		   current.zPos >= 99.2 && vars.kill)
-			return true;		
-		return false;
-	});
 	vars.BluePlate = (Func <bool>)(() => {
 		if(old.zPos <= 0 && current.zPos >= 32.4)
-			return true;		
-		return false;
-	});
-	vars.TheKing = (Func <bool>)(() => {
-		if(current.xPos <= 20 && current.xPos >= -10 &&
-		   current.yPos >= -375 && current.yPos <= -355 &&
-		   current.zPos <= -32 && vars.kill)
 			return true;		
 		return false;
 	});
@@ -131,7 +104,7 @@ vars.SplitSeed = (Func <float, float, float, bool>)((float xTarg, float yTarg, f
 		   current.zPos >= -33.1)
 			return true;		
 		return false;
-	});	
+	});
 	
 //Initializing flags & targets in the event the start function wasn't used.
 	if(!vars.startUp)
@@ -163,38 +136,38 @@ vars.SplitSeed = (Func <float, float, float, bool>)((float xTarg, float yTarg, f
 
 	switch (timer.CurrentSplitIndex)
 	{
-		case 0: return vars.FirstFightSkip();									//First Fight Skip	
-		case 1: return vars.Canyon();											//The Canyon
-		case 2: return vars.SplitSeed(-538.834f, -67.159f, 12.732f);			//King's Gate
-		case 3: return vars.SplitSeed(-670.471f, -56.147f, 16.46f);				//Sun Temple
-		case 4: return vars.SplitSeed(-806.671f, 112.803f, 21.645f);			//Marshalling Grounds
-		case 5: return vars.SplitSeed(-597.945f, 209.241f, 23.339f);			//Windmills
-		case 6: return vars.SplitSeed(-564.202f, 207.312f, 22f);				//Martyrs' Tower
-		case 7: return vars.SplitSeed(-454.824f, 398.571f, 27.028f);			//MT -> MG
-		case 8: return vars.SplitSeed(-361.121f, 480.114f, 12.928f);			//Machinery Ground
-		case 9: return vars.SplitSeed(-85.968f, 573.338f, 30.558f);				//Heaven's Stair
-		case 10: return vars.SplitSeed(-28.088f, 544.298f, 34.942f);			//Spire of Dreams
-		case 11: return vars.SplitSeed(-150.082f, 406.606f, 34.673f);			//Reservoir
-		case 12: return vars.SplitSeed(-151.121f, 303.514f, 27.95f);			//Construction Yard
-		case 13: return vars.SplitSeed(107.123f, 183.394f, -5.628f);			//Cauldron
-		case 14: return vars.SplitSeed(251.741f, 65.773f, -13.616f);			//Cavern
-		case 15: return vars.SplitSeed(547.488f, 45.41f, -27.107f);				//City Gate
-		case 16: return vars.SplitSeed(609.907f, 61.905f, -35.001f);			//Tower of Ormazd
-		case 17: return vars.SplitSeed(637.262f, 27.224f, -28.603f);			//Queen's Tower
-		case 18: return vars.TempleArrive();									//The Temple (Arrive)
-		case 19: return vars.DoubleJump();										//Double Jump
-		case 20: return vars.YellowPlate();										//Wings of Ormazd
-		case 21: return vars.SplitBoss(1070.478f, 279.147f, -29.571f, 23f);		//The Warrior
-		case 22: return vars.HealCoronation();									//Heal Coronation Hall
-		case 23: return vars.SplitSeed(264.497f, 589.336f, 38.67f);				//Coronation Hall
-		case 24: return vars.HealHeavensStair();								//Heal Heaven's Stair
-		case 25: return vars.SplitBoss(-296.593f, 697.233f, 296.199f, 10f);		//The Alchemist
-		case 26: return vars.SplitBoss(-929.415f, 320.888f, -89.038f, 10f);		//The Hunter
-		case 27: return vars.BluePlate();										//Hand of Ormazd
-		case 28: return vars.SplitBoss(352.792f, 801.051f, 150.260f, 26f);		//The Concubine
-		case 29: return vars.TheKing();											//The King
-		case 30: return vars.TheGod();											//The God
-		case 31: return vars.Resurrection();									//Resurrection
+		case 0: return vars.FirstFightSkip();					//First Fight Skip	
+		case 1: return vars.Canyon();						//The Canyon
+		case 2: return vars.SplitSeed(-538.834f, -67.159f, 12.732f);		//King's Gate
+		case 3: return vars.SplitSeed(-670.471f, -56.147f, 16.46f);		//Sun Temple
+		case 4: return vars.SplitSeed(-806.671f, 112.803f, 21.645f);		//Marshalling Grounds
+		case 5: return vars.SplitSeed(-597.945f, 209.241f, 23.339f);		//Windmills
+		case 6: return vars.SplitSeed(-564.202f, 207.312f, 22f);		//Martyrs' Tower
+		case 7: return vars.SplitSeed(-454.824f, 398.571f, 27.028f);		//MT -> MG
+		case 8: return vars.SplitSeed(-361.121f, 480.114f, 12.928f);		//Machinery Ground
+		case 9: return vars.SplitSeed(-85.968f, 573.338f, 30.558f);		//Heaven's Stair
+		case 10: return vars.SplitSeed(-28.088f, 544.298f, 34.942f);		//Spire of Dreams
+		case 11: return vars.SplitSeed(-150.082f, 406.606f, 34.673f);		//Reservoir
+		case 12: return vars.SplitSeed(-151.121f, 303.514f, 27.95f);		//Construction Yard
+		case 13: return vars.SplitSeed(107.123f, 183.394f, -5.628f);		//Cauldron
+		case 14: return vars.SplitSeed(251.741f, 65.773f, -13.616f);		//Cavern
+		case 15: return vars.SplitSeed(547.488f, 45.41f, -27.107f);		//City Gate
+		case 16: return vars.SplitSeed(609.907f, 61.905f, -35.001f);		//Tower of Ormazd
+		case 17: return vars.SplitSeed(637.262f, 27.224f, -28.603f);		//Queen's Tower
+		case 18: return vars.TempleArrive();					//The Temple (Arrive)
+		case 19: return vars.DoubleJump();					//Double Jump
+		case 20: return vars.YellowPlate();					//Wings of Ormazd
+		case 21: return vars.SplitBoss(1070.478f, 279.147f, -29.571f);		//The Warrior
+		case 22: return vars.SplitBoss(340f, 582.5f, 32.5f);			//Heal Coronation Hall
+		case 23: return vars.SplitSeed(264.497f, 589.336f, 38.67f);		//Coronation Hall
+		case 24: return vars.SplitBoss(-291f, 651.5f, 99.2f);			//Heal Heaven's Stair
+		case 25: return vars.SplitBoss(-296.593f, 697.233f, 296.199f);		//The Alchemist
+		case 26: return vars.SplitBoss(-929.415f, 320.888f, -89.038f);		//The Hunter
+		case 27: return vars.BluePlate();					//Hand of Ormazd
+		case 28: return vars.SplitBoss(352.792f, 801.051f, 150.260f);		//The Concubine
+		case 29: return vars.SplitBoss(5f, -365f, -32f);			//The King
+		case 30: return vars.TheGod();						//The God
+		case 31: return vars.Resurrection();					//Resurrection
 	}
 	//Unmarking flags at the end of each cycle.
 		vars.kill = false;
