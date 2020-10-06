@@ -7,7 +7,7 @@ state("DOSBOX")
     byte Start	        : 0x0074F6D0, 0x1D694;          // the level you start the game at
     byte GameRunning    : "DOSBox.exe", 0x19195EA;      // 0 if game isn't running 
     byte Time           : 0x0074F6D0, 0x1E350;          // Minutes
-    int  Count          : 0x0074F6D0, 0x1E354;          // Seconds
+    short  Count          : 0x0074F6D0, 0x1E354;          // Seconds
     byte Sound          : 0x0074F6D0, 0x2F233;          // 0 if sound is on, 1 if sound is off
 
 	
@@ -21,8 +21,8 @@ state("DOSBOX")
 //Memory values in PoP3D
 state("pop3d")
 {
-	int health : 0x004062E4, 0x130;
-	int eHealth : 0x3FBC84;
+	short health : 0x004062E4, 0x130;
+	short eHealth : 0x3FBC84;
 	float lXPos : 0x004062E4, 0xD0, 0xC4, 0x18, 0x44;
 	float lYPos : 0x004062E4, 0xD0, 0xC4, 0x18, 0x48;
 	float lZPos : 0x004062E4, 0xD0, 0xC4, 0x18, 0x4C;
@@ -36,7 +36,7 @@ state("pop3d")
 state("POP")
 {
 //Some memory value that reliably changes when 'New Game' is pressed.
-	int startValue : 0x6BC980;
+	short startValue : 0x6BC980;
 
 //Prince's position
 	float xPos1 : 0x00699474, 0xC, 0x30;
@@ -44,9 +44,9 @@ state("POP")
 	float zPos1 : 0x00699474, 0xC, 0x38;
 
 //The Vizier's health where 0 is unharmed and 4 is dead.
-	int vizierHealth : 0x0040E518, 0x6C, 0x18, 0x4, 0x44, 0x0;
+	short vizierHealth : 0x0040E518, 0x6C, 0x18, 0x4, 0x44, 0x0;
 	
-	int resetValue : 0x0040E388, 0x4, 0x398;
+	short resetValue : 0x0040E388, 0x4, 0x398;
 }
 
 
@@ -54,16 +54,16 @@ state("POP")
 state("POP2")
 {
 //Some memory value that reliably changes when you gain control after a load.
-	int startValue2 : 0x0096602C, 0x8, 0x28, 0xA8, 0x3E0;
+	short startValue2 : 0x0096602C, 0x8, 0x28, 0xA8, 0x3E0;
 	
 //Story counter/gate/value
-	int storyValue : 0x523578;	
+	short storyValue : 0x523578;	
 
 //A value that changes reliably depending on which weapon you pick up
-	int secondaryWeapon : 0x0053F8F0, 0x4, 0x164, 0xC, 0x364;
+	short secondaryWeapon : 0x0053F8F0, 0x4, 0x164, 0xC, 0x364;
 	
 //The address used for all bosses' health
-	int bossHealth : 0x0090C418, 0x18, 0x4, 0x48, 0x198;
+	short bossHealth : 0x0090C418, 0x18, 0x4, 0x48, 0x198;
 
 //The Prince's coords
 	float xPos2 : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x30;	
@@ -87,11 +87,11 @@ state("POP3")
 //Memory values in 2k8
 state("PrinceOfPersia_Launcher")
 {
-	int seedCount : 0x00B37F64, 0xDC;
+	short seedCount : 0x00B37F64, 0xDC;
 	float xPos2k8 : 0x00B30D08, 0x40;
 	float yPos2k8 : 0x00B30D08, 0x44;
 	float zPos2k8 : 0x00B30D08, 0x48;
-	int combat : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
+	short combat : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
 }
 
 
@@ -101,18 +101,20 @@ state("prince of persia")
 	float xPostfs : 0xDA4D20;
 	float yPostfs : 0xDA4D24;
 	float zPostfs : 0xDA4D28;
-	int gameState : 0x00DA52EC, 0x18, 0xF8, 0x150;
-	int cpIcon : 0x00064D34, 0x0, 0x0, 0x24, 0x18, 0x50, 0x870;
-	int isMenu : 0xDA2F70;
+	short gameState : 0x00DA52EC, 0x18, 0xF8, 0x150;
+	short cpIcon : 0x00064D34, 0x0, 0x0, 0x24, 0x18, 0x50, 0x870;
+	short isMenu : 0xDA2F70;
 	bool isLoading: "", 0x00DA5724, 0x50;
 }
 
 
 startup
 {
-//PoP1
-	settings.Add("sound", false, "Sound for PoP1 ON At Start?");
-	
+
+//general
+	short activeGame = 0;
+	short offset = 0;
+
 //PoP2
 	short ResetDelta = 0;
 	bool Resetting = false;
@@ -126,84 +128,267 @@ startup
 	bool kill = false;
 	bool seedGet = false;
 	bool startUp2k8 = false;
-	int xTarget = 0;
-	int yTarget = 0;
-	int zTarget = 0;
+	float xTarget = 0;
+	float yTarget = 0;
+	float zTarget = 0;
 
 //TFS
 	bool cpGet = false;
 	bool startUptfs = false;
-	int xTarget2 = 0;
-	int yTarget2 = 0;
-	int zTarget2 = 0;	
+	float xTarget2 = 0;
+	float yTarget2 = 0;
+	float zTarget2 = 0;	
 }
- 
 
+
+	
 start
 {
-	switch(timer.Run.GetExtendedCategoryName())
+	vars.activeGame = 0;
+	switch(game.ProcessName)
 	{
-	 case "Anthology":
-		//PoP1 Start
-		// start (sound) && if starting level = 1 AND if level = 1 AND if Minutes = 60 AND count is = 47120384
-		return
-		((current.Sound == 0 && settings["sound"] == true) || (settings["sound"] == false)) &&
-			(current.Start == 0x1) && 
-			(current.Level == 0x1) && 
-			(current.Time == 0x3C) && 
-			(current.Count >= 0x2CE0000);
-		break;
+	//PoP1
+	case "DOSBOX":
+		if((current.Start == 0x1) && 
+		   (current.Level == 0x1) && 
+		   (current.Time == 0x3C) && 
+		   (current.Count >= 0x2CE0000))
+		{
+			vars.activeGame = 1;
+			vars.offset = 0;
+			return true;
+		}
 	
-	case "Sands Trilogy (Any%, Standard)":
-	case "Sands Trilogy (Any%, Zipless)":
-	case "Sands Trilogy (Any%, No Major Glitches)":
-	case "Sands Trilogy (Completionist, Standard)":
-	case "Sands Trilogy (Completionist, Zipless)":
-	case "Sands Trilogy (Completionist, No Major Glitches)":
+	//PoP2:SnF
+		if(current.Start == 238 && current.Level2 == 1)
+		{
+			vars.ResetDelta = current.FrameCount;
+			vars.activeGame = 2;
+			vars.offset = 14;
+			return true;
+		}
+		vars.ResetDelta = 0;
+		vars.Resetting = false;
+	break;
+	
+	//3D
+	case "pop3d":
+		if(current.lXPos > 20.554 && current.lXPos < 20.556 &&
+		   current.lZPos > 1.448 && current.lZPos < 1.45)
+		{
+			vars.activeGame = 3;
+			vars.offset = 0;
+			return true;
+		}
+	break;
+	
+	//SoT
+	case "POP":
+	case "pop":
 		vars.aboveCredits = false;
 		vars.newFountain = false;
 		vars.startUp = true;
-	
-		//Detecting if the game has started on the balcony.
-		if(current.xPos1 >= -103.264 && current.yPos1 >= -4.8 && current.zPos1 >= 1.341 && current.xPos1 <= -103.262 && current.yPos1 <= -4.798 && current.zPos1 <= 1.343 && current.startValue == 1)
+		if(current.xPos1 >= -103.264 && current.xPos1 <= -103.262 &&
+		   current.yPos1 >= -4.8 && current.yPos1 <= -4.798 &&
+		   current.zPos1 >= 1.341 && current.zPos1 <= 1.343 &&
+		   current.startValue == 1)
+		{
+			vars.activeGame = 4;
+			vars.offset = 0;
 			return true;
-		break;
+		}
+	break;
+	
+	//WW
+	case "POP2":
+	case "pop2":
+		if((old.startValue2 == 1 && current.startValue2 == 2) && 
+		   (current.xPos2 >= -997.6757 && current.xPos2 <= -997.6755))
+		{
+			vars.activeGame = 5;
+			vars.offset = 0;
+			return true;
+		}
+	break;
+	
+	//T2T
+	case "POP3":
+	case "pop3":
+		if(current.xPos3 >= -409.9 && current.xPos3 <= -404.8 &&
+		   current.xCam >= 0.8318 && current.xCam <= 0.832 &&
+		   current.yCam >= 0.1080  && current.yCam <= 0.1082)
+		{
+			vars.activeGame = 6;
+			vars.offset = 0;
+			return true;
+		}
+	break;
+	
+	//2k8
+	case "PrinceOfPersia_Launcher":
+		if(old.yPos2k8 != -351 && current.yPos2k8 == -351)
+		{
+			//Initializing flags & targets:
+			vars.kill = false;
+			vars.seedGet = false;
+			vars.startUp2k8 = true;
+			vars.xTarget = 0;
+			vars.yTarget = 0;
+			vars.zTarget = 0;
+			vars.offset = 0;
+			vars.activeGame = 7;
+			return true;			
+		}
+	break;
+	
+	//TFS
+	case "prince of persia":
+		if(current.xPostfs <= 268.93 && current.xPostfs >= 268.929 &&
+		   current.gameState == 4)
+		{
+			vars.activeGame = 8;
+			vars.offset = 0;
+			return true;
+		}
+	break;
 	}
 }
 
 
 isLoading
 {
-	switch(timer.Run.GetExtendedCategoryName())
+	switch((short)vars.activeGame)
 	{
-	 case "Anthology":
-		if(current.xPos3d == 0 && current.yPos3d == 0 && current.zPos3d == 0)
-		{
+		case 0: //State when no game is active
 			return true;
-		}
-		if(current.isMenu == 0 || current.isLoading)
-		{
-			return true;
-		}
-	break;
-	case "Sands Trilogy (Any%, Standard)":
-	case "Sands Trilogy (Any%, Zipless)":
-	case "Sands Trilogy (Any%, No Major Glitches)":
-	case "Sands Trilogy (Completionist, Standard)":
-	case "Sands Trilogy (Completionist, Zipless)":
-	case "Sands Trilogy (Completionist, No Major Glitches)":
-	break;
+		break;
+		
+		case 1: //PoP1 (IGT)
+		break;
+		
+		case 2: //PoP2 (IGT)
+		break;
+		
+		case 3:	//PoP 3D (Load Remover)
+			if(current.xPos3d == 0 && current.yPos3d == 0 && current.zPos3d == 0)
+			{
+				return true;
+			}
+		break;
+		
+		case 8: //TFS (Load Remover)
+			if(current.isMenu == 0 || current.isLoading)
+			{
+				return true;
+			}
+		break;
 	}
+	return false;
 }
 
 
 split
-{	
-	if(!vars.startUp){
-	vars.aboveCredits = false;
-	vars.newFountain = false;
-	vars.startUp = true;	
-	}
+{
+	//List of PoP3D Splits
+	
+	vars.Dungeon = (Func <bool>)(() => {
+		if(old.lYPos == 0 && current.lYPos == -2)
+			return true;
+		return false;
+	});
+	vars.IvoryTower = (Func <bool>)(() => {
+		if(current.lXPos > 13.485 && current.lXPos < 13.487 &&
+		   old.lXPos == 0)
+			return true;
+		return false;
+	});
+	vars.Cistern = (Func <bool>)(() => {
+		if(current.lXPos > 216.904 && current.lXPos < 216.906 &&
+		   old.lXPos == 0)
+			return true;
+		return false;
+	});	
+	vars.Palace1 = (Func <bool>)(() => {
+		if(old.lXPos == 0 && current.lXPos == -7)
+			return true;
+		return false;
+	});
+	vars.Palace2 = (Func <bool>)(() => {
+		if(old.lYPos == 0 && current.lYPos == -23)
+			return true;
+		return false;
+	});
+	vars.Palace3 = (Func <bool>)(() => {
+		if(current.lXPos == 0 && current.lYPos == 0 && current.lZPos == 0 &&
+		   old.health == 0 && current.health != 0)
+			return true;
+		return false;
+	});
+	vars.Rooftops = (Func <bool>)(() => {
+		if(old.lXPos == 0 && current.lXPos == -42)
+			return true;
+		return false;
+	});		
+	vars.StreetsDocks = (Func <bool>)(() => {
+		if(old.lYPos == 0 && current.lYPos == -20)
+			return true;
+		return false;
+	});	
+	vars.LowerDirigible1 = (Func <bool>)(() => {
+		if(old.lYPos == 0 && current.lYPos == 99)
+			return true;
+		return false;
+	});	
+	vars.LowerDirigible2 = (Func <bool>)(() => {
+		if(current.lZPos > -77.77 && current.lZPos < -77.75 &&
+		   old.lZPos == 0)
+			return true;
+		return false;
+	});			
+	vars.UpperDirigible = (Func <bool>)(() => {
+		if(old.lYPos == 0 && current.lYPos == 103)
+			return true;
+		return false;
+	});
+	vars.UpperDirigible = (Func <bool>)(() => {
+		if(old.lYPos == 0 && current.lYPos == 103)
+			return true;
+		return false;
+	});
+	vars.DirigibleFinale = (Func <bool>)(() => {
+		if(old.lYPos == 0 && current.lYPos == 61)
+			return true;
+		return false;
+	});
+	vars.FloatingRuins = (Func <bool>)(() => {
+		if(old.lYPos == 0 && current.lYPos == -85)
+			return true;
+		return false;
+	});
+	vars.FloatingRuins = (Func <bool>)(() => {
+		if(current.lYPos > -2.36 && current.lYPos < -2.34 &&
+		   old.lYPos == 0)
+			return true;
+		return false;
+	});	
+	vars.SunTemple = (Func <bool>)(() => {
+		if(current.lYPos > -19.966 && current.lYPos < -19.964 &&
+		   old.lYPos == 0)
+			return true;
+		return false;
+	});			
+	vars.MoonTemple = (Func <bool>)(() => {
+		if(current.lYPos > -27.4 && current.lYPos < -27.38 &&
+		   old.lYPos == 0)
+			return true;
+		return false;
+	});			
+	vars.End3D = (Func <bool>)(() => {
+		if(current.xPos == 0 && current.yPos == 0 && current.zPos == 0 &&
+		   current.eHealth ==0)
+			return true;
+		return false;
+	});
 	
 	//List of SoT Splits across categories
 	
@@ -1058,7 +1243,7 @@ split
 			return true;
 		return false;
 	});
-	vars.TheLabyrinth = (Func <bool>)(() => {
+	vars.TheLabyrshorth = (Func <bool>)(() => {
 		if(current.xPos3 >= -25.5 && current.xPos3 <= -23 &&
 		   current.yPos3 >= 325   && current.yPos3 <= 338 &&
 		   current.zPos3 >= 35.9  && current.zPos3 <= 36.1)
@@ -1157,2713 +1342,202 @@ split
 		return false;
 	});
 	
-	//Calling the splits after checking the category
+	//List of of 2k8 splits
+	vars.Split2k8 = (Func <float, float, float, bool>)((float xTarg, float yTarg, float zTarg) => {						//This is a standard type of split which occurs when the prince is within a certain range of coords and has just got a seed
+		if(current.xPos2k8 <= (xTarg+2) && current.xPos2k8 >= (xTarg-2) &&
+		   current.yPos2k8 <= (yTarg+2) && current.yPos2k8 >= (yTarg-2) &&
+		   current.zPos2k8 <= (zTarg+2) && current.zPos2k8 >= (zTarg-2) &&
+		   vars.seedGet)
+			return true;		
+		return false;
+	});
+	vars.Boss2k8 = (Func <float, float, float, short, bool>)((float xTarg, float yTarg, float zTarg, short size) => {		//This is a standard type of split which occurs when the prince is within a platform and has just killed a boss
+		if(current.xPos2k8 <= (xTarg+size) && current.xPos2k8 >= (xTarg-size) &&
+		   current.yPos2k8 <= (yTarg+size) && current.yPos2k8 >= (yTarg-size) &&
+		   current.zPos2k8 <= (zTarg+2) && current.zPos2k8 >= (zTarg-2) &&
+		   vars.kill)
+			return true;		
+		return false;
+	});
+	vars.FirstFightSkip = (Func <bool>)(() => {
+		if(current.zPos2k8 >= -31 && current.zPos2k8 <= -28 &&
+		   current.yPos2k8 >= -331)
+			return true;		
+		return false;
+	});
+	vars.Canyon = (Func <bool>)(() => {
+		if(current.xPos2k8 <= -200 && current.xPos2k8 >= -208 &&
+		   current.yPos2k8 <= -27.5 && current.yPos2k8 >= -38 &&
+		   current.zPos2k8 >= -511)
+			return true;		
+		return false;
+	});
+	vars.TempleArrive = (Func <bool>)(() => {
+		if(current.xPos2k8 >= -0.5 && current.xPos2k8 <= 12 &&
+		   current.yPos2k8 <= -234.5 && current.zPos2k8 >= -37)
+			return true;		
+		return false;
+	});	
+	vars.DoubleJump = (Func <bool>)(() => {
+		if(current.xPos2k8 <= 6.19 && current.xPos2k8 >= 6.12 &&
+		   current.yPos2k8 >= -233.49 && current.yPos2k8 <= -225.18 &&
+		   current.zPos2k8 >= -33.01 && current.zPos2k8 <= -32.5)
+			return true;		
+		return false;
+	});			
+	vars.YellowPlate = (Func <bool>)(() => {
+		if(current.xPos2k8 >= 6.6 && current.xPos2k8 <= 6.8 &&
+		   current.yPos2k8 >= -171.8 && current.yPos2k8 <= -171.6 &&
+		   current.zPos2k8 == -49)
+			return true;		
+		return false;
+	});	
+	vars.HealCoronation = (Func <bool>)(() => {
+		if(current.xPos2k8 >= 328 && current.xPos2k8 <= 352 &&
+		   current.yPos2k8 >= 570 && current.yPos2k8 <= 595 &&
+		   current.zPos2k8 >= 32.4 && vars.kill)
+			return true;		
+		return false;
+	});
+	vars.HealHeavensStair = (Func <bool>)(() => {
+		if(current.xPos2k8 >= -322 && current.xPos2k8 <= -260 &&
+		   current.yPos2k8 >= 628 && current.yPos2k8 <= 675 &&
+		   current.zPos2k8 >= 99.2 && vars.kill)
+			return true;		
+		return false;
+	});
+	vars.BluePlate = (Func <bool>)(() => {
+		if(old.zPos2k8 <= 0 && current.zPos2k8 >= 32.4)
+			return true;		
+		return false;
+	});
+	vars.TheKing = (Func <bool>)(() => {
+		if(current.xPos2k8 <= 20 && current.xPos2k8 >= -10 &&
+		   current.yPos2k8 >= -375 && current.yPos2k8 <= -355 &&
+		   current.zPos2k8 <= -32 && vars.kill)
+			return true;		
+		return false;
+	});
+	vars.TheGod = (Func <bool>)(() => {
+		if(current.xPos2k8 <= 7.131 && current.xPos2k8 >= 7.129 &&
+		   current.yPos2k8 >= -401.502 && current.yPos2k8 <= -401.5 &&
+		   current.zPos2k8 >= -31.4)
+			return true;		
+		return false;
+	});
+	vars.Resurrection = (Func <bool>)(() => {
+		if(current.xPos2k8 <= 5.566 && current.xPos2k8 >= 5.562 &&
+		   current.yPos2k8 >= -222.745 && current.yPos2k8 <= -222.517 &&
+		   current.zPos2k8 >= -33.1)
+			return true;		
+		return false;
+	});	
 	
-	switch(timer.Run.GetExtendedCategoryName())
+	//List of TFS splits
+	vars.SplitTFScp = (Func <short, short, short, bool>)((short xTarg, short yTarg, short zTarg) => {						//This is a standard type of split which occurs when the prince is within a certain range of coords and a checkposhort is just acquired
+		if(current.xPostfs <= (xTarg+10) && current.xPostfs >= (xTarg-10) &&
+		   current.yPostfs <= (yTarg+10) && current.yPostfs >= (yTarg-10) &&
+		   current.zPostfs <= (zTarg+10) && current.zPostfs >= (zTarg-10) &&
+		   vars.cpGet)
+			return true;		
+		return false;
+	});
+	vars.SplitTFSloc = (Func <short, short, short, bool>)((short xTarg, short yTarg, short zTarg) => {					//This is a standard type of split which occurs purely based on when the prince is within a certain range of coords
+		if(current.xPostfs <= (xTarg+1) && current.xPostfs >= (xTarg-1) &&
+		   current.yPostfs <= (yTarg+1) && current.yPostfs >= (yTarg-1) &&
+		   current.zPostfs <= (zTarg+1) && current.zPostfs >= (zTarg-1))
+			return true;		
+		return false;
+	});
+	
+	//Calling the splits after checking the active game and category
+	
+	switch((short)vars.activeGame)
 	{
-		case "Sands Trilogy (Any%, Standard)":
-		//SoT
-			switch (timer.CurrentSplitIndex)
-			{
-			//The Treasure Vaults
-			case 0:
-				if(vars.GasStation())
-					return true;
-				break;
-			//The Sands of Time
-			case 1:
-				if(vars.SandsUnleashed())
-					return true;
-				break;
-			//The Sultan's Chamber (Death)
-			case 2:
-				if(vars.SultanChamber())
-					return true;
-				break;
-			//Death of the Sand King
-			case 3:
-				if(vars.DadDead())
-							return true;
-				break;
-			//The Baths (Death)
-			case 4:
-				if(vars.TheBaths())
-					return true;
-				break;
-			//The Messhall (Death)
-			case 5:
-				if(vars.TheMesshall())
-					return true;
-				break;
-			//The Caves
-			case 6:
-				if(vars.TheCaves())
-					return true;
-				break;
-			//Exit Underground Reservoir
-			case 7:
-				if(vars.TheUGReservoir())
-					return true;
-				break;
-			//The Observatory (Death)
-			case 8:
-				if(vars.TheObservatory())
-					return true;
-				break;
-			//The Torture Chamber (Death)
-			case 9:
-				if(vars.TortureChamber())
-					return true;
-				break;
-			//The Dream
-			case 10:
-				if(vars.TheDream())
-					return true;
-				break;
-			//Honor and Glory
-			case 11:
-				if(vars.HonorGlory())
-					return true;
-				break;
-			//The Grand Rewind
-			case 12:
-				if(vars.GrandRewind())
-					return true;
-				break;
-			//The End
-			case 13:
-				if(vars.SoTEnd())				
-					return true;
-				break;
-			}
-		//Setup 1
-			if (timer.CurrentSplitIndex == 14)			//~edit: the number here must be equal to the number of splits in the first game.
-			{
-				if(old.startValue2 == 1 && current.startValue2 == 2)
-				{
-					if(current.xPos2 >= -997.6757 && current.xPos2 <= -997.6755)
-					return true;
-				}
-			}
-		//WW
-			switch (timer.CurrentSplitIndex - 15)
-			{
-			//The Boat
-			case 0:
-				if(vars.TheBoat())
-					return true;
-				break;
-			//The Raven Man
-			case 1:
-				if(vars.TheRavenMan())
-					return true;
-				break;
-			//The Time Portal
-			case 2:
-				if(vars.TimePortal())			
-					return true;
-				break;
-			//Mask of the Wraith (59)
-			case 3:
-				if(vars.RNGStorygate())
-					return true;
-				break;
-			//The Scorpion Sword
-			case 4:
-				if(vars.ScorpionSword())
-					return true;
-				break;
-			//Storygate 63
-			case 5:
-				if(vars.WWEndgame())
-					return true;
-				break;
-			//Back to the Future
-			case 6:
-				if(vars.SlomoPortal())
-					return true;
-				break;
-			//The End
-			case 7:
-				if(vars.WWEnd())
-					return true;
-				break;
-			}
-		//Setup 2
-			if (timer.CurrentSplitIndex == 23)													//~edit: here the number is [# of splits in first game] + [# of splits in second game] + 1
-			{
-				if(current.xPos3 >= -409.9 && current.xPos3 <= -404.8 && current.yCam <= 0.1082 && current.yCam >= 0.1080 && current.xCam <= 0.832 && current.xCam >= 0.8318)
-					return true;
-			}
-		//T2T
-			switch (timer.CurrentSplitIndex - 24)												//~edit: the number we subract here is [# of splits in first game] + [# of splits in second game] + 2
-			{
-			//The Ramparts
-			case 0:
-				if(vars.TheRamparts())
-					return true;
-				break;
-			//The Harbor District
-			case 1:	
-				if(vars.HarbourDistrict())
-					return true;	
-				break;
-			//The Palace
-			case 2:	
-				if(vars.ThePalace())
-					return true;	
-				break;
-			//Exit Sewers
-			case 3:	
-				if(vars.TheSewerz())
-					return true;	
-				break;
-			//Exit Lower City
-			case 4:	
-				if(vars.LowerCity())
-					return true;	
-				break;
-			//The Lower City Rooftops
-			case 5:	
-				if(vars.LCRooftopZips())
-					return true;	
-				break;
-			//Exit Temple Rooftops
-			case 6:	
-				if(vars.TheTempleRooftops())
-					return true;	
-				break;
-			//Exit Marketplace
-			case 7:	
-				if(vars.TheMarketplace())
-					return true;	
-				break;
-			//Exit Plaza
-			case 8:	
-				if(vars.ThePlaza())
-					return true;	
-				break;
-			//Exit City Gardens
-			case 9:	
-				if(vars.CityGarderns())
-					return true;	
-				break;
-			//Exit Royal Workshop
-			case 10:	
-				if(vars.RoyalWorkshop())
-					return true;	
-				break;
-			//The King's Road
-			case 11:	
-				if(vars.KingzRoad())
-					return true;	
-				break;
-			//Exit Structure's Mind
-			case 12:	
-				if(vars.StructurezMind())
-					return true;	
-				break;
-			//Exit Labyrinth
-			case 13:	
-				if(vars.TheLabyrinth())
-					return true;	
-				break;
-			//The Towers
-			case 14:	
-				if(vars.UpperTower())
-					return true;	
-				break;
-			//The Terrace
-			case 15:	
-				if(vars.TheTerrace())
-					return true;
-				break;
-			//The Mental Realm
-			case 16:	
-				if(vars.MentalRealm())
-					return true;	
-				break;
-			}
-		break;
-		
-		case "Sands Trilogy (Any%, Zipless)":
-		//SoT
-			switch (timer.CurrentSplitIndex)
-			{
-			//The Treasure Vaults
-			case 0:
-				if(vars.GasStation())
-					return true;
-				break;
-			//The Sands of Time
-			case 1:
-				if(vars.SandsUnleashed())
-					return true;
-				break;
-			//First Guest Room
-			case 2: 
-				if(vars.FirstGuestRoom())
-					return true;
-				break;
-			//The Sultan's Chamber
-			case 3: 
-				if(vars.SultanChamberZipless()) 		
-					return true;
-				break;
-			//Exit Palace Defense
-			case 4: 
-				if(vars.PalaceDefence()) 		
-					return true;
-				break;
-			//The Sand King
-			case 5:
-				if(vars.DadStart()) 		
-					return true;
-				break;
-			//Death of the Sand King
-			case 6:
-				if(vars.DadDead()) 		
-					return true;
-				break;
-			//The Warehouse
-			case 7:
-				if(vars.TheWarehouse()) 		
-					return true;
-				break;
-			//The Zoo
-			case 8:	
-				if(vars.TheZoo())
-					return true;
-				break;
-			//Atop a Bird Cage
-			case 9:
-				if(vars.BirdCage()) 		
-					return true;
-				break;
-			//Cliffs and Waterfall
-			case 10:
-				if(vars.CliffWaterfalls()) 		
-					return true;
-				break;
-			//The Baths
-			case 11:
-				if(vars.TheBaths()) 		
-					return true;
-				break;
-			//Sword of the Mighty Warrior
-			case 12:
-				if(vars.SecondSword()) 		
-					return true;
-				break;
-			//Daybreak
-			case 13:	
-				if(vars.TheDaybreak()) 		
-					return true;
-				break;
-			//Drawbridge Tower
-			case 14:
-				if(vars.DrawbridgeTower()) 		
-					return true;
-				break;
-			//A Broken Bridge
-			case 15:
-				if(vars.BrokenBridge()) 		
-					return true;
-				break;
-			//The Caves
-			case 16:
-				if(vars.TheCavesZipless()) 		
-					return true;
-				break;
-			//Waterfall
-			case 17:
-				if(vars.TheWaterfall())		
-					return true;
-				break;
-			//An Underground Reservoir
-			case 18:
-				if(vars.TheUGReservoirZipless()) 		
-					return true;
-				break;
-			//Hall of Learning
-			case 19:
-				if(vars.HallofLearning()) 		
-					return true;
-				break;
-			//Exit Observatory
-			case 20:
-				if(vars.ObservatoryExit()) 		
-					return true;
-				break;
-			//Exit Hall of Learning Courtyards
-			case 21:
-				if(vars.HoLCourtyardsExit()) 		
-					return true;
-				break;
-			//The Prison
-			case 22:
-				if(vars.TheAzadPrison()) 		
-					return true;
-				break;
-			//The Torture Chamber
-			case 23:
-				if(vars.TortureChamberZipless()) 					
-					return true;
-				break;
-			//The Elevator
-			case 24:
-				if(vars.TheElevator())		
-					return true;
-				break;
-			//The Dream
-			case 25:
-				if(vars.TheDreamZipless()) 		
-					return true;
-				break;
-			//The Tomb
-			case 26:
-				if(vars.TheTomb())		
-					return true;
-				break;
-			//The Tower of Dawn
-			case 27:
-				if(vars.TowerofDawn()) 		
-					return true;
-				break;
-			//The Setting Sun
-			case 28:
-				if(vars.SettingSun()) 		
-					return true;
-				break;
-			//Honor and Glory
-			case 29:
-				if(vars.HonorGlory()) 							
-					return true;
-				break;
-			//The Grand Rewind
-			case 30:
-				if(vars.GrandRewind()) 			
-					return true;
-				break;
-			//The End
-			case 31:
-				if(vars.SoTEnd())
-					return true;
-				break;
-			}
-		//Setup 1
-			if (timer.CurrentSplitIndex == 32)			//~edit: the number here must be equal to the number of splits in the first game.
-			{
-				if(old.startValue2 == 1 && current.startValue2 == 2)
-				{
-					if(current.xPos2 >= -997.6757 && current.xPos2 <= -997.6755)
-					return true;
-				}
-			}
-		//WW
-			switch (timer.CurrentSplitIndex - 33)		//~edit: here the number is [# of splits in first game] + 1
-			{
-			//The Boat
-			case 0:
-				if(vars.TheBoat())
-					return true;
-				break;
-			//The Raven Man
-			case 1:
-				if(vars.TheRavenMan())
-					return true;
-				break;
-			//The Time Portal
-			case 2:
-				if(vars.TimePortal())			
-					return true;
-				break;
-			//Mask of the Wraith (59)
-			case 3:
-				if(vars.RNGStorygate())
-					return true;
-				break;
-			//The Scorpion Sword
-			case 4:
-				if(vars.ScorpionSword())
-					return true;
-				break;
-			//Storygate 63
-			case 5:
-				if(vars.WWEndgame())
-					return true;
-				break;
-			//Back to the Future
-			case 6:
-				if(vars.SlomoPortal())
-					return true;
-				break;
-			//The End
-			case 7:
-				if(vars.WWEnd())
-					return true;
-				break;
-			}
-		//Setup 2
-			if (timer.CurrentSplitIndex == 41)			//~edit: here the number is [# of splits in first game] + [# of splits in second game] + 1
-			{
-				if(current.xPos3 >= -409.9 && current.xPos3 <= -404.8 && current.yCam <= 0.1082 && current.yCam >= 0.1080 && current.xCam <= 0.832 && current.xCam >= 0.8318)
-					return true;
-			}
-		//T2T
-			switch (timer.CurrentSplitIndex - 42)		//~edit: the number we subract here is [# of splits in first game] + [# of splits in second game] + 2
-			{
-			//The Ramparts
-			case 0:
-				if(vars.TheRamparts())
-					return true;
-				break;
-			//The Harbor District
-			case 1:	
-				if(vars.HarbourDistrict())
-					return true;	
-				break;
-			//The Palace
-			case 2:	
-				if(vars.ThePalace())
-					return true;	
-				break;
-			//The Trapped Hallway
-			case 3:
-				if(vars.TrappedHallway())
-					return true;
-				break;
-			//The Sewers
-			case 4:
-				if(vars.TheSewers())
-					return true;
-				break;
-			//The Fortress
-			case 5:
-				if(vars.TheFortress())
-					return true;
-				break;
-			//The Lower City
-			case 6:
-				if(vars.LowerCity())
-					return true;
-				break;
-			//The Lower City Rooftops
-			case 7:
-				if(vars.LowerCityRooftops())
-					return true;
-				break;
-			//The Balconies
-			case 8:
-				if(vars.TheBalconies())
-					return true;
-				break;
-			//The Dark Alley
-			case 9:
-				if(vars.DarkAlley())
-					return true;
-				break;
-			//The Temple Rooftops()
-			case 10:
-				if(vars.TheTempleRooftops())
-					return true;
-				break;
-			//Exit Marketplace
-			case 11:
-				if(vars.TheMarketplace())
-					return true;
-				break;
-			//The Market District
-			case 12:
-				if(vars.MarketDistrict())
-					return true;
-				break;
-			//Exit Plaza
-			case 13:
-				if(vars.ThePlaza())
-					return true;
-				break;
-			//The Upper City
-			case 14:
-				if(vars.TheUpperCity())
-					return true;
-				break;
-			//The City Garderns
-			case 15:
-				if(vars.CityGarderns())
-					return true;
-				break;
-			//The Promenade
-			case 16:
-				if(vars.ThePromenade())
-					return true;
-				break;
-			//The Royal Workshop
-			case 17:
-				if(vars.RoyalWorkshop())
-					return true;
-				break;
-			//The King's Road
-			case 18:
-				if(vars.KingsRoad())
-					return true;
-				break;
-			//The Palace Entrance
-			case 19:
-				if(vars.PalaceEntrance())
-					return true;
-				break;
-			//The Hanging Gardens
-			case 20:
-				if(vars.HangingGardens())
-					return true;
-				break;
-			//The Structure's Mind
-			case 21:
-				if(vars.WellofZipless())
-					return true;
-				break;
-			//The Well of Ancestors
-			case 22:
-				if(vars.WellofAncestors())
-					return true;
-				break;
-			//The Labyrinth
-			case 23:
-				if(vars.TheLabyrinth())
-					return true;
-				break;
-			//The Underground Cave
-			case 24:
-				if(vars.UndergroundCaveZipnt())
-					return true;
-				break;
-			//The Lower Tower
-			case 25:
-				if(vars.LowerTower())
-					return true;
-				break;
-			//The Middle and Upper Towers
-			case 26:
-				if(vars.UpperTower())
-					return true;
-				break;
-			//The Death of the Vizier
-			case 27:
-				if(vars.TheTerrace())
-					return true;
-				break;
-			//The Mental Realm
-			case 28:	
-				if(vars.MentalRealm())
-					return true;	
-				break;
-			}
-		break;
-		
-		case "Sands Trilogy (Any%, No Major Glitches)":
-		//SoT
-			switch (timer.CurrentSplitIndex)
-			{
-			//The Treasure Vaults
-			case 0:
-				if(vars.GasStation())
-					return true;
-				break;
-			//The Sands of Time
-			case 1:
-				if(vars.SandsUnleashed())
-					return true;
-				break;
-			//First Guest Room
-			case 2: 
-				if(vars.FirstGuestRoom())
-					return true;
-				break;
-			//The Sultan's Chamber
-			case 3: 
-				if(vars.SultanChamberZipless()) 		
-					return true;
-				break;
-			//Exit Palace Defense
-			case 4: 
-				if(vars.PalaceDefence()) 		
-					return true;
-				break;
-			//The Sand King
-			case 5:
-				if(vars.DadStart()) 		
-					return true;
-				break;
-			//Death of the Sand King
-			case 6:
-				if(vars.DadDead()) 		
-					return true;
-				break;
-			//The Warehouse
-			case 7:
-				if(vars.TheWarehouse()) 		
-					return true;
-				break;
-			//The Zoo
-			case 8:	
-				if(vars.TheZoo())
-					return true;
-				break;
-			//Atop a Bird Cage
-			case 9:
-				if(vars.BirdCage()) 		
-					return true;
-				break;
-			//Cliffs and Waterfall
-			case 10:
-				if(vars.CliffWaterfalls()) 		
-					return true;
-				break;
-			//The Baths
-			case 11:
-				if(vars.TheBaths()) 		
-					return true;
-				break;
-			//Sword of the Mighty Warrior
-			case 12:
-				if(vars.SecondSword()) 		
-					return true;
-				break;
-			//Daybreak
-			case 13:	
-				if(vars.TheDaybreak()) 		
-					return true;
-				break;
-			//Drawbridge Tower
-			case 14:
-				if(vars.DrawbridgeTower()) 		
-					return true;
-				break;
-			//A Broken Bridge
-			case 15:
-				if(vars.BrokenBridge()) 		
-					return true;
-				break;
-			//The Caves
-			case 16:
-				if(vars.TheCavesZipless()) 		
-					return true;
-				break;
-			//Waterfall
-			case 17:
-				if(vars.TheWaterfall())		
-					return true;
-				break;
-			//An Underground Reservoir
-			case 18:
-				if(vars.TheUGReservoirZipless()) 		
-					return true;
-				break;
-			//Hall of Learning
-			case 19:
-				if(vars.HallofLearning()) 		
-					return true;
-				break;
-			//Exit Observatory
-			case 20:
-				if(vars.ObservatoryExit()) 		
-					return true;
-				break;
-			//Exit Hall of Learning Courtyards
-			case 21:
-				if(vars.HoLCourtyardsExit()) 		
-					return true;
-				break;
-			//The Prison
-			case 22:
-				if(vars.TheAzadPrison()) 		
-					return true;
-				break;
-			//The Torture Chamber
-			case 23:
-				if(vars.TortureChamberZipless()) 					
-					return true;
-				break;
-			//The Elevator
-			case 24:
-				if(vars.TheElevator())		
-					return true;
-				break;
-			//The Dream
-			case 25:
-				if(vars.TheDreamZipless()) 		
-					return true;
-				break;
-			//The Tomb
-			case 26:
-				if(vars.TheTomb())		
-					return true;
-				break;
-			//The Tower of Dawn
-			case 27:
-				if(vars.TowerofDawn()) 		
-					return true;
-				break;
-			//The Setting Sun
-			case 28:
-				if(vars.SettingSun()) 		
-					return true;
-				break;
-			//Honor and Glory
-			case 29:
-				if(vars.HonorGlory()) 							
-					return true;
-				break;
-			//The Grand Rewind
-			case 30:
-				if(vars.GrandRewind()) 			
-					return true;
-				break;
-			//The End
-			case 31:
-				if(vars.SoTEnd())
-					return true;
-				break;
-			}
-		//Setup 1
-			if (timer.CurrentSplitIndex == 32)			//~edit: the number here must be equal to the number of splits in the first game.
-			{
-				if(old.startValue2 == 1 && current.startValue2 == 2)
-				{
-					if(current.xPos2 >= -997.6757 && current.xPos2 <= -997.6755)
-					return true;
-				}
-			}
-		//WW
-			switch (timer.CurrentSplitIndex - 33)		//~edit: the number we subtract here is [# of splits in first game] + 1
-			{
-			//The Boat
-			case 0:
-				if(vars.TheBoat())
-					return true;
-				break;
-			//The Spider Sword
-			case 1:
-				if(vars.SpiderSword())
-					return true;
-				break;
-			//Chasing Shadee
-			case 2:
-				if(vars.ChaseShadee())
-					return true;
-				break;
-			//A Damsel in Distress
-			case 3:
-				if(vars.DamselDistress())
-					return true;
-				break;
-			//The Dahaka
-			case 4:
-				if(vars.TheDahaka())
-					return true;
-				break;
-			//The Serpent Sword
-			case 5:
-				if(vars.SerpentSword())
-					return true;
-				break;
-			//The Garden Hall
-			case 6:
-				if(vars.GardenHall())
-					return true;
-				break;
-			//The Waterworks Restored
-			case 7:
-				if(vars.WaterworksDone())
-					return true;
-				break;
-			//The Lion Sword
-			case 8:
-				if(vars.LionSword())
-					return true;
-				break;
-			//The Mechanical Tower
-			case 9:
-				if(vars.TheMechTower())
-					return true;
-				break;
-			//Breath of Fate
-			case 10:
-				if(vars.RavagesPortal())
-					return true;
-				break;
-			//Activation Room in Ruin
-			case 11:
-				if(vars.ActivationRuins())
-					return true;
-				break;
-			//Activation Room Restored
-			case 12:
-				if(vars.ActivationDone())
-					return true;
-				break;
-			//The Death of a Sand Wraith
-			case 13:
-				if(vars.SandWraithDead())
-					return true;
-				break;
-			//Death of the Empress
-			case 14:
-				if(vars.KaileenaDead())
-					return true;
-				break;
-			//Exit the Tomb
-			case 15:
-				if(vars.CatacombsExit())
-					return true;
-				break;
-			//The Scorpion Sword
-			case 16:
-				if(vars.ScorpionSword())
-					return true;
-				break;
-			//The Library
-			case 17:
-				if(vars.TheLibrary())
-					return true;
-				break;
-			//The Hourglass Revisited
-			case 18:
-				if(vars.HourglassRevisited())
-					return true;
-				break;
-			//The Mask of the Wraith
-			case 19:
-				if(vars.MaskofWraith())
-					return true;
-				break;
-			//The Sand Griffin
-			case 20:
-				if(vars.SandGriffin())
-					return true;
-				break;
-			//Mirrored Fates
-			case 21:
-				if(vars.MirroredFates())
-					return true;
-				break;
-			//A Favor Unknown
-			case 22:
-				if(vars.FavourUnknown())
-					return true;
-				break;
-			//The Library Revisited
-			case 23:
-				if(vars.TheLibrary())
-					return true;
-				break;
-			//The Light Sword
-			case 24:
-				if(vars.LightSword())
-					return true;
-				break;
-			//The Death of a Prince
-			case 25:
-				if(vars.DeathofaPrince())
-					return true;
-				break;
-			//The End
-			case 26:
-				if(vars.WWEnd())
-					return true;
-				break;
-			}
-		//Setup 2
-			if (timer.CurrentSplitIndex == 60)			//~edit: here the number is [# of splits in first game] + [# of splits in second game] + 1
-			{
-				if(current.xPos3 >= -409.9 && current.xPos3 <= -404.8 && current.yCam <= 0.1082 && current.yCam >= 0.1080 && current.xCam <= 0.832 && current.xCam >= 0.8318)
-					return true;
-			}
-		//T2T
-			switch (timer.CurrentSplitIndex - 61)		//~edit: the number we subract here is [# of splits in first game] + [# of splits in second game] + 2
-			{
-			//The Ramparts			
-			case 0:
-				if(vars.TheRamparts())
-					return true;
-				break;
-			//The Harbor District
-			case 1:	
-				if(vars.HarbourDistrict())
-					return true;	
-				break;
-			//The Palace
-			case 2:	
-				if(vars.ThePalace())
-					return true;	
-				break;
-			//The Trapped Hallway
-			case 3:
-				if(vars.TrappedHallway())
-					return true;
-				break;
-			//The Sewers
-			case 4:
-				if(vars.TheSewers())
-					return true;
-				break;
-			//The Fortress			
-			case 5:
-				if(vars.TheFortress())
-					return true;
-				break;
-			//The Lower City			
-			case 6:
-				if(vars.LowerCity())
-					return true;
-				break;
-			//The Lower City Rooftops
-			case 7:
-				if(vars.LowerCityRooftops())
-					return true;
-				break;
-			//The Balconies
-			case 8:
-				if(vars.TheBalconies())
-					return true;
-				break;
-			//The Dark Alley			
-			case 9:
-				if(vars.DarkAlley())
-					return true;
-				break;
-			//The Temple Rooftops
-			case 10:
-				if(vars.TheTempleRooftops())
-					return true;
-				break;
-			//The Temple
-			case 11:
-				if(vars.TheTemple())
-					return true;
-				break; 
-			//The Marketplace
-			case 12:
-				if(vars.TheMarketplace())
-					return true;
-				break;
-			//The Market District			
-			case 13:
-				if(vars.MarketDistrict())
-					return true;
-				break;
-			//The Brothel
-			case 14:
-				if(vars.TheBrothel())
-					return true;
-				break;
-			//The Plaza
-			case 15:
-				if(vars.ThePlaza())
-					return true;
-				break;
-			//The Upper City
-			case 16:
-				if(vars.TheUpperCity())
-					return true;
-				break;
-			//The City Gardens			
-			case 17:
-				if(vars.CityGarderns())
-					return true;
-				break;
-			//The Promenade
-			case 18:
-				if(vars.ThePromenade())
-					return true;
-				break;
-			//The Royal Workshop
-			case 19:
-				if(vars.RoyalWorkshop())
-					return true;
-				break;
-			//The King's Road
-			case 20:
-				if(vars.KingsRoad())
-					return true;
-				break;
-			//The Palace Entrance			
-			case 21:
-				if(vars.PalaceEntrance())
-					return true;
-				break;
-			//The Hanging Gardens
-			case 22:
-				if(vars.HangingGardens())
-					return true;
-				break;
-			//The Structure's Mind
-			case 23:
-				if(vars.StructuresMind())
-					return true;
-				break;
-			//The Well of Ancestors
-			case 24:
-				if(vars.WellofAncestors())
-					return true;
-				break;
-			//The Labyrinth
-			case 25:
-				if(vars.TheLabyrinth())
-					return true;
-				break;
-			//The Underground Cave
-			case 26:
-				if(vars.UndergroundCave())
-					return true;
-				break;
-			//The Lower Tower
-			case 27:
-				if(vars.LowerTower())
-					return true;
-				break;
-			//The Middle Tower
-			case 28:
-				if(vars.MiddleTower())
-					return true;
-				break;			
-				//The Upper Tower
-			case 29:
-				if(vars.UpperTower())
-					return true;
-				break;
-			//The Terrace
-			case 30:	
-				if(vars.TheTerrace())
-					return true;
-				break;
-			//The Mental Realm			
-			case 31:	
-				if(vars.MentalRealm())
-					return true;	
-				break;
-			}
-		break;
-			
-		case "Sands Trilogy (Completionist, Standard)":
-		//SoT
-			switch (timer.CurrentSplitIndex)
-			{
-			//The Treasure Vaults
-			case 0:
-				if(vars.GasStation())
-					return true;
-				break;
-			//The Sands of Time
-			case 1:
-				if(vars.SandsUnleashed())
-					return true;
-				break;
-			//Life Upgrade 1
-			case 2:
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Life Upgrade 2
-			case 3:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Life Upgrade 3
-			case 4:
-				if(vars.SoTLU())
-					return true;
-				break;
-			//The Baths (Death)
-			case 5:	
-				if(vars.TheBaths)
-					return true;
-				break;
-			//Life Upgrade 4
-			case 6:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//The Messhall (Death)
-			case 7:	
-				if(vars.TheMesshall())
-					return true;
-				break;
-			//Life Upgrade 5
-			case 8:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//The Caves (Death)
-			case 9:	
-				if(vars.TheCaves())
-					return true;
-				break;
-			//Life Upgrade 6
-			case 10:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Life Upgrade 7
-			case 11:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//The Observatory (Death)
-			case 12:	
-				if(vars.TheObservatory())
-					return true;
-				break;
-			//Life Upgrade 8
-			case 13:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Life Upgrade 9
-			case 14:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//The Dream
-			case 15:	
-				if(vars.TheDream())
-					return true;
-				break;
-			//Life Upgrade 10
-			case 16:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Honor and Glory
-			case 17:	
-				if(vars.HonorGlory())
-					return true;
-				break;
-			//The Grand Rewind
-			case 18:	
-				if(vars.GrandRewind())
-					return true;
-				break;
-			//The End
-			case 19:
-				if(vars.SoTEnd())	
-					return true;
-				break;
-			}
-		//Setup 1
-			if (timer.CurrentSplitIndex == 20)			//~edit: the number here must be equal to the number of splits in the first game.
-			{
-				if(old.startValue2 == 1 && current.startValue2 == 2)
-				{
-					if(current.xPos2 >= -997.6757 && current.xPos2 <= -997.6755)
-					return true;
-				}
-			}
-		//WW
-			switch (timer.CurrentSplitIndex - 21)		//~edit: the number we subtract here is [# of splits in first game] + 1
-			{
-			//The Boat
-			case 0:
-				if(vars.TheBoat())
-					return true;
-				break;
-			//The Raven Man
-			case 1:
-				if(vars.TheRavenMan())
-					return true;
-				break;
-			//Life Upgrade 1
-			case 2:
-				if(vars.WWLU1())
-					return true;
-				break;
-			//Life Upgrade 2
-			case 3:
-				if(vars.WWLU2())
-					return true;
-				break;
-			//Life Upgrade 3
-			case 4:
-				if(vars.WWLU3())
-					return true;
-				break;
-			//Life Upgrade 4
-			case 5:
-				if(vars.WWLU4())
-					return true;
-				break;
-			//Life Upgrade 5
-			case 6:
-				if(vars.WWLU5())
-					return true;
-				break;
-			//Life Upgrade 6
-			case 7:
-				if(vars.WWLU6())
-					return true;
-				break;
-			//Life Upgrade 7
-			case 8:
-				if(vars.WWLU7())
-					return true;
-				break;
-			//Life Upgrade 8
-			case 9:
-				if(vars.WWLU8())
-					return true;
-				break;
-			//Life Upgrade 9
-			case 10:
-				if(vars.WWLU9())
-					return true;
-				break;
-			//The Water Sword
-			case 11:
-				if(vars.WaterSword())
-					return true;
-				break;
-			//The End
-			case 12:
-				if(vars.WWEnd())
-					return true;
-				break;
-			}
-		//Setup 2
-			if (timer.CurrentSplitIndex == 34)			//~edit: here the number is [# of splits in first game] + [# of splits in second game] + 1
-			{
-				if(current.xPos3 >= -409.9 && current.xPos3 <= -404.8 && current.yCam <= 0.1082 && current.yCam >= 0.1080 && current.xCam <= 0.832 && current.xCam >= 0.8318)
-					return true;
-			}
-		//T2T
-			switch (timer.CurrentSplitIndex - 35)		//~edit: the number we subract here is [# of splits in first game] + [# of splits in second game] + 2
-			{
-			//The Ramparts
-			case 0:
-				if(vars.TheRamparts())
-					return true;
-				break;
-			//The Harbour District
-			case 1:	
-				if(vars.HarbourDistrict())
-					return true;	
-				break;
-			//The Palace
-			case 2:	
-				if(vars.ThePalace())
-					return true;	
-				break;
-			//Life Upgrade 1
-			case 3:	
-				if(vars.T2TLU1())
-					return true;	
-				break;
-			//Exit Lower City
-			case 4:	
-				if(vars.LowerCity())
-					return true;	
-				break;
-			//Life Upgrade 2
-			case 5:	
-				if(vars.T2TLU2())
-					return true;	
-				break;	
-			//The Arena
-			case 6:	
-				if(vars.LCRooftopZips())
-					return true;	
-				break;
-			//The Temple Rooftops Exit
-			case 7:	
-				if(vars.TheTempleRooftops())
-					return true;	
-				break;
-			//Life Upgrade 3
-			case 8:	
-				if(vars.T2TLU3())
-					return true;	
-				break;
-			//The Marketplace
-			case 9:	
-				if(vars.TheMarketplace())
-					return true;	
-				break;
-			//Exit Plaza
-			case 10:	
-				if(vars.ThePlaza())
-					return true;	
-				break;
-			//Life Upgrade 4
-			case 11:	
-				if(vars.T2TLU4())
-					return true;	
-				break;
-			//The Royal Workshop
-			case 12:	
-				if(vars.RoyalWorkshop())
-					return true;	
-				break;
-			//The King's Road
-			case 13:	
-				if(vars.KingzRoad())
-					return true;	
-				break;
-			//Life Upgrade 5
-			case 14:	
-				if(vars.T2TLU5)
-					return true;	
-				break;
-			//Exit Structure's Mind
-			case 15:	
-				if(vars.StructurezMind())
-					return true;	
-				break;
-			//Exit Labyrinth
-			case 16:	
-				if(vars.TheLabyrinth())
-					return true;	
-				break;
-			//Life Upgrade 6
-			case 17:	
-				if(vars.T2TLU6())
-					return true;	
-				break;
-			//The Upper Tower
-			case 18:	
-				if(vars.UpperTower())
-					return true;	
-				break;
-			//The Terrace
-			case 19:	
-				if(vars.TheTerrace())
-					return true;
-				break;
-			//The Mental Realm
-			case 20:	
-				if(vars.MentalRealm())
-					return true;	
-				break;
-			}
-		break;
-		
-		case "Sands Trilogy (Completionist, Zipless)":
-		//SoT
-			switch (timer.CurrentSplitIndex)
-			{
-			//The Treasure Vaults
-			case 0:
-				if(vars.GasStation())
-					return true;
-				break;
-			//The Sands of Time
-			case 1:
-				if(vars.SandsUnleashed())
-					return true;
-				break;
-			//First Guest Room
-			case 2: 
-				if(vars.FirstGuestRoom())
-					return true;
-				break;
-			//Life Upgrade 1
-			case 3:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Exit Palace Defense
-			case 4: 
-				if(vars.PalaceDefence()) 		
-					return true;
-				break;
-			//Life Upgrade 2
-			case 5:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Death of the Sand King
-			case 6:
-				if(vars.DadDead()) 		
-					return true;
-				break;
-			//Life Upgrade 3
-			case 7:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//The Zoo
-			case 8:	
-				if(vars.TheZoo()) 		
-					return true;
-				break;
-			//Atop a Bird Cage
-			case 9:
-				if(vars.BirdCage()) 		
-					return true;
-				break;
-			//Cliffs and Waterfall
-			case 10:
-				if(vars.CliffWaterfalls()) 		
-					return true;
-				break;
-			//The Baths
-			case 11:
-				if(vars.TheBathsZipless()) 		
-					return true;
-				break;
-			//Life Upgrade 4
-			case 12:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Daybreak
-			case 13:	
-				if(vars.TheDaybreak()) 		
-					return true;
-				break;
-			//Drawbridge Tower
-			case 14:
-				if(vars.DrawbridgeTower()) 		
-					return true;
-				break;
-			//A Broken Bridge
-			case 15:
-				if(vars.BrokenBridge()) 		
-					return true;
-				break;
-			//Life Upgrade 5
-			case 16:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Waterfall
-			case 17:
-				if(vars.TheWaterfall())		
-					return true;
-				break;
-			//An Underground Reservoir
-			case 18:
-				if(vars.TheUGReservoirZipless()) 		
-					return true;
-				break;
-			//Life Upgrade 6
-			case 19:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Hall of Learning
-			case 20:
-				if(vars.HallofLearning()) 		
-					return true;
-				break;
-			//Life Upgrade 7
-			case 21:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Exit Observatory
-			case 22:
-				if(vars.ObservatoryExit()) 		
-					return true;
-				break;
-			//Exit Hall of Learning Courtyards
-			case 23:
-				if(vars.HoLCourtyardsExit()) 		
-					return true;
-				break;
-			//The Prison
-			case 24:
-				if(vars.TheAzadPrison()) 		
-					return true;
-				break;
-			//Life Upgrade 8
-			case 25:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Life Upgrade 9
-			case 26:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//The Dream
-			case 27:
-				if(vars.TheDream) 		
-					return true;
-				break;
-			//The Tomb
-			case 28:
-				if(vars.TheTomb()) 		
-					return true;
-				break;
-			//Life Upgrade 10
-			case 29:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//The Tower of Dawn
-			case 30:
-				if(vars.TowerofDawn()) 		
-					return true;
-				break;
-			//The Setting Sun
-			case 31:
-				if(vars.SettingSun()) 		
-					return true;
-				break;
-			//Honor and Glory
-			case 32:
-				if(vars.HonorGlory()) 							
-					return true;
-				break;
-			//The Grand Rewind
-			case 33:
-				if(vars.GrandRewind()) 			
-					return true;
-				break;
-			//The End
-			case 34:
-				if(vars.SoTEnd())			
-					return true;
-				break;
-			}
-		//Setup 1
-			if (timer.CurrentSplitIndex == 35)			//~edit: the number here must be equal to the number of splits in the first game.
-			{
-				if(old.startValue2 == 1 && current.startValue2 == 2)
-				{
-					if(current.xPos2 >= -997.6757 && current.xPos2 <= -997.6755)
-					return true;
-				}
-			}
-		//WW
-			switch (timer.CurrentSplitIndex - 36)		//~edit: the number we subtract here is [# of splits in first game] + 1
-			{
-			//The Boat
-			case 0:
-				if(vars.TheBoat())
-					return true;
-				break;
-			//The Raven Man
-			case 1:
-				if(vars.TheRavenMan())
-					return true;
-				break;
-			//Life Upgrade 1
-			case 2:
-				if(vars.WWLU9())
-					return true;
-				break;
-			//Life Upgrade 2
-			case 3:
-				if(vars.WWLU6())
-					return true;
-				break;
-			//Life Upgrade 3
-			case 4:
-				if(vars.WWLU5())
-					return true;
-				break;
-			//Life Upgrade 4
-			case 5:
-				if(vars.WWLU1())
-					return true;
-				break;
-			//Mask of the Wraith (59)
-			case 6:
-				if(vars.RNGStorygate())
-					return true;
-				break;
-			//Life Upgrade 5
-			case 7:
-				if(vars.WWLU2())
-					return true;
-				break;			
-			//Life Upgrade 6
-			case 8:
-				if(vars.WWLU3())
-					return true;
-				break;
-			//The Mechanical Tower
-			case 9:
-				if(vars.TheMechTowTENMG())
-					return true;
-				break;					
-			//Life Upgrade 7
-			case 10:
-				if(vars.WWLU4())
-					return true;
-				break;
-			//Life Upgrade 8
-			case 11:
-				if(vars.WWLU8())
-					return true;
-				break;
-			//Life Upgrade 9
-			case 12:
-				if(vars.WWLU7())
-					return true;
-				break;
-			//The Water Sword
-			case 13:
-				if(vars.WaterSword())
-					return true;
-				break;
-			//The End
-			case 14:
-				if(vars.WWEnd())
-					return true;
-				break;
-			}
-		//Setup 2
-			if (timer.CurrentSplitIndex == 51)			//~edit: here the number is [# of splits in first game] + [# of splits in second game] + 1
-			{
-				if(current.xPos3 >= -409.9 && current.xPos3 <= -404.8 && current.yCam <= 0.1082 && current.yCam >= 0.1080 && current.xCam <= 0.832 && current.xCam >= 0.8318)
-					return true;
-			}
-		//T2T
-			switch (timer.CurrentSplitIndex - 52)		//~edit: the number we subract here is [# of splits in first game] + [# of splits in second game] + 2
-			{
-			//The Ramparts
-			case 0:
-				if(vars.TheRamparts())
-					return true;
-				break;
-			//The Harbour District
-			case 1:	
-				if(vars.HarbourDistrict())
-					return true;	
-				break;
-			//The Palace
-			case 2:	
-				if(vars.ThePalace())
-					return true;	
-				break;
-			//The Trapped Hallway
-			case 3:
-				if(vars.TrappedHallway())
-					return true;
-				break;
-			//Life Upgrade 1
-			case 4:	
-				if(vars.T2TLU1())
-					return true;	
-				break;
-			//The Fortress
-			case 5:
-				if(vars.TheFortress())
-					return true;
-				break;
-			//The Lower City
-			case 6:
-				if(vars.LowerCity())
-					return true;
-				break;
-			//Life Upgrade 2
-			case 7:	
-				if(vars.T2TLU2())
-					return true;	
-				break;	
-			//The Arena
-			case 8:
-				if(vars.LowerCityRooftops())
-					return true;
-				break;
-			//The Balconies
-			case 9:
-				if(vars.TheBalconies())
-					return true;
-				break;
-			//The Dark Alley
-			case 10:
-				if(vars.DarkAlley())
-					return true;
-				break;
-			//The Temple Rooftops
-			case 11:
-				if(vars.TheTempleRooftops())
-					return true;
-				break;
-			//Life Upgrade 3
-			case 12:	
-				if(vars.T2TLU3())
-					return true;	
-				break;
-			//The Marketplace
-			case 13:
-				if(vars.TheMarketplace())
-					return true;
-				break;
-			//The Market District
-			case 14:
-				if(vars.MarketDistrict())
-					return true;
-				break;
-			//Exit Plaza
-			case 15:
-				if(vars.ThePlaza())
-					return true;
-				break;
-			//The Upper City
-			case 16:
-				if(vars.TheUpperCity())
-					return true;
-				break;
-			//Life Upgrade 4
-			case 17:	
-				if(vars.T2TLU4())
-					return true;	
-				break;
-			//The Promenade
-			case 18:
-				if(vars.ThePromenade())
-					return true;
-				break;
-			//The Royal Workshop
-			case 19:
-				if(vars.RoyalWorkshop())
-					return true;
-				break;
-			//The King's Road
-			case 20:
-				if(vars.KingsRoad())
-					return true;
-				break;
-			//Life Upgrade 5
-			case 21:	
-				if(vars.T2TLU5())
-					return true;	
-				break;
-			//The Hanging Gardens
-			case 22:
-				if(vars.HangingGardens())
-					return true;
-				break;
-			//The Structures Mind
-			case 23:
-				if(vars.WellofZipless())
-					return true;
-				break;
-			//The Well of Ancestors
-			case 24:
-				if(vars.WellofAncestors())
-					return true;
-				break;
-			//The Labyrinth
-			case 25:
-				if(vars.TheLabyrinth())
-					return true;
-				break;
-			//The Underground Cave
-			case 26:
-				if(vars.UndergroundCaveZipnt())
-					return true;
-				break;
-			//The Lower Tower
-			case 27:
-				if(vars.LowerTower())
-					return true;
-				break;
-			//Life Upgrade 6
-			case 28:	
-				if(vars.T2TLU6())
-					return true;	
-				break;
-			//The Upper Tower
-			case 29:
-				if(vars.UpperTower())
-					return true;
-				break;
-			//The Terrace
-			case 30:
-				if(vars.TheTerrace())
-					return true;
-				break;
-			//The Mental Realm
-			case 31:	
-				if(vars.MentalRealm())
-					return true;	
-				break;
-			}
-		break;
-			
-		case "Sands Trilogy (Completionist, No Major Glitches)":
-		//SoT
-			switch (timer.CurrentSplitIndex)
-			{ 		
-			//The Treasure Vaults
-			case 0:
-				if(vars.GasStation())
-					return true;
-				break;
-			//The Sands of Time
-			case 1:
-				if(vars.SandsUnleashed())
-					return true;
-				break;
-			//First Guest Room
-			case 2: 
-				if(vars.FirstGuestRoom())
-					return true;
-				break;
-			//Life Upgrade 1
-			case 3:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Exit Palace Defense
-			case 4: 
-				if(vars.PalaceDefence()) 		
-					return true;
-				break;
-			//Life Upgrade 2
-			case 5:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Death of the Sand King
-			case 6:
-				if(vars.DadDead()) 		
-					return true;
-				break;
-			//Life Upgrade 3
-			case 7:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//The Zoo
-			case 8:	
-				if(vars.TheZoo()) 		
-					return true;
-				break;
-			//Atop a Bird Cage
-			case 9:
-				if(vars.BirdCage()) 		
-					return true;
-				break;
-			//Cliffs and Waterfall
-			case 10:
-				if(vars.CliffWaterfalls()) 		
-					return true;
-				break;
-			//The Baths
-			case 11:
-				if(vars.TheBathsZipless()) 		
-					return true;
-				break;
-			//Life Upgrade 4
-			case 12:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Daybreak
-			case 13:	
-				if(vars.TheDaybreak()) 		
-					return true;
-				break;
-			//Drawbridge Tower
-			case 14:
-				if(vars.DrawbridgeTower()) 		
-					return true;
-				break;
-			//A Broken Bridge
-			case 15:
-				if(vars.BrokenBridge()) 		
-					return true;
-				break;
-			//Life Upgrade 5
-			case 16:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Waterfall
-			case 17:
-				if(vars.TheWaterfall())		
-					return true;
-				break;
-			//An Underground Reservoir
-			case 18:
-				if(vars.TheUGReservoirZipless()) 		
-					return true;
-				break;
-			//Life Upgrade 6
-			case 19:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Hall of Learning
-			case 20:
-				if(vars.HallofLearning()) 		
-					return true;
-				break;
-			//Life Upgrade 7
-			case 21:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Exit Observatory
-			case 22:
-				if(vars.ObservatoryExit()) 		
-					return true;
-				break;
-			//Exit Hall of Learning Courtyards
-			case 23:
-				if(vars.HoLCourtyardsExit()) 		
-					return true;
-				break;
-			//The Prison
-			case 24:
-				if(vars.TheAzadPrison()) 		
-					return true;
-				break;
-			//Life Upgrade 8
-			case 25:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//Life Upgrade 9
-			case 26:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//The Dream
-			case 27:
-				if(vars.TheDream) 		
-					return true;
-				break;
-			//The Tomb
-			case 28:
-				if(vars.TheTomb()) 		
-					return true;
-				break;
-			//Life Upgrade 10
-			case 29:	
-				if(vars.SoTLU())
-					return true;
-				break;
-			//The Tower of Dawn
-			case 30:
-				if(vars.TowerofDawn()) 		
-					return true;
-				break;
-			//The Setting Sun
-			case 31:
-				if(vars.SettingSun()) 		
-					return true;
-				break;
-			//Honor and Glory
-			case 32:
-				if(vars.HonorGlory()) 							
-					return true;
-				break;
-			//The Grand Rewind
-			case 33:
-				if(vars.GrandRewind()) 			
-					return true;
-				break;
-			//The End
-			case 34:
-				if(vars.SoTEnd())			
-					return true;
-				break;
-			}
-		//Setup 1
-			if (timer.CurrentSplitIndex == 35)			//~edit: the number here must be equal to the number of splits in the first game.
-			{
-				if(old.startValue2 == 1 && current.startValue2 == 2)
-				{
-					if(current.xPos2 >= -997.6757 && current.xPos2 <= -997.6755)
-					return true;
-				}
-			}
-		//WW
-			switch (timer.CurrentSplitIndex - 36)		//~edit: the number we subtract here is [# of splits in first game] + 1
-			{
-			//The Boat
-			case 0:
-				if(vars.TheBoat())
-					return true;
-				break;
-			//The Spider Sword
-			case 1:
-				if(vars.SpiderSword())
-					return true;
-				break;
-			//Life Upgrade 1
-			case 2:
-				if(vars.WWLU8())
-					return true;
-				break;
-			//A Damsel in Distress
-			case 3:
-				if(vars.DamselDistress())
-					return true;
-				break;
-			//Life Upgrade 2
-			case 4:
-				if(vars.vars.WWLU7())
-					return true;
-				break;
-			//The Dahaka
-			case 5:
-				if(vars.TheDahaka())
-					return true;
-				break;
-			//Life Upgrade 3
-			case 6:
-				if(vars.WWLU1())
-					return true;
-				break;
-			//The Serpent Sword
-			case 7:
-				if(vars.SerpentSword())
-					return true;
-				break;
-			//The Garden Hall
-			case 8:
-				if(vars.GardenHall())
-					return true;
-				break;
-			//Life Upgrade 4
-			case 9:
-				if(vars.WWLU6())
-					return true;
-				break;
-			//Life Upgrade 5
-			case 10:
-				if(vars.WWLU5())
-					return true;
-				break;
-			//Life Upgrade 6
-			case 11:
-				if(vars.WWLU9())
-					return true;
-				break;
-			//The Mechanical Tower
-			case 12:
-				if(vars.TheMechTower())
-					return true;
-				break;
-			//Breath of Fate
-			case 13:
-				if(vars.RavagesPortal())
-					return true;
-				break;
-			//Activation Room in Ruin
-			case 14:
-				if(vars.ActivationRuins())
-					return true;
-				break;
-			//Life Upgrade 7
-			case 15:
-				if(vars.WWLU4())
-					return true;
-				break;
-			//The Death of a Sand Wraith
-			case 16:
-				if(vars.SandWraithDead())
-					return true;
-				break;
-			//Death of the Empress
-			case 17:
-				if(vars.KaileenaDead())
-					return true;
-				break;
-			//Exit the Tomb
-			case 18:
-				if(vars.CatacombsExit())
-					return true;
-				break;
-			//The Scorpion Sword
-			case 19:
-				if(vars.ScorpionSword())
-					return true;
-				break;
-			//Life Upgrade 8
-			case 20:
-				if(vars.WWLU2())
-					return true;
-				break;
-			//Life Upgrade 9
-			case 21:
-				if(vars.WWLU3())
-					return true;
-				break;
-			//The Water Sword
-			case 22:
-				if(vars.WaterSword())
-					return true;
-				break;
-			//The Mask of the Wraith
-			case 23:
-				if(vars.MaskofWraith())
-					return true;
-				break;
-			//The Sand Griffin
-			case 24:
-				if(vars.SandGriffin())
-					return true;
-				break;
-			//Mirrored Fates
-			case 25:
-				if(vars.MirroredFates())
-					return true;
-				break;
-			//A Favor Unknown
-			case 26:
-				if(vars.FavourUnknown())
-					return true;
-				break;
-			//The Library Revisited
-			case 27:
-				if(vars.TheLibrary())
-					return true;
-				break;
-			//The Light Sword
-			case 28:
-				if(vars.LightSword())
-					return true;
-				break;
-			//The Death of a Prince
-			case 29:
-				if(vars.DeathofaPrince())
-					return true;
-				break;
-			//The End
-			case 30:
-				if(vars.WWEnd())
-					return true;
-				break;
-			}
-		//Setup 2
-			if (timer.CurrentSplitIndex == 67)			//~edit: here the number is [# of splits in first game] + [# of splits in second game] + 1
-			{
-				if(current.xPos3 >= -409.9 && current.xPos3 <= -404.8 && current.yCam <= 0.1082 && current.yCam >= 0.1080 && current.xCam <= 0.832 && current.xCam >= 0.8318)
-					return true;
-			}
-		//T2T
-			switch (timer.CurrentSplitIndex - 68)		//~edit: the number we subract here is [# of splits in first game] + [# of splits in second game] + 2
-			{
-			//The Ramparts
-			case 0:
-				if(vars.TheRamparts())
-					return true;
-				break;
-			//The Harbour District
-			case 1:	
-				if(vars.HarbourDistrict())
-					return true;	
-				break;
-			//The Palace
-			case 2:	
-				if(vars.ThePalace())
-					return true;	
-				break;
-			//The Trapped Hallway
-			case 3:
-				if(vars.TrappedHallway())
-					return true;
-				break;
-			//Life Upgrade 1
-			case 4:	
-				if(vars.T2TLU1())
-					return true;	
-				break;
-			//The Fortress
-			case 5:
-				if(vars.TheFortress())
-					return true;
-				break;
-			//The Lower City
-			case 6:
-				if(vars.LowerCity())
-					return true;
-				break;
-			//Life Upgrade 2
-			case 7:	
-				if(vars.T2TLU2())
-					return true;	
-				break;	
-			//The Arena
-			case 8:
-				if(vars.LowerCityRooftops())
-					return true;
-				break;
-			//The Balconies
-			case 9:
-				if(vars.TheBalconies())
-					return true;
-				break;
-			//The Dark Alley
-			case 10:
-				if(vars.DarkAlley())
-					return true;
-				break;
-			//The Temple Rooftops
-			case 11:
-				if(vars.TheTempleRooftops())
-					return true;
-				break;
-			//Life Upgrade 3
-			case 12:	
-				if(vars.T2TLU3())
-					return true;	
-				break;
-			//The Marketplace
-			case 13:
-				if(vars.TheMarketplace())
-					return true;
-				break;
-			//The Market District
-			case 14:
-				if(vars.MarketDistrict())
-					return true;
-				break;
-			//The Brothel
-			case 15:
-				if(vars.TheBrothel())
-					return true;
-				break;
-			//The Plaza
-			case 16:
-				if(vars.ThePlaza())
-					return true;
-				break;
-			//The Upper City
-			case 17:
-				if(vars.TheUpperCity())
-					return true;
-				break;
-			//Life Upgrade 4
-			case 18:	
-				if(vars.T2TLU4())
-					return true;	
-				break;
-			//The Promenade
-			case 19:
-				if(vars.ThePromenade())
-					return true;
-				break;
-			//The Royal Workshop
-			case 20:
-				if(vars.RoyalWorkshop())
-					return true;
-				break;
-			//The King's Road
-			case 21:
-				if(vars.KingsRoad())
-					return true;
-				break;
-			//Life Upgrade 5
-			case 22:	
-				if(vars.T2TLU5())
-					return true;	
-				break;
-			//The Hanging Gardens
-			case 23:
-				if(vars.HangingGardens())
-					return true;
-				break;
-			//The Structure's Mind
-			case 24:
-				if(vars.StructuresMind())
-					return true;
-				break;
-			//The Well of Ancestors
-			case 25:
-				if(vars.WellofAncestors())
-					return true;
-				break;
-			//The Labyrinth
-			case 26:
-				if(vars.TheLabyrinth())
-					return true;
-				break;
-			//The Underground Cave
-			case 27:
-				if(vars.UndergroundCave())
-					return true;
-				break;
-			//The Lower Tower
-			case 28:
-				if(vars.LowerTower())
-					return true;
-				break;
-			//Life Upgrade 6
-			case 29:	
-				if(vars.T2TLU6())
-					return true;	
-				break;
-			//The Upper Tower
-			case 30:
-				if(vars.UpperTower())
-					return true;
-				break;
-			//The Terrace
-			case 31:	
-				if(vars.TheTerrace())
-					return true;
-				break;
-			//The Mental Realm
-			case 32:	
-				if(vars.MentalRealm())
-					return true;	
-				break;
-			}
-		break;
-		
-		case "Anthology":
+		case 0:	//Setup splits
+		switch(game.ProcessName)
+		{
 		//PoP1
-			return 
-			(old.Level !=  current.Level) || // if level changes
-			(current.Level == 0xE && current.EndGame == 0xFF);	// if currently on level 14 and EndGame changes to 255
-		//Setup 1
-			if (timer.CurrentSplitIndex == 14)
+		case "DOSBOX":
+			if((current.Start == 0x1) && 
+			   (current.Level == 0x1) && 
+			   (current.Time == 0x3C) && 
+			   (current.Count >= 0x2CE0000))
 			{
-				if(current.Start == 238 && current.Level2 == 1)
-				{
-					vars.ResetDelta = current.FrameCount;
-					return true;
-				}
+				vars.activeGame = 1;
+				vars.offset++;
+				return true;
+			}
+		
+		//PoP2:SnF
+			if(current.Start == 238 && current.Level2 == 1)
+			{
+				vars.ResetDelta = current.FrameCount;
+				vars.activeGame = 2;
+				vars.offset+=14;
+				return true;
 			}
 			vars.ResetDelta = 0;
 			vars.Resetting = false;
-		//PoP2
-			if(current.Start == 231){
-				vars.Resetting = false;
-			}
-			return (old.Level2 == current.Level2 - 1);
-		//Setup 2
-			if (timer.CurrentSplitIndex == 29)
+		break;
+		
+		//3D
+		case "pop3d":
+			if(current.lXPos > 20.554 && current.lXPos < 20.556 &&
+			   current.lZPos > 1.448 && current.lZPos < 1.45)
 			{
-				if(current.lXPos > 20.554 && current.lXPos < 20.556 && current.lZPos > 1.448 && current.lZPos < 1.45)
-				{
-					return true;
-				}
+				vars.activeGame = 3;
+				vars.offset++;
+				return true;
 			}
-		//PoP3D
-			switch (timer.CurrentSplitIndex - 30)
-			{
-			//Dungeon
-			case 0:
-				if (old.lYPos == 0 && current.lYPos == -2)
-					return true;
-					break;
-			//Ivory Tower
-			case 1:
-				if (old.lXPos == 0 && current.lXPos > 13.485 && current.lXPos < 13.487)
-					return true;
-					break;
-			//Cistern
-			case 2:
-				if (old.lXPos == 0 && current.lXPos > 216.904 && current.lXPos < 216.906)
-					return true;
-				break;
-			//Palace 1
-			case 3:
-				if (old.lXPos == 0 && current.lXPos == -7)
-					return true;
-				break;
-			//Palace 2
-			case 4:
-				if (old.lYPos == 0 && current.lYPos == -23)
-					return true;
-				break;
-			//Palace 3
-			case 5:
-				if (current.lXPos == 0 && current.lYPos == 0 && current.lZPos == 0 && old.health == 0 && current.health != 0)
-					return true;
-				break;
-			//Rooftops	
-			case 6:
-				if (old.lXPos == 0 && current.lXPos == -42)
-					return true;
-				break;
-			//Streets and Docks
-			case 7:
-				if (old.lYPos == 0 && current.lYPos == -20)
-					return true;
-				break;
-			//Lower Dirigible 1
-			case 8:
-				if (old.lYPos == 0 && current.lYPos == 99)
-					return true;
-				break;
-			//Lower Dirigible 2
-			case 9:
-				if (old.lZPos == 0 && current.lZPos > -77.77 && current.lZPos < -77.75)
-					return true;
-				break;
-			//Upper Dirigible
-			case 10:
-				if (old.lYPos == 0 && current.lYPos == 103)
-					return true;
-				break;
-			//Dirigible Finale
-			case 11:
-				if (old.lYPos == 0 && current.lYPos == 61)
-					return true;
-				break;
-			//Floating Ruins
-			case 12:
-				if (old.lYPos == 0 && current.lYPos == -85)
-					return true;
-				break;
-			//Cliffs
-			case 13:
-				if (old.lYPos == 0 && current.lYPos > -2.36 && current.lYPos < -2.34)
-					return true;
-				break;
-			//Sun Temple
-			case 14:
-				if (old.lYPos == 0 && current.lYPos > -19.966 && current.lYPos < -19.964)
-					return true;
-				break;
-			//Moon Temple
-			case 15:
-				if (old.lYPos == 0 && current.lYPos > -27.4 && current.lYPos < -27.38)
-					return true;
-				break;
-			//Finale
-			case 16:
-				if(current.xPos == 0 && current.yPos == 0 && current.zPos == 0 && current.eHealth ==0)
-					return true;
-				break;
-			}
-		//Setup 3
-			if (timer.CurrentSplitIndex == 47)
-			{
-				if(current.xPos1 >= -103.264 && current.yPos1 >= -4.8 && current.zPos1 >= 1.341 && current.xPos1 <= -103.262 && current.yPos1 <= -4.798 && current.zPos1 <= 1.343 && current.startValue == 1)
-					return true;
-			}
+		break;
+		
 		//SoT
-			switch (timer.CurrentSplitIndex - 48)
+		case "POP":
+		case "pop":
+			vars.aboveCredits = false;
+			vars.newFountain = false;
+			vars.startUp = true;
+			if(current.xPos1 >= -103.264 && current.xPos1 <= -103.262 &&
+			   current.yPos1 >= -4.8 && current.yPos1 <= -4.798 &&
+			   current.zPos1 >= 1.341 && current.zPos1 <= 1.343 &&
+			   current.startValue == 1)
 			{
-			//The Treasure Vaults
-			case 0:
-				if(vars.GasStation())
-					return true;
-				break;
-			//The Sands of Time
-			case 1:
-				if(vars.SandsUnleashed())
-					return true;
-				break;
-			//The Sultan's Chamber (Death)
-			case 2:
-				if(vars.SultanChamber())
-					return true;
-				break;
-			//Death of the Sand King
-			case 3:
-				if(vars.DadDead())
-							return true;
-				break;
-			//The Baths (Death)
-			case 4:
-				if(vars.TheBaths())
-					return true;
-				break;
-			//The Messhall (Death)
-			case 5:
-				if(vars.TheMesshall())
-					return true;
-				break;
-			//The Caves
-			case 6:
-				if(vars.TheCaves())
-					return true;
-				break;
-			//Exit Underground Reservoir
-			case 7:
-				if(vars.TheUGReservoir())
-					return true;
-				break;
-			//The Observatory (Death)
-			case 8:
-				if(vars.TheObservatory())
-					return true;
-				break;
-			//The Torture Chamber (Death)
-			case 9:
-				if(vars.TortureChamber())
-					return true;
-				break;
-			//The Dream
-			case 10:
-				if(vars.TheDream())
-					return true;
-				break;
-			//Honor and Glory
-			case 11:
-				if(vars.HonorGlory())
-					return true;
-				break;
-			//The Grand Rewind
-			case 12:
-				if(vars.GrandRewind())
-					return true;
-				break;
-			//The End
-			case 13:
-				if(vars.SoTEnd())				
-					return true;
-				break;
+				vars.activeGame = 4;
+				vars.offset+= 1;
+				return true;
 			}
-		//Setup 4
-			if (timer.CurrentSplitIndex == 62)			
-			{
-				if(old.startValue2 == 1 && current.startValue2 == 2)
-				{
-					if(current.xPos2 >= -997.6757 && current.xPos2 <= -997.6755)
-					return true;
-				}
-			}
+		break;
+		
 		//WW
-			switch (timer.CurrentSplitIndex - 63)											//63? Ironic!
+		case "POP2":
+		case "pop2":
+			if((old.startValue2 == 1 && current.startValue2 == 2) && 
+			   (current.xPos2 >= -997.6757 && current.xPos2 <= -997.6755))
 			{
-			//The Boat
-			case 0:
-				if(vars.TheBoat())
-					return true;
-				break;
-			//The Raven Man
-			case 1:
-				if(vars.TheRavenMan())
-					return true;
-				break;
-			//The Time Portal
-			case 2:
-				if(vars.TimePortal())			
-					return true;
-				break;
-			//Mask of the Wraith (59)
-			case 3:
-				if(vars.RNGStorygate())
-					return true;
-				break;
-			//The Scorpion Sword
-			case 4:
-				if(vars.ScorpionSword())
-					return true;
-				break;
-			//Storygate 63
-			case 5:
-				if(vars.WWEndgame())
-					return true;
-				break;
-			//Back to the Future
-			case 6:
-				if(vars.SlomoPortal())
-					return true;
-				break;
-			//The End
-			case 7:
-				if(vars.WWEnd())
-					return true;
-				break;
+				vars.activeGame = 5;
+				vars.offset+= 1;
+				return true;
 			}
-		//Setup 5
-			if (timer.CurrentSplitIndex == 71)													
-			{
-				if(current.xPos3 >= -409.9 && current.xPos3 <= -404.8 && current.yCam <= 0.1082 && current.yCam >= 0.1080 && current.xCam <= 0.832 && current.xCam >= 0.8318)
-					return true;
-			}
+		break;
+		
 		//T2T
-			switch (timer.CurrentSplitIndex - 72)												
+		case "pop3":
+		case "POP3":
+			if(current.xPos3 >= -409.9 && current.xPos3 <= -404.8 &&
+			   current.xCam >= 0.8318 && current.xCam <= 0.832 &&
+			   current.yCam >= 0.1080  && current.yCam <= 0.1082)
 			{
-			//The Ramparts
-			case 0:
-				if(vars.TheRamparts())
-					return true;
-				break;
-			//The Harbor District
-			case 1:	
-				if(vars.HarbourDistrict())
-					return true;	
-				break;
-			//The Palace
-			case 2:	
-				if(vars.ThePalace())
-					return true;	
-				break;
-			//Exit Sewers
-			case 3:	
-				if(vars.TheSewerz())
-					return true;	
-				break;
-			//Exit Lower City
-			case 4:	
-				if(vars.LowerCity())
-					return true;	
-				break;
-			//The Lower City Rooftops
-			case 5:	
-				if(vars.LCRooftopZips())
-					return true;	
-				break;
-			//Exit Temple Rooftops
-			case 6:	
-				if(vars.TheTempleRooftops())
-					return true;	
-				break;
-			//Exit Marketplace
-			case 7:	
-				if(vars.TheMarketplace())
-					return true;	
-				break;
-			//Exit Plaza
-			case 8:	
-				if(vars.ThePlaza())
-					return true;	
-				break;
-			//Exit City Gardens
-			case 9:	
-				if(vars.CityGarderns())
-					return true;	
-				break;
-			//Exit Royal Workshop
-			case 10:	
-				if(vars.RoyalWorkshop())
-					return true;	
-				break;
-			//The King's Road
-			case 11:	
-				if(vars.KingzRoad())
-					return true;	
-				break;
-			//Exit Structure's Mind
-			case 12:	
-				if(vars.StructurezMind())
-					return true;	
-				break;
-			//Exit Labyrinth
-			case 13:	
-				if(vars.TheLabyrinth())
-					return true;	
-				break;
-			//The Towers
-			case 14:	
-				if(vars.UpperTower())
-					return true;	
-				break;
-			//The Terrace
-			case 15:	
-				if(vars.TheTerrace())
-					return true;
-				break;
-			//The Mental Realm
-			case 16:	
-				if(vars.MentalRealm())
-					return true;	
-				break;
+				vars.activeGame = 6;
+				vars.offset+= 1;
+				return true;
 			}
-		//Setup 6
-			if (timer.CurrentSplitIndex == 89)
+		break;
+		
+		//2k8
+		case "PrinceOfPersia_Launcher":
+			if(old.yPos2k8 != -351 && current.yPos2k8 == -351)
 			{
-				if(old.yPos2k8 != -351 && current.yPos2k8 == -351)
-				{
-					return true;
-				}
 				//Initializing flags & targets:
 				vars.kill = false;
 				vars.seedGet = false;
@@ -3871,423 +1545,2375 @@ split
 				vars.xTarget = 0;
 				vars.yTarget = 0;
 				vars.zTarget = 0;
+				vars.offset++;
+				vars.activeGame = 7;
+				return true;			
 			}
-		//2k8
-			if(!vars.startUp2k8)
+		break;
+		
+		//TFS
+		case "prince of persia":
+			if(current.xPostfs <= 268.93 && current.xPostfs >= 268.929 &&
+			   current.gameState == 4)
 			{
-				vars.kill = false;
-				vars.seedGet = false;
-				vars.startUp2k8 = true;
-				vars.xTarget = 0;
-				vars.yTarget = 0;
-				vars.zTarget = 0;
+				vars.activeGame = 8;
+				vars.offset++;
+				return true;
 			}
-			//Setting kill to true any time you exit combat:
-			if(old.combat == 2 && current.combat == 0)
+		break;
+		}
+		break;
+		
+		case 1: //PoP1
+		if(old.Level !=  current.Level)
+			return true;
+		if(current.Level == 0xE && current.EndGame == 0xFF){
+			vars.activeGame = 0;
+			vars.offset += 14;
+			return true;
+		}
+		break;
+		
+		case 2: //PoP2: SnF
+		if(current.Start == 231){
+			vars.Resetting = false;
+		}
+		if(old.Level2 == current.Level2 - 1)
+			return true;
+		break;
+		
+		case 3: //PoP3D
+		switch (timer.CurrentSplitIndex - (short)vars.offset)
 			{
-				vars.kill = true;
+				//Dungeon
+				case 0:
+					if(vars.Dungeon())
+						return true;
+				break;
+				//Ivory Tower
+				case 1:
+					if(vars.IvoryTower())
+						return true;
+				break;
+				//Cistern
+				case 2:
+					if (vars.Cistern())
+						return true;
+				break;
+				//Palace 1
+				case 3:
+					if (vars.Palace1())
+						return true;
+				break;
+				//Palace 2
+				case 4:
+					if (vars.Palace2())
+						return true;
+				break;
+				//Palace 3
+				case 5:
+					if (vars.Palace3())
+						return true;
+				break;
+				//Rooftops	
+				case 6:
+					if (vars.Rooftops())
+						return true;
+				break;
+				//Streets and Docks
+				case 7:
+					if (vars.StreetsDocks())
+						return true;
+				break;
+				//Lower Dirigible 1
+				case 8:
+					if (vars.LowerDirigible1())
+						return true;
+				break;
+				//Lower Dirigible 2
+				case 9:
+					if (vars.LowerDirigible2())
+						return true;
+				break;
+				//Upper Dirigible
+				case 10:
+					if (vars.UpperDirigible())
+						return true;
+				break;
+				//Dirigible Finale
+				case 11:
+					if (vars.DirigibleFinale())
+						return true;
+				break;
+				//Floating Ruins
+				case 12:
+					if (vars.FloatingRuins())
+						return true;
+				break;
+				//Cliffs
+				case 13:
+					if (vars.Cliffs)
+						return true;
+				break;
+				//Sun Temple
+				case 14:
+					if (vars.SunTemple)
+						return true;
+				break;
+				//Moon Temple
+				case 15:
+					if (vars.MoonTemple)
+						return true;
+				break;
+				//Finale
+				case 16:
+					if(vars.End3D)
+						return true;
+				break;
 			}
-			//Setting seedGet to true any time you collect a seed.
-			if(current.seedCount == old.seedCount+1)
-			{
-				vars.seedGet = true;
-			}
-				//In the case of each split, looking for qualifications to complete the split. There are three kinds of splits in this script.
-				//Location Based: If you're inside the outlined zone, the split fires.
-				//Seed Based: If you're inside the outlined zone AND collect a seed, the split fires.
-				//Combat Based: If you're inside the outlined zone AND exit combat, the split fires.
-			switch (timer.CurrentSplitIndex - 90)
-			{
+		break;
+		
+		case 4:	//SoT
+		if(!vars.startUp){
+		vars.aboveCredits = false;
+		vars.newFountain = false;
+		vars.startUp = true;	
+		}
+		switch(timer.Run.GetExtendedCategoryName())
+		{
+			case "Sands Trilogy (Any%, Standard)":
+			case "Anthology":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Treasure Vaults
+					case 0:
+						if(vars.GasStation())
+						return true;
+					break;
+					//The Sands of Time
+					case 1:
+						if(vars.SandsUnleashed())
+							return true;
+					break;
+					//The Sultan's Chamber (Death)
+					case 2:
+						if(vars.SultanChamber())
+						return true;
+					break;
+					//Death of the Sand King
+					case 3:
+						if(vars.DadDead())
+							return true;
+					break;
+					//The Baths (Death)
+					case 4:
+						if(vars.TheBaths())
+							return true;
+					break;
+					//The Messhall (Death)
+					case 5:
+						if(vars.TheMesshall())
+							return true;
+					break;
+					//The Caves
+					case 6:
+						if(vars.TheCaves())
+							return true;
+					break;
+					//Exit Underground Reservoir
+					case 7:
+						if(vars.TheUGReservoir())
+							return true;
+					break;
+					//The Observatory (Death)
+					case 8:
+						if(vars.TheObservatory())
+							return true;
+					break;
+					//The Torture Chamber (Death)
+					case 9:
+						if(vars.TortureChamber())
+							return true;
+					break;
+					//The Dream
+					case 10:
+						if(vars.TheDream())
+							return true;
+					break;
+					//Honor and Glory
+					case 11:
+						if(vars.HonorGlory())
+							return true;
+					break;
+					//The Grand Rewind
+					case 12:
+						if(vars.GrandRewind())
+							return true;
+					break;
+					//The End
+					case 13:
+						if(vars.SoTEnd()){
+							vars.offset += 14;
+							vars.activeGame = 0;
+							return true;
+						}
+					break;
+				}
+			break;
+			case "Sands Trilogy (Any%, Zipless)":
+			case "Sands Trilogy (Any%, No Major Glitches)":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Treasure Vaults
+					case 0:
+						if(vars.GasStation())
+							return true;
+					break;
+					//The Sands of Time
+					case 1:
+						if(vars.SandsUnleashed())
+							return true;
+					break;
+					//First Guest Room
+					case 2: 
+						if(vars.FirstGuestRoom())
+							return true;
+					break;
+					//The Sultan's Chamber
+					case 3: 
+						if(vars.SultanChamberZipless()) 		
+							return true;
+					break;
+					//Exit Palace Defense
+					case 4: 
+						if(vars.PalaceDefence()) 		
+							return true;
+					break;
+					//The Sand King
+					case 5:
+						if(vars.DadStart()) 		
+							return true;
+					break;
+					//Death of the Sand King
+					case 6:
+						if(vars.DadDead()) 		
+							return true;
+					break;
+					//The Warehouse
+					case 7:
+						if(vars.TheWarehouse()) 		
+							return true;
+					break;
+					//The Zoo
+					case 8:	
+						if(vars.TheZoo())
+							return true;
+					break;
+					//Atop a Bird Cage
+					case 9:
+						if(vars.BirdCage()) 		
+							return true;
+					break;
+					//Cliffs and Waterfall
+					case 10:
+						if(vars.CliffWaterfalls()) 		
+							return true;
+					break;
+					//The Baths
+					case 11:
+						if(vars.TheBaths()) 		
+							return true;
+					break;
+					//Sword of the Mighty Warrior
+					case 12:
+						if(vars.SecondSword()) 		
+							return true;
+					break;
+					//Daybreak
+					case 13:	
+						if(vars.TheDaybreak()) 		
+							return true;
+					break;
+					//Drawbridge Tower
+					case 14:
+						if(vars.DrawbridgeTower()) 		
+							return true;
+					break;
+					//A Broken Bridge
+					case 15:
+						if(vars.BrokenBridge()) 		
+							return true;
+					break;
+					//The Caves
+					case 16:
+						if(vars.TheCavesZipless()) 		
+							return true;
+					break;
+					//Waterfall
+					case 17:
+						if(vars.TheWaterfall())		
+							return true;
+					break;
+					//An Underground Reservoir
+					case 18:
+						if(vars.TheUGReservoirZipless()) 		
+							return true;
+					break;
+					//Hall of Learning
+					case 19:
+						if(vars.HallofLearning()) 		
+							return true;
+					break;
+					//Exit Observatory
+					case 20:
+						if(vars.ObservatoryExit()) 		
+							return true;
+					break;
+					//Exit Hall of Learning Courtyards
+					case 21:
+						if(vars.HoLCourtyardsExit()) 		
+							return true;
+					break;
+					//The Prison
+					case 22:
+						if(vars.TheAzadPrison()) 		
+							return true;
+					break;
+					//The Torture Chamber
+					case 23:
+						if(vars.TortureChamberZipless()) 					
+							return true;
+					break;
+					//The Elevator
+					case 24:
+						if(vars.TheElevator())		
+							return true;
+					break;
+					//The Dream
+					case 25:
+						if(vars.TheDreamZipless()) 		
+							return true;
+					break;
+					//The Tomb
+					case 26:
+						if(vars.TheTomb())		
+							return true;
+					break;
+					//The Tower of Dawn
+					case 27:
+						if(vars.TowerofDawn()) 		
+							return true;
+					break;
+					//The Setting Sun
+					case 28:
+						if(vars.SettingSun()) 		
+							return true;
+					break;
+					//Honor and Glory
+					case 29:
+						if(vars.HonorGlory()) 							
+							return true;
+					break;
+					//The Grand Rewind
+					case 30:
+						if(vars.GrandRewind()) 			
+							return true;
+					break;
+					//The End
+					case 31:
+						if(vars.SoTEnd()){
+							vars.activeGame = 0;
+							vars.offset += 32;
+							return true;
+						}
+					break;
+				}
+			break;
+			case "Sands Trilogy (Completionist, Standard)":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Treasure Vaults
+					case 0:
+						if(vars.GasStation())
+							return true;
+					break;
+					//The Sands of Time
+					case 1:
+						if(vars.SandsUnleashed())
+							return true;
+					break;
+					//Life Upgrade 1
+					case 2:
+						if(vars.SoTLU())
+							return true;
+					break;
+					//Life Upgrade 2
+					case 3:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//Life Upgrade 3
+					case 4:
+						if(vars.SoTLU())
+							return true;
+					break;
+					//The Baths (Death)
+					case 5:	
+						if(vars.TheBaths)
+							return true;
+					break;
+					//Life Upgrade 4
+					case 6:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//The Messhall (Death)
+					case 7:	
+						if(vars.TheMesshall())
+							return true;
+					break;
+					//Life Upgrade 5
+					case 8:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//The Caves (Death)
+					case 9:	
+						if(vars.TheCaves())
+							return true;
+					break;
+					//Life Upgrade 6
+					case 10:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//Life Upgrade 7
+					case 11:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//The Observatory (Death)
+					case 12:	
+						if(vars.TheObservatory())
+							return true;
+					break;
+					//Life Upgrade 8
+					case 13:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//Life Upgrade 9
+					case 14:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//The Dream
+					case 15:	
+						if(vars.TheDream())
+							return true;
+					break;
+					//Life Upgrade 10
+					case 16:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//Honor and Glory
+					case 17:	
+						if(vars.HonorGlory())
+							return true;
+					break;
+					//The Grand Rewind
+					case 18:	
+						if(vars.GrandRewind())
+							return true;
+					break;
+					//The End
+					case 19:
+						if(vars.SoTEnd()){	
+							vars.activeGame = 0;
+							vars.offset += 20;
+							return true;
+						}
+					break;
+				}
+			break;
+			case "Sands Trilogy (Completionist, Zipless)":
+			case "Sands Trilogy (Completionist, No Major Glitches)":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Treasure Vaults
+					case 0:
+						if(vars.GasStation())
+							return true;
+					break;
+					//The Sands of Time
+					case 1:
+						if(vars.SandsUnleashed())
+							return true;
+					break;
+					//First Guest Room
+					case 2: 
+						if(vars.FirstGuestRoom())
+							return true;
+					break;
+					//Life Upgrade 1
+					case 3:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//Exit Palace Defense
+					case 4: 
+						if(vars.PalaceDefence()) 		
+							return true;
+					break;
+					//Life Upgrade 2
+					case 5:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//Death of the Sand King
+					case 6:
+						if(vars.DadDead()) 		
+							return true;
+					break;
+					//Life Upgrade 3
+					case 7:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//The Zoo
+					case 8:	
+						if(vars.TheZoo()) 		
+							return true;
+					break;
+					//Atop a Bird Cage
+					case 9:
+						if(vars.BirdCage()) 		
+							return true;
+					break;
+					//Cliffs and Waterfall
+					case 10:
+						if(vars.CliffWaterfalls()) 		
+							return true;
+					break;
+					//The Baths
+					case 11:
+						if(vars.TheBathsZipless()) 		
+							return true;
+					break;
+					//Life Upgrade 4
+					case 12:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//Daybreak
+					case 13:	
+						if(vars.TheDaybreak()) 		
+							return true;
+					break;
+					//Drawbridge Tower
+					case 14:
+						if(vars.DrawbridgeTower()) 		
+							return true;
+					break;
+					//A Broken Bridge
+					case 15:
+						if(vars.BrokenBridge()) 		
+							return true;
+					break;
+					//Life Upgrade 5
+					case 16:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//Waterfall
+					case 17:
+						if(vars.TheWaterfall())		
+							return true;
+					break;
+					//An Underground Reservoir
+					case 18:
+						if(vars.TheUGReservoirZipless()) 		
+							return true;
+					break;
+					//Life Upgrade 6
+					case 19:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//Hall of Learning
+					case 20:
+						if(vars.HallofLearning()) 		
+							return true;
+					break;
+					//Life Upgrade 7
+					case 21:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//Exit Observatory
+					case 22:
+						if(vars.ObservatoryExit()) 		
+							return true;
+					break;
+					//Exit Hall of Learning Courtyards
+					case 23:
+						if(vars.HoLCourtyardsExit()) 		
+							return true;
+					break;
+					//The Prison
+					case 24:
+						if(vars.TheAzadPrison()) 		
+							return true;
+					break;
+					//Life Upgrade 8
+					case 25:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//Life Upgrade 9
+					case 26:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//The Dream
+					case 27:
+						if(vars.TheDream) 		
+							return true;
+					break;
+					//The Tomb
+					case 28:
+						if(vars.TheTomb()) 		
+							return true;
+					break;
+					//Life Upgrade 10
+					case 29:	
+						if(vars.SoTLU())
+							return true;
+					break;
+					//The Tower of Dawn
+					case 30:
+						if(vars.TowerofDawn()) 		
+							return true;
+					break;
+					//The Setting Sun
+					case 31:
+						if(vars.SettingSun()) 		
+							return true;
+					break;
+					//Honor and Glory
+					case 32:
+						if(vars.HonorGlory()) 							
+							return true;
+					break;
+					//The Grand Rewind
+					case 33:
+						if(vars.GrandRewind()) 			
+							return true;
+					break;
+					//The End
+					case 34:
+						if(vars.SoTEnd()){
+							vars.activeGame = 0;
+							vars.offset += 35;
+							return true;
+						}
+					break;
+				}
+			break;
+		}
+		break;
+	
+		case 5: //WW
+		switch(timer.Run.GetExtendedCategoryName())
+		{
+			case "Sands Trilogy (Any%, Standard)":
+			case "Sands Trilogy (Any%, Zipless)":
+			case "Anthology":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Boat
+					case 0:
+						if(vars.TheBoat())
+						return true;
+					break;
+					//The Raven Man
+					case 1:
+						if(vars.TheRavenMan())
+						return true;
+					break;
+					//The Time Portal
+					case 2:
+						if(vars.TimePortal())			
+							return true;
+					break;
+					//Mask of the Wraith (59)
+					case 3:
+						if(vars.RNGStorygate())
+							return true;
+					break;
+					//The Scorpion Sword
+					case 4:
+						if(vars.ScorpionSword())
+							return true;
+					break;
+					//Storygate 63
+					case 5:
+						if(vars.WWEndgame())
+							return true;
+					break;
+					//Back to the Future
+					case 6:
+						if(vars.SlomoPortal())
+							return true;
+					break;
+					//The End
+					case 7:
+						if(vars.WWEnd()){
+							vars.activeGame = 0;
+							vars.offset += 8;
+							return true;
+						}
+					break;
+				}
+			break;
+			case "Sands Trilogy (Any%, No Major Glitches)":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Boat
+					case 0:
+						if(vars.TheBoat())
+							return true;
+					break;
+					//The Spider Sword
+					case 1:
+						if(vars.SpiderSword())
+							return true;
+					break;
+					//Chasing Shadee
+					case 2:
+						if(vars.ChaseShadee())
+							return true;
+					break;
+					//A Damsel in Distress
+					case 3:
+						if(vars.DamselDistress())
+							return true;
+					break;
+					//The Dahaka
+					case 4:
+						if(vars.TheDahaka())
+							return true;
+					break;
+					//The Serpent Sword
+					case 5:
+						if(vars.SerpentSword())
+							return true;
+					break;
+					//The Garden Hall
+					case 6:
+						if(vars.GardenHall())
+							return true;
+					break;
+					//The Waterworks Restored
+					case 7:
+						if(vars.WaterworksDone())
+							return true;
+					break;
+					//The Lion Sword
+					case 8:
+						if(vars.LionSword())
+							return true;
+					break;
+					//The Mechanical Tower
+					case 9:
+						if(vars.TheMechTower())
+							return true;
+					break;
+					//Breath of Fate
+					case 10:
+						if(vars.RavagesPortal())
+							return true;
+					break;
+					//Activation Room in Ruin
+					case 11:
+						if(vars.ActivationRuins())
+							return true;
+					break;
+					//Activation Room Restored
+					case 12:
+						if(vars.ActivationDone())
+							return true;
+					break;
+					//The Death of a Sand Wraith
+					case 13:
+						if(vars.SandWraithDead())
+							return true;
+					break;
+					//Death of the Empress
+					case 14:
+						if(vars.KaileenaDead())
+							return true;
+					break;
+					//Exit the Tomb
+					case 15:
+						if(vars.CatacombsExit())
+							return true;
+					break;
+					//The Scorpion Sword
+					case 16:
+						if(vars.ScorpionSword())
+							return true;
+					break;
+					//The Library
+					case 17:
+						if(vars.TheLibrary())
+							return true;
+					break;
+					//The Hourglass Revisited
+					case 18:
+						if(vars.HourglassRevisited())
+							return true;
+					break;
+					//The Mask of the Wraith
+					case 19:
+						if(vars.MaskofWraith())
+							return true;
+					break;
+					//The Sand Griffin
+					case 20:
+						if(vars.SandGriffin())
+							return true;
+					break;
+					//Mirrored Fates
+					case 21:
+						if(vars.MirroredFates())
+							return true;
+					break;
+					//A Favor Unknown
+					case 22:
+						if(vars.FavourUnknown())
+							return true;
+					break;
+					//The Library Revisited
+					case 23:
+						if(vars.TheLibrary())
+							return true;
+					break;
+					//The Light Sword
+					case 24:
+						if(vars.LightSword())
+							return true;
+					break;
+					//The Death of a Prince
+					case 25:
+						if(vars.DeathofaPrince())
+							return true;
+					break;
+					//The End
+					case 26:
+						if(vars.WWEnd()){
+							vars.activeGame = 0;
+							vars.offset += 27;
+							return true;
+						}
+					break;
+				}
+			break;
+			case "Sands Trilogy (Completionist, Standard)":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Boat
+					case 0:
+						if(vars.TheBoat())
+							return true;
+					break;
+					//The Raven Man
+					case 1:
+						if(vars.TheRavenMan())
+							return true;
+					break;
+					//Life Upgrade 1
+					case 2:
+						if(vars.WWLU1())
+							return true;
+					break;
+					//Life Upgrade 2
+					case 3:
+						if(vars.WWLU2())
+							return true;
+					break;
+					//Life Upgrade 3
+					case 4:
+						if(vars.WWLU3())
+							return true;
+					break;
+					//Life Upgrade 4
+					case 5:
+						if(vars.WWLU4())
+							return true;
+					break;
+					//Life Upgrade 5
+					case 6:
+						if(vars.WWLU5())
+							return true;
+					break;
+					//Life Upgrade 6
+					case 7:
+						if(vars.WWLU6())
+							return true;
+					break;
+					//Life Upgrade 7
+					case 8:
+						if(vars.WWLU7())
+							return true;
+					break;
+					//Life Upgrade 8
+					case 9:
+						if(vars.WWLU8())
+							return true;
+					break;
+					//Life Upgrade 9
+					case 10:
+						if(vars.WWLU9())
+							return true;
+					break;
+					//The Water Sword
+					case 11:
+						if(vars.WaterSword())
+							return true;
+					break;
+					//The End
+					case 12:
+						if(vars.WWEnd()){
+							vars.activeGame = 0;
+							vars.offset += 13;
+							return true;
+						}
+					break;
+				}
+			break;
+			case "Sands Trilogy (Completionist, Zipless)":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Boat
+					case 0:
+						if(vars.TheBoat())
+							return true;
+					break;
+					//The Raven Man
+					case 1:
+						if(vars.TheRavenMan())
+							return true;
+					break;
+					//Life Upgrade 1
+					case 2:
+						if(vars.WWLU9())
+							return true;
+					break;
+					//Life Upgrade 2
+					case 3:
+						if(vars.WWLU6())
+							return true;
+					break;
+					//Life Upgrade 3
+					case 4:
+						if(vars.WWLU5())
+							return true;
+					break;
+					//Life Upgrade 4
+					case 5:
+						if(vars.WWLU1())
+							return true;
+					break;
+					//Mask of the Wraith (59)
+					case 6:
+						if(vars.RNGStorygate())
+							return true;
+					break;
+					//Life Upgrade 5
+					case 7:
+						if(vars.WWLU2())
+							return true;
+					break;			
+					//Life Upgrade 6
+					case 8:
+						if(vars.WWLU3())
+							return true;
+					break;
+					//The Mechanical Tower
+					case 9:
+						if(vars.TheMechTowTENMG())
+							return true;
+					break;					
+					//Life Upgrade 7
+					case 10:
+						if(vars.WWLU4())
+							return true;
+					break;
+					//Life Upgrade 8
+					case 11:
+						if(vars.WWLU8())
+							return true;
+					break;
+					//Life Upgrade 9
+					case 12:
+						if(vars.WWLU7())
+							return true;
+					break;
+					//The Water Sword
+					case 13:
+						if(vars.WaterSword())
+							return true;
+					break;
+					//The End
+					case 14:
+						if(vars.WWEnd()){
+							vars.activeGame = 0;
+							vars.offset += 15;
+							return true;
+						}
+					break;
+				}
+			break;
+			case "Sands Trilogy (Completionist, No Major Glitches)":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Boat
+					case 0:
+						if(vars.TheBoat())
+							return true;
+					break;
+					//The Spider Sword
+					case 1:
+						if(vars.SpiderSword())
+							return true;
+					break;
+					//Life Upgrade 1
+					case 2:
+						if(vars.WWLU8())
+							return true;
+					break;
+					//A Damsel in Distress
+					case 3:
+						if(vars.DamselDistress())
+							return true;
+					break;
+					//Life Upgrade 2
+					case 4:
+						if(vars.vars.WWLU7())
+							return true;
+					break;
+					//The Dahaka
+					case 5:
+						if(vars.TheDahaka())
+							return true;
+					break;
+					//Life Upgrade 3
+					case 6:
+						if(vars.WWLU1())
+							return true;
+					break;
+					//The Serpent Sword
+					case 7:
+						if(vars.SerpentSword())
+							return true;
+					break;
+					//The Garden Hall
+					case 8:
+						if(vars.GardenHall())
+							return true;
+					break;
+					//Life Upgrade 4
+					case 9:
+						if(vars.WWLU6())
+							return true;
+					break;
+					//Life Upgrade 5
+					case 10:
+						if(vars.WWLU5())
+							return true;
+					break;
+					//Life Upgrade 6
+					case 11:
+						if(vars.WWLU9())
+							return true;
+					break;
+					//The Mechanical Tower
+					case 12:
+						if(vars.TheMechTower())
+							return true;
+					break;
+					//Breath of Fate
+					case 13:
+						if(vars.RavagesPortal())
+							return true;
+					break;
+					//Activation Room in Ruin
+					case 14:
+						if(vars.ActivationRuins())
+							return true;
+					break;
+					//Life Upgrade 7
+					case 15:
+						if(vars.WWLU4())
+							return true;
+					break;
+					//The Death of a Sand Wraith
+					case 16:
+						if(vars.SandWraithDead())
+							return true;
+					break;
+					//Death of the Empress
+					case 17:
+						if(vars.KaileenaDead())
+							return true;
+						break;
+					//Exit the Tomb
+					case 18:
+						if(vars.CatacombsExit())
+							return true;
+					break;
+					//The Scorpion Sword
+					case 19:
+						if(vars.ScorpionSword())
+							return true;
+					break;
+					//Life Upgrade 8
+					case 20:
+						if(vars.WWLU2())
+							return true;
+					break;
+					//Life Upgrade 9
+					case 21:
+						if(vars.WWLU3())
+							return true;
+					break;
+					//The Water Sword
+					case 22:
+						if(vars.WaterSword())
+							return true;
+					break;
+					//The Mask of the Wraith
+					case 23:
+						if(vars.MaskofWraith())
+							return true;
+					break;
+					//The Sand Griffin
+					case 24:
+						if(vars.SandGriffin())
+							return true;
+					break;
+					//Mirrored Fates
+					case 25:
+						if(vars.MirroredFates())
+							return true;
+					break;
+					//A Favor Unknown
+					case 26:
+						if(vars.FavourUnknown())
+							return true;
+					break;
+					//The Library Revisited
+					case 27:
+						if(vars.TheLibrary())
+							return true;
+					break;
+					//The Light Sword
+					case 28:
+						if(vars.LightSword())
+							return true;
+					break;
+					//The Death of a Prince
+					case 29:
+						if(vars.DeathofaPrince())
+							return true;
+					break;
+					//The End
+					case 30:
+						if(vars.WWEnd()){
+							vars.activeGame = 0;
+							vars.offset += 31;
+							return true;
+						}
+					break;
+				}
+			break;
+		}
+		break;
+		
+		case 6: //T2T
+		switch(timer.Run.GetExtendedCategoryName())
+		{
+			case "Sands Trilogy (Any%, Standard)":
+			case "Anthology":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Ramparts
+					case 0:
+						if(vars.TheRamparts())
+							return true;
+					break;
+					//The Harbor District
+					case 1:	
+						if(vars.HarbourDistrict())
+							return true;	
+					break;
+					//The Palace
+					case 2:	
+						if(vars.ThePalace())
+							return true;	
+					break;
+					//Exit Sewers
+					case 3:	
+						if(vars.TheSewerz())
+							return true;	
+					break;
+					//Exit Lower City
+					case 4:	
+						if(vars.LowerCity())
+							return true;	
+					break;
+					//The Lower City Rooftops
+					case 5:	
+						if(vars.LCRooftopZips())
+							return true;	
+					break;
+					//Exit Temple Rooftops
+					case 6:	
+						if(vars.TheTempleRooftops())
+							return true;	
+					break;
+					//Exit Marketplace
+					case 7:	
+						if(vars.TheMarketplace())
+							return true;	
+					break;
+					//Exit Plaza
+					case 8:	
+						if(vars.ThePlaza())
+							return true;	
+					break;
+					//Exit City Gardens
+					case 9:	
+						if(vars.CityGarderns())
+							return true;	
+					break;
+					//Exit Royal Workshop
+					case 10:	
+						if(vars.RoyalWorkshop())
+							return true;	
+					break;
+					//The King's Road
+					case 11:	
+						if(vars.KingzRoad())
+							return true;	
+					break;
+					//Exit Structure's Mind
+					case 12:	
+						if(vars.StructurezMind())
+							return true;	
+					break;
+					//Exit Labyrinth
+					case 13:	
+						if(vars.TheLabyrinth())
+							return true;	
+					break;
+					//The Towers
+					case 14:	
+						if(vars.UpperTower())
+							return true;	
+					break;
+					//The Terrace
+					case 15:	
+						if(vars.TheTerrace())
+							return true;
+					break;
+					//The Mental Realm
+					case 16:	
+						if(vars.MentalRealm()){
+							vars.activeGame = 0;
+							vars.offset += 17;
+							return true;
+						}
+					break;
+				}
+			break;
+			case "Sands Trilogy (Any%, Zipless)":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Ramparts
+					case 0:
+						if(vars.TheRamparts())
+							return true;
+					break;
+					//The Harbor District
+					case 1:	
+						if(vars.HarbourDistrict())
+							return true;	
+					break;
+					//The Palace
+					case 2:	
+						if(vars.ThePalace())
+							return true;	
+					break;
+					//The Trapped Hallway
+					case 3:
+						if(vars.TrappedHallway())
+							return true;
+					break;
+					//The Sewers
+					case 4:
+						if(vars.TheSewers())
+							return true;
+					break;
+					//The Fortress
+					case 5:
+						if(vars.TheFortress())
+							return true;
+					break;
+					//The Lower City
+					case 6:
+						if(vars.LowerCity())
+							return true;
+					break;
+					//The Lower City Rooftops
+					case 7:
+						if(vars.LowerCityRooftops())
+							return true;
+					break;
+					//The Balconies
+					case 8:
+						if(vars.TheBalconies())
+							return true;
+					break;
+					//The Dark Alley
+					case 9:
+						if(vars.DarkAlley())
+							return true;
+					break;
+					//The Temple Rooftops()
+					case 10:
+						if(vars.TheTempleRooftops())
+							return true;
+					break;
+					//Exit Marketplace
+					case 11:
+						if(vars.TheMarketplace())
+							return true;
+					break;
+					//The Market District
+					case 12:
+						if(vars.MarketDistrict())
+							return true;
+					break;
+					//Exit Plaza
+					case 13:
+						if(vars.ThePlaza())
+							return true;
+					break;
+					//The Upper City
+					case 14:
+						if(vars.TheUpperCity())
+							return true;
+					break;
+					//The City Garderns
+					case 15:
+						if(vars.CityGarderns())
+							return true;
+					break;
+					//The Promenade
+					case 16:
+						if(vars.ThePromenade())
+							return true;
+					break;
+					//The Royal Workshop
+					case 17:
+						if(vars.RoyalWorkshop())
+							return true;
+					break;
+					//The King's Road
+					case 18:
+						if(vars.KingsRoad())
+							return true;
+					break;
+					//The Palace Entrance
+					case 19:
+						if(vars.PalaceEntrance())
+							return true;
+					break;
+					//The Hanging Gardens
+					case 20:
+						if(vars.HangingGardens())
+							return true;
+					break;
+					//The Structure's Mind
+					case 21:
+						if(vars.WellofZipless())
+							return true;
+					break;
+					//The Well of Ancestors
+					case 22:
+						if(vars.WellofAncestors())
+							return true;
+					break;
+					//The Labyrinth
+					case 23:
+						if(vars.TheLabyrinth())
+							return true;
+					break;
+					//The Underground Cave
+					case 24:
+						if(vars.UndergroundCaveZipnt())
+							return true;
+					break;
+					//The Lower Tower
+					case 25:
+						if(vars.LowerTower())
+							return true;
+					break;
+					//The Middle and Upper Towers
+					case 26:
+						if(vars.UpperTower())
+							return true;
+					break;
+					//The Death of the Vizier
+					case 27:
+						if(vars.TheTerrace())
+							return true;
+					break;
+					//The Mental Realm
+					case 28:	
+						if(vars.MentalRealm()){
+							vars.activeGame = 0;
+							vars.offset += 29;
+							return true;
+						}
+					break;
+				}
+			break;	
+			case "Sands Trilogy (Any%, No Major Glitches)":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Ramparts			
+					case 0:
+						if(vars.TheRamparts())
+							return true;
+					break;
+					//The Harbor District
+					case 1:	
+						if(vars.HarbourDistrict())
+							return true;	
+					break;
+					//The Palace
+					case 2:	
+						if(vars.ThePalace())
+							return true;	
+					break;
+					//The Trapped Hallway
+					case 3:
+						if(vars.TrappedHallway())
+							return true;
+					break;
+					//The Sewers
+					case 4:
+						if(vars.TheSewers())
+							return true;
+					break;
+					//The Fortress			
+					case 5:
+						if(vars.TheFortress())
+							return true;
+					break;
+					//The Lower City			
+					case 6:
+						if(vars.LowerCity())
+							return true;
+					break;
+					//The Lower City Rooftops
+					case 7:
+						if(vars.LowerCityRooftops())
+							return true;
+					break;
+					//The Balconies
+					case 8:
+						if(vars.TheBalconies())
+							return true;
+					break;
+					//The Dark Alley			
+					case 9:
+						if(vars.DarkAlley())
+							return true;
+					break;
+					//The Temple Rooftops
+					case 10:
+						if(vars.TheTempleRooftops())
+							return true;
+					break;
+					//The Temple
+					case 11:
+						if(vars.TheTemple())
+							return true;
+					break; 
+					//The Marketplace
+					case 12:
+						if(vars.TheMarketplace())
+							return true;
+					break;
+					//The Market District			
+					case 13:
+						if(vars.MarketDistrict())
+							return true;
+					break;
+					//The Brothel
+					case 14:
+						if(vars.TheBrothel())
+							return true;
+					break;
+					//The Plaza
+					case 15:
+						if(vars.ThePlaza())
+							return true;
+					break;
+					//The Upper City
+					case 16:
+						if(vars.TheUpperCity())
+							return true;
+					break;
+					//The City Gardens			
+					case 17:
+						if(vars.CityGarderns())
+							return true;
+					break;
+					//The Promenade
+					case 18:
+						if(vars.ThePromenade())
+							return true;
+					break;
+					//The Royal Workshop
+					case 19:
+						if(vars.RoyalWorkshop())
+							return true;
+					break;
+					//The King's Road
+					case 20:
+						if(vars.KingsRoad())
+							return true;
+					break;
+					//The Palace Entrance			
+					case 21:
+						if(vars.PalaceEntrance())
+							return true;
+					break;
+					//The Hanging Gardens
+					case 22:
+						if(vars.HangingGardens())
+							return true;
+					break;
+					//The Structure's Mind
+					case 23:
+						if(vars.StructuresMind())
+							return true;
+					break;
+					//The Well of Ancestors
+					case 24:
+						if(vars.WellofAncestors())
+							return true;
+					break;
+					//The Labyrinth
+					case 25:
+						if(vars.TheLabyrinth())
+							return true;
+					break;
+					//The Underground Cave
+					case 26:
+						if(vars.UndergroundCave())
+							return true;
+					break;
+					//The Lower Tower
+					case 27:
+						if(vars.LowerTower())
+							return true;
+					break;
+					//The Middle Tower
+					case 28:
+						if(vars.MiddleTower())
+							return true;
+					break;			
+						//The Upper Tower
+					case 29:
+						if(vars.UpperTower())
+							return true;
+					break;
+					//The Terrace
+					case 30:	
+						if(vars.TheTerrace())
+							return true;
+					break;
+					//The Mental Realm			
+					case 31:	
+						if(vars.MentalRealm()){
+							vars.activeGame = 0;
+							vars.offset += 32;
+							return true;
+						}
+					break;
+				}
+			break;
+			case "Sands Trilogy (Completionist, Standard)":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Ramparts
+					case 0:
+						if(vars.TheRamparts())
+							return true;
+					break;
+					//The Harbour District
+					case 1:	
+						if(vars.HarbourDistrict())
+							return true;	
+					break;
+					//The Palace
+					case 2:	
+						if(vars.ThePalace())
+							return true;	
+					break;
+					//Life Upgrade 1
+					case 3:	
+						if(vars.T2TLU1())
+							return true;	
+					break;
+					//Exit Lower City
+					case 4:	
+						if(vars.LowerCity())
+							return true;	
+					break;
+					//Life Upgrade 2
+					case 5:	
+						if(vars.T2TLU2())
+							return true;	
+					break;	
+					//The Arena
+					case 6:	
+						if(vars.LCRooftopZips())
+							return true;	
+					break;
+					//The Temple Rooftops Exit
+					case 7:	
+						if(vars.TheTempleRooftops())
+							return true;	
+					break;
+					//Life Upgrade 3
+					case 8:	
+						if(vars.T2TLU3())
+							return true;	
+					break;
+					//The Marketplace
+					case 9:	
+						if(vars.TheMarketplace())
+							return true;	
+					break;
+					//Exit Plaza
+					case 10:	
+						if(vars.ThePlaza())
+							return true;	
+					break;
+					//Life Upgrade 4
+					case 11:	
+						if(vars.T2TLU4())
+							return true;	
+					break;
+					//The Royal Workshop
+					case 12:	
+						if(vars.RoyalWorkshop())
+							return true;	
+					break;
+					//The King's Road
+					case 13:	
+						if(vars.KingzRoad())
+							return true;	
+					break;
+					//Life Upgrade 5
+					case 14:	
+						if(vars.T2TLU5)
+							return true;	
+					break;
+					//Exit Structure's Mind
+					case 15:	
+						if(vars.StructurezMind())
+							return true;	
+					break;
+					//Exit Labyrinth
+					case 16:	
+						if(vars.TheLabyrinth())
+							return true;	
+					break;
+					//Life Upgrade 6
+					case 17:	
+						if(vars.T2TLU6())
+							return true;	
+					break;
+					//The Upper Tower
+					case 18:	
+						if(vars.UpperTower())
+							return true;	
+					break;
+					//The Terrace
+					case 19:	
+						if(vars.TheTerrace())
+							return true;
+					break;
+					//The Mental Realm
+					case 20:	
+						if(vars.MentalRealm()){
+							vars.activeGame = 0;
+							vars.offset += 21;
+							return true;
+						}
+					break;
+				}
+			break;
+			case "Sands Trilogy (Completionist, Zipless)":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Ramparts
+					case 0:
+						if(vars.TheRamparts())
+							return true;
+					break;
+					//The Harbour District
+					case 1:	
+						if(vars.HarbourDistrict())
+							return true;	
+					break;
+					//The Palace
+					case 2:	
+						if(vars.ThePalace())
+							return true;	
+						break;
+					//The Trapped Hallway
+					case 3:
+						if(vars.TrappedHallway())
+							return true;
+						break;
+					//Life Upgrade 1
+					case 4:	
+						if(vars.T2TLU1())
+							return true;	
+						break;
+					//The Fortress
+					case 5:
+						if(vars.TheFortress())
+							return true;
+						break;
+					//The Lower City
+					case 6:
+						if(vars.LowerCity())
+							return true;
+						break;
+					//Life Upgrade 2
+					case 7:	
+						if(vars.T2TLU2())
+							return true;	
+						break;	
+					//The Arena
+					case 8:
+						if(vars.LowerCityRooftops())
+							return true;
+						break;
+					//The Balconies
+					case 9:
+						if(vars.TheBalconies())
+							return true;
+						break;
+					//The Dark Alley
+					case 10:
+						if(vars.DarkAlley())
+							return true;
+						break;
+					//The Temple Rooftops
+					case 11:
+						if(vars.TheTempleRooftops())
+							return true;
+						break;
+					//Life Upgrade 3
+					case 12:	
+						if(vars.T2TLU3())
+							return true;	
+						break;
+					//The Marketplace
+					case 13:
+						if(vars.TheMarketplace())
+							return true;
+						break;
+					//The Market District
+					case 14:
+						if(vars.MarketDistrict())
+							return true;
+						break;
+					//Exit Plaza
+					case 15:
+						if(vars.ThePlaza())
+							return true;
+						break;
+					//The Upper City
+					case 16:
+						if(vars.TheUpperCity())
+							return true;
+						break;
+					//Life Upgrade 4
+					case 17:	
+						if(vars.T2TLU4())
+							return true;	
+						break;
+					//The Promenade
+					case 18:
+						if(vars.ThePromenade())
+							return true;
+						break;
+					//The Royal Workshop
+					case 19:
+						if(vars.RoyalWorkshop())
+							return true;
+						break;
+					//The King's Road
+					case 20:
+						if(vars.KingsRoad())
+							return true;
+						break;
+					//Life Upgrade 5
+					case 21:	
+						if(vars.T2TLU5())
+							return true;	
+						break;
+					//The Hanging Gardens
+					case 22:
+						if(vars.HangingGardens())
+							return true;
+						break;
+					//The Structures Mind
+					case 23:
+						if(vars.WellofZipless())
+							return true;
+						break;
+					//The Well of Ancestors
+					case 24:
+						if(vars.WellofAncestors())
+							return true;
+						break;
+					//The Labyrinth
+					case 25:
+						if(vars.TheLabyrinth())
+							return true;
+						break;
+					//The Underground Cave
+					case 26:
+						if(vars.UndergroundCaveZipnt())
+							return true;
+						break;
+					//The Lower Tower
+					case 27:
+						if(vars.LowerTower())
+							return true;
+						break;
+					//Life Upgrade 6
+					case 28:	
+						if(vars.T2TLU6())
+							return true;	
+						break;
+					//The Upper Tower
+					case 29:
+						if(vars.UpperTower())
+							return true;
+						break;
+					//The Terrace
+					case 30:
+						if(vars.TheTerrace())
+							return true;
+						break;
+					//The Mental Realm
+					case 31:	
+						if(vars.MentalRealm()){
+							vars.activeGame = 0;
+							vars.offset += 32;
+							return true;
+						}
+					break;
+				}
+			break;
+			case "Sands Trilogy (Completionist, No Major Glitches)":
+				switch (timer.CurrentSplitIndex - (short)vars.offset)
+				{
+					//The Ramparts
+					case 0:
+						if(vars.TheRamparts())
+							return true;
+					break;
+					//The Harbour District
+					case 1:	
+						if(vars.HarbourDistrict())
+							return true;	
+					break;
+					//The Palace
+					case 2:	
+						if(vars.ThePalace())
+							return true;	
+					break;
+					//The Trapped Hallway
+					case 3:
+						if(vars.TrappedHallway())
+							return true;
+					break;
+					//Life Upgrade 1
+					case 4:	
+						if(vars.T2TLU1())
+							return true;	
+					break;
+					//The Fortress
+					case 5:
+						if(vars.TheFortress())
+							return true;
+					break;
+					//The Lower City
+					case 6:
+						if(vars.LowerCity())
+							return true;
+					break;
+					//Life Upgrade 2
+					case 7:	
+						if(vars.T2TLU2())
+							return true;	
+					break;	
+					//The Arena
+					case 8:
+						if(vars.LowerCityRooftops())
+							return true;
+					break;
+					//The Balconies
+					case 9:
+						if(vars.TheBalconies())
+							return true;
+					break;
+					//The Dark Alley
+					case 10:
+						if(vars.DarkAlley())
+							return true;
+					break;
+					//The Temple Rooftops
+					case 11:
+						if(vars.TheTempleRooftops())
+							return true;
+					break;
+					//Life Upgrade 3
+					case 12:	
+						if(vars.T2TLU3())
+							return true;	
+					break;
+					//The Marketplace
+					case 13:
+						if(vars.TheMarketplace())
+							return true;
+					break;
+					//The Market District
+					case 14:
+						if(vars.MarketDistrict())
+							return true;
+					break;
+					//The Brothel
+					case 15:
+						if(vars.TheBrothel())
+							return true;
+					break;
+					//The Plaza
+					case 16:
+						if(vars.ThePlaza())
+							return true;
+					break;
+					//The Upper City
+					case 17:
+						if(vars.TheUpperCity())
+							return true;
+					break;
+					//Life Upgrade 4
+					case 18:	
+						if(vars.T2TLU4())
+							return true;	
+					break;
+					//The Promenade
+					case 19:
+						if(vars.ThePromenade())
+							return true;
+					break;
+					//The Royal Workshop
+					case 20:
+						if(vars.RoyalWorkshop())
+							return true;
+					break;
+					//The King's Road
+					case 21:
+						if(vars.KingsRoad())
+							return true;
+					break;
+					//Life Upgrade 5
+					case 22:	
+						if(vars.T2TLU5())
+							return true;	
+					break;
+					//The Hanging Gardens
+					case 23:
+						if(vars.HangingGardens())
+							return true;
+					break;
+					//The Structure's Mind
+					case 24:
+						if(vars.StructuresMind())
+							return true;
+					break;
+					//The Well of Ancestors
+					case 25:
+						if(vars.WellofAncestors())
+							return true;
+					break;
+					//The Labyrinth
+					case 26:
+						if(vars.TheLabyrinth())
+							return true;
+					break;
+					//The Underground Cave
+					case 27:
+						if(vars.UndergroundCave())
+							return true;
+					break;
+					//The Lower Tower
+					case 28:
+						if(vars.LowerTower())
+							return true;
+					break;
+					//Life Upgrade 6
+					case 29:	
+						if(vars.T2TLU6())
+							return true;	
+					break;
+					//The Upper Tower
+					case 30:
+						if(vars.UpperTower())
+							return true;
+					break;
+					//The Terrace
+					case 31:	
+						if(vars.TheTerrace())
+							return true;
+					break;
+					//The Mental Realm
+					case 32:	
+						if(vars.MentalRealm()){
+							vars.activeGame = 0;
+							vars.offset += 33;
+							return true;
+						}
+					break;
+				}
+			break;
+		}
+		break;
+
+		case 7: //2k8
+		if(!vars.startUp2k8)
+		{
+			vars.kill = false;
+			vars.seedGet = false;
+			vars.startUp2k8 = true;
+			vars.xTarget = 0;
+			vars.yTarget = 0;
+			vars.zTarget = 0;
+		}
+		//Setting kill to true any time you exit combat:
+		if(old.combat == 2 && current.combat == 0)
+		{
+			vars.kill = true;
+		}
+		//Setting seedGet to true any time you collect a seed.
+		if(current.seedCount == old.seedCount+1)
+		{
+			vars.seedGet = true;
+		}
+			//In the case of each split, looking for qualifications to complete the split. There are three kinds of splits in this script.
+			//Location Based: If you're inside the outlined zone, the split fires.
+			//Seed Based: If you're inside the outlined zone AND collect a seed, the split fires.
+			//Combat Based: If you're inside the outlined zone AND exit combat, the split fires.
+		switch (timer.CurrentSplitIndex - (short)vars.offset)
+		{
 			//First Fight Skip			
 			case 0: 
-				if (current.zPos2k8 >= -31 && current.zPos2k8 <= -28 && current.yPos2k8 >= -331)
+				if (vars.FirstFightSkip())
 					return true;
 				break;
 			//The Canyon
 			case 1: 
-				if (current.xPos2k8 <= -200 && current.xPos2k8 >= -208 && current.yPos2k8 <= -27.5 && current.yPos2k8 >= -38 && current.zPos2k8 >= -511)
+				if (vars.Canyon())
 					return true;
-				break;
+			break;
 			//King's Gate
 			case 2:
-				vars.xTarget = -538.834;
-				vars.yTarget = -67.159;
-				vars.zTarget = 12.732;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(-538.834, -67.159, 12.732))
 					return true;
-				break;
+			break;
 			//Sun Temple
 			case 3:
-				vars.xTarget = -670.471;
-				vars.yTarget = -56.147;
-				vars.zTarget = 16.46;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(-670.471, -56.147, 16.46))
 					return true;
-				break;
+			break;
 			//Marshalling Grounds
 			case 4:
-				vars.xTarget = -806.671;
-				vars.yTarget = 112.803;
-				vars.zTarget = 21.645;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(-806.671, 112.803, 21.645))
 					return true;
-				break;
+			break;
 			//Windmills
 			case 5:
-				vars.xTarget = -597.945;
-				vars.yTarget = 209.241;
-				vars.zTarget = 23.339;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(-597.945, 209.241, 23.339))
 					return true;
-				break;
+			break;
 			//Martyrs' Tower
 			case 6:
-				vars.xTarget = -564.202;
-				vars.yTarget = 207.312;
-				vars.zTarget = 22;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(-564.202, 207.312, 22))
 					return true;
-				break;					
+			break;					
 			//MT -> MG
 			case 7:
-				vars.xTarget = -454.824;
-				vars.yTarget = 398.571;
-				vars.zTarget = 27.028;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(-454.824, 398.571, 27.028))
 					return true;
-				break;
+			break;
 			//Machinery Ground
 			case 8:
-				vars.xTarget = -361.121;
-				vars.yTarget = 480.114;
-				vars.zTarget = 12.928;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(-361.121, 480.114, 12.928))
 					return true;
-				break;
+			break;
 			//Heaven's Stair
 			case 9:
-				vars.xTarget = -85.968;
-				vars.yTarget = 573.338;
-				vars.zTarget = 30.558;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(-85.968, 573.338, 30.558))
 					return true;
-				break;
+			break;
 			//Spire of Dreams
 			case 10:
-				vars.xTarget = -28.088;
-				vars.yTarget = 544.298;
-				vars.zTarget = 34.942;
-				if(current.xPos2k8 <= (vars.xTarget+3) && current.xPos2k8 >= (vars.xTarget-3) && current.yPos2k8 <= (vars.yTarget+3) && current.yPos2k8 >= (vars.yTarget-3) && current.zPos2k8 <= (vars.zTarget+3) && current.zPos2k8 >= (vars.zTarget-3) && vars.seedGet)
+				if(vars.Split2k8(-28.088, 544.298, 34.942))
 					return true;
-				break;
+			break;
 			//Reservoir
 			case 11:
-				vars.xTarget = -150.082;
-				vars.yTarget = 406.606;
-				vars.zTarget = 34.673;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(-150.082, 406.606, 34.673))
 					return true;
-				break;
+			break;
 			//Construction Yard
 			case 12:
-				vars.xTarget = -151.121;
-				vars.yTarget = 303.514;
-				vars.zTarget = 27.95;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(-151.121, 303.514, 27.95))
 					return true;
-				break;
+			break;
 			//Cauldron
 			case 13: 
-				vars.xTarget = 107.123;
-				vars.yTarget = 183.394;
-				vars.zTarget = -5.628;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(107.123, 183.394, -5.628))
 					return true;
-				break;
+			break;
 			//Cavern
 			case 14:
-				vars.xTarget = 251.741;
-				vars.yTarget = 65.773;
-				vars.zTarget = -13.616;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(251.741, 65.773, -13.616))
 					return true;
-				break;
+			break;
 			//City Gate
 			case 15:
-				vars.xTarget = 547.488;
-				vars.yTarget = 45.41;
-				vars.zTarget = -27.107;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(547.488, 45.41, -27.107))
 					return true;
-				break;
+			break;
 			//Tower of Ormazd
 			case 16:
-				vars.xTarget = 609.907;
-				vars.yTarget = 61.905;
-				vars.zTarget = -35.001;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(609.907, 61.905,-35.001))
 					return true;
-				break;
+			break;
 			//Queen's Tower
 			case 17:
-				vars.xTarget = 637.262;
-				vars.yTarget = 27.224;
-				vars.zTarget = -28.603;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(637.262, 27.224, -28.603))
 					return true;
-				break;
+			break;
 			//The Temple (Arrive)
 			case 18:
-				if(current.yPos2k8 <= -234.5 && current.zPos2k8 >= -37 && current.xPos2k8 >= -0.5 && current.xPos2k8 <= 12)
+				if(vars.TempleArrive())
 					return true;
-				break;
+			break;
 			//Double Jump
 			case 19:
-				if(current.xPos2k8 <= 6.19 && current.xPos2k8 >= 6.12 && current.yPos2k8 >= -233.49 && current.yPos2k8 <= -225.18 && current.zPos2k8 >= -33.01 && current.zPos2k8 <= -32.5)
+				if(vars.DoubleJump())
 					return true;
-				break;
+			break;
 			//Wings of Ormazd
 			case 20:
-				if(current.xPos2k8 >= 6.6 && current.xPos2k8 <= 6.8 && current.yPos2k8 >= -171.8 && current.yPos2k8 <= -171.6 && current.zPos2k8 == -49)
+				if(vars.YellowPlate())
 					return true;
-				break;
+			break;
 			//The Warrior
 			case 21:
-				vars.xTarget = 1070.478;
-				vars.yTarget = 279.147;
-				vars.zTarget = -29.571;
-				if(current.xPos2k8 <= (vars.xTarget+23) && current.xPos2k8 >= (vars.xTarget-23) && current.yPos2k8 <= (vars.yTarget+23) && current.yPos2k8 >= (vars.yTarget-23) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.kill)
+				if(vars.Boss2k8(1070.478, 279.147, -29.571, 23))
 					return true;
-				break;
+			break;
 			//Heal Coronation Hall
 			case 22:
-				if(current.xPos2k8 >= 328 && current.xPos2k8 <= 352 && current.yPos2k8 >= 570 && current.yPos2k8 <= 595 && current.zPos2k8 >= 32.4 && vars.kill)
+				if(vars.HealCoronation())
 					return true;
-				break;
+			break;
 			//Coronation Hall
 			case 23:
-				vars.xTarget = 264.497;
-				vars.yTarget = 589.336;
-				vars.zTarget = 38.67;
-				if(current.xPos2k8 <= (vars.xTarget+2) && current.xPos2k8 >= (vars.xTarget-2) && current.yPos2k8 <= (vars.yTarget+2) && current.yPos2k8 >= (vars.yTarget-2) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.seedGet)
+				if(vars.Split2k8(264.497, 589.336, 38.67))
 					return true;
-				break;
+			break;
 			//Heal Heaven's Stair
 			case 24:
-				if(current.xPos2k8 >= -322 && current.xPos2k8 <= -260 && current.yPos2k8 >= 628 && current.yPos2k8 <= 675 && current.zPos2k8 >= 99.2 && vars.kill)
+				if(vars.HealHeavensStair())
 					return true;
-				break;
+			break;
 			//The Alchemist
 			case 25:
-				vars.xTarget = -296.593;
-				vars.yTarget = 697.233;
-				vars.zTarget = 296.199;
-				if(current.xPos2k8 <= (vars.xTarget+10) && current.xPos2k8 >= (vars.xTarget-10) && current.yPos2k8 <= (vars.yTarget+10) && current.yPos2k8 >= (vars.yTarget-10) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.kill)
+				if(vars.Boss2k8(-296.593, 697.233, 296.199, 10))
 					return true;
-				break;
+			break;
 			//The Hunter
 			case 26:
-				vars.xTarget = -929.415;
-				vars.yTarget = 320.888;
-				vars.zTarget = -89.038;
-				if(current.xPos2k8 <= (vars.xTarget+10) && current.xPos2k8 >= (vars.xTarget-10) && current.yPos2k8 <= (vars.yTarget+10) && current.yPos2k8 >= (vars.yTarget-10) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.kill)
+				if(vars.Boss2k8(-929.415, 320.888, -89.038, 10))
 					return true;
-				break;
+			break;
 			//Hand of Ormazd
 			case 27:
-				if(old.zPos2k8 <= 0 && current.zPos2k8 >= 32.4)
+				if(vars.BluePlate())
 					return true;
-				break;
+			break;
 			//The Concubine
 			case 28:
-				vars.xTarget = 352.792;
-				vars.yTarget = 801.051;
-				vars.zTarget = 150.260;
-				if(current.xPos2k8 <= (vars.xTarget+26) && current.xPos2k8 >= (vars.xTarget-26) && current.yPos2k8 <= (vars.yTarget+26) && current.yPos2k8 >= (vars.yTarget-26) && current.zPos2k8 <= (vars.zTarget+2) && current.zPos2k8 >= (vars.zTarget-2) && vars.kill)
+				if(vars.Boss2k8(352.792, 801.051, 150.260, 26))
 					return true;
-				break;
+			break;
 			//The King
 			case 29:
-				if(current.xPos2k8 <= 20 && current.xPos2k8 >= -10 && current.yPos2k8 >= -375 && current.yPos2k8 <= -355 && current.zPos2k8 <= -32 && vars.kill)
+				if(vars.TheKing())
 					return true;
-				break;
+			break;
 			//The God
 			case 30:
-				if(current.xPos2k8 <= 7.131 && current.xPos2k8 >= 7.129 && current.yPos2k8 >= -401.502 && current.yPos2k8 <= -401.5 && current.zPos2k8 >= -31.4)
+				if(vars.TheGod())
 					return true;
-				break;
+			break;
 			//Resurrection
 			case 31:
-				if(current.xPos2k8 <= 5.566 && current.xPos2k8 >= 5.562 && current.yPos2k8 >= -222.745 && current.yPos2k8 <= -222.517 && current.zPos2k8 >= -33.1)
+				if(vars.Resurrection())
 					return true;
-				break;
-			}
-			//Unmarking flags at the end of each cycle.
-				vars.kill = false;
-				vars.seedGet = true;
-		//Setup 7
-			if (timer.CurrentSplitIndex == 122)
-			{
-				if(current.xPos <= 268.93 && current.xPos >= 268.929 && current.gameState == 4){
-					return true;
-				}
-			}
-		//TFS
-			//Initializing flags & targets in the event the start function wasn't used.
-			if(!vars.startUp)
-			{
-				vars.cpGet = false;
-				vars.startUptfs = true;
-				vars.xTarget2 = 0;
-				vars.yTarget2 = 0;
-				vars.zTarget2 = 0;
-			}
-			//Setting cpGet to true any time you acquire a checkpoint.
-			if(current.cpIcon >= 1)
-			{
-				vars.cpGet = true;
-			}
-			//In the case of each split, looking for qualifications to complete the split.
-			switch (timer.CurrentSplitIndex - 123)
-			{
+			break;
+		}
+		//Unmarking flags at the end of each cycle.
+			vars.kill = false;
+			vars.seedGet = false;
+		break;
+		
+		case 8: //TFS
+		//Initializing flags & targets in the event the start function wasn't used.
+		if(!vars.startUptfs)
+		{
+			vars.cpGet = false;
+			vars.startUptfs = true;
+			vars.xTarget2 = 0;
+			vars.yTarget2 = 0;
+			vars.zTarget2 = 0;
+		}
+		//Setting cpGet to true any time you acquire a checkpoint.
+		if(current.cpIcon >= 1)
+		{
+			vars.cpGet = true;
+		}
+		//In the case of each split, looking for qualifications to complete the split.
+		switch (timer.CurrentSplitIndex - (short)vars.offset)
+		{
 			case 0: //Malik
-				vars.xTarget2 = -37;
-				vars.yTarget2 = 231;
-				vars.zTarget2 = -148;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(-37, 231, -148))
 					return true;
-				break;
+			break;
 			//The Power of Time
 			case 1:
-				vars.xTarget2 = 597;
-				vars.yTarget2 = -217;
-				vars.zTarget2 = -2;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(597, -217, -2))
 					return true;
-					break;
+			break;
 			//The Works
 			case 2:
-				vars.xTarget2 = -513;
-				vars.yTarget2 = -408;
-				vars.zTarget2 = -167;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(-513, -408, -167))
 					return true;
-				break;
+			break;
 			//The Courtyard
 			case 3:
-				vars.xTarget2 = -434;
-				vars.yTarget2 = -533;
-				vars.zTarget2 = -127;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(-434, -533, -127))
 					return true;
-				break;
+			break;
 			//The Power of Water
 			case 4:
-				vars.xTarget2 = 519;
-				vars.yTarget2 = -227;
-				vars.zTarget2 = 6;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(519, -227, 6))
 					return true;
-				break;
+			break;
 			//The Sewers
 			case 5:
-				vars.xTarget2 = -228;
-				vars.yTarget2 = 245;
-				vars.zTarget2 = 20;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(-228, 245, 20))
 					return true;
-				break;
+			break;
 			//Ratash
 			case 6:
-				vars.xTarget2 = -406;
-				vars.yTarget2 = 403;
-				vars.zTarget2 = 64;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(-406, 403, 64))
 					return true;
-				break;
+			break;
 			//The Observatory
 			case 7:
-				vars.xTarget2 = -510;
-				vars.yTarget2 = 460;
-				vars.zTarget2 = 104;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(-510, 460, 104))
 					return true;
-				break;
+			break;
 			//The Power of Light
 			case 8:
-				vars.xTarget2 = 540;
-				vars.yTarget2 = -219;
-				vars.zTarget2 = 6;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(540, -219, 6))
 					return true;
-				break;
+			break;
 			//The Gardens
 			case 9:
-				vars.xTarget2 = 240;
-				vars.yTarget2 = -227;
-				vars.zTarget2 = -114;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(240, -227, -114))
 					return true;
-				break;
+			break;
 			//Possession
 			case 10:
-				vars.xTarget2 = 89;
-				vars.yTarget2 = -477;
-				vars.zTarget2 = -83;
-				if(current.xPostfs <= (vars.xTarget2+1) && current.xPostfs >= (vars.xTarget2-1) && current.yPostfs <= (vars.yTarget2+1) && current.yPostfs >= (vars.yTarget2-1) && current.zPostfs <= (vars.zTarget2+1) && current.zPostfs >= (vars.zTarget2-1) && vars.cpGet)
+				if(vars.SplitTFSloc(89, -477, -83))
 					return true;
-				break;
+			break;
 			//The Power of Knowledge
 			case 11:
-				vars.xTarget2 = 548;
-				vars.yTarget2 = -217;
-				vars.zTarget2 = 4;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(548, -217, 4))
 					return true;
-				break;
+			break;
 			//The Reservoir
 			case 12:
-				vars.xTarget2 = 644;
-				vars.yTarget2 = 385;
-				vars.zTarget2 = -63;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(644, 385, -63))
 					return true;
-				break;
+			break;
 			//The Power of Razia
 			case 13:
-				vars.xTarget2 = 430;
-				vars.yTarget2 = 268;
-				vars.zTarget2 = -99;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(430, 268, -99))
 					return true;
-				break;
+			break;
 			//The Climb
 			case 14:
-				vars.xTarget2 = 912;
-				vars.yTarget2 = 256;
-				vars.zTarget2 = -56;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(912, 256, -56))
 					return true;
-				break;
+			break;
 			//The Storm
 			case 15:
-				vars.xTarget2 = 948;
-				vars.yTarget2 = -284;
-				vars.zTarget2 = 86;
-				if(current.xPostfs <= (vars.xTarget2+10) && current.xPostfs >= (vars.xTarget2-10) && current.yPostfs <= (vars.yTarget2+10) && current.yPostfs >= (vars.yTarget2-10) && current.zPostfs <= (vars.zTarget2+10) && current.zPostfs >= (vars.zTarget2-10) && vars.cpGet)
+				if(vars.SplitTFScp(948, -284, 86))
 					return true;
-				break;
+			break;
 			//The End
 			case 16:
-				vars.xTarget2 = 821;
-				vars.yTarget2 = -257;
-				vars.zTarget2 = -51;
-				if(current.xPostfs <= (vars.xTarget2+1) && current.xPostfs >= (vars.xTarget2-1) && current.yPostfs <= (vars.yTarget2+1) && current.yPostfs >= (vars.yTarget2-1) && current.zPostfs <= (vars.zTarget2+1) && current.zPostfs >= (vars.zTarget2-1))
+				if(vars.SplitTFSloc(821, -257, -51))
 					return true;
-				break;
-			}
-			//Unmarking flags at the end of each cycle.
-			vars.cpGet = false;
+			break;
+		}
+		//Unmarking flags at the end of each cycle.
+		vars.cpGet = false;
 		break;
 	}
 }
