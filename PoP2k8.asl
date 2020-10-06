@@ -50,7 +50,7 @@ vars.SplitSeed = (Func <float, float, float, bool>)((float xTarg, float yTarg, f
 			return true;		
 		return false;
 	});
-	vars.SplitBoss = (Func <float, float, float, short, bool>)((float xTarg, float yTarg, float zTarg, short size) => {		//This is a standard type of split which occurs when the prince is within a platform and has just killed a boss
+	vars.SplitBoss = (Func <float, float, float, float, bool>)((float xTarg, float yTarg, float zTarg, float size) => {		//This is a standard type of split which occurs when the prince is within a platform and has just killed a boss
 		if(current.xPos <= (xTarg+size) && current.xPos >= (xTarg-size) &&
 		   current.yPos <= (yTarg+size) && current.yPos >= (yTarg-size) &&
 		   current.zPos <= (zTarg+2) && current.zPos >= (zTarg-2) &&
@@ -163,166 +163,38 @@ vars.SplitSeed = (Func <float, float, float, bool>)((float xTarg, float yTarg, f
 
 	switch (timer.CurrentSplitIndex)
 	{
-		//First Fight Skip			
-		case 0: 
-			if(vars.FirstFightSkip())
-				return true;
-		break;
-		//The Canyon
-		case 1: 
-			if(vars.Canyon())
-				return true;
-		break;
-		//King's Gate
-		case 2:
-			if(vars.SplitSeed((float)-538.834, (float)-67.159, (float)12.732))
-				return true;
-		break;
-		//Sun Temple
-		case 3:
-			if(vars.SplitSeed((float)-670.471, (float)-56.147, (float)16.46))
-				return true;
-		break;
-		//Marshalling Grounds
-		case 4:
-			if(vars.SplitSeed((float)-806.671, (float)112.803, (float)21.645))
-				return true;
-		break;
-		//Windmills
-		case 5:
-			if(vars.SplitSeed((float)-597.945, (float)209.241, (float)23.339))
-				return true;
-		break;
-		//Martyrs' Tower
-		case 6:
-			if(vars.SplitSeed((float)-564.202, (float)207.312, (float)22))
-				return true;
-		break;					
-		//MT -> MG
-		case 7:
-			if(vars.SplitSeed((float)-454.824, (float)398.571, (float)27.028))
-				return true;
-		break;
-		//Machinery Ground
-		case 8:
-			if(vars.SplitSeed((float)-361.121, (float)480.114, (float)12.928))
-				return true;
-		break;
-		//Heaven's Stair
-		case 9:
-			if(vars.SplitSeed((float)-85.968, (float)573.338, (float)30.558))
-				return true;
-		break;
-		//Spire of Dreams
-		case 10:
-			if(vars.SplitSeed((float)-28.088, (float)544.298, (float)34.942))
-				return true;
-		break;
-		//Reservoir
-		case 11:
-			if(vars.SplitSeed((float)-150.082, (float)406.606, (float)34.673))
-				return true;
-		break;
-		//Construction Yard
-		case 12:
-			if(vars.SplitSeed((float)-151.121, (float)303.514, (float)27.95))
-				return true;
-		break;
-		//Cauldron
-		case 13: 
-			if(vars.SplitSeed((float)107.123, (float)183.394, (float)-5.628))
-				return true;
-		break;
-		//Cavern
-		case 14:
-			if(vars.SplitSeed((float)251.741, (float)65.773, (float)-13.616))
-				return true;
-		break;
-		//City Gate
-		case 15:
-			if(vars.SplitSeed((float)547.488, (float)45.41, (float)-27.107))
-				return true;
-		break;
-		//Tower of Ormazd
-		case 16:
-			if(vars.SplitSeed((float)609.907, (float)61.905, (float)-35.001))
-				return true;
-		break;
-		//Queen's Tower
-		case 17:
-			if(vars.SplitSeed((float)637.262, (float)27.224, (float)-28.603))
-				return true;
-		break;
-		//The Temple (Arrive)
-		case 18:
-			if(vars.TempleArrive())
-				return true;
-		break;
-		//Double Jump
-		case 19:
-			if(vars.DoubleJump())
-				return true;
-		break;
-		//Wings of Ormazd
-		case 20:
-			if(vars.YellowPlate())
-				return true;
-		break;
-		//The Warrior
-		case 21:
-			if(vars.SplitBoss((float)1070.478, (float)279.147, (float)-29.571, 23))
-				return true;
-		break;
-		//Heal Coronation Hall
-		case 22:
-			if(vars.HealCoronation())
-				return true;
-		break;
-		//Coronation Hall
-		case 23:
-			if(vars.SplitSeed((float)264.497, (float)589.336, (float)38.67))
-				return true;
-		break;
-		//Heal Heaven's Stair
-		case 24:
-			if(vars.HealHeavensStair())
-				return true;
-		break;
-		//The Alchemist
-		case 25:
-			if(vars.SplitBoss((float)-296.593, (float)697.233, (float)296.199, (short)10))
-				return true;
-		break;
-		//The Hunter
-		case 26:
-			if(vars.SplitBoss((float)-929.415, (float)320.888, (float)-89.038, (short)10))
-				return true;
-		break;
-		//Hand of Ormazd
-		case 27:
-			if(vars.BluePlate())
-				return true;
-		break;
-		//The Concubine
-		case 28:
-			if(vars.SplitBoss((float)352.792, (float)801.051, (float)150.260, (short)26))
-				return true;
-		break;
-		//The King
-		case 29:
-			if(vars.TheKing())
-				return true;
-		break;
-		//The God
-		case 30:
-			if(vars.TheGod())
-				return true;
-		break;
-		//Resurrection
-		case 31:
-			if(vars.Resurrection())
-				return true;
-		break;
+		case 0: return vars.FirstFightSkip();									//First Fight Skip	
+		case 1: return vars.Canyon();											//The Canyon
+		case 2: return vars.SplitSeed(-538.834f, -67.159f, 12.732f);			//King's Gate
+		case 3: return vars.SplitSeed(-670.471f, -56.147f, 16.46f);				//Sun Temple
+		case 4: return vars.SplitSeed(-806.671f, 112.803f, 21.645f);			//Marshalling Grounds
+		case 5: return vars.SplitSeed(-597.945f, 209.241f, 23.339f);			//Windmills
+		case 6: return vars.SplitSeed(-564.202f, 207.312f, 22f);				//Martyrs' Tower
+		case 7: return vars.SplitSeed(-454.824f, 398.571f, 27.028f);			//MT -> MG
+		case 8: return vars.SplitSeed(-361.121f, 480.114f, 12.928f);			//Machinery Ground
+		case 9: return vars.SplitSeed(-85.968f, 573.338f, 30.558f);				//Heaven's Stair
+		case 10: return vars.SplitSeed(-28.088f, 544.298f, 34.942f);			//Spire of Dreams
+		case 11: return vars.SplitSeed(-150.082f, 406.606f, 34.673f);			//Reservoir
+		case 12: return vars.SplitSeed(-151.121f, 303.514f, 27.95f);			//Construction Yard
+		case 13: return vars.SplitSeed(107.123f, 183.394f, -5.628f);			//Cauldron
+		case 14: return vars.SplitSeed(251.741f, 65.773f, -13.616f);			//Cavern
+		case 15: return vars.SplitSeed(547.488f, 45.41f, -27.107f);				//City Gate
+		case 16: return vars.SplitSeed(609.907f, 61.905f, -35.001f);			//Tower of Ormazd
+		case 17: return vars.SplitSeed(637.262f, 27.224f, -28.603f);			//Queen's Tower
+		case 18: return vars.TempleArrive();									//The Temple (Arrive)
+		case 19: return vars.DoubleJump();										//Double Jump
+		case 20: return vars.YellowPlate();										//Wings of Ormazd
+		case 21: return vars.SplitBoss(1070.478f, 279.147f, -29.571f, 23f);		//The Warrior
+		case 22: return vars.HealCoronation();									//Heal Coronation Hall
+		case 23: return vars.SplitSeed(264.497f, 589.336f, 38.67f);				//Coronation Hall
+		case 24: return vars.HealHeavensStair();								//Heal Heaven's Stair
+		case 25: return vars.SplitBoss(-296.593f, 697.233f, 296.199f, 10f);		//The Alchemist
+		case 26: return vars.SplitBoss(-929.415f, 320.888f, -89.038f, 10f);		//The Hunter
+		case 27: return vars.BluePlate();										//Hand of Ormazd
+		case 28: return vars.SplitBoss(352.792f, 801.051f, 150.260f, 26f);		//The Concubine
+		case 29: return vars.TheKing();											//The King
+		case 30: return vars.TheGod();											//The God
+		case 31: return vars.Resurrection();									//Resurrection
 	}
 	//Unmarking flags at the end of each cycle.
 		vars.kill = false;
