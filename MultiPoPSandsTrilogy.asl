@@ -3645,92 +3645,92 @@ split
 		{
 			//First Fight Skip			
 			case 0: 
-				if (vars.FirstFightSkip())
-					return true;
-				break;
+			if(vars.FirstFightSkip())
+				return true;
+			break;
 			//The Canyon
 			case 1: 
-				if (vars.Canyon())
+				if(vars.Canyon())
 					return true;
 			break;
 			//King's Gate
 			case 2:
-				if(vars.Split2k8(-538.834, -67.159, 12.732))
+				if(vars.SplitSeed((float)-538.834, (float)-67.159, (float)12.732))
 					return true;
 			break;
 			//Sun Temple
 			case 3:
-				if(vars.Split2k8(-670.471, -56.147, 16.46))
+				if(vars.SplitSeed((float)-670.471, (float)-56.147, (float)16.46))
 					return true;
 			break;
 			//Marshalling Grounds
 			case 4:
-				if(vars.Split2k8(-806.671, 112.803, 21.645))
+				if(vars.SplitSeed((float)-806.671, (float)112.803, (float)21.645))
 					return true;
 			break;
 			//Windmills
 			case 5:
-				if(vars.Split2k8(-597.945, 209.241, 23.339))
+				if(vars.SplitSeed((float)-597.945, (float)209.241, (float)23.339))
 					return true;
 			break;
 			//Martyrs' Tower
 			case 6:
-				if(vars.Split2k8(-564.202, 207.312, 22))
+				if(vars.SplitSeed((float)-564.202, (float)207.312, (float)22))
 					return true;
 			break;					
 			//MT -> MG
 			case 7:
-				if(vars.Split2k8(-454.824, 398.571, 27.028))
+				if(vars.SplitSeed((float)-454.824, (float)398.571, (float)27.028))
 					return true;
 			break;
 			//Machinery Ground
 			case 8:
-				if(vars.Split2k8(-361.121, 480.114, 12.928))
+				if(vars.SplitSeed((float)-361.121, (float)480.114, (float)12.928))
 					return true;
 			break;
 			//Heaven's Stair
 			case 9:
-				if(vars.Split2k8(-85.968, 573.338, 30.558))
+				if(vars.SplitSeed((float)-85.968, (float)573.338, (float)30.558))
 					return true;
 			break;
 			//Spire of Dreams
 			case 10:
-				if(vars.Split2k8(-28.088, 544.298, 34.942))
+				if(vars.SplitSeed((float)-28.088, (float)544.298, (float)34.942))
 					return true;
 			break;
 			//Reservoir
 			case 11:
-				if(vars.Split2k8(-150.082, 406.606, 34.673))
+				if(vars.SplitSeed((float)-150.082, (float)406.606, (float)34.673))
 					return true;
 			break;
 			//Construction Yard
 			case 12:
-				if(vars.Split2k8(-151.121, 303.514, 27.95))
+				if(vars.SplitSeed((float)-151.121, (float)303.514, (float)27.95))
 					return true;
 			break;
 			//Cauldron
 			case 13: 
-				if(vars.Split2k8(107.123, 183.394, -5.628))
+				if(vars.SplitSeed((float)107.123, (float)183.394, (float)-5.628))
 					return true;
 			break;
 			//Cavern
 			case 14:
-				if(vars.Split2k8(251.741, 65.773, -13.616))
+				if(vars.SplitSeed((float)251.741, (float)65.773, (float)-13.616))
 					return true;
 			break;
 			//City Gate
 			case 15:
-				if(vars.Split2k8(547.488, 45.41, -27.107))
+				if(vars.SplitSeed((float)547.488, (float)45.41, (float)-27.107))
 					return true;
 			break;
 			//Tower of Ormazd
 			case 16:
-				if(vars.Split2k8(609.907, 61.905,-35.001))
+				if(vars.SplitSeed((float)609.907, (float)61.905, (float)-35.001))
 					return true;
 			break;
 			//Queen's Tower
 			case 17:
-				if(vars.Split2k8(637.262, 27.224, -28.603))
+				if(vars.SplitSeed((float)637.262, (float)27.224, (float)-28.603))
 					return true;
 			break;
 			//The Temple (Arrive)
@@ -3750,7 +3750,7 @@ split
 			break;
 			//The Warrior
 			case 21:
-				if(vars.Boss2k8(1070.478, 279.147, -29.571, 23))
+				if(vars.SplitBoss((float)1070.478, (float)279.147, (float)-29.571, 23))
 					return true;
 			break;
 			//Heal Coronation Hall
@@ -3760,7 +3760,7 @@ split
 			break;
 			//Coronation Hall
 			case 23:
-				if(vars.Split2k8(264.497, 589.336, 38.67))
+				if(vars.SplitSeed((float)264.497, (float)589.336, (float)38.67))
 					return true;
 			break;
 			//Heal Heaven's Stair
@@ -3770,12 +3770,12 @@ split
 			break;
 			//The Alchemist
 			case 25:
-				if(vars.Boss2k8(-296.593, 697.233, 296.199, 10))
+				if(vars.SplitBoss((float)-296.593, (float)697.233, (float)296.199, (short)10))
 					return true;
 			break;
 			//The Hunter
 			case 26:
-				if(vars.Boss2k8(-929.415, 320.888, -89.038, 10))
+				if(vars.SplitBoss((float)-929.415, (float)320.888, (float)-89.038, (short)10))
 					return true;
 			break;
 			//Hand of Ormazd
@@ -3785,7 +3785,7 @@ split
 			break;
 			//The Concubine
 			case 28:
-				if(vars.Boss2k8(352.792, 801.051, 150.260, 26))
+				if(vars.SplitBoss((float)352.792, (float)801.051, (float)150.260, (short)26))
 					return true;
 			break;
 			//The King
@@ -3828,87 +3828,87 @@ split
 		switch (timer.CurrentSplitIndex - (short)vars.offset)
 		{
 			case 0: //Malik
-				if(vars.SplitTFScp(-37, 231, -148))
+				if(vars.SplitTFScp((short)-37, (short)231, (short)-148))
 					return true;
 			break;
 			//The Power of Time
 			case 1:
-				if(vars.SplitTFScp(597, -217, -2))
+				if(vars.SplitTFScp((short)597, (short)-217, (short)-2))
 					return true;
 			break;
 			//The Works
 			case 2:
-				if(vars.SplitTFScp(-513, -408, -167))
+				if(vars.SplitTFScp((short)-513, (short)-408, (short)-167))
 					return true;
 			break;
 			//The Courtyard
 			case 3:
-				if(vars.SplitTFScp(-434, -533, -127))
+				if(vars.SplitTFScp((short)-434, (short)-533, (short)-127))
 					return true;
 			break;
 			//The Power of Water
 			case 4:
-				if(vars.SplitTFScp(519, -227, 6))
+				if(vars.SplitTFScp((short)519, (short)-227, (short)6))
 					return true;
 			break;
 			//The Sewers
 			case 5:
-				if(vars.SplitTFScp(-228, 245, 20))
+				if(vars.SplitTFScp((short)-228, (short)245, (short)20))
 					return true;
 			break;
 			//Ratash
 			case 6:
-				if(vars.SplitTFScp(-406, 403, 64))
+				if(vars.SplitTFScp((short)-406, (short)403, (short)64))
 					return true;
 			break;
 			//The Observatory
 			case 7:
-				if(vars.SplitTFScp(-510, 460, 104))
+				if(vars.SplitTFScp((short)-510, (short)460, (short)104))
 					return true;
 			break;
 			//The Power of Light
 			case 8:
-				if(vars.SplitTFScp(540, -219, 6))
+				if(vars.SplitTFScp((short)540, (short)-219, (short)6))
 					return true;
 			break;
 			//The Gardens
 			case 9:
-				if(vars.SplitTFScp(240, -227, -114))
+				if(vars.SplitTFScp((short)240, (short)-227, (short)-114))
 					return true;
 			break;
 			//Possession
 			case 10:
-				if(vars.SplitTFSloc(89, -477, -83))
+				if(vars.SplitTFSloc((short)89, (short)-477, (short)-83))
 					return true;
 			break;
 			//The Power of Knowledge
 			case 11:
-				if(vars.SplitTFScp(548, -217, 4))
+				if(vars.SplitTFScp((short)548, (short)-217, (short)4))
 					return true;
 			break;
 			//The Reservoir
 			case 12:
-				if(vars.SplitTFScp(644, 385, -63))
+				if(vars.SplitTFScp((short)644, (short)385, (short)-63))
 					return true;
 			break;
 			//The Power of Razia
 			case 13:
-				if(vars.SplitTFScp(430, 268, -99))
+				if(vars.SplitTFScp((short)430, (short)268, (short)-99))
 					return true;
 			break;
 			//The Climb
 			case 14:
-				if(vars.SplitTFScp(912, 256, -56))
+				if(vars.SplitTFScp((short)912, (short)256, (short)-56))
 					return true;
 			break;
 			//The Storm
 			case 15:
-				if(vars.SplitTFScp(948, -284, 86))
+				if(vars.SplitTFScp((short)948, (short)-284, (short)86))
 					return true;
 			break;
 			//The End
 			case 16:
-				if(vars.SplitTFSloc(821, -257, -51))
+				if(vars.SplitTFSloc((short)821, (short)-257, (short)-51))
 					return true;
 			break;
 		}
