@@ -112,9 +112,6 @@ vars.SplitSeed = (Func <float, float, float, bool>)((float xTarg, float yTarg, f
 		vars.kill = false;
 		vars.seedGet = false;
 		vars.startUp = true;
-		vars.xTarget = 0;
-		vars.yTarget = 0;
-		vars.zTarget = 0;
 	}
 	
 //Setting kill to true any time you exit combat:
