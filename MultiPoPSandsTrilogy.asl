@@ -1343,7 +1343,7 @@ split
 	});
 	
 	//List of of 2k8 splits
-	vars.Split2k8 = (Func <float, float, float, bool>)((float xTarg, float yTarg, float zTarg) => {						//This is a standard type of split which occurs when the prince is within a certain range of coords and has just got a seed
+	vars.SplitSeed = (Func <float, float, float, bool>)((float xTarg, float yTarg, float zTarg) => {						//This is a standard type of split which occurs when the prince is within a certain range of coords and has just got a seed
 		if(current.xPos2k8 <= (xTarg+2) && current.xPos2k8 >= (xTarg-2) &&
 		   current.yPos2k8 <= (yTarg+2) && current.yPos2k8 >= (yTarg-2) &&
 		   current.zPos2k8 <= (zTarg+2) && current.zPos2k8 >= (zTarg-2) &&
@@ -1351,7 +1351,7 @@ split
 			return true;		
 		return false;
 	});
-	vars.Boss2k8 = (Func <float, float, float, short, bool>)((float xTarg, float yTarg, float zTarg, short size) => {		//This is a standard type of split which occurs when the prince is within a platform and has just killed a boss
+	vars.SplitBoss = (Func <float, float, float, short, bool>)((float xTarg, float yTarg, float zTarg, short size) => {		//This is a standard type of split which occurs when the prince is within a platform and has just killed a boss
 		if(current.xPos2k8 <= (xTarg+size) && current.xPos2k8 >= (xTarg-size) &&
 		   current.yPos2k8 <= (yTarg+size) && current.yPos2k8 >= (yTarg-size) &&
 		   current.zPos2k8 <= (zTarg+2) && current.zPos2k8 >= (zTarg-2) &&
