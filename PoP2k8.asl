@@ -11,7 +11,6 @@ startup{
 //Delcaring flags & targets
 	bool kill = false;
 	bool seedGet = false;
-	bool startUp = false;
 }
 
 
@@ -26,11 +25,6 @@ reset{
 start{
 	if(old.yPos != -351 && current.yPos == -351)
 		return true;
-
-	//Initializing flags & targets.
-	vars.kill = false;
-	vars.seedGet = false;
-	vars.startUp = true;
 }
 
 
@@ -44,7 +38,7 @@ vars.SplitSeed = (Func <float, float, float, bool>)((float xTarg, float yTarg, f
 			return true;		
 		return false;
 	});
-	vars.SplitBoss = (Func <float, float, float, float, bool>)((float xTarg, float yTarg, float zTarg, float size) => {		//This is a standard type of split which occurs when the prince is within a platform and has just killed a boss
+	vars.SplitBoss = (Func <float, float, float, float, bool>)((float xTarg, float yTarg, float zTarg, float size) => {			//This is a standard type of split which occurs when the prince is within a platform and has just killed a boss
 		if(current.xPos <= (xTarg+size) && current.xPos >= (xTarg-size) &&
 		   current.yPos <= (yTarg+size) && current.yPos >= (yTarg-size) &&
 		   current.zPos <= (zTarg+2) && current.zPos >= (zTarg-2) &&
@@ -106,13 +100,9 @@ vars.SplitSeed = (Func <float, float, float, bool>)((float xTarg, float yTarg, f
 		return false;
 	});
 	
-//Initializing flags & targets in the event the start function wasn't used.
-	if(!vars.startUp)
-	{
-		vars.kill = false;
-		vars.seedGet = false;
-		vars.startUp = true;
-	}
+//Unmarking flags from the previous cycle:
+	vars.kill = false;
+	vars.seedGet = false;
 	
 //Setting kill to true any time you exit combat:
 	if(old.combat == 2 && current.combat == 0)
@@ -166,7 +156,4 @@ vars.SplitSeed = (Func <float, float, float, bool>)((float xTarg, float yTarg, f
 		case 30: return vars.TheGod();						//The God
 		case 31: return vars.Resurrection();					//Resurrection
 	}
-	//Unmarking flags at the end of each cycle.
-		vars.kill = false;
-		vars.seedGet = false;
 }
