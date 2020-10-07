@@ -517,15 +517,15 @@ split
 				case 5: return vars.Palace3();				//Palace 3	
 				case 6: return vars.Rooftops();				//Rooftops
 				case 7: return vars.StreetsDocks();			//Streets and Docks
-				case 8: return vars.LowerDirigible1();		//Lower Dirigible 1
-				case 9: return vars.LowerDirigible2();		//Lower Dirigible 2
-				case 10: return vars.UpperDirigible();		//Upper Dirigible
-				case 11: return vars.DirigibleFinale();		//Dirigible Finale
-				case 12: return vars.FloatingRuins();		//Floating Ruins
+				case 8: return vars.LowerDirigible1();			//Lower Dirigible 1
+				case 9: return vars.LowerDirigible2();			//Lower Dirigible 2
+				case 10: return vars.UpperDirigible();			//Upper Dirigible
+				case 11: return vars.DirigibleFinale();			//Dirigible Finale
+				case 12: return vars.FloatingRuins();			//Floating Ruins
 				case 13: return vars.Cliffs();				//Cliffs
 				case 14: return vars.SunTemple();			//Sun Temple
 				case 15: return vars.MoonTemple();			//Moon Temple
-				case 16: if(vars.End3D)						//Finale
+				case 16: if(vars.End3D)					//Finale
 						 {
 							 vars.activeGame = 0;
 							 vars.offset += 17;
@@ -854,20 +854,20 @@ split
 				case "Anthology":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0: return vars.GasStation();				//The Treasure Vaults
+						case 0: return vars.GasStation();			//The Treasure Vaults
 						case 1:	return vars.SandsUnleashed();			//The Sands of Time
 						case 2:	return vars.SultanChamber();			//The Sultan's Chamber (Death)
-						case 3:	return vars.DadDead();					//Death of the Sand King
-						case 4:	return vars.TheBaths();					//The Baths (Death)
-						case 5:	return vars.TheMesshall();				//The Messhall (Death)
-						case 6:	return vars.TheCaves();					//The Caves
+						case 3:	return vars.DadDead();				//Death of the Sand King
+						case 4:	return vars.TheBaths();				//The Baths (Death)
+						case 5:	return vars.TheMesshall();			//The Messhall (Death)
+						case 6:	return vars.TheCaves();				//The Caves
 						case 7:	return vars.TheUGReservoir();			//Exit Underground Reservoir
 						case 8: return vars.TheObservatory();			//The Observatory (Death)
 						case 9:	return vars.TortureChamber();			//The Torture Chamber (Death)
-						case 10: return vars.TheDream();				//The Dream
-						case 11: return vars.HonorGlory();				//Honor and Glory
-						case 12: return vars.GrandRewind();				//The Grand Rewind
-						case 13: if(vars.SoTEnd())						//The End
+						case 10: return vars.TheDream();			//The Dream
+						case 11: return vars.HonorGlory();			//Honor and Glory
+						case 12: return vars.GrandRewind();			//The Grand Rewind
+						case 13: if(vars.SoTEnd())				//The End
 								 {
 									 vars.offset += 14;
 									 vars.activeGame = 0;
@@ -880,38 +880,38 @@ split
 				case "Sands Trilogy (Any%, No Major Glitches)":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0: return vars.GasStation();				//The Treasure Vaults
+						case 0: return vars.GasStation();			//The Treasure Vaults
 						case 1: return vars.SandsUnleashed();			//The Sands of Time
 						case 2:	return vars.FirstGuestRoom();			//First Guest Room
 						case 3: return vars.SultanChamberZipless();		//The Sultan's Chamber
 						case 4: return vars.PalaceDefence();			//Exit Palace Defense
-						case 5: return vars.DadStart();					//The Sand King
-						case 6:	return vars.DadDead();					//Death of the Sand King
+						case 5: return vars.DadStart();				//The Sand King
+						case 6:	return vars.DadDead();				//Death of the Sand King
 						case 7: return vars.TheWarehouse(); 			//The Warehouse
-						case 8: return vars.TheZoo();					//The Zoo
-						case 9: return vars.BirdCage();					//Atop a Bird Cage	
+						case 8: return vars.TheZoo();				//The Zoo
+						case 9: return vars.BirdCage();				//Atop a Bird Cage	
 						case 10: return vars.CliffWaterfalls();			//Cliffs and Waterfall
-						case 11: return vars.TheBaths();				//The Baths	
-						case 12: return vars.SecondSword();				//Sword of the Mighty Warrior		
+						case 11: return vars.TheBaths();			//The Baths	
+						case 12: return vars.SecondSword();			//Sword of the Mighty Warrior		
 						case 13: return vars.TheDaybreak(); 			//Daybreak	
 						case 14: return vars.DrawbridgeTower();			//Drawbridge Tower	
 						case 15: return vars.BrokenBridge();			//A Broken Bridge
 						case 16: return vars.TheCavesZipless();			//The Caves
 						case 17: return vars.TheWaterfall();			//Waterfall
-						case 18: return vars.TheUGReservoirZipless();	//An Underground Reservoir
+						case 18: return vars.TheUGReservoirZipless();		//An Underground Reservoir
 						case 19: return vars.HallofLearning();			//Hall of Learning
 						case 20: return vars.ObservatoryExit();			//Exit Observatory
 						case 21: return vars.HoLCourtyardsExit();		//Exit Hall of Learning Courtyards 		
 						case 22: return vars.TheAzadPrison();			//The Prison	
-						case 23: return vars.TortureChamberZipless();	//The Torture Chamber				
-						case 24: return vars.TheElevator();				//The Elevator
+						case 23: return vars.TortureChamberZipless();		//The Torture Chamber				
+						case 24: return vars.TheElevator();			//The Elevator
 						case 25: return vars.TheDreamZipless();			//The Dream
-						case 26: return vars.TheTomb();					//The Tomb
-						case 27: return vars.TowerofDawn();				//The Tower of Dawn
-						case 28: return vars.SettingSun();				//The Setting Sun
-						case 29: return vars.HonorGlory();				//Honor and Glory
-						case 30: return vars.GrandRewind();				//The Grand Rewind
-						case 31: if(vars.SoTEnd())						//The End
+						case 26: return vars.TheTomb();				//The Tomb
+						case 27: return vars.TowerofDawn();			//The Tower of Dawn
+						case 28: return vars.SettingSun();			//The Setting Sun
+						case 29: return vars.HonorGlory();			//Honor and Glory
+						case 30: return vars.GrandRewind();			//The Grand Rewind
+						case 31: if(vars.SoTEnd())				//The End
 								 {
 									 vars.activeGame = 0;
 									 vars.offset += 32;
@@ -923,26 +923,26 @@ split
 				case "Sands Trilogy (Completionist, Standard)":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0:	return vars.GasStation();				//The Treasure Vaults
+						case 0:	return vars.GasStation();			//The Treasure Vaults
 						case 1: return vars.SandsUnleashed();			//The Sands of Time
-						case 5:	return vars.TheBaths();					//The Baths (Death)
-						case 7: return vars.TheMesshall();				//The Messhall (Death)
-						case 9: return vars.TheCaves();					//The Caves (Death)
+						case 5:	return vars.TheBaths();				//The Baths (Death)
+						case 7: return vars.TheMesshall();			//The Messhall (Death)
+						case 9: return vars.TheCaves();				//The Caves (Death)
 						case 12: return vars.TheObservatory();			//The Observatory (Death)
-						case 15: return vars.TheDream();				//The Dream
-						case 17: return vars.HonorGlory();				//Honor and Glory
-						case 18: return vars.GrandRewind();				//The Grand Rewind
-						case 2: 										//Life Upgrade 1
-						case 3: 										//Life Upgrade 2
-						case 4: 										//Life Upgrade 3
-						case 6:											//Life Upgrade 4
-						case 8:											//Life Upgrade 5
-						case 10: 										//Life Upgrade 6
-						case 11: 										//Life Upgrade 7
-						case 13: 										//Life Upgrade 8
-						case 14: 										//Life Upgrade 9
-						case 16: return vars.SoTLU();					//Life Upgrade 10
-						case 19: if(vars.SoTEnd())						//The End
+						case 15: return vars.TheDream();			//The Dream
+						case 17: return vars.HonorGlory();			//Honor and Glory
+						case 18: return vars.GrandRewind();			//The Grand Rewind
+						case 2: 						//Life Upgrade 1
+						case 3: 						//Life Upgrade 2
+						case 4: 						//Life Upgrade 3
+						case 6:							//Life Upgrade 4
+						case 8:							//Life Upgrade 5
+						case 10: 						//Life Upgrade 6
+						case 11: 						//Life Upgrade 7
+						case 13: 						//Life Upgrade 8
+						case 14: 						//Life Upgrade 9
+						case 16: return vars.SoTLU();				//Life Upgrade 10
+						case 19: if(vars.SoTEnd())				//The End
 								 {	
 									 vars.activeGame = 0;
 									 vars.offset += 20;
@@ -955,41 +955,41 @@ split
 				case "Sands Trilogy (Completionist, No Major Glitches)":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0:	return vars.GasStation();				//The Treasure Vaults
+						case 0:	return vars.GasStation();			//The Treasure Vaults
 						case 1: return vars.SandsUnleashed();			//The Sands of Time
 						case 2: return vars.FirstGuestRoom();			//First Guest Room
 						case 4: return vars.PalaceDefence();			//Exit Palace Defense
-						case 6: return vars.DadDead();					//Death of the Sand King
-						case 8:	return vars.TheZoo(); 					//The Zoo
-						case 9:	return vars.BirdCage(); 				//Atop a Bird Cage
+						case 6: return vars.DadDead();				//Death of the Sand King
+						case 8:	return vars.TheZoo(); 				//The Zoo
+						case 9:	return vars.BirdCage(); 			//Atop a Bird Cage
 						case 10: return vars.CliffWaterfalls();			//Cliffs and Waterfall
 						case 11: return vars.TheBathsZipless();			//The Baths
-						case 13: return vars.TheDaybreak();				//Daybreak
+						case 13: return vars.TheDaybreak();			//Daybreak
 						case 14: return vars.DrawbridgeTower();			//Drawbridge Tower
 						case 15: return vars.BrokenBridge();			//A Broken Bridge
 						case 17: return vars.TheWaterfall();			//Waterfall
-						case 18: return vars.TheUGReservoirZipless();	//An Underground Reservoir
+						case 18: return vars.TheUGReservoirZipless();		//An Underground Reservoir
 						case 20: return vars.HallofLearning();			//Hall of Learning
 						case 22: return vars.ObservatoryExit();			//Exit Observatory
 						case 23: return vars.HoLCourtyardsExit();		//Exit Hall of Learning Courtyards
 						case 24: return vars.TheAzadPrison();			//The Prison
-						case 27: return vars.TheDream();				//The Dream
-						case 28: return vars.TheTomb();					//The Tomb
-						case 30: return vars.TowerofDawn();				//The Tower of Dawn
-						case 31: return vars.SettingSun();				//The Setting Sun
-						case 32: return vars.HonorGlory();				//Honor and Glory
-						case 33: return vars.GrandRewind();				//The Grand Rewind
-						case 3: 										//Life Upgrade 1
-						case 5: 										//Life Upgrade 2
-						case 7: 										//Life Upgrade 3
-						case 12: 										//Life Upgrade 4
-						case 16: 										//Life Upgrade 5
-						case 19: 										//Life Upgrade 6
-						case 21: 										//Life Upgrade 7
-						case 25: 										//Life Upgrade 8
-						case 26: 										//Life Upgrade 9
-						case 29: return vars.SoTLU();					//Life Upgrade 10
-						case 34: if(vars.SoTEnd())						//The End
+						case 27: return vars.TheDream();			//The Dream
+						case 28: return vars.TheTomb();				//The Tomb
+						case 30: return vars.TowerofDawn();			//The Tower of Dawn
+						case 31: return vars.SettingSun();			//The Setting Sun
+						case 32: return vars.HonorGlory();			//Honor and Glory
+						case 33: return vars.GrandRewind();			//The Grand Rewind
+						case 3: 						//Life Upgrade 1
+						case 5: 						//Life Upgrade 2
+						case 7: 						//Life Upgrade 3
+						case 12: 						//Life Upgrade 4
+						case 16: 						//Life Upgrade 5
+						case 19: 						//Life Upgrade 6
+						case 21: 						//Life Upgrade 7
+						case 25: 						//Life Upgrade 8
+						case 26: 						//Life Upgrade 9
+						case 29: return vars.SoTLU();				//Life Upgrade 10
+						case 34: if(vars.SoTEnd())				//The End
 								{
 									 vars.activeGame = 0;
 									 vars.offset += 35;
@@ -1338,14 +1338,14 @@ split
 				case "Anthology":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0:	return vars.TheBoat();					//The Boat
-						case 1: return vars.TheRavenMan();				//The Raven Man
-						case 2: return vars.TimePortal();				//The Time Portal
-						case 3: return vars.RNGStorygate();				//Mask of the Wraith (59)
+						case 0:	return vars.TheBoat();				//The Boat
+						case 1: return vars.TheRavenMan();			//The Raven Man
+						case 2: return vars.TimePortal();			//The Time Portal
+						case 3: return vars.RNGStorygate();			//Mask of the Wraith (59)
 						case 4: return vars.ScorpionSword();			//The Scorpion Sword
-						case 5: return vars.WWEndgame();				//Storygate 63
-						case 6: return vars.SlomoPortal();				//Back to the Future
-						case 7: if(vars.WWEnd())						//The End
+						case 5: return vars.WWEndgame();			//Storygate 63
+						case 6: return vars.SlomoPortal();			//Back to the Future
+						case 7: if(vars.WWEnd())				//The End
 								{
 									 vars.activeGame = 0;
 									 vars.offset += 8;
@@ -1357,16 +1357,16 @@ split
 				case "Sands Trilogy (Any%, No Major Glitches)":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0: return vars.TheBoat();					//The Boat
-						case 1: return vars.SpiderSword();				//The Spider Sword
-						case 2: return vars.ChaseShadee();				//Chasing Shadee
+						case 0: return vars.TheBoat();				//The Boat
+						case 1: return vars.SpiderSword();			//The Spider Sword
+						case 2: return vars.ChaseShadee();			//Chasing Shadee
 						case 3: return vars.DamselDistress();			//A Damsel in Distress
-						case 4: return vars.TheDahaka();				//The Dahaka
-						case 5: return vars.SerpentSword();				//The Serpent Sword
-						case 6: return vars.GardenHall();				//The Garden Hall
+						case 4: return vars.TheDahaka();			//The Dahaka
+						case 5: return vars.SerpentSword();			//The Serpent Sword
+						case 6: return vars.GardenHall();			//The Garden Hall
 						case 7: return vars.WaterworksDone();			//The Waterworks Restored
-						case 8: return vars.LionSword();				//The Lion Sword
-						case 9: return vars.TheMechTower();				//The Mechanical Tower
+						case 8: return vars.LionSword();			//The Lion Sword
+						case 9: return vars.TheMechTower();			//The Mechanical Tower
 						case 10: return vars.RavagesPortal();			//Breath of Fate
 						case 11: return vars.ActivationRuins();			//Activation Room in Ruin
 						case 12: return vars.ActivationDone();			//Activation Room Restored
@@ -1374,16 +1374,16 @@ split
 						case 14: return vars.KaileenaDead();			//Death of the Empress
 						case 15: return vars.CatacombsExit();			//Exit the Tomb
 						case 16: return vars.ScorpionSword();			//The Scorpion Sword
-						case 17: return vars.TheLibrary();				//The Library
+						case 17: return vars.TheLibrary();			//The Library
 						case 18: return vars.HourglassRevisited();		//The Hourglass Revisited
 						case 19: return vars.MaskofWraith();			//The Mask of the Wraith
-						case 20: return vars.SandGriffin();				//The Sand Griffin
+						case 20: return vars.SandGriffin();			//The Sand Griffin
 						case 21: return vars.MirroredFates();			//Mirrored Fates
 						case 22: return vars.FavourUnknown();			//A Favor Unknown
-						case 23: return vars.TheLibrary();				//The Library Revisited
-						case 24: return vars.LightSword();				//The Light Sword
+						case 23: return vars.TheLibrary();			//The Library Revisited
+						case 24: return vars.LightSword();			//The Light Sword
 						case 25: return vars.DeathofaPrince();			//The Death of a Prince
-						case 26: if(vars.WWEnd())						//The End
+						case 26: if(vars.WWEnd())				//The End
 								 {
 									 vars.activeGame = 0;
 									 vars.offset += 27;
@@ -1395,19 +1395,19 @@ split
 				case "Sands Trilogy (Completionist, Standard)":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0: return vars.TheBoat();					//The Boat
-						case 1: return vars.TheRavenMan();				//The Raven Man
-						case 2:	return vars.WWLU1();					//Life Upgrade 1
-						case 3: return vars.WWLU2();					//Life Upgrade 2
-						case 4: return vars.WWLU3();					//Life Upgrade 3
-						case 5: return vars.WWLU4();					//Life Upgrade 4
-						case 6: return vars.WWLU5();					//Life Upgrade 5
-						case 7: return vars.WWLU6();					//Life Upgrade 6
-						case 8: return vars.WWLU7();					//Life Upgrade 7
-						case 9: return vars.WWLU8();					//Life Upgrade 8
-						case 10: return vars.WWLU9();					//Life Upgrade 9
-						case 11: return vars.WaterSword();				//The Water Sword
-						case 12: if(vars.WWEnd())						//The End
+						case 0: return vars.TheBoat();				//The Boat
+						case 1: return vars.TheRavenMan();			//The Raven Man
+						case 2:	return vars.WWLU1();				//Life Upgrade 1
+						case 3: return vars.WWLU2();				//Life Upgrade 2
+						case 4: return vars.WWLU3();				//Life Upgrade 3
+						case 5: return vars.WWLU4();				//Life Upgrade 4
+						case 6: return vars.WWLU5();				//Life Upgrade 5
+						case 7: return vars.WWLU6();				//Life Upgrade 6
+						case 8: return vars.WWLU7();				//Life Upgrade 7
+						case 9: return vars.WWLU8();				//Life Upgrade 8
+						case 10: return vars.WWLU9();				//Life Upgrade 9
+						case 11: return vars.WaterSword();			//The Water Sword
+						case 12: if(vars.WWEnd())				//The End
 								 {
 									 vars.activeGame = 0;
 									 vars.offset += 13;
@@ -1419,21 +1419,21 @@ split
 				case "Sands Trilogy (Completionist, Zipless)":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0: return vars.TheBoat();					//The Boat
-						case 1:	return vars.TheRavenMan();				//The Raven Man
-						case 2:	return vars.WWLU9();					//Life Upgrade 1
-						case 3: return vars.WWLU6();					//Life Upgrade 2
-						case 4: return vars.WWLU5();					//Life Upgrade 3
-						case 5: return vars.WWLU1();					//Life Upgrade 4
-						case 6: return vars.RNGStorygate();				//Mask of the Wraith (59)
-						case 7: return vars.WWLU2();					//Life Upgrade 5
-						case 8: return vars.WWLU3();					//Life Upgrade 6
+						case 0: return vars.TheBoat();				//The Boat
+						case 1:	return vars.TheRavenMan();			//The Raven Man
+						case 2:	return vars.WWLU9();				//Life Upgrade 1
+						case 3: return vars.WWLU6();				//Life Upgrade 2
+						case 4: return vars.WWLU5();				//Life Upgrade 3
+						case 5: return vars.WWLU1();				//Life Upgrade 4
+						case 6: return vars.RNGStorygate();			//Mask of the Wraith (59)
+						case 7: return vars.WWLU2();				//Life Upgrade 5
+						case 8: return vars.WWLU3();				//Life Upgrade 6
 						case 9:	return vars.TheMechTowTENMG();			//The Mechanical Tower
-						case 10: return vars.WWLU4();					//Life Upgrade 7
-						case 11: return vars.WWLU8();					//Life Upgrade 8
-						case 12: return vars.WWLU7();					//Life Upgrade 9
-						case 13: return vars.WaterSword();				//The Water Sword
-						case 14: if(vars.WWEnd())						//The End
+						case 10: return vars.WWLU4();				//Life Upgrade 7
+						case 11: return vars.WWLU8();				//Life Upgrade 8
+						case 12: return vars.WWLU7();				//Life Upgrade 9
+						case 13: return vars.WaterSword();			//The Water Sword
+						case 14: if(vars.WWEnd())				//The End
 								 {
 									 vars.activeGame = 0;
 									 vars.offset += 15;
@@ -1445,37 +1445,37 @@ split
 				case "Sands Trilogy (Completionist, No Major Glitches)":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0: return vars.TheBoat();					//The Boat
-						case 1: return vars.SpiderSword();				//The Spider Sword
-						case 2:	return vars.WWLU8();					//Life Upgrade 1
+						case 0: return vars.TheBoat();				//The Boat
+						case 1: return vars.SpiderSword();			//The Spider Sword
+						case 2:	return vars.WWLU8();				//Life Upgrade 1
 						case 3: return vars.DamselDistress();			//A Damsel in Distress
-						case 4: return vars.WWLU7();					//Life Upgrade 2
-						case 5: return vars.TheDahaka();				//The Dahaka
-						case 6: return vars.WWLU1();					//Life Upgrade 3
-						case 7:	return vars.SerpentSword();				//The Serpent Sword
-						case 8: return vars.GardenHall();				//The Garden Hall
-						case 9: return vars.WWLU6();					//Life Upgrade 4
-						case 10: return vars.WWLU5();					//Life Upgrade 5
-						case 11: return vars.WWLU9();					//Life Upgrade 6
+						case 4: return vars.WWLU7();				//Life Upgrade 2
+						case 5: return vars.TheDahaka();			//The Dahaka
+						case 6: return vars.WWLU1();				//Life Upgrade 3
+						case 7:	return vars.SerpentSword();			//The Serpent Sword
+						case 8: return vars.GardenHall();			//The Garden Hall
+						case 9: return vars.WWLU6();				//Life Upgrade 4
+						case 10: return vars.WWLU5();				//Life Upgrade 5
+						case 11: return vars.WWLU9();				//Life Upgrade 6
 						case 12: return vars.TheMechTower();			//The Mechanical Tower
 						case 13: return vars.RavagesPortal();			//Breath of Fate
 						case 14: return vars.ActivationRuins();			//Activation Room in Ruin
-						case 15: return vars.WWLU4();					//Life Upgrade 7
+						case 15: return vars.WWLU4();				//Life Upgrade 7
 						case 16: return vars.SandWraithDead();			//The Death of a Sand Wraith
 						case 17: return vars.KaileenaDead();			//Death of the Empress
 						case 18: return vars.CatacombsExit();			//Exit the Tomb
 						case 19: return vars.ScorpionSword();			//The Scorpion Sword
-						case 20: return vars.WWLU2();					//Life Upgrade 8
-						case 21: return vars.WWLU3();					//Life Upgrade 9
-						case 22: return vars.WaterSword();				//The Water Sword
+						case 20: return vars.WWLU2();				//Life Upgrade 8
+						case 21: return vars.WWLU3();				//Life Upgrade 9
+						case 22: return vars.WaterSword();			//The Water Sword
 						case 23: return vars.MaskofWraith();			//The Mask of the Wraith
-						case 24: return vars.SandGriffin();				//The Sand Griffin
+						case 24: return vars.SandGriffin();			//The Sand Griffin
 						case 25: return vars.MirroredFates();			//Mirrored Fates
 						case 26: return vars.FavourUnknown();			//A Favor Unknown
-						case 27: return vars.TheLibrary();				//The Library Revisited
-						case 28: return vars.LightSword();				//The Light Sword
+						case 27: return vars.TheLibrary();			//The Library Revisited
+						case 28: return vars.LightSword();			//The Light Sword
 						case 29: return vars.DeathofaPrince();			//The Death of a Prince
-						case 30: if(vars.WWEnd())						//The End
+						case 30: if(vars.WWEnd())				//The End
 								 {
 									 vars.activeGame = 0;
 									 vars.offset += 31;
@@ -1805,23 +1805,23 @@ split
 				case "Anthology":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0: return vars.TheRamparts;				//The Ramparts
+						case 0: return vars.TheRamparts;			//The Ramparts
 						case 1:	return vars.HarbourDistrict();			//The Harbor District
-						case 2:	return vars.ThePalace();				//The Palace
-						case 3:	return vars.TheSewerz();				//Exit Sewers
-						case 4:	return vars.LowerCity();				//Exit Lower City
+						case 2:	return vars.ThePalace();			//The Palace
+						case 3:	return vars.TheSewerz();			//Exit Sewers
+						case 4:	return vars.LowerCity();			//Exit Lower City
 						case 5:	return vars.LCRooftopZips();			//The Lower City Rooftops
 						case 6:	return vars.TheTempleRooftops();		//Exit Temple Rooftops
 						case 7:	return vars.TheMarketplace();			//Exit Marketplace
-						case 8:	return vars.ThePlaza();					//Exit Plaza
-						case 9:	return vars.CityGarderns();				//Exit City Gardens
+						case 8:	return vars.ThePlaza();				//Exit Plaza
+						case 9:	return vars.CityGarderns();			//Exit City Gardens
 						case 10: return vars.RoyalWorkshop();			//Exit Royal Workshop
-						case 11: return vars.KingzRoad();				//The King's Road
+						case 11: return vars.KingzRoad();			//The King's Road
 						case 12: return vars.StructurezMind();			//Exit Structure's Mind
 						case 13: return vars.TheLabyrinth();			//Exit Labyrinth
-						case 14: return vars.UpperTower();				//The Towers
-						case 15: return vars.TheTerrace();				//The Terrace
-						case 16: if(vars.MentalRealm())					//The Mental Realm
+						case 14: return vars.UpperTower();			//The Towers
+						case 15: return vars.TheTerrace();			//The Terrace
+						case 16: if(vars.MentalRealm())				//The Mental Realm
 								 {		
 									 vars.activeGame = 0;
 									 vars.offset += 17;
@@ -1833,35 +1833,35 @@ split
 				case "Sands Trilogy (Any%, Zipless)":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0: return vars.TheRamparts();				//The Ramparts
+						case 0: return vars.TheRamparts();			//The Ramparts
 						case 1:	return vars.HarbourDistrict();			//The Harbor District
-						case 2:	return vars.ThePalace();				//The Palace
+						case 2:	return vars.ThePalace();			//The Palace
 						case 3:	return vars.TrappedHallway();			//The Trapped Hallway
-						case 4:	return vars.TheSewers();				//The Sewers
-						case 5:	return vars.TheFortress();				//The Fortress
-						case 6:	return vars.LowerCity();				//The Lower City
+						case 4:	return vars.TheSewers();			//The Sewers
+						case 5:	return vars.TheFortress();			//The Fortress
+						case 6:	return vars.LowerCity();			//The Lower City
 						case 7: return vars.LowerCityRooftops();		//The Lower City Rooftops
-						case 8:	return vars.TheBalconies();				//The Balconies
-						case 9:	return vars.DarkAlley();				//The Dark Alley
+						case 8:	return vars.TheBalconies();			//The Balconies
+						case 9:	return vars.DarkAlley();			//The Dark Alley
 						case 10: return vars.TheTempleRooftops();		//The Temple Rooftops
 						case 11: return vars.TheMarketplace();			//Exit Marketplace
 						case 12: return vars.MarketDistrict();			//The Market District
-						case 13: return vars.ThePlaza();				//Exit Plaza
+						case 13: return vars.ThePlaza();			//Exit Plaza
 						case 14: return vars.TheUpperCity();			//The Upper City
 						case 15: return vars.CityGarderns();			//The City Garderns
 						case 16: return vars.ThePromenade();			//The Promenade
 						case 17: return vars.RoyalWorkshop();			//The Royal Workshop
-						case 18: return vars.KingsRoad();				//The King's Road
+						case 18: return vars.KingsRoad();			//The King's Road
 						case 19: return vars.PalaceEntrance();			//The Palace Entrance
 						case 20: return vars.HangingGardens();			//The Hanging Gardens
 						case 21: return vars.WellofZipless();			//The Structure's Mind
 						case 22: return vars.WellofAncestors();			//The Well of Ancestors
 						case 23: return vars.TheLabyrinth();			//The Labyrinth
-						case 24: return vars.UndergroundCaveZipnt();	//The Underground Cave
-						case 25: return vars.LowerTower();				//The Lower Tower
-						case 26: return vars.UpperTower();				//The Middle and Upper Towers
-						case 27: return vars.TheTerrace();				//The Death of the Vizier
-						case 28: if(vars.MentalRealm())					//The Mental Realm
+						case 24: return vars.UndergroundCaveZipnt();		//The Underground Cave
+						case 25: return vars.LowerTower();			//The Lower Tower
+						case 26: return vars.UpperTower();			//The Middle and Upper Towers
+						case 27: return vars.TheTerrace();			//The Death of the Vizier
+						case 28: if(vars.MentalRealm())				//The Mental Realm
 								 {
 									 vars.activeGame = 0;
 									 vars.offset += 29;
@@ -1873,37 +1873,37 @@ split
 				case "Sands Trilogy (Any%, No Major Glitches)":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0: return vars.TheRamparts();				//The Ramparts
+						case 0: return vars.TheRamparts();			//The Ramparts
 						case 1:	return vars.HarbourDistrict();			//The Harbor District
-						case 2: return vars.ThePalace();				//The Palace
+						case 2: return vars.ThePalace();			//The Palace
 						case 3:	return vars.TrappedHallway();			//The Trapped Hallway
-						case 4:	return vars.TheSewers();				//The Sewers
-						case 5: return vars.TheFortress();				//The Fortress
-						case 6:	return vars.LowerCity();				//The Lower City
+						case 4:	return vars.TheSewers();			//The Sewers
+						case 5: return vars.TheFortress();			//The Fortress
+						case 6:	return vars.LowerCity();			//The Lower City
 						case 7: return vars.LowerCityRooftops();		//The Lower City Rooftops
-						case 8:	return vars.TheBalconies();				//The Balconies
-						case 9:	return vars.DarkAlley();				//The Dark Alley
+						case 8:	return vars.TheBalconies();			//The Balconies
+						case 9:	return vars.DarkAlley();			//The Dark Alley
 						case 10: return vars.TheTempleRooftops();		//The Temple Rooftops
-						case 11: return vars.TheTemple();				//The Temple
+						case 11: return vars.TheTemple();			//The Temple
 						case 12: return vars.TheMarketplace();			//The Marketplace	
 						case 13: return vars.MarketDistrict();			//The Market District
-						case 14: return vars.TheBrothel();				//The Brothel
-						case 15: return vars.ThePlaza();				//The Plaza
+						case 14: return vars.TheBrothel();			//The Brothel
+						case 15: return vars.ThePlaza();			//The Plaza
 						case 16: return vars.TheUpperCity();			//The Upper City			
 						case 17: return vars.CityGarderns();			//The City Gardens
 						case 18: return vars.ThePromenade();			//The Promenade
 						case 19: return vars.RoyalWorkshop();			//The Royal Workshop
-						case 20: return vars.KingsRoad();				//The King's Road			
+						case 20: return vars.KingsRoad();			//The King's Road			
 						case 21: return vars.PalaceEntrance();			//The Palace Entrance
 						case 22: return vars.HangingGardens();			//The Hanging Gardens
 						case 23: return vars.StructuresMind();			//The Structure's Mind
 						case 24: return vars.WellofAncestors();			//The Well of Ancestors
 						case 25: return vars.TheLabyrinth();			//The Labyrinth
 						case 26: return vars.UndergroundCave();			//The Underground Cave
-						case 27: return vars.LowerTower();				//The Lower Tower
-						case 28: return vars.MiddleTower();				//The Middle Tower	
-						case 29: return vars.UpperTower();				//The Upper Tower
-						case 30: return vars.TheTerrace();				//The Terrace		
+						case 27: return vars.LowerTower();			//The Lower Tower
+						case 28: return vars.MiddleTower();			//The Middle Tower	
+						case 29: return vars.UpperTower();			//The Upper Tower
+						case 30: return vars.TheTerrace();			//The Terrace		
 						case 31: if(vars.MentalRealm())
 								 {
 									 vars.activeGame = 0;
@@ -1916,27 +1916,27 @@ split
 				case "Sands Trilogy (Completionist, Standard)":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0: return vars.TheRamparts();				//The Ramparts
+						case 0: return vars.TheRamparts();			//The Ramparts
 						case 1: return vars.HarbourDistrict();			//The Harbour District
-						case 2: return vars.ThePalace();				//The Palace
-						case 3: return vars.T2TLU1();					//Life Upgrade 1
-						case 4:	return vars.LowerCity();				//Exit Lower City
-						case 5:	return vars.T2TLU2();					//Life Upgrade 2
+						case 2: return vars.ThePalace();			//The Palace
+						case 3: return vars.T2TLU1();				//Life Upgrade 1
+						case 4:	return vars.LowerCity();			//Exit Lower City
+						case 5:	return vars.T2TLU2();				//Life Upgrade 2
 						case 6:	return vars.LCRooftopZips();			//The Arena
 						case 7:	return vars.TheTempleRooftops();		//The Temple Rooftops Exit
-						case 8:	return vars.T2TLU3();					//Life Upgrade 3
+						case 8:	return vars.T2TLU3();				//Life Upgrade 3
 						case 9:	return vars.TheMarketplace();			//The Marketplace
-						case 10: return vars.ThePlaza();				//Exit Plaza
-						case 11: return vars.T2TLU4();					//Life Upgrade 4
+						case 10: return vars.ThePlaza();			//Exit Plaza
+						case 11: return vars.T2TLU4();				//Life Upgrade 4
 						case 12: return vars.RoyalWorkshop();			//The Royal Workshop
-						case 13: return vars.KingzRoad();				//The King's Road
-						case 14: return vars.T2TLU5();					//Life Upgrade 5
+						case 13: return vars.KingzRoad();			//The King's Road
+						case 14: return vars.T2TLU5();				//Life Upgrade 5
 						case 15: return vars.StructurezMind();			//Exit Structure's Mind
 						case 16: return vars.TheLabyrinth();			//Exit Labyrinth
-						case 17: return vars.T2TLU6();					//Life Upgrade 6
-						case 18: return vars.UpperTower();				//The Upper Tower
-						case 19: return vars.TheTerrace();				//The Terrace
-						case 20: if(vars.MentalRealm())					//The Mental Realm
+						case 17: return vars.T2TLU6();				//Life Upgrade 6
+						case 18: return vars.UpperTower();			//The Upper Tower
+						case 19: return vars.TheTerrace();			//The Terrace
+						case 20: if(vars.MentalRealm())				//The Mental Realm
 								 {
 									 vars.activeGame = 0;
 									 vars.offset += 21;
@@ -1948,38 +1948,38 @@ split
 				case "Sands Trilogy (Completionist, Zipless)":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0: return vars.TheRamparts();				//The Ramparts
+						case 0: return vars.TheRamparts();			//The Ramparts
 						case 1: return vars.HarbourDistrict();			//The Harbour District
-						case 2: return vars.ThePalace();				//The Palace
+						case 2: return vars.ThePalace();			//The Palace
 						case 3: return vars.TrappedHallway();			//The Trapped Hallway
-						case 4: return vars.T2TLU1();					//Life Upgrade 1
-						case 5:	return vars.TheFortress();				//The Fortress
-						case 6:	return vars.LowerCity();				//The Lower City
-						case 7:	return vars.T2TLU2();					//Life Upgrade 2
+						case 4: return vars.T2TLU1();				//Life Upgrade 1
+						case 5:	return vars.TheFortress();			//The Fortress
+						case 6:	return vars.LowerCity();			//The Lower City
+						case 7:	return vars.T2TLU2();				//Life Upgrade 2
 						case 8:	return vars.LowerCityRooftops();		//The Arena
-						case 9:	return vars.TheBalconies();				//The Balconies
-						case 10: return vars.DarkAlley();				//The Dark Alley
+						case 9:	return vars.TheBalconies();			//The Balconies
+						case 10: return vars.DarkAlley();			//The Dark Alley
 						case 11: return vars.TheTempleRooftops();		//The Temple Rooftops
-						case 12: return vars.T2TLU3();					//Life Upgrade 3
+						case 12: return vars.T2TLU3();				//Life Upgrade 3
 						case 13: return vars.TheMarketplace();			//The Marketplace
 						case 14: return vars.MarketDistrict();			//The Market District
-						case 15: return vars.ThePlaza();				//Exit Plaza
+						case 15: return vars.ThePlaza();			//Exit Plaza
 						case 16: return vars.TheUpperCity();			//The Upper City
-						case 17: return vars.T2TLU4();					//Life Upgrade 4
+						case 17: return vars.T2TLU4();				//Life Upgrade 4
 						case 18: return vars.ThePromenade();			//The Promenade
 						case 19: return vars.RoyalWorkshop();			//The Royal Workshop
-						case 20: return vars.KingsRoad();				//The King's Road
-						case 21: return vars.T2TLU5();					//Life Upgrade 5
+						case 20: return vars.KingsRoad();			//The King's Road
+						case 21: return vars.T2TLU5();				//Life Upgrade 5
 						case 22: return vars.HangingGardens();			//The Hanging Gardens
 						case 23: return vars.WellofZipless();			//The Structures Mind
 						case 24: return vars.WellofAncestors();			//The Well of Ancestors
 						case 25: return vars.TheLabyrinth();			//The Labyrinth
-						case 26: return vars.UndergroundCaveZipnt();	//The Underground Cave
-						case 27: return vars.LowerTower();				//The Lower Tower
-						case 28: return vars.T2TLU6();					//Life Upgrade 6
-						case 29: return vars.UpperTower();				//The Upper Tower
-						case 30: return vars.TheTerrace();				//The Terrace
-						case 31: if(vars.MentalRealm())					//The Mental Realm
+						case 26: return vars.UndergroundCaveZipnt();		//The Underground Cave
+						case 27: return vars.LowerTower();			//The Lower Tower
+						case 28: return vars.T2TLU6();				//Life Upgrade 6
+						case 29: return vars.UpperTower();			//The Upper Tower
+						case 30: return vars.TheTerrace();			//The Terrace
+						case 31: if(vars.MentalRealm())				//The Mental Realm
 								 {
 									 vars.activeGame = 0;
 									 vars.offset += 32;
@@ -1991,39 +1991,39 @@ split
 				case "Sands Trilogy (Completionist, No Major Glitches)":
 					switch (timer.CurrentSplitIndex - (short)vars.offset)
 					{
-						case 0: return vars.TheRamparts();				//The Ramparts
+						case 0: return vars.TheRamparts();			//The Ramparts
 						case 1: return vars.HarbourDistrict();			//The Harbour District
-						case 2: return vars.ThePalace();				//The Palace
+						case 2: return vars.ThePalace();			//The Palace
 						case 3: return vars.TrappedHallway();			//The Trapped Hallway
-						case 4: return vars.T2TLU1();					//Life Upgrade 1
-						case 5:	return vars.TheFortress();				//The Fortress
-						case 6:	return vars.LowerCity();				//The Lower City
-						case 7:	return vars.T2TLU2();					//Life Upgrade 2
+						case 4: return vars.T2TLU1();				//Life Upgrade 1
+						case 5:	return vars.TheFortress();			//The Fortress
+						case 6:	return vars.LowerCity();			//The Lower City
+						case 7:	return vars.T2TLU2();				//Life Upgrade 2
 						case 8:	return vars.LowerCityRooftops();		//The Arena
-						case 9:	return vars.TheBalconies();				//The Balconies
-						case 10: return vars.DarkAlley();				//The Dark Alley
+						case 9:	return vars.TheBalconies();			//The Balconies
+						case 10: return vars.DarkAlley();			//The Dark Alley
 						case 11: return vars.TheTempleRooftops();		//The Temple Rooftops
-						case 12: return vars.T2TLU3();					//Life Upgrade 3
+						case 12: return vars.T2TLU3();				//Life Upgrade 3
 						case 13: return vars.TheMarketplace();			//The Marketplace
 						case 14: return vars.MarketDistrict();			//The Market District
-						case 15: return vars.TheBrothel();				//The Brothel
-						case 16: return vars.ThePlaza();				//The Plaza
+						case 15: return vars.TheBrothel();			//The Brothel
+						case 16: return vars.ThePlaza();			//The Plaza
 						case 17: return vars.TheUpperCity();			//The Upper City
-						case 18: return vars.T2TLU4();					//Life Upgrade 4
+						case 18: return vars.T2TLU4();				//Life Upgrade 4
 						case 19: return vars.ThePromenade();			//The Promenade
 						case 20: return vars.RoyalWorkshop();			//The Royal Workshop
-						case 21: return vars.KingsRoad();				//The King's Road
-						case 22: return vars.T2TLU5();					//Life Upgrade 5
+						case 21: return vars.KingsRoad();			//The King's Road
+						case 22: return vars.T2TLU5();				//Life Upgrade 5
 						case 23: return vars.HangingGardens();			//The Hanging Gardens
 						case 24: return vars.WellofZipless();			//The Structures Mind
 						case 25: return vars.WellofAncestors();			//The Well of Ancestors
 						case 26: return vars.TheLabyrinth();			//The Labyrinth
-						case 27: return vars.UndergroundCaveZipnt();	//The Underground Cave
-						case 28: return vars.LowerTower();				//The Lower Tower
-						case 29: return vars.T2TLU6();					//Life Upgrade 6
-						case 30: return vars.UpperTower();				//The Upper Tower
-						case 31: return vars.TheTerrace();				//The Terrace
-						case 32: if(vars.MentalRealm())					//The Mental Realm
+						case 27: return vars.UndergroundCaveZipnt();		//The Underground Cave
+						case 28: return vars.LowerTower();			//The Lower Tower
+						case 29: return vars.T2TLU6();				//Life Upgrade 6
+						case 30: return vars.UpperTower();			//The Upper Tower
+						case 31: return vars.TheTerrace();			//The Terrace
+						case 32: if(vars.MentalRealm())				//The Mental Realm
 								 {
 									 vars.activeGame = 0;
 									 vars.offset += 33;
@@ -2131,38 +2131,38 @@ split
 
 		switch (timer.CurrentSplitIndex)
 		{
-			case 0: return vars.FirstFightSkip();								//First Fight Skip	
-			case 1: return vars.Canyon();										//The Canyon
+			case 0: return vars.FirstFightSkip();					//First Fight Skip	
+			case 1: return vars.Canyon();						//The Canyon
 			case 2: return vars.SplitSeed(-538.834f, -67.159f, 12.732f);		//King's Gate
-			case 3: return vars.SplitSeed(-670.471f, -56.147f, 16.46f);			//Sun Temple
+			case 3: return vars.SplitSeed(-670.471f, -56.147f, 16.46f);		//Sun Temple
 			case 4: return vars.SplitSeed(-806.671f, 112.803f, 21.645f);		//Marshalling Grounds
 			case 5: return vars.SplitSeed(-597.945f, 209.241f, 23.339f);		//Windmills
-			case 6: return vars.SplitSeed(-564.202f, 207.312f, 22f);			//Martyrs' Tower
+			case 6: return vars.SplitSeed(-564.202f, 207.312f, 22f);		//Martyrs' Tower
 			case 7: return vars.SplitSeed(-454.824f, 398.571f, 27.028f);		//MT -> MG
 			case 8: return vars.SplitSeed(-361.121f, 480.114f, 12.928f);		//Machinery Ground
-			case 9: return vars.SplitSeed(-85.968f, 573.338f, 30.558f);			//Heaven's Stair
+			case 9: return vars.SplitSeed(-85.968f, 573.338f, 30.558f);		//Heaven's Stair
 			case 10: return vars.SplitSeed(-28.088f, 544.298f, 34.942f);		//Spire of Dreams
 			case 11: return vars.SplitSeed(-150.082f, 406.606f, 34.673f);		//Reservoir
 			case 12: return vars.SplitSeed(-151.121f, 303.514f, 27.95f);		//Construction Yard
 			case 13: return vars.SplitSeed(107.123f, 183.394f, -5.628f);		//Cauldron
 			case 14: return vars.SplitSeed(251.741f, 65.773f, -13.616f);		//Cavern
-			case 15: return vars.SplitSeed(547.488f, 45.41f, -27.107f);			//City Gate
+			case 15: return vars.SplitSeed(547.488f, 45.41f, -27.107f);		//City Gate
 			case 16: return vars.SplitSeed(609.907f, 61.905f, -35.001f);		//Tower of Ormazd
 			case 17: return vars.SplitSeed(637.262f, 27.224f, -28.603f);		//Queen's Tower
-			case 18: return vars.TempleArrive();								//The Temple (Arrive)
-			case 19: return vars.DoubleJump();									//Double Jump
-			case 20: return vars.YellowPlate();									//Wings of Ormazd
+			case 18: return vars.TempleArrive();					//The Temple (Arrive)
+			case 19: return vars.DoubleJump();					//Double Jump
+			case 20: return vars.YellowPlate();					//Wings of Ormazd
 			case 21: return vars.SplitBoss(1070.478f, 279.147f, -29.571f);		//The Warrior
-			case 22: return vars.SplitBoss(340f, 582.5f, 32.5f);				//Heal Coronation Hall
-			case 23: return vars.SplitSeed(264.497f, 589.336f, 38.67f);			//Coronation Hall
-			case 24: return vars.SplitBoss(-291f, 651.5f, 99.2f);				//Heal Heaven's Stair
+			case 22: return vars.SplitBoss(340f, 582.5f, 32.5f);			//Heal Coronation Hall
+			case 23: return vars.SplitSeed(264.497f, 589.336f, 38.67f);		//Coronation Hall
+			case 24: return vars.SplitBoss(-291f, 651.5f, 99.2f);			//Heal Heaven's Stair
 			case 25: return vars.SplitBoss(-296.593f, 697.233f, 296.199f);		//The Alchemist
 			case 26: return vars.SplitBoss(-929.415f, 320.888f, -89.038f);		//The Hunter
-			case 27: return vars.BluePlate();									//Hand of Ormazd
+			case 27: return vars.BluePlate();					//Hand of Ormazd
 			case 28: return vars.SplitBoss(352.792f, 801.051f, 150.260f);		//The Concubine
-			case 29: return vars.SplitBoss(5f, -365f, -32f);					//The King
-			case 30: return vars.TheGod();										//The God
-			case 31: if(vars.Resurrection())									//Resurrection
+			case 29: return vars.SplitBoss(5f, -365f, -32f);			//The King
+			case 30: return vars.TheGod();						//The God
+			case 31: if(vars.Resurrection())					//Resurrection
 					 {
 						 vars.activeGame = 0;
 						 vars.offset += 32;
@@ -2182,7 +2182,7 @@ split
 				return true;		
 			return false;
 		});
-		vars.Possession = (Func <int, int, int, bool>)((xTarg, yTarg, zTarg) => {				//This is a standard type of split which occurs purely based on when the prince is within a certain range of coords
+		vars.Possession = (Func <int, int, int, bool>)((xTarg, yTarg, zTarg) => {				//This is same as above but trigger size reduced as there are 2 checkpoints very near
 			if(current.xPos <= (xTarg+1) && current.xPos >= (xTarg-1) &&
 			   current.yPos <= (yTarg+1) && current.yPos >= (yTarg-1) &&
 			   current.zPos <= (zTarg+1) && current.zPos >= (zTarg-1) &&
@@ -2190,7 +2190,7 @@ split
 				return true;		
 			return false;
 		});
-		vars.TheEnd = (Func <int, int, int, bool>)((xTarg, yTarg, zTarg) => {					//This is a standard type of split which occurs purely based on when the prince is within a certain range of coords
+		vars.TheEnd = (Func <int, int, int, bool>)((xTarg, yTarg, zTarg) => {					//This is split occurs purely based on when the prince is within a certain range of coords
 			if(current.xPos <= (xTarg+1) && current.xPos >= (xTarg-1) &&
 			   current.yPos <= (yTarg+1) && current.yPos >= (yTarg-1) &&
 			   current.zPos <= (zTarg+1) && current.zPos >= (zTarg-1))
@@ -2225,7 +2225,7 @@ split
 			case 13: return vars.SplitTFScp(430, 268, -99);			//The Power of Razia
 			case 14: return vars.SplitTFScp(912, 256, -56);			//The Climb
 			case 15: return vars.SplitTFScp(948, -284, 86);			//The Storm
-			case 16: if(vars.TheEnd(821, -257, -51))				//The End
+			case 16: if(vars.TheEnd(821, -257, -51))			//The End
 					 {
 						 vars.activeGame = 0;
 						 vars.offset += 17;
