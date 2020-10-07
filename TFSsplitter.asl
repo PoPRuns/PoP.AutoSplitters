@@ -43,7 +43,7 @@ start{
 
 split{
 //List of TFS splits
-	vars.SplitTFScp = (Func <int, int, int, bool>)((xTarg, yTarg, zTarg) => {						//This is a standard type of split which occurs when the prince is within a certain range of coords and a checkposhort is just acquired
+	vars.SplitTFScp = (Func <int, int, int, bool>)((xTarg, yTarg, zTarg) => {				//This is a standard type of split which occurs when the prince is within a certain range of coords and a checkposhort is just acquired
 		if(current.xPos <= (xTarg+10) && current.xPos >= (xTarg-10) &&
 		   current.yPos <= (yTarg+10) && current.yPos >= (yTarg-10) &&
 		   current.zPos <= (zTarg+10) && current.zPos >= (zTarg-10) &&
@@ -51,7 +51,7 @@ split{
 			return true;		
 		return false;
 	});
-	vars.Possession = (Func <int, int, int, bool>)((xTarg, yTarg, zTarg) => {					//This is a standard type of split which occurs purely based on when the prince is within a certain range of coords
+	vars.Possession = (Func <int, int, int, bool>)((xTarg, yTarg, zTarg) => {				//This is exactly same as above but the trigger size is reduced as there is another cp very close
 		if(current.xPos <= (xTarg+1) && current.xPos >= (xTarg-1) &&
 		   current.yPos <= (yTarg+1) && current.yPos >= (yTarg-1) &&
 		   current.zPos <= (zTarg+1) && current.zPos >= (zTarg-1) &&
@@ -59,7 +59,7 @@ split{
 			return true;		
 		return false;
 	});
-	vars.TheEnd = (Func <int, int, int, bool>)((xTarg, yTarg, zTarg) => {					//This is a standard type of split which occurs purely based on when the prince is within a certain range of coords
+	vars.TheEnd = (Func <int, int, int, bool>)((xTarg, yTarg, zTarg) => {					//This is a purely location based split
 		if(current.xPos <= (xTarg+1) && current.xPos >= (xTarg-1) &&
 		   current.yPos <= (yTarg+1) && current.yPos >= (yTarg-1) &&
 		   current.zPos <= (zTarg+1) && current.zPos >= (zTarg-1))
