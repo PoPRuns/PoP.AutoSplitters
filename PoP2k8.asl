@@ -6,13 +6,6 @@ state("PrinceOfPersia_Launcher"){
 	int combat : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
 }
 
-state("Prince Of Persia"){
-	int seedCount : 0x00F37F64, 0xDC;
-	float xPos : 0x00F30D08, 0x40;
-	float yPos : 0x00F30D08, 0x44;
-	float zPos : 0x00F30D08, 0x48;
-	int combat : 0x00F37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
-}
 
 init{
 	 //setting refresh rate to double of game's framerate just to be sure:
