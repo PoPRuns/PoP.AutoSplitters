@@ -3,7 +3,7 @@
 // Original by: ThePedMeister
 // Updated by:  Karlgamer
 // Overhaul by: WinterThunder
-// Tweaks by:   Smathlax
+// Tweaks by:   Smathlax, GMP
 // Updated:     2020-08-17
 // IGT timing:  YES
 //
@@ -82,6 +82,9 @@ gameTime
     int adjustedFramesLeft = (minutesLeft < 0) ? 0 : totalFramesLeft; //time has expired
     int elapsedFrames = (vars.getBaseFramesRemaining()) - adjustedFramesLeft;	
     double secondsElapsed = elapsedFrames / 12.0;
+    if (old.Level == 13 && current.Level == 14) {
+        secondsElapsed = secondsElapsed - 0.002;   // hack for splits.io issue - if last split is empty, gametime won't be available
+    }
     //print("POPASL[gameTime]: secondsElapsed = " + secondsElapsed);
     return TimeSpan.FromSeconds(secondsElapsed);
 }
