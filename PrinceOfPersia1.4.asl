@@ -83,7 +83,11 @@ start
 
     bool singleLevelModeRestart = (settings["single_level_mode"] == true && vars.levelRestarted == true);
     
-    if (singleLevelModeRestart) {
+    if (startGame) {
+        vars.levelRestartTimestamp = 60*720;
+        vars.levelRestarted = false;
+        vars.levelChanged = false;
+    } else if (singleLevelModeRestart) {
         vars.levelRestarted = false; 
     }
 
@@ -107,7 +111,10 @@ reset
     bool singleLevelModeRestart = (settings["single_level_mode"] == true && levelRestartInProgress == true && levelTimeJustAppeared == true);
     bool singleLevelModeChangedLevel = (settings["single_level_mode"] == true && vars.levelChanged == true);
 
-    if (singleLevelModeRestart || singleLevelModeChangedLevel) {
+    if (notPlaying) {
+        vars.levelRestartTimestamp = 60*720;
+        vars.levelRestarted = false;
+    } else if (singleLevelModeRestart || singleLevelModeChangedLevel) {
         int minutesLeft = current.MinutesLeft - 1;
         int totalFramesLeft = (minutesLeft * 720) + current.FrameSeconds;
         int adjustedFramesLeft = (minutesLeft < 0) ? 0 : totalFramesLeft; //time has expired
@@ -120,9 +127,6 @@ reset
         } else {
             singleLevelModeRestart = false;
         }
-    } else if (notPlaying) {
-        vars.levelRestartTimestamp = 60*720;
-        vars.levelrestarted = false;
     }
 
     return (notPlaying || singleLevelModeRestart);
