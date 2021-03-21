@@ -83,6 +83,13 @@ split{
 			return true;
 		return false;
 	});
+	vars.ArenaDeload = (Func <bool>)(() => {
+		if(current.xPos >= -256.1 && current.xPos <= -251.9  &&
+		   current.yPos >= 358    && current.yPos <= 361.5 &&
+		   current.zPos >= 53.9     && current.zPos <= 63.3)
+			return true;
+		return false;
+	});
 	vars.LowerCityRooftops = (Func <bool>)(() => {
 		if(current.xPos >= -261.5 && current.xPos <= -261  &&
 		   current.yPos >= 318    && current.yPos <= 319.5 &&
@@ -230,11 +237,25 @@ split{
 			return true;	
 		return false;
 	});
+	vars.BottomofWell = (Func <bool>)(() => {
+		if(current.xPos >= -21.34 && current.xPos <= -21.35 &&
+		   current.yPos >= 252.67 && current.yPos <= 252.68 &&
+		   current.zPos >= 20.95   && current.zPos <= 20.96)
+			return true;
+		return false;
+	});
 	vars.WellofAncestors = (Func <bool>)(() => {
 		if(current.xPos >= -12.6 && current.xPos <= -12.5 &&
 		   current.yPos >= 241.2 && current.yPos <= 241.3 &&
 		   current.zPos >= 0.9   && current.zPos <= 1)
 			return true;
+		return false;
+	});
+	vars.CaveDeath = (Func <bool>)(() => {
+		if(current.xPos >= 5.99 && current.xPos <= 6.00 &&
+		   current.yPos >= 306.96   && current.yPos <= 306.97 &&
+		   current.zPos >= 42  && current.zPos <= 42.01)
+			return true;	
 		return false;
 	});
 	vars.TheLabyrinth = (Func <bool>)(() => {
@@ -368,25 +389,25 @@ split{
 				if(vars.LowerCity())
 					return true;	
 				break;
-			//The Lower City Rooftops
+			//Arena Deload
 			case 5:	
-				if(vars.LCRooftopZips())
-					return true;	
+				if(vars.ArenaDeload())
+					return true;
 				break;
 			//Exit Temple Rooftops
 			case 6:	
 				if(vars.TheTempleRooftops())
-					return true;	
+					return true;
 				break;
 			//Exit Marketplace
 			case 7:	
 				if(vars.TheMarketplace())
-					return true;	
+					return true;
 				break;
 			//Exit Plaza
 			case 8:	
 				if(vars.ThePlaza())
-					return true;	
+					return true;
 				break;
 			//Exit City Gardens
 			case 9:	
@@ -403,14 +424,14 @@ split{
 				if(vars.KingzRoad())
 					return true;	
 				break;
-			//Exit Structure's Mind
+			//Well Death
 			case 12:	
-				if(vars.StructurezMind())
-					return true;	
+				if(vars.BottomofWell())
+					return true;
 				break;
-			//Exit Labyrinth
+			//Exit Cave Death
 			case 13:	
-				if(vars.TheLabyrinth())
+				if(vars.CaveDeath())
 					return true;	
 				break;
 			//The Towers
