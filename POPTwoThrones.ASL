@@ -76,6 +76,13 @@ split{
 			return true;
 		return false;
 	});
+	vars.Chariot1 = (Func <bool>)(() => {
+		if(current.xPos >= -443.37 && current.xPos <= -443.36 &&
+		   current.yPos >= 355.80  && current.yPos <= 355.81  &&
+		   current.zPos >= 57.71 && current.zPos <= 57.72)
+			return true;
+		return false;
+	});
 	vars.LowerCity = (Func <bool>)(() => {
 		if(current.xPos >= -319 && current.xPos <= -316.5 &&
 		   current.yPos >= 317  && current.yPos <= 332.6  &&
@@ -238,7 +245,7 @@ split{
 		return false;
 	});
 	vars.BottomofWell = (Func <bool>)(() => {
-		if(current.xPos >= -21.34 && current.xPos <= -21.35 &&
+		if(current.xPos >= -21.35 && current.xPos <= -21.34 &&
 		   current.yPos >= 252.67 && current.yPos <= 252.68 &&
 		   current.zPos >= 20.95   && current.zPos <= 20.96)
 			return true;
@@ -384,9 +391,9 @@ split{
 				if(vars.TheSewerz())
 					return true;	
 				break;
-			//Exit Lower City
+			//Finish Chariot 1
 			case 4:	
-				if(vars.LowerCity())
+				if(vars.Chariot1())
 					return true;	
 				break;
 			//Arena Deload
