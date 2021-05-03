@@ -35,11 +35,11 @@ state("DOSBOX")
     byte Room           : "DOSBox.exe", 0x193C370, 0x1D107;          // shows current room ID
     byte IsRestartLevel : "DOSBox.exe", 0x193C370, 0x1E16A;          // the is_restart_level (Ctrl+A) flag 
     byte LevelTextTime  : "DOSBox.exe", 0x193C370, 0x1F35E;          // frames left for showing the "Level N" text
+    byte Level3CP	: "DOSBox.exe", 0x193C370, 0x1E050;	     // Level 3 checkpoint flag (changes from 0-1)
     
     int RestartFlag0    : "DOSBox.exe", 0x193C370, 0x1D0E2;           // eien86's flag for restart detection
     int RestartFlag1    : "DOSBox.exe", 0x193C370, 0x1D0E6;           // eien86's flag for restart detection
     short RestartFlag2  : "DOSBox.exe", 0x193C370, 0x1D0EA;           // eien86's flag for restart detection
-
 }
 
 startup
@@ -119,7 +119,7 @@ reset
         int totalFramesLeft = (minutesLeft * 720) + current.FrameSeconds;
         int adjustedFramesLeft = (minutesLeft < 0) ? 0 : totalFramesLeft; //time has expired
         
-        if (vars.levelChanged || adjustedFramesLeft <= (vars.levelRestartTimestamp - vars.levelRestartSafetyBuffer) || (adjustedFramesLeft > vars.levelRestartTimestamp)) {
+        if ((vars.levelChanged || adjustedFramesLeft <= (vars.levelRestartTimestamp - vars.levelRestartSafetyBuffer) || (adjustedFramesLeft > vars.levelRestartTimestamp))&&(!(current.Level == 3 && current.Level3CP == 1))) {
             vars.levelRestartTimestamp = adjustedFramesLeft;
             vars.levelRestarted = true;
             vars.levelChanged = false;
