@@ -119,7 +119,7 @@ reset
         int totalFramesLeft = (minutesLeft * 720) + current.FrameSeconds;
         int adjustedFramesLeft = (minutesLeft < 0) ? 0 : totalFramesLeft; //time has expired
         
-        if ((vars.levelChanged || adjustedFramesLeft <= (vars.levelRestartTimestamp - vars.levelRestartSafetyBuffer) || (adjustedFramesLeft > vars.levelRestartTimestamp))&&(!(current.Level == 3 && current.Level3CP == 1))) {
+        if ((vars.levelChanged || adjustedFramesLeft <= (vars.levelRestartTimestamp - vars.levelRestartSafetyBuffer) || (adjustedFramesLeft > vars.levelRestartTimestamp)) && !(current.Level == 3 && current.Level3CP == 1)) {
             vars.levelRestartTimestamp = adjustedFramesLeft;
             vars.levelRestarted = true;
             vars.levelChanged = false;
