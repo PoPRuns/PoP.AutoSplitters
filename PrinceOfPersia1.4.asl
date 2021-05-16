@@ -138,8 +138,8 @@ gameTime
     vars.adjustedFramesLeft = (vars.minutesLeft < 0) ? 0 : vars.totalFramesLeft; //time has expired
     
     //Level skip category detection
-    if ((old.MinutesLeft != 15 && current.MinutesLeft == 15) && 
-       (old.FrameSeconds != 718 && old.FrameSeconds != 719 && current.FrameSeconds == 718) &&
+    if (!(old.MinutesLeft == 15 && (old.FrameSeconds == 718 || old.FrameSeconds == 719)) && 
+       (current.MinutesLeft == 15 && current.FrameSeconds == 718) &&
        !settings["single_level_mode"] &&
        !vars.levelSkipActivated) {
         vars.levelSkipActivated = true;
