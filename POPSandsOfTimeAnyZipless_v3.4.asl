@@ -269,9 +269,9 @@ split{
 		return false;
 	});
 	vars.TortureChamber = (Func <bool>)(() => {
-		if(current.xPos >= 139.231 && current.xPos <= 139.233	&&
-		   current.yPos >= 162.556 && current.yPos <= 162.558 && 
-		   current.zPos >= -29.502 && current.zPos <= -29.5)
+		if(current.xPos >= 189.999 && current.xPos <= 190.001	&&
+		   current.yPos >= -43.278 && current.yPos <= -43.276 && 
+		   current.zPos >= -119.001 && current.zPos <= -118.999)
 			return true;
 		return false;
 	});
