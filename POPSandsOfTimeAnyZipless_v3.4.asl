@@ -809,7 +809,7 @@ split{
 				break;
 			//The Baths (Death)
 			case 5:	
-				if(vars.TheBaths)
+				if(vars.TheBaths())
 					return true;
 				break;
 			//Life Upgrade 4
