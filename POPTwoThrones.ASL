@@ -497,12 +497,12 @@ split{
 				if(vars.LowerCity())
 					return true;
 				break;
-			//The Lower City Rooftops
+			//The Lower City Rooftops (Klompa)
 			case 7:
 				if(vars.LowerCityRooftops())
 					return true;
 				break;
-			//The Balconies
+			//The Balconies (Eye of the Storm)
 			case 8:
 				if(vars.TheBalconies())
 					return true;
@@ -527,7 +527,7 @@ split{
 				if(vars.MarketDistrict())
 					return true;
 				break;
-			//Exit Plaza
+			//Exit Plaza (Mahasti)
 			case 13:
 				if(vars.ThePlaza())
 					return true;
@@ -542,22 +542,17 @@ split{
 				if(vars.CityGarderns())
 					return true;
 				break;
-			//The Promenade
-			case 16:
-				if(vars.ThePromenade())
-					return true;
-				break;
-			//The Royal Workshop
+			//The Royal Workshop (Puzzle Skip)
 			case 17:
 				if(vars.RoyalWorkshop())
 					return true;
 				break;
-			//The King's Road
+			//The King's Road (Twins)
 			case 18:
 				if(vars.KingsRoad())
 					return true;
 				break;
-			//The Palace Entrance
+			//The Palace Entrance (Enter Elevator)
 			case 19:
 				if(vars.PalaceEntrance())
 					return true;
