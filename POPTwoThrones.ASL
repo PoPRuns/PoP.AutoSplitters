@@ -163,7 +163,7 @@ split{
 	vars.ThePlaza = (Func <bool>)(() => {
 		if(current.xPos >= -104  && current.xPos <= -100 &&
 		   current.yPos >= 548   && current.yPos <= 553  &&
-		   current.zPos >= 105.9 && current.zPos <= 106.1)
+		   current.zPos >= 105.5 && current.zPos <= 106.1)
 			return true;
 		return false;
 	});
@@ -223,6 +223,13 @@ split{
 			return true;
 		return false;
 	});
+	vars.HangingGardenz = (Func <bool>)(() => {
+		if(current.xPos >= 5.2  && current.xPos <= 5.4  &&
+		   current.yPos >= 213.5 && current.yPos <= 215.6 &&
+		   current.zPos >= 194.9 && current.zPos <= 196.2)
+			return true;
+		return false;
+	});
 	vars.StructuresMind = (Func <bool>)(() => {
 		if(current.xPos >= -34 && current.xPos <= -27 &&
 		   current.yPos >= 240 && current.yPos <= 250 &&
@@ -268,8 +275,8 @@ split{
 	vars.TheLabyrinth = (Func <bool>)(() => {
 		if(current.xPos >= -25.5 && current.xPos <= -23 &&
 		   current.yPos >= 325   && current.yPos <= 338 &&
-		   current.zPos >= 35.9  && current.zPos <= 36.1)
-			return true;	
+		   current.zPos >= 35.9  && current.zPos <= 37.5)
+			return true;
 		return false;
 	});
 	vars.UndergroundCave = (Func <bool>)(() => {
@@ -543,62 +550,57 @@ split{
 					return true;
 				break;
 			//The Royal Workshop (Puzzle Skip)
-			case 17:
+			case 16:
 				if(vars.RoyalWorkshop())
 					return true;
 				break;
 			//The King's Road (Twins)
-			case 18:
+			case 17:
 				if(vars.KingsRoad())
 					return true;
 				break;
 			//The Palace Entrance (Enter Elevator)
-			case 19:
+			case 18:
 				if(vars.PalaceEntrance())
 					return true;
 				break;
-			//The Hanging Gardens
-			case 20:
-				if(vars.HangingGardens())
+			//The Hanging Gardenz
+			case 19:
+				if(vars.HangingGardenz())
 					return true;
 				break;
 			//The Structure's Mind
-			case 21:
+			case 20:
 				if(vars.WellofZipless())
 					return true;
 				break;
 			//The Well of Ancestors
-			case 22:
+			case 21:
 				if(vars.WellofAncestors())
 					return true;
 				break;
 			//The Labyrinth
-			case 23:
+			case 22:
 				if(vars.TheLabyrinth())
 					return true;
 				break;
-			//The Underground Cave
-			case 24:
-				if(vars.UndergroundCaveZipnt())
-					return true;
-				break;
 			//The Lower Tower
-			case 25:
+			case 23:
 				if(vars.LowerTower())
 					return true;
 				break;
 			//The Middle and Upper Towers
-			case 26:
+			case 24:
 				if(vars.UpperTower())
 					return true;
 				break;
 			//The Death of the Vizier
-			case 27:
+			case 25:
 				if(vars.TheTerrace())
 					return true;
 				break;
 			//The Mental Realm
-			case 28:	
+			case 26:	
 				if(vars.MentalRealm())
 					return true;	
 				break;
