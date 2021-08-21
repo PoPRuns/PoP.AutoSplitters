@@ -977,73 +977,63 @@ split{
 				if(vars.T2TLU4())
 					return true;	
 				break;
-			//The Promenade
+			//The Royal Workshop (Puzzle Skip)
 			case 18:
-				if(vars.ThePromenade())
-					return true;
-				break;
-			//The Royal Workshop
-			case 19:
 				if(vars.RoyalWorkshop())
 					return true;
 				break;
-			//The King's Road
-			case 20:
+			//The King's Road (Twins)
+			case 19:
 				if(vars.KingsRoad())
 					return true;
 				break;
 			//Life Upgrade 5
-			case 21:	
+			case 20:	
 				if(vars.T2TLU5())
 					return true;	
 				break;
 			//The Hanging Gardens
-			case 22:
-				if(vars.HangingGardens())
+			case 21:
+				if(vars.HangingGardenz())
 					return true;
 				break;
 			//The Structures Mind
-			case 23:
+			case 22:
 				if(vars.WellofZipless())
 					return true;
 				break;
 			//The Well of Ancestors
-			case 24:
+			case 23:
 				if(vars.WellofAncestors())
 					return true;
 				break;
 			//The Labyrinth
-			case 25:
+			case 24:
 				if(vars.TheLabyrinth())
 					return true;
 				break;
-			//The Underground Cave
-			case 26:
-				if(vars.UndergroundCaveZipnt())
-					return true;
-				break;
 			//The Lower Tower
-			case 27:
+			case 25:
 				if(vars.LowerTower())
 					return true;
 				break;
 			//Life Upgrade 6
-			case 28:	
+			case 26:	
 				if(vars.T2TLU6())
 					return true;	
 				break;
 			//The Upper Tower
-			case 29:
+			case 27:
 				if(vars.UpperTower())
 					return true;
 				break;
 			//The Terrace
-			case 30:
+			case 28:
 				if(vars.TheTerrace())
 					return true;
 				break;
 			//The Mental Realm
-			case 31:	
+			case 29:	
 				if(vars.MentalRealm())
 					return true;	
 				break;
