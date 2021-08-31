@@ -2,14 +2,14 @@
 // Original by	: Smathlax
 // Scripts by	: Samabam (PoP2, PoP3D, SoT, WW, T2T, 2008, TFS), WinterThunder (PoP 1 and 2), Karlgamer (PoP 1), ThePedMeister (PoP 1), Ynscription (SoT), SuicideMachine (TFS)
 // Tweaks by	: Ero, GMP
-// Updated	: 13 Oct 2020
+// Updated	: 31 Aug 2021
 // IGT timing	: YES for appropriate games
 // Load Remover	: YES for appropriate games
 
 // Note: DOSBox autosplitter breaks (doesn't find correct memory address) if you alter the dosbox.conf in a specific way.
 // Known ways to break the autosplitter:
 // 1. Alter the PATH system variable -> don't invoke SET PATH=xyz
-// 2. Set gus=true (make sure gus is set to false)
+// 2. Setting gus=true (make sure gus is set to false)
 
 // Brief outline of how this script works:
 /* When you load the script, variables called "game" and "offset" (among several others) are initialized, it keeps track of which game is currently being run.
@@ -27,7 +27,7 @@
    Prince of Persia: The Two Thrones			pop3				6
    Prince of Persia (2008)				princeofpersia_launcher		7
    Prince of Persia: The Forgotten Sands		prince of persia		8
-   Default										0
+   Default (No game running)								0
    -------------------------------------------------------------------------------------------------
    It is worth noting that the process name is initialised right when the game is loaded, but the game value is set only when the start condition is met.
    After the timer starts, the splits conditions for the appropriate game is checked.
@@ -37,8 +37,11 @@
    When the start condition of a certain game is met,the approriate game value is set and the timer unpauses.
    This time when checking for splits, the offset is subtracted from the split index such that it again starts from case 0.
    This makes playing the games in any order possible as long as the total number of splits in all the games combined is equal to what the script expects to it be.
-   Its worth noting that if for some reason the player causes the start condition of the game to happen twice, then the script stops functioning from a logical perspective.
    IGT scripts/load and crash removers of appropriate games will be loaded by again checking the game variable.
+   
+   Known ways to break the script from a logical perspective:
+   * If a split fails and you dont skip it by the end of the game, the script breaks. (Potential solution - add backup skip split triggers)
+   * If the end split of a game fails, the script breaks (should especially look into T2T)
 */
 
 //Defining the memory values of each game
@@ -46,19 +49,21 @@ state("DOSBox") {
 	// Prince of Persia 1989
 	byte scene          : 0x193C370, 0x1A4BA; // shows level 1-14 changes as scenes end
 	byte level1         : 0x193C370, 0x1D0F4; // shows level 1-14 changes as door is entered
-	byte start1          : 0x193C370, 0x1D694; // the level you start the game at
+	byte start1         : 0x193C370, 0x1D694; // the level you start the game at
 	byte endGame        : 0x193C370, 0x1D74A; // 0 before endgame, 255 at endgame cutscene
 	byte mins           : 0x193C370, 0x1E350; // Minutes
 	int frames          : 0x193C370, 0x1E354; // Frames
 	short secs          : 0x193C370, 0x1E356; // Frames in second part of time
 	byte sound          : 0x193C370, 0x2F233; // 0 if sound is on, 1 if sound is off
-	byte gameRunning    : 0x19175EA;
-
+	
 	// Prince of Persia 2: The Shadow and the Flame
 	byte level2         : 0x193C370, 0x38796;
 	short frameCount    : 0x193C370, 0x387B0;
 	byte start2         : 0x193C370, 0x38FF2;
 	string300 directory : 0x17D91E8;
+
+	// Common
+	byte gameRunning    : 0x19175EA;
 }
 
 state("pop3d") {
@@ -130,15 +135,25 @@ startup {
 	vars.game = 0;
 	vars.newFountain = false;
 	vars.offset = 0;
-	vars.resetDelta = 0;
+	vars.framesOnStart = 0;
 	vars.restartDelta = 0;
+	vars.timerDelta = TimeSpan.FromSeconds(0);
 	vars.startUp = true;
 	vars.timerModel = new TimerModel {CurrentState = timer};
+	vars.game1complete = false;
+	vars.game2complete = false;
+	vars.game3complete = false;
+	vars.game4complete = false;
+	vars.game5complete = false;
+	vars.game6complete = false;
+	vars.game7complete = false;
+	vars.game8complete = false;
+	vars.RestartDelta = 0;
 }
 
 //This runs exactly once every time a game is loaded/restarted
 init {
-	//To distingush between pop1 and pop2, we get the file size of the executable:
+	/*To distingush between pop1 and pop2, we get the file size of the executable:
 	string[] locString;
 	if (game.ProcessName.ToLower() == "dosbox" && current.directory == "") {
 		Thread.Sleep(2000);
@@ -148,29 +163,18 @@ init {
 		if (locString[locString.Length - 1].Contains('.')) vars.exeFileSize = new FileInfo(current.directory.Remove(current.directory.LastIndexOf('\\')) + "\\PRINCE.exe");
 		else vars.exeFileSize = new FileInfo(current.directory + "\\PRINCE.exe");
 		//print("done!" + vars.exeFileSize.Length);
-	}
+	}*/
 
 	//Initializing approriate functions, refreshRate, etc. when a process is loaded:
 	switch(game.ProcessName.ToLower()) {
 		case "dosbox":
-			if (vars.exeFileSize.Length == 110855){
-				refreshRate = 24;					//refresh rate is set to double the frame rate
-			}
-			if (vars.exeFileSize.Length == 290415){
-				refreshRate = 24;					//refresh rate is set to double the frame rate
-				vars.ResetDelta = 0;
-				vars.RestartDelta = 0;
-				vars.CorrectFrames = 0;
-			}
+			vars.restartDelta = 0;
 			break;
 	
 		case "pop3d": case "pop": case "pop2": case "pop3": case "princeofpersia_launcher": case "prince of persia":
-		
-			//refresh rate is set to double the frame rate
-			refreshRate = 120;
 			
-			//this action will split and set the correct offset at the end of every game:
-			vars.lastSplit = (Action <bool, int>)((splitName, offsetAdd) => { if (splitName) { vars.offset += offsetAdd; vars.timerModel.Split(); vars.game = 0; }});
+			//this action will split and set the current game to null at the end of every game:
+			vars.lastSplit = (Action <bool>)((splitName) => { if (splitName) {vars.timerModel.Split(); vars.game = 0; }});
 			
 			//this function will take 2 float values as input and check if X co-ordinate is within those values:
 			vars.inXRange = (Func <float, float, bool>)((xMin, xMax) => { return current.xPos >= xMin && current.xPos <= xMax ? true : false; });
@@ -202,23 +206,23 @@ start {
 	switch(game.ProcessName.ToLower()) {
 		case "dosbox":
 			if (current.start1 == 1 && current.level1 == 1 && current.mins == 60 && current.frames >= 47120384) {
-				vars.ResetDelta = 0;
 				vars.game = 1;
+				vars.game1complete = true;
 				return true;
-				
 			}
 
 			if (old.start2 == 238 && current.start2 != 238 && current.level2 == 1) {
 				vars.framesOnStart = current.frameCount;
-				vars.offset = 14;
 				vars.game = 2;
+				vars.game2complete = true;
 				return true;
 			} break;
 
 		case "pop3d":
 			if (vars.inXRange(20.554f, 20.556f) && vars.inZRange(1.448f, 1.45f)) {
 				vars.game = 3;
-				return true;	
+				vars.game3complete = true;
+				return true;
 			} break;
 
 		case "pop":
@@ -226,31 +230,36 @@ start {
 				vars.aboveCredits = false;
 				vars.newFountain = false;
 				vars.game = 4;
-				return true;	
+				vars.game4complete = true;
+				return true;
 			} break;
 
 		case "pop2":
 			if (vars.inXRange(-997.6757f, -997.6755f) && old.startValue == 1 && current.startValue == 2) {
 				vars.game = 5;
-				return true;	
+				vars.game5complete = true;
+				return true;
 			} break;
 
 		case "pop3":
 			if (vars.inXRange(-409.9f, -404.8f) && current.xCam >= 0.8318 && current.xCam <= 0.832 && current.yCam >= 0.1080 && current.yCam <= 0.1082) {
 				vars.game = 6;
-				return true;	
+				vars.game6complete = true;
+				return true;
 			} break;
 
 		case "princeofpersia_launcher":
 			if (old.yPos != -351 && current.yPos == -351) {
 				vars.game = 7;
-				return true;	
+				vars.game7complete = true;
+				return true;
 			} break;
 
 		case "prince of persia":
 			if (vars.inXRange(268.929f, 268.93f) && current.gameState == 4) {
 				vars.game = 8;
-				return true;	
+				vars.game8complete = true;
+				return true;
 			} break;
 	}
 }
@@ -286,11 +295,11 @@ gameTime {
 		// Prince of Persia 1989:
 		case 1:
 			int adjustedFramesLeft = current.mins - 1 < 0 ? 0 : (current.mins - 1) * 720 + current.secs;
-			return (TimeSpan.FromSeconds((60*720 - adjustedFramesLeft) / 12.0)+ vars.timerDelta);
+			return (TimeSpan.FromSeconds((60*720 - adjustedFramesLeft) / 12.0) + vars.timerDelta);
 		
 		// Prince of Persia 2: The Shadow and the Flame:
 		case 2:
-			return current.gameRunning == 0 ? (TimeSpan.FromSeconds(0)) : (TimeSpan.FromSeconds((current.frameCount - vars.framesOnStart) / 12.0));
+			return ((current.gameRunning == 0)?(TimeSpan.FromSeconds((vars.restartDelta - vars.framesOnStart) / 12.0) + vars.timerDelta):(TimeSpan.FromSeconds((current.frameCount - vars.framesOnStart + vars.restartDelta) / 12.0) + vars.timerDelta));
 	}
 }
 
@@ -301,83 +310,94 @@ split {
 		case 0:
 			switch(game.ProcessName.ToLower()) {
 				case "dosbox":
-					if (current.start1 == 1 && current.level1 == 1 && current.mins == 60 && current.frames >= 47120384) {
-						vars.ResetDelta = 0;
-						vars.offset++;
+					if (current.start1 == 1 && current.level1 == 1 && current.mins == 60 && current.frames >= 47120384 && !vars.game1complete) {
+						vars.timerDelta = timer.Run[timer.CurrentSplitIndex - 1].SplitTime.GameTime;
 						vars.game = 1;
+						vars.game1complete = true;
 						return true;
-						
 					}
 
-					if (old.start2 == 238 && current.start2 != 238 && current.level2 == 1) {
+					if (old.start2 == 238 && current.start2 != 238 && current.level2 == 1 && !vars.game2complete) {
 						vars.framesOnStart = current.frameCount;
-						vars.offset = 14;
-						vars.offset++;
+						vars.timerDelta = timer.Run[timer.CurrentSplitIndex - 1].SplitTime.GameTime;
 						vars.game = 2;
+						vars.game2complete = true;
 						return true;
 					} break;
 
 				case "pop3d":
-					if (vars.inXRange(20.554f, 20.556f) && vars.inZRange(1.448f, 1.45f)) {
-						vars.offset++;
+					if (vars.inXRange(20.554f, 20.556f) && vars.inZRange(1.448f, 1.45f) && !vars.game3complete) {
+						vars.offset = timer.CurrentSplitIndex+1;
 						vars.game = 3;
-						return true;	
+						vars.game3complete = true;
+						return true;
 					} break;
 
 				case "pop":
-					if (vars.inPosFull(-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f) && current.startValue == 1) {
-						vars.offset++;
+					if (vars.inPosFull(-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f) && current.startValue == 1 && !vars.game4complete) {
+						vars.offset = timer.CurrentSplitIndex+1;
 						vars.aboveCredits = false;
 						vars.newFountain = false;
 						vars.game = 4;
-						return true;	
+						vars.game4complete = true;
+						return true;
 					} break;
 
 				case "pop2":
-					if (vars.inXRange(-997.6757f, -997.6755f) && old.startValue == 1 && current.startValue == 2) {
-						vars.offset++;
+					if (vars.inXRange(-997.6757f, -997.6755f) && old.startValue == 1 && current.startValue == 2 && !vars.game5complete) {
+						vars.offset = timer.CurrentSplitIndex+1;
 						vars.game = 5;
-						return true;	
+						vars.game5complete = true;
+						return true;
 					} break;
 
 				case "pop3":
-					if (vars.inXRange(-409.9f, -404.8f) && current.xCam >= 0.8318 && current.xCam <= 0.832 && current.yCam >= 0.1080 && current.yCam <= 0.1082) {
-						vars.offset++;
+					if (vars.inXRange(-409.9f, -404.8f) && current.xCam >= 0.8318 && current.xCam <= 0.832 && current.yCam >= 0.1080 && current.yCam <= 0.1082 && !vars.game1complete) {
+						vars.offset = timer.CurrentSplitIndex+1;
 						vars.game = 6;
-						return true;	
+						vars.game6complete = true;
+						return true;
 					} break;
 
 				case "princeofpersia_launcher":
-					if (old.yPos != -351 && current.yPos == -351) {
-						vars.offset++;
+					if (old.yPos != -351 && current.yPos == -351 && !vars.game7complete) {
+						vars.offset = timer.CurrentSplitIndex+1;
 						vars.game = 7;
-						return true;	
+						vars.game7complete = true;
+						return true;
 					} break;
 
 				case "prince of persia":
-					if (vars.inXRange(268.929f, 268.93f) && current.gameState == 4) {
-						vars.offset++;
+					if (vars.inXRange(268.929f, 268.93f) && current.gameState == 4 && !vars.game8complete) {
+						vars.offset = timer.CurrentSplitIndex+1;
 						vars.game = 8;
-						return true;	
+						vars.game8complete = true;
+						return true;
 					} break;
 			}
 			break;
 		
 		// Prince of Persia (1989):-
 		case 1:
-			vars.lastSplit(current.level1 == 14 && current.endGame == 255, 14);
-			if(old.level1 != current.level1)
+			if(old.level1 == current.level1 - 1 && current.gameRunning != 0 && current.level1 != 1)
 				return true;
-			if(current.level1 == 14 && current.endGame == 255){
-				vars.offset+=14;
+			if(current.level1 == 14 && current.endGame == 255 && current.gameRunning != 0){
+				vars.game = 0;
 				return true;
 			}
 			break;
 
 		// Prince of Persia 2: The Shadow and the Flame:-
 		case 2:
-			if (old.gameRunning != 0 && current.gameRunning == 0) vars.restartDelta += current.frameCount;
-			return old.level2 == current.level2 - 1 && current.level2 > 1;
+			if (old.gameRunning != 0 && current.gameRunning == 0){
+				vars.restartDelta += current.frameCount;
+			}
+			if (old.level2 == current.level2 - 1 && current.level2 > 1 && current.level2 != 15 && current.gameRunning != 0)
+				return true;
+			if (current.level2 == 15 && old.level2 == 14){
+				vars.game = 0;
+				return true;
+			}
 			break;
 
 		// Prince of Persia 3D:-
@@ -419,7 +439,7 @@ split {
 				case 13: return Cliffs;          // Cliffs
 				case 14: return SunTemple3D;     // Sun Temple
 				case 15: return MoonTemple;      // Moon Temple
-				case 16: vars.lastSplit(End3D, 17); break; // Finale
+				case 16: vars.lastSplit(End3D); break; // Finale
 			}
 			break;
 
@@ -462,7 +482,7 @@ split {
 			bool TheWarehouse          = vars.inPosFull(-73.352f, -71.233f, -28.5f, -26.868f, -1.001f, -0.818f);
 			bool TheZoo                = vars.inPosFull(-141.299f, -139.797f, -47.21f, -42.801f, -31.1f, -30.9f);
 			bool Tomb                  = vars.inPosFull(100.643f, 100.645f, -11.543f, -11.541f, -67.588f, -67.586f);
-			bool TortureChamber        = vars.inPosFull(139.231f, 139.233f, 162.556f, 162.558f, -29.502f, -29.5f);
+			bool TortureChamber        = vars.inPosFull(189.999f, 190.001f, -43.278f, -43.276f, -119.001f, -118.999f);
 			bool TortureChamberZipless = vars.inPosFull(187.5f, 192.5f, -39f, -37.5f, -119.1f, -118.9f);
 			bool TowerofDawn           = vars.inPosFull(35.5f, 35.7f, -50f, -39f, -32f, -30f);
 			bool UGReservoir           = vars.inPosFull(-51.477f, -48.475f, 72.155f, 73.657f, -24.802f, -24.799f);
@@ -489,10 +509,11 @@ split {
 					case 10: return Dream;                       //The Dream
 					case 11: return HonorGlory || LastFightSkip; //Honor and Glory
 					case 12: return GrandRewind;                 //The Grand Rewind
-					case 13: vars.lastSplit(SoTEnd, 14); break;  //The End
+					case 13: vars.lastSplit(SoTEnd); break;  //The End
 				} break;
 
-				case "Sands Trilogy (Any%, Zipless)": case "Sands Trilogy (Any%, No Major Glitches)":
+				case "Sands Trilogy (Any%, Zipless)": 
+				case "Sands Trilogy (Any%, No Major Glitches)":
 				switch (timer.CurrentSplitIndex - (short)vars.offset) {
 					case 0: return GasStation;             // The Treasure Vaults
 					case 1: return SandsUnleashed;         // The Sands of Time
@@ -525,7 +546,7 @@ split {
 					case 28: return SettingSun;            // The Setting Sun
 					case 29: return HonorGlory;            // Honor and Glory
 					case 30: return GrandRewind;           // The Grand Rewind
-					case 31: vars.lastSplit(SoTEnd, 32); break; //The End
+					case 31: vars.lastSplit(SoTEnd); break; //The End
 				} break;
 
 				case "Sands Trilogy (Completionist, Standard)":
@@ -541,10 +562,11 @@ split {
 					case 16: return SoTLU;                       // Life Upgrades 1-10
 					case 17: return HonorGlory || LastFightSkip; // Honor and Glory
 					case 18: return GrandRewind;                 // The Grand Rewind
-					case 19: vars.lastSplit(SoTEnd, 20); break;  //The End
+					case 19: vars.lastSplit(SoTEnd); break;  //The End
 				} break;
 
-				case "Sands Trilogy (Completionist, Zipless)": case "Sands Trilogy (Completionist, No Major Glitches)":
+				case "Sands Trilogy (Completionist, Zipless)":
+				case "Sands Trilogy (Completionist, No Major Glitches)":
 				switch (timer.CurrentSplitIndex - (short)vars.offset) {
 					case 0: return GasStation;                 // The Treasure Vaults
 					case 1: return SandsUnleashed;             // The Sands of Time
@@ -572,7 +594,7 @@ split {
 					case 31: return SettingSun;                // The Setting Sun
 					case 32: return HonorGlory;                // Honor and Glory
 					case 33: return GrandRewind;               // The Grand Rewind
-					case 34: vars.lastSplit(SoTEnd, 35); break; //The End
+					case 34: vars.lastSplit(SoTEnd); break; //The End
 				} break;
 			}
 			break;
@@ -629,7 +651,9 @@ split {
 
 			// Checking category and qualifications to complete each split:
 			switch(timer.Run.GetExtendedCategoryName()) {
-				case "Anthology": case "Sands Trilogy (Any%, Standard)": case "Sands Trilogy (Any%, Zipless)":
+				case "Anthology": 
+				case "Sands Trilogy (Any%, Standard)": 
+				case "Sands Trilogy (Any%, Zipless)":
 				switch (timer.CurrentSplitIndex - (short)vars.offset) {
 					case 0: return Boat;                                                              // The Boat
 					case 1: return RavenMan;                                                          // The Raven Man
@@ -638,7 +662,7 @@ split {
 					case 4: return ScorpionSword;                                                     // The Scorpion Sword
 					case 5: return EndGame || LightSword; 						  // Storygate 63 or The Light Sword
 					case 6: return BackToTheFuture;                                                   // Back to the Future
-					case 7: vars.lastSplit(WWEnd, 8); break;                                   	  // The End
+					case 7: vars.lastSplit(WWEnd); break;                                   	  // The End
 				} break;
 
 				case "Sands Trilogy (Any%, No Major Glitches)":
@@ -669,7 +693,7 @@ split {
 					case 23: return LibraryRev;         		// The Library Revisited
 					case 24: return LightSword;         		// The Light Sword
 					case 25: return DeathOfPrince;      		// The Death of a Prince
-					case 26: vars.lastSplit(WWEnd, 27); break;	// The End
+					case 26: vars.lastSplit(WWEnd); break;		// The End
 				} break;
 
 				case "Sands Trilogy (Completionist, Standard)":
@@ -686,7 +710,7 @@ split {
 					case 9: return LU8;         			// Life Upgrade 8
 					case 10: return LU9;        			// Life Upgrade 9
 					case 11: return WaterSword;			// The Water Sword
-					case 12: vars.lastSplit(WWEnd, 13); break;	// The End
+					case 12: vars.lastSplit(WWEnd); break;	// The End
 				} break;
 
 				case "Sands Trilogy (Completionist, Zipless)":
@@ -705,7 +729,7 @@ split {
 					case 11: return LU8;                     	// Life Upgrade 8
 					case 12: return LU9;                     	// Life Upgrade 9
 					case 13: return WaterSword;              	// The Water Sword
-					case 14: vars.lastSplit(WWEnd, 15); break; 	// The End
+					case 14: vars.lastSplit(WWEnd); break; 		// The End
 				} break;
 
 				case "Sands Trilogy (Completionist, No Major Glitches)":
@@ -740,7 +764,7 @@ split {
 					case 27: return LibraryRev;        // The Library Revisited
 					case 28: return LightSword;        // The Light Sword
 					case 29: return DeathOfPrince;     // The Death of a Prince
-					case 30: vars.lastSplit(WWEnd, 31); break; // The End
+					case 30: vars.lastSplit(WWEnd); break; // The End
 				} break;
 			}
 			break;
@@ -748,50 +772,55 @@ split {
 		//Prince of Persia: The Two Thrones:-
 		case 6:
 			// Initializing T2T Splits:
-			bool Balconies              = vars.inPosFull(-194f, -190f, 328f, 329.7f, 32.6f, 33.6f) ? true : false;
-			bool Brothel                = vars.inPosFull(-152.3f, -152.0f, 549.8f, 549.9f, 91.8f, 92f) ? true : false;
-			bool CityGardens            = vars.inPosFull(-63.5f, -63.4f, 389.7f, 389.8f, 85.2f, 85.3f) ? true : false;
-			bool DarkAlley              = vars.inPosFull(-114f, -110f, 328f, 338f, 55f, 59f) ? true : false;
-			bool Fortress               = vars.inPosFull(-71.4f, -71.3f, 9.6f, 9.7f, 44f, 44.1f) ? true : false;
-			bool HangingGardens         = vars.inPosFull(26f, 28f, 211f, 213f, 191f, 193f) ? true : false;
-			bool HarbourDistrict        = vars.inPosFull(-93f, -88f, 236.2f, 238f, 83f, 88f) ? true : false;
-			bool KingsRoad              = vars.inPosFull(53f, 70f, 240f, 250f, 70f, 73f) ? true : false;
-			bool KingsRoadZipless       = vars.inPosFull(91.9289f, 91.9290f, 230.0479f, 230.0480f, 70.9877f, 70.9879f) ? true : false;
-			bool Labyrinth              = vars.inPosFull(-25.5f, -23f, 325f, 338f, 35.9f, 36.1f) ? true : false;
-			bool LCRooftopZips          = vars.inPosFull(-246f, -241.5f, 373.5f, 383.6f, 66f, 69f) ? true : false;
-			bool LowerCity              = vars.inPosFull(-319f, -316.5f, 317f, 332.6f, 95.1f, 98f) ? true : false;
-			bool LowerCityRooftops      = vars.inPosFull(-261.5f, -261f, 318f, 319.5f, 46f, 48f) ? true : false;
-			bool LowerTower             = vars.inPosFull(-5f, -3f, 316f, 317.5f, 139.9f, 140.1f) ? true : false;
-			bool MarketDistrict         = vars.inPosFull(-185.5f, -175.5f, 524f, 530f, 90f, 92f) ? true : false;
-			bool Marketplace            = vars.inPosFull(-213f, -207f, 484f, 490f, 101f, 103f) ? true : false;
-			bool MentalRealm            = vars.inPosFull(189f, 193f, 319.135f, 320f, 542f, 543f) ? true : false;
-			bool MiddleTower            = vars.inPosFull(-18f, -12f, 303f, 305f, 184.8f, 185.1f) ? true : false;
-			bool Palace                 = vars.inPosFull(-35.5f, -35.4f, 232.3f, 232.4f, 146.9f, 147f) ? true : false;
-			bool PalaceEntrance         = vars.inPosFull(30.8f, 30.9f, 271.2f, 271.3f, 126f, 126.1f) ? true : false;
-			bool Plaza                  = vars.inPosFull(-104f, -100f, 548f, 553f, 105.9f, 106.1f) ? true : false;
-			bool Ramparts               = vars.inPosFull(-271f, -265f, 187f, 188f, 74f, 75f) ? true : false;
-			bool RoyalWorkshop          = vars.inPosFull(58f, 62f, 470f, 480f, 79f, 81f) ? true : false;
-			bool SewersT2T              = vars.inPosFull(-100f, -96f, -83f, -79f, 19.9f, 20f) ? true : false;
-			bool SewersZipless          = vars.inPosFull(-89.0f, -88.0f, -15.2f, -14.7f, 4.9f, 5.1f) ? true : false;
-			bool StructuresMind         = vars.inPosFull(5f, 12f, 243f, 265f, 104f, 104.1f) ? true : false;
-			bool StructuresMindZipless  = vars.inPosFull(-34f, -27f, 240f, 250f, 178f, 180f) ? true : false;
-			bool T2TLU1                 = vars.inPosFull(-14.9972f, -14.9970f, -112.8152f, -112.8150f, 20.0732f, 20.0734f) ? true : false;
-			bool T2TLU2                 = vars.inPosFull(-302.0919f, -302.0917f, 370.8710f, 370.8712f, 52.858f, 52.8582f) ? true : false;
-			bool T2TLU3                 = vars.inPosFull(-187.3369f, -187.3367f, -455.9863f, 455.9865f, 78.0330f, 78.0332f) ? true : false;
-			bool T2TLU4                 = vars.inPosFull(-55.0147f, -55.0145f, 395.7608f, 395.761f, 72.0774f, 72.0776f) ? true : false;
-			bool T2TLU5                 = vars.inPosFull(-30.1223f, -30.1221f, 281.8893f, 281.8895f, 104.0796f, 104.0798f) ? true : false;
-			bool T2TLU6                 = vars.inPosFull(-23.9663f, -23.9661f, 253.9438f, 253.944f, 183.0634f, 183.0636f) ? true : false;
-			bool Temple                 = vars.inPosFull(-212.2f, -211.9f, 419.0f, 419.8f, 81f, 82f) ? true : false;
-			bool TempleRooftops         = vars.inPosFull(-122.6f, -117.7f, 421.6f, 423f, 107f, 108.1f) ? true : false;
-			bool Terrace                = vars.inPosFull(-7.2f, -6.9f, 245.6f, 245.9f, 677f, 679f) ? true : false;
-			bool ThePromenade           = vars.inPosFull(-3f, -1f, 515f, 519f, 72f, 75f) ? true : false;
-			bool TrappedHallway         = vars.inPosFull(-52.1f, -52.0f, 135.8f, 135.9f, 75.8f, 76f) ? true : false;
-			bool UndergroundCave        = vars.inPosFull(-11f, -9f, 327f, 334f, 73f, 74f) ? true : false;
-			bool UndergroundCaveZipless = vars.inPosFull(27f, 29f, 316.5f, 318f, 99.9f, 100.1f) ? true : false;
-			bool UpperCity              = vars.inPosFull(-124.5f, -122.5f, 500f, 505f, 97f, 99f) ? true : false;
-			bool UpperTower             = vars.inPosFull(-8f, -7f, 296f, 298f, 226.9f, 227f) ? true : false;
-			bool WellOfAncestors        = vars.inPosFull(-12.6f, -12.5f, 241.2f, 241.3f, 0.9f, 1f) ? true : false;
-			bool WellOfAncestorsZipless = vars.inPosFull(-28f, -26.5f, 250f, 255f, 20.9f, 30f) ? true : false;
+			bool ArenaDeload		= vars.inPosFull(-256.1f, -251.9f, 358f, 361.5f, 53.9f, 63.3f) ? true : false;
+			bool Balconies			= vars.inPosFull(-194f, -190f, 328f, 329.7f, 32.6f, 33.6f) ? true : false;
+			bool BottomofWell		= vars.inPosFull(-21.35f, -21.34f, 252.67f, 252.68f, 20.95f, 20.96f) ? true : false;
+			bool Brothel			= vars.inPosFull(-152.3f, -152.0f, 549.8f, 549.9f, 91.8f, 92f) ? true : false;
+			bool CaveDeath			= vars.inPosFull(5.99f, 6.00f, 306.96f, 306.97f, 42f, 42.01f) ? true : false;
+			bool Chariot1			= vars.inPosFull(-443.37f, -443.36f, 355.80f, 355.81f, 57.71f, 57.72f) ? true : false;
+			bool CityGardens		= vars.inPosFull(-63.5f, -63.4f, 389.7f, 389.8f, 85.2f, 85.3f) ? true : false;
+			bool DarkAlley			= vars.inPosFull(-114f, -110f, 328f, 338f, 55f, 59f) ? true : false;
+			bool Fortress			= vars.inPosFull(-71.4f, -71.3f, 9.6f, 9.7f, 44f, 44.1f) ? true : false;
+			bool HangingGardens		= vars.inPosFull(26f, 28f, 211f, 213f, 191f, 193f) ? true : false;
+			bool HangingGardenz		= vars.inPosFull(5.2f, 5.4f, 213.5f, 215.6f, 194.9f, 196.2f) ? true : false;
+			bool HarbourDistrict		= vars.inPosFull(-93f, -88f, 236.2f, 238f, 83f, 88f) ? true : false;
+			bool KingsRoad			= vars.inPosFull(53f, 70f, 240f, 250f, 70f, 73f) ? true : false;
+			bool KingsRoadZipless		= vars.inPosFull(91.9289f, 91.9290f, 230.0479f, 230.0480f, 70.9877f, 70.9879f) ? true : false;
+			bool Labyrinth			= vars.inPosFull(-25.5f, -23f, 325f, 338f, 35.9f, 37.5f) ? true : false;
+			bool LCRooftopZips		= vars.inPosFull(-246f, -241.5f, 373.5f, 383.6f, 66f, 69f) ? true : false;
+			bool LowerCity			= vars.inPosFull(-319f, -316.5f, 317f, 332.6f, 95.1f, 98f) ? true : false;
+			bool LowerCityRooftops		= vars.inPosFull(-261.5f, -261f, 318f, 319.5f, 46f, 48f) ? true : false;
+			bool LowerTower			= vars.inPosFull(-5f, -3f, 316f, 317.5f, 139.9f, 140.1f) ? true : false;
+			bool MarketDistrict		= vars.inPosFull(-185.5f, -175.5f, 524f, 530f, 90f, 92f) ? true : false;
+			bool Marketplace		= vars.inPosFull(-213f, -207f, 484f, 490f, 101f, 103f) ? true : false;
+			bool MentalRealm		= vars.inPosFull(189f, 193f, 319.135f, 320f, 542f, 543f) ? true : false;
+			bool MiddleTower		= vars.inPosFull(-18f, -12f, 303f, 305f, 184.8f, 185.1f) ? true : false;
+			bool Palace			= vars.inPosFull(-35.5f, -35.4f, 232.3f, 232.4f, 146.9f, 147f) ? true : false;
+			bool PalaceEntrance		= vars.inPosFull(30.8f, 30.9f, 271.2f, 271.3f, 126f, 126.1f) ? true : false;
+			bool Plaza			= vars.inPosFull(-104f, -100f, 548f, 553f, 105.5f, 106.1f) ? true : false;
+			bool Ramparts			= vars.inPosFull(-271f, -265f, 187f, 188f, 74f, 75f) ? true : false;
+			bool RoyalWorkshop		= vars.inPosFull(58f, 62f, 470f, 480f, 79f, 81f) ? true : false;
+			bool SewersT2T			= vars.inPosFull(-100f, -96f, -83f, -79f, 19.9f, 20f) ? true : false;
+			bool SewersZipless		= vars.inPosFull(-89.0f, -88.0f, -15.2f, -14.7f, 4.9f, 5.1f) ? true : false;
+			bool StructuresMind         	= vars.inPosFull(5f, 12f, 243f, 265f, 104f, 104.1f) ? true : false;
+			bool StructuresMindZipless  	= vars.inPosFull(-34f, -27f, 240f, 250f, 178f, 180f) ? true : false;
+			bool T2TLU1                 	= vars.inPosFull(-14.9972f, -14.9970f, -112.8152f, -112.8150f, 20.0732f, 20.0734f) ? true : false;
+			bool T2TLU2                 	= vars.inPosFull(-302.0919f, -302.0917f, 370.8710f, 370.8712f, 52.858f, 52.8582f) ? true : false;
+			bool T2TLU3                 	= vars.inPosFull(-187.3369f, -187.3367f, -455.9863f, 455.9865f, 78.0330f, 78.0332f) ? true : false;
+			bool T2TLU4                 	= vars.inPosFull(-55.0147f, -55.0145f, 395.7608f, 395.761f, 72.0774f, 72.0776f) ? true : false;
+			bool T2TLU5                 	= vars.inPosFull(-30.1223f, -30.1221f, 281.8893f, 281.8895f, 104.0796f, 104.0798f) ? true : false;
+			bool T2TLU6                 	= vars.inPosFull(-23.9663f, -23.9661f, 253.9438f, 253.944f, 183.0634f, 183.0636f) ? true : false;
+			bool Temple                 	= vars.inPosFull(-212.2f, -211.9f, 419.0f, 419.8f, 81f, 82f) ? true : false;
+			bool TempleRooftops         	= vars.inPosFull(-122.6f, -117.7f, 421.6f, 423f, 107f, 108.1f) ? true : false;
+			bool Terrace                	= vars.inPosFull(-7.2f, -6.9f, 245.6f, 245.9f, 677f, 679f) ? true : false;
+			bool ThePromenade           	= vars.inPosFull(-3f, -1f, 515f, 519f, 72f, 75f) ? true : false;
+			bool TrappedHallway         	= vars.inPosFull(-52.1f, -52.0f, 135.8f, 135.9f, 75.8f, 76f) ? true : false;
+			bool UndergroundCave        	= vars.inPosFull(-11f, -9f, 327f, 334f, 73f, 74f) ? true : false;
+			bool UndergroundCaveZipless 	= vars.inPosFull(27f, 29f, 316.5f, 318f, 99.9f, 100.1f) ? true : false;
+			bool UpperCity              	= vars.inPosFull(-124.5f, -122.5f, 500f, 505f, 97f, 99f) ? true : false;
+			bool UpperTower             	= vars.inPosFull(-8f, -7f, 296f, 298f, 226.9f, 227f) ? true : false;
+			bool WellOfAncestors        	= vars.inPosFull(-12.6f, -12.5f, 241.2f, 241.3f, 0.9f, 1f) ? true : false;
+			bool WellOfAncestorsZipless 	= vars.inPosFull(-28f, -26.5f, 250f, 255f, 20.9f, 30f) ? true : false;
 
 			// Checking category and qualifications to complete each split:
 			switch (timer.Run.GetExtendedCategoryName()) {
@@ -801,19 +830,19 @@ split {
 					case 1: return HarbourDistrict; // The Harbor District
 					case 2: return Palace;          // The Palace
 					case 3: return SewersT2T;       // Exit Sewers
-					case 4: return LowerCity;       // Exit Lower City
-					case 5: return LCRooftopZips;   // The Lower City Rooftops
+					case 4: return Chariot1;	// Finish Chariot 1
+					case 5: return ArenaDeload;   	// Arena Deload
 					case 6: return TempleRooftops;  // Exit Temple Rooftops
 					case 7: return Marketplace;     // Exit Marketplace
 					case 8: return Plaza;           // Exit Plaza
 					case 9: return CityGardens;     // Exit City Gardens
 					case 10: return RoyalWorkshop;  // Exit Royal Workshop
 					case 11: return KingsRoad;      // The King's Road
-					case 12: return StructuresMind; // Exit Structure's Mind
-					case 13: return Labyrinth;      // Exit Labyrinth
+					case 12: return BottomofWell; 	// Well Death
+					case 13: return CaveDeath;      // Cave Death
 					case 14: return UpperTower;     // The Towers
 					case 15: return Terrace;        // The Terrace
-					case 16: vars.lastSplit(MentalRealm, 17); break; // The Mental Realm
+					case 16: vars.lastSplit(MentalRealm); break; // The Mental Realm
 				} break;
 
 				case "Sands Trilogy (Any%, Zipless)":
@@ -834,19 +863,17 @@ split {
 					case 13: return Plaza;                  // Exit Plaza
 					case 14: return UpperCity;              // The Upper City
 					case 15: return CityGardens;            // The City Gardens
-					case 16: return ThePromenade;           // The Promenade
-					case 17: return RoyalWorkshop;          // The Royal Workshop
-					case 18: return KingsRoadZipless;       // The King's Road
-					case 19: return PalaceEntrance;         // The Palace Entrance
-					case 20: return HangingGardens;         // The Hanging Gardens
-					case 21: return WellOfAncestorsZipless; // The Structure's Mind
-					case 22: return WellOfAncestors;        // The Well of Ancestors
-					case 23: return Labyrinth;              // The Labyrinth
-					case 24: return UndergroundCaveZipless; // The Underground Cave
-					case 25: return LowerTower;             // The Lower Tower
-					case 26: return UpperTower;             // The Middle and Upper Towers
-					case 27: return Terrace;                // The Death of the Vizier
-					case 28: vars.lastSplit(MentalRealm, 29); break; // The Mental Realm
+					case 16: return RoyalWorkshop;          // The Royal Workshop
+					case 17: return KingsRoadZipless;       // The King's Road
+					case 18: return PalaceEntrance;         // The Palace Entrance
+					case 19: return HangingGardenz;         // The Hanging Gardens
+					case 20: return WellOfAncestorsZipless; // The Structure's Mind
+					case 21: return WellOfAncestors;        // The Well of Ancestors
+					case 22: return Labyrinth;              // The Labyrinth
+					case 23: return LowerTower;             // The Lower Tower
+					case 24: return UpperTower;             // The Middle and Upper Towers
+					case 25: return Terrace;                // The Death of the Vizier
+					case 26: vars.lastSplit(MentalRealm); break; // The Mental Realm
 				} break;
 
 				case "Sands Trilogy (Any%, No Major Glitches)":
@@ -882,7 +909,7 @@ split {
 					case 28: return MiddleTower;           // The Middle Tower
 					case 29: return UpperTower;            // The Upper Tower
 					case 30: return Terrace;               // The Death of the Vizier
-					case 31: vars.lastSplit(MentalRealm, 32); break; // The Mental Realm
+					case 31: vars.lastSplit(MentalRealm); break; // The Mental Realm
 				} break;
 
 				case "Sands Trilogy (Completionist, Standard)":
@@ -907,7 +934,7 @@ split {
 					case 17: return T2TLU6;         // Life Upgrade 6
 					case 18: return UpperTower;     // The Upper Tower
 					case 19: return Terrace;        // The Death of the Vizier
-					case 20: vars.lastSplit(MentalRealm, 21); break; // The Mental Realm
+					case 20: vars.lastSplit(MentalRealm); break; // The Mental Realm
 				} break;
 
 				case "Sands Trilogy (Completionist, Zipless)":
@@ -930,20 +957,18 @@ split {
 					case 15: return Plaza;                  // Exit Plaza
 					case 16: return UpperCity;              // The Upper City
 					case 17: return T2TLU4;                 // Life Upgrade 4
-					case 18: return ThePromenade;           // The Promenade
-					case 19: return RoyalWorkshop;          // The Royal Workshop
-					case 20: return KingsRoadZipless;       // The King's Road
-					case 21: return T2TLU5;                 // Life Upgrade 5
-					case 22: return HangingGardens;         // The Hanging Gardens
-					case 23: return WellOfAncestorsZipless; // The Structure's Mind
-					case 24: return WellOfAncestors;        // The Well of Ancestors
-					case 25: return Labyrinth;              // The Labyrinth
-					case 26: return UndergroundCaveZipless; // The Underground Cave
-					case 27: return LowerTower;             // The Lower Tower
-					case 28: return T2TLU6;                 // Life Upgrade 6
-					case 29: return UpperTower;             // The Upper Tower
-					case 30: return Terrace;                // The Death of the Vizier
-					case 31: vars.lastSplit(MentalRealm, 32); break; // The Mental Realm
+					case 18: return RoyalWorkshop;          // The Royal Workshop
+					case 19: return KingsRoadZipless;       // The King's Road
+					case 20: return T2TLU5;                 // Life Upgrade 5
+					case 21: return HangingGardenz;         // The Hanging Gardens
+					case 22: return WellOfAncestorsZipless; // The Structure's Mind
+					case 23: return WellOfAncestors;        // The Well of Ancestors
+					case 24: return Labyrinth;              // The Labyrinth
+					case 25: return LowerTower;             // The Lower Tower
+					case 26: return T2TLU6;                 // Life Upgrade 6
+					case 27: return UpperTower;             // The Upper Tower
+					case 28: return Terrace;                // The Death of the Vizier
+					case 29: vars.lastSplit(MentalRealm); break; // The Mental Realm
 				} break;
 
 				case "Sands Trilogy (Completionist, No Major Glitches)":
@@ -980,7 +1005,7 @@ split {
 					case 29: return T2TLU6;                // Life Upgrade 6
 					case 30: return UpperTower;            // The Upper Tower
 					case 31: return Terrace;               // The Death of the Vizier
-					case 32: vars.lastSplit(MentalRealm, 33); break; // The Mental Realm
+					case 32: vars.lastSplit(MentalRealm); break; // The Mental Realm
 				} break;
 			}
 			break;
@@ -1068,7 +1093,7 @@ split {
 				case 28: return Concubine;        // The Concubine
 				case 29: return King;             // The King
 				case 30: return TheGod;           // The God
-				case 31: vars.lastSplit(Resurrection, 32); break; // Resurrection
+				case 31: vars.lastSplit(Resurrection); break; // Resurrection
 			}
 			break;
 
@@ -1123,7 +1148,7 @@ split {
 				case 13: return PowerOfRazia;     // The Power of Razia
 				case 14: return Climb;            // The Climb
 				case 15: return Storm;            // The Storm
-				case 16: vars.lastSplit(TFSEnd, 17); break; // The End
+				case 16: vars.lastSplit(TFSEnd); break; // The End
 			}
 			break;
 	}
