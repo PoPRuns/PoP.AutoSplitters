@@ -16,7 +16,7 @@
 state("AppleWin")
 {
     byte Level      : "AppleWin.exe", 0x1F5498, 0x031C;        // shows level 1-14 changes as door is entered
-    short Ticks     : "AppleWin.exe", 0x1F5498, 0x0306;        // Ticks one per frame, pauses during loads and resets to 0 at start of the game
+    ushort Ticks    : "AppleWin.exe", 0x1F5498, 0x0306;        // Ticks one per frame, pauses during loads and resets to 0 at start of the game
     byte EndGame    : "AppleWin.exe", 0x1F5498, 0xE14A;        // Changes to 255 at the end.
     byte Reset1     : "AppleWin.exe", 0x1F5498, 0xC11E;        // Reset flags. 0 in menu and 1 during levels.
     byte Reset2     : "AppleWin.exe", 0x1F5498, 0xC158;        // ^
@@ -30,13 +30,13 @@ start
 
 gameTime
 {
-    double secondsElapsed = current.Ticks / 12.0;
+    double minutesElapsed = current.Ticks / 725.0;
     
     if(old.Level == 13 && current.Level == 14) {
         secondsElapsed -= 0.002;   // hack for splits.io issue - if last split is empty, gametime won't be available
     }
     
-    return TimeSpan.FromSeconds(secondsElapsed);
+    return TimeSpan.FromMinutes(minutesElapsed);
 }
 
 reset
