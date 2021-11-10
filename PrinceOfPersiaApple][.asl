@@ -30,13 +30,13 @@ start
 
 gameTime
 {
-    double minutesElapsed = current.Ticks / 725.0;
+    double secondsElapsed = current.Ticks / 12.0;
     
     if(old.Level == 13 && current.Level == 14) {
         secondsElapsed -= 0.002;   // hack for splits.io issue - if last split is empty, gametime won't be available
     }
     
-    return TimeSpan.FromMinutes(minutesElapsed);
+    return TimeSpan.FromSeconds(secondsElapsed);
 }
 
 reset
