@@ -325,9 +325,9 @@ split{
 		return false;
 	});
 	vars.LastFightSkip = (Func <bool>)(() => {
-		if(current.xPos >= 66 && current.xPos <= 69 &&
-		   current.yPos >= -39 && current.yPos <= -36 &&
-		   current.zPos >= 90 && current.zPos <= 92 &&
+		if(current.xPos >= 58 && current.xPos <= 61 &&
+		   current.yPos >= -60 && current.yPos <= -57.5 &&
+		   current.zPos >= 29 && current.zPos <= 30.5 &&
 		   settings["Lastfightskip"])
 			return true;
 		return false;
