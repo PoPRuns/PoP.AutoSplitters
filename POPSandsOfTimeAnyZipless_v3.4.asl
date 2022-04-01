@@ -276,9 +276,9 @@ split{
 		return false;
 	});
 	vars.TheElevator = (Func <bool>)(() => {
-		if(current.xPos >= 74 && current.xPos <= 74.171 &&
+		if(current.xPos >= 74 && current.xPos <= 75 &&
 		   current.yPos >= -46.751 && current.yPos <= -43.252 &&
-		   current.zPos >= -33.501 && current.zPos <= -33.499) 		
+		   current.zPos >= -34 && current.zPos <= -33) 		
 			return true;
 		return false;
 	});
