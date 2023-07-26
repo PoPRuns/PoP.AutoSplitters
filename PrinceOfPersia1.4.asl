@@ -165,7 +165,8 @@ reset
         }
     }
     
-    if (levelTimeJustAppeared && !(current.Level == 3 && current.Level3CP == 1) && current.Level != 1) {
+    if (((old.Scene != current.Scene) || (levelRestartInProgress && levelTimeJustAppeared)) &&
+        !(current.Level == 3 && current.Level3CP == 1) && current.Level != 1) {
         vars.levelRestartILTimestamp = vars.adjustedFramesLeft;
     }
     
