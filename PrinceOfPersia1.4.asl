@@ -49,6 +49,7 @@ startup
     settings.Add("sound", false, "Check if sound is enabled at game start");
 
     settings.Add("split_settings", true, "Split configuration");
+        settings.Add("split_on_level", false, "Split on 'next_level' instead of 'current_level' (before level end music)", "split_settings");
         settings.Add("disable_levelskip_detection", false, "Disable 'Level Skip' category detection (keep splits for levels 1-3)", "split_settings");
         settings.Add("merge_level_12", false, "Don't split between levels 12 and 13 (treat tower Level and Jaffar level as one segment)", "split_settings");
 
@@ -166,8 +167,13 @@ split
 
     bool skipSplit = (suppressFirstLevels || suppressJaffarLevel);
 
-    bool doSplit = ((old.Level != current.Level) && !skipSplit) ||       // if level changes
-                   (current.Level == 14 && current.EndGame == 0xFF);     // if currently on level 14 and EndGame changes to 255 (FF in hexadecimal)
+    byte oldLevel = settings["split_on_level"] ? old.Level : old.Scene;
+    byte currentLevel = settings["split_on_level"] ? current.Level : current.Scene;
+
+    bool levelChanged = (oldLevel != currentLevel);                       // if level changes
+    bool gameFinished = (current.Level == 14 && current.EndGame == 0xFF); // if currently on level 14 and EndGame changes to 255 (FF in hexadecimal)
+
+    bool doSplit = (levelChanged && !skipSplit) || gameFinished;
 
     if (doSplit && settings["single_level_mode"]) {
         vars.levelChanged = true;
