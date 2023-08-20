@@ -23,8 +23,8 @@
 
 state("DOSBOX")
 {
-    byte Level          : "DOSBox.exe", 0x193C370, 0x1D0F4;          // shows level 1-14 changes as door is entered
-    byte Scene          : "DOSBox.exe", 0x193C370, 0x1A4BA;          // shows level 1-14 changes as scenes end
+    byte Level          : "DOSBox.exe", 0x193C370, 0x1D0F4;          // shows level 1-14 changes as door is entered ('next_level' variable)
+    byte Scene          : "DOSBox.exe", 0x193C370, 0x1A4BA;          // shows level 1-14 changes as cutscenes end   ('curr_level' variable)
     byte EndGame        : "DOSBox.exe", 0x193C370, 0x1D74A;          // 0 before endgame, 255 at endgame cutscene
     byte Start          : "DOSBox.exe", 0x193C370, 0x1D694;          // the level you start the game at
     byte GameRunning    : "DOSBox.exe", 0x19175EA;                   // 0 if game isn't running
@@ -48,10 +48,10 @@ startup
 
     settings.Add("sound", false, "Check if sound is enabled at game start");
 
-    settings.Add("split_settings", true, "Split configuration");
-        settings.Add("split_on_level", false, "Split on 'next_level' instead of 'current_level' (before level end music)", "split_settings");
+    settings.Add("split_settings", false, "Split configuration");
         settings.Add("disable_levelskip_detection", false, "Disable 'Level Skip' category detection (keep splits for levels 1-3)", "split_settings");
         settings.Add("merge_level_12", false, "Don't split between levels 12 and 13 (treat tower Level and Jaffar level as one segment)", "split_settings");
+        settings.Add("split_on_next_level", false, "Split on 'next_level' instead of 'current_level' (before level end music)", "split_settings");
 
     settings.Add("single_level_mode", false, "Individual level mode");
 
@@ -162,8 +162,8 @@ gameTime
 
 split
 {
-    byte oldLevel = settings["split_on_level"] ? old.Level : old.Scene;
-    byte currentLevel = settings["split_on_level"] ? current.Level : current.Scene;
+    byte oldLevel = settings["split_on_next_level"] ? old.Level : old.Scene;
+    byte currentLevel = settings["split_on_next_level"] ? current.Level : current.Scene;
 
     bool suppressFirstLevels = (!settings["disable_levelskip_detection"] && vars.isLevelSkipMode() && currentLevel <= 4) ;
     bool suppressJaffarLevel = (settings["merge_level_12"] && old.Level == 12);
