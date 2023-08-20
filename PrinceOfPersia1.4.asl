@@ -5,7 +5,7 @@
 // Overhaul by:    WinterThunder
 // Tweaks by:      Smathlax, GMP
 // Level restarts: eien86
-// Updated:        2021-02-23
+// Updated:        2023-08-21
 // IGT timing:     YES
 //
 // Base memory path is everything before final offset
@@ -153,13 +153,10 @@ update
             return notPlaying;
         });
 
-        vars.reset.individualLevel = (Func<bool>) (() => {
-            bool levelRestartInProgress = (current.RestartFlag0 == -1) &&
-                                        (current.RestartFlag1 == -1) &&
-                                        (current.RestartFlag2 == -1);
+        vars.reset.individualLevel = (Func<bool, bool>) ((levelJustRestarted) => {
 
             bool levelTimeJustAppeared = (current.LevelTextTime == 24);
-            bool singleLevelModeRestart = (settings["single_level_mode"] && levelRestartInProgress && levelTimeJustAppeared);
+            bool singleLevelModeRestart = (settings["single_level_mode"] && levelJustRestarted && levelTimeJustAppeared);
             bool singleLevelModeChangedLevel = (settings["single_level_mode"] && vars.levelChanged);
 
             if (singleLevelModeRestart || singleLevelModeChangedLevel) {
@@ -213,8 +210,12 @@ onStart {
 
 reset
 {
+    bool wasLevelRestartInProgress = (old.RestartFlag0 == -1) && (old.RestartFlag1 == -1) && (old.RestartFlag2 == -1);
+    bool isLevelRestartInProgress = (current.RestartFlag0 == -1) && (current.RestartFlag1 == -1) && (current.RestartFlag2 == -1);
+    bool levelJustRestarted = isLevelRestartInProgress && !wasLevelRestartInProgress;
+
     bool normalReset = vars.reset.normal();
-    bool individualLevelReset = vars.reset.individualLevel();
+    bool individualLevelReset = vars.reset.individualLevel(levelJustRestarted);
 
     if (normalReset) {
         vars.levelRestartTimestamp = vars.NORMAL_MODE_BASE_FRAMES_REMAINING;
