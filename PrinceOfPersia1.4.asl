@@ -47,37 +47,98 @@ startup
     refreshRate = 30; // Prince of Persia runs at 12 fps, let's update 2.5x as often to be sure
 
     settings.Add("sound", false, "Check if sound is enabled at game start");
+    settings.SetToolTip("sound", "Prevent starting the timer if sound is OFF (useful in No Major Glitches, where sound on is required)");
 
     settings.Add("split_settings", false, "Split configuration");
-        settings.Add("disable_levelskip_detection", false, "Disable 'Level Skip' category detection (keep splits for levels 1-3)", "split_settings");
-        settings.Add("merge_level_12", false, "Don't split between levels 12 and 13 (treat tower Level and Jaffar level as one segment)", "split_settings");
-        settings.Add("split_on_next_level", false, "Split on 'next_level' instead of 'current_level' (before level end music)", "split_settings");
+        settings.Add("merge_level_12", false, "Don't split between levels 12 and 13", "split_settings");
+        settings.SetToolTip("merge_level_12", "Treat tower Level (level 12) and Jaffar level (level 12a) as one segment)");
+        settings.Add("split_on_next_level", false, "Split on 'next_level' instead of 'current_level'", "split_settings");
+        settings.SetToolTip("split_on_next_level", "Enable legacy splitting point - right after the Prince enters the stairs, when the music starts playing");
+
+    settings.Add("level_skip", true, "Level Skip mode config");
+        settings.Add("level_skip_detection_category_name", true, "Detect category name (keep time at 0:00.00 until SHIFT+L)", "level_skip");
+        settings.SetToolTip("level_skip_detection_category_name", "Detect \"Level Skip\" or \"levelskip\" in category name to enable the mode");
+        settings.Add("level_skip_detection_shift_l", true, "Threat every SHIFT+L as Level Skip mode (even if category detection is disabled)", "level_skip");
+        settings.Add("level_skip_split_initial_levels", false, "Keep splitting between levels 1-3 even if Level Skip mode detected", "level_skip");
 
     settings.Add("single_level_mode", false, "Individual level mode");
 
-     vars.isLevelSkipMode = (Func<bool>) (() => {
-        string categoryName = timer.Run.GetExtendedCategoryName().ToLower();
-        //print("POPASL.isLevelSkipEnabled(): categoryName = " + categoryName);
-        bool isLevelSkip = categoryName.Contains("level skip") || categoryName.Contains("levelskip");
-        return isLevelSkip;
-    });
+    vars.functionsInitialized = false;
 
     vars.levelRestartSafetyBuffer = 30;  // resets are suppressed for 2.5s after CTRL+A
     vars.levelRestartTimestamp = 60*720;
     vars.levelChanged = false;
     vars.levelRestarted = false;
+    vars.levelSkipModeDetected = false;
     vars.levelSkipActivated = false;
+
+    vars.FRAMES_PER_MINUTE = 720;
+    vars.NORMAL_MODE_BASE_FRAMES_REMAINING = 60 * vars.FRAMES_PER_MINUTE;
+    vars.LEVEL_SKIP_BASE_FRAMES_REMAINING = 15 * vars.FRAMES_PER_MINUTE;
+
+    vars.DEBUG = false;
+    vars.print = (Action<string>) (message => print("[POPASL] " + message));
+}
+
+update
+{
+    //we have to do that here instead of 'startup' to access actual Settings and not SettingsBuilder
+    if (vars.functionsInitialized == false) {
+        vars.functionsInitialized = true;
+        vars.print("loading functions...");
+
+        vars.gameStarted = (Func<bool>) (() => {
+            // start if sound check passes AND start variable = 1 AND if level = 1 AND if Minutes = 60 AND count is >= 47120384
+            return ((current.Sound == 0 && settings["sound"] == true) || (settings["sound"] == false)) &&
+                    (current.Start == 0x1) &&
+                    (current.Level == 0x1) &&
+                    (current.MinutesLeft == 0x3C) &&
+                    (current.Count >= 0x2CE0000);
+        });
+
+        vars.checkLevelSkipCategory = (Func<bool>) (() => {
+            bool isLevelSkipCategory = false;
+            if (settings["level_skip_detection_category_name"] == true) {
+                string categoryName = timer.Run.GetExtendedCategoryName().ToLower();
+                vars.print("checkLevelSkipCategory() categoryName = " + categoryName);
+                isLevelSkipCategory = categoryName.Contains("level skip") || categoryName.Contains("levelskip");
+            }
+            return isLevelSkipCategory || vars.levelSkipActivated;
+        });
+
+        vars.levelSkipMode = (Func<bool>) (() => vars.levelSkipModeDetected || vars.levelSkipActivated );
+
+        vars.shiftLPressed = (Func<bool>) (() => {
+            bool pressed = false;
+            if (!(old.MinutesLeft == 15 && (old.FrameSeconds == 718 || old.FrameSeconds == 719)) &&
+            (current.MinutesLeft == 15 && current.FrameSeconds == 718)) {
+                pressed = true;
+            }
+            return pressed;
+        });
+
+        vars.gameTime = new ExpandoObject();
+        vars.gameTime.individualLevel = (Func<int>) (() => {
+            return 1;
+        });
+        vars.gameTime.levelSkip = (Func<int>) (() => {
+            if (vars.levelSkipActivated) {
+                return vars.LEVEL_SKIP_BASE_FRAMES_REMAINING - vars.adjustedFramesLeft;
+            } else {
+                return 0;
+            }
+        });
+        vars.gameTime.normal = (Func<int>) (() => vars.NORMAL_MODE_BASE_FRAMES_REMAINING - vars.adjustedFramesLeft );
+
+        vars.print("functions loaded");
+    }
+
+    vars.levelSkipActivated = vars.levelSkipActivated || vars.shiftLPressed() && (vars.levelSkipModeDetected || settings["level_skip_detection_shift_l"] == true);
 }
 
 start
 {
-    // start if sound check passes AND start variable = 1 AND if level = 1 AND if Minutes = 60 AND count is >= 47120384
-    bool startGame = ((current.Sound == 0 && settings["sound"] == true) || (settings["sound"] == false)) &&
-                     (current.Start == 0x1) &&
-                     (current.Level == 0x1) &&
-                     (current.MinutesLeft == 0x3C) &&
-                     (current.Count >= 0x2CE0000);
-
+    bool startGame = vars.gameStarted();
     bool singleLevelModeRestart = (settings["single_level_mode"] && vars.levelRestarted);
 
     if (startGame) {
@@ -92,9 +153,13 @@ start
     return (startGame || singleLevelModeRestart);
 }
 
+onStart {
+    vars.levelSkipActivated = false;
+    vars.levelSkipModeDetected = vars.checkLevelSkipCategory();
+}
+
 reset
 {
-
     // reset if starting level isn't 1 OR game has quit
     bool notPlaying = (current.Start == 0x0) || (current.GameRunning == 0x0);
 
@@ -104,7 +169,7 @@ reset
 
     bool levelTimeJustAppeared = (current.LevelTextTime == 24);
 
-    //print("POPASL.flags: " + current.RestartFlag0 + " " + current.RestartFlag1 + " " + current.RestartFlag2);
+    //vars.print("flags: " + current.RestartFlag0 + " " + current.RestartFlag1 + " " + current.RestartFlag2);
 
     bool singleLevelModeRestart = (settings["single_level_mode"] && levelRestartInProgress && levelTimeJustAppeared);
     bool singleLevelModeChangedLevel = (settings["single_level_mode"] && vars.levelChanged);
@@ -137,26 +202,39 @@ gameTime
     vars.totalFramesLeft = (vars.minutesLeft * 720) + current.FrameSeconds;
     vars.adjustedFramesLeft = (vars.minutesLeft < 0) ? 0 : vars.totalFramesLeft; //time has expired
 
+    double secondsElapsed = 0.00;
+    int framesElapsed = 0;
+    if (settings["single_level_mode"] == true) {
+        framesElapsed = vars.gameTime.individualLevel();
+    } else if (vars.levelSkipMode()) {
+        framesElapsed = vars.gameTime.levelSkip();
+    } else {
+        framesElapsed = vars.gameTime.normal();
+    }
+
+    secondsElapsed = framesElapsed / 12.0;
+
     //Level skip category detection
-    if (!(old.MinutesLeft == 15 && (old.FrameSeconds == 718 || old.FrameSeconds == 719)) &&
-       (current.MinutesLeft == 15 && current.FrameSeconds == 718) &&
-       !settings["single_level_mode"] &&
-       !vars.levelSkipActivated) {
-        vars.levelSkipActivated = true;
-    }
+    // if (!(old.MinutesLeft == 15 && (old.FrameSeconds == 718 || old.FrameSeconds == 719)) &&
+    //    (current.MinutesLeft == 15 && current.FrameSeconds == 718) &&
+    //    !settings["single_level_mode"] &&
+    //    !vars.levelSkipActivated) {
+    //     vars.levelSkipActivated = true;
+    // }
 
-    int baseFramesRemaining = settings["single_level_mode"] ? vars.levelRestartTimestamp : ((vars.levelSkipActivated ? (15) : (60)) * 720);
-    int elapsedFrames = baseFramesRemaining - vars.adjustedFramesLeft;
-    double secondsElapsed = elapsedFrames / 12.0;
+    // int baseFramesRemaining = settings["single_level_mode"] ? vars.levelRestartTimestamp : ((vars.levelSkipActivated ? (15) : (60)) * 720);
+    // int elapsedFrames = baseFramesRemaining - vars.adjustedFramesLeft;
+    // double secondsElapsed = elapsedFrames / 12.0;
 
-    if (vars.isLevelSkipMode() && !vars.levelSkipActivated) {
-        secondsElapsed = 0.000;
-    }
+    // if (vars.levelSkipModeDetected() && settings["level_skip_wait_for_shift_l"] && !vars.levelSkipActivated) {
+    //     secondsElapsed = 0.000;
+    // }
+
     if(old.Level == 13 && current.Level == 14 && !settings["single_level_mode"]) {
         secondsElapsed -= 0.002;   // hack for splits.io issue - if last split is empty, gametime won't be available
     }
 
-    //print("POPASL[gameTime]: secondsElapsed = " + secondsElapsed);
+    // vars.print("secondsElapsed = " + secondsElapsed);
     return TimeSpan.FromSeconds(secondsElapsed);
 }
 
@@ -165,7 +243,7 @@ split
     byte oldLevel = settings["split_on_next_level"] ? old.Level : old.Scene;
     byte currentLevel = settings["split_on_next_level"] ? current.Level : current.Scene;
 
-    bool suppressFirstLevels = (!settings["disable_levelskip_detection"] && vars.isLevelSkipMode() && currentLevel <= 4) ;
+    bool suppressFirstLevels = (!settings["level_skip_split_initial_levels"] && vars.levelSkipMode() && currentLevel <= 4) ;
     bool suppressJaffarLevel = (settings["merge_level_12"] && old.Level == 12);
 
     bool skipSplit = (suppressFirstLevels || suppressJaffarLevel);
