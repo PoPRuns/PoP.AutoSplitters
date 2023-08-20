@@ -65,16 +65,16 @@ startup
 
     vars.functionsInitialized = false;
 
+    vars.FRAMES_PER_MINUTE = 720;
+    vars.NORMAL_MODE_BASE_FRAMES_REMAINING = 60 * vars.FRAMES_PER_MINUTE;
+    vars.LEVEL_SKIP_BASE_FRAMES_REMAINING = 15 * vars.FRAMES_PER_MINUTE;
+
     vars.levelRestartSafetyBuffer = 30;  // resets are suppressed for 2.5s after CTRL+A
-    vars.levelRestartTimestamp = 60*720;
+    vars.levelRestartTimestamp = vars.NORMAL_MODE_BASE_FRAMES_REMAINING;
     vars.levelChanged = false;
     vars.levelRestarted = false;
     vars.levelSkipModeDetected = false;
     vars.levelSkipActivated = false;
-
-    vars.FRAMES_PER_MINUTE = 720;
-    vars.NORMAL_MODE_BASE_FRAMES_REMAINING = 60 * vars.FRAMES_PER_MINUTE;
-    vars.LEVEL_SKIP_BASE_FRAMES_REMAINING = 15 * vars.FRAMES_PER_MINUTE;
 
     vars.DEBUG = false;
     vars.print = (Action<string>) (message => print("[POPASL] " + message));
