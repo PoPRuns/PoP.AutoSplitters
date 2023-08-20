@@ -162,13 +162,13 @@ gameTime
 
 split
 {
-    bool suppressFirstLevels = (!settings["disable_levelskip_detection"] && vars.isLevelSkipMode() && old.Level <= 3) ;
+    byte oldLevel = settings["split_on_level"] ? old.Level : old.Scene;
+    byte currentLevel = settings["split_on_level"] ? current.Level : current.Scene;
+
+    bool suppressFirstLevels = (!settings["disable_levelskip_detection"] && vars.isLevelSkipMode() && currentLevel <= 4) ;
     bool suppressJaffarLevel = (settings["merge_level_12"] && old.Level == 12);
 
     bool skipSplit = (suppressFirstLevels || suppressJaffarLevel);
-
-    byte oldLevel = settings["split_on_level"] ? old.Level : old.Scene;
-    byte currentLevel = settings["split_on_level"] ? current.Level : current.Scene;
 
     bool levelChanged = (oldLevel != currentLevel);                       // if level changes
     bool gameFinished = (current.Level == 14 && current.EndGame == 0xFF); // if currently on level 14 and EndGame changes to 255 (FF in hexadecimal)
