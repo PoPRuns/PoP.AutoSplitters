@@ -62,6 +62,8 @@ startup
         settings.Add("level_skip_split_initial_levels", false, "Keep splitting between levels 1-3 even if Level Skip mode detected", "level_skip");
 
     settings.Add("single_level_mode", false, "Individual level mode");
+        settings.Add("single_level_timerbug_fix", true, "Timer bug fix", "single_level_mode");
+        settings.SetToolTip("single_level_timerbug_fix", "Ensure that the number of timerbug frames is equal to expected number in a full run");
 
     vars.functionsInitialized = false;
 
@@ -71,6 +73,7 @@ startup
 
     vars.levelRestartSafetyBuffer = 30;  // resets are suppressed for 2.5s after CTRL+A
     vars.levelRestartTimestamp = vars.NORMAL_MODE_BASE_FRAMES_REMAINING;
+    vars.leveTimerbugFrames = 0;
     vars.levelChanged = false;
     vars.levelRestarted = false;
     vars.levelSkipModeDetected = false;
@@ -106,7 +109,7 @@ update
             return isLevelSkipCategory || vars.levelSkipActivated;
         });
 
-        vars.levelSkipMode = (Func<bool>) (() => vars.levelSkipModeDetected || vars.levelSkipActivated );
+        vars.levelSkipMode = (Func<bool>) (() => !settings["single_level_mode"] && (vars.levelSkipModeDetected || vars.levelSkipActivated) );
 
         vars.shiftLPressed = (Func<bool>) (() => {
             bool pressed = false;
@@ -118,8 +121,21 @@ update
         });
 
         vars.gameTime = new ExpandoObject();
+
+        vars.gameTime.normal = (Func<int>) (() => vars.NORMAL_MODE_BASE_FRAMES_REMAINING - vars.adjustedFramesLeft );
         vars.gameTime.individualLevel = (Func<int>) (() => {
-            return 1;
+            int frames = vars.levelRestartTimestamp - vars.adjustedFramesLeft;
+
+            if (settings["single_level_timerbug_fix"] == false) return frames;
+
+            int expectedTimerbugFrames = (int) Math.Floor(Math.Max(0.0, frames - 1) / vars.FRAMES_PER_MINUTE);
+            int trueFrames = frames - vars.leveTimerbugFrames;
+            int correctedFrames = trueFrames + expectedTimerbugFrames;
+
+            // vars.print("FRAMES: elapsed: " + frames + ", timerbugs: " + vars.leveTimerbugFrames + ", expected: " + expectedTimerbugFrames);
+            // vars.print("TIME: elapsed: " + ((double)frames / 12) + ", corrected: " + ((double)correctedFrames / 12));
+
+            return correctedFrames;
         });
         vars.gameTime.levelSkip = (Func<int>) (() => {
             if (vars.levelSkipActivated) {
@@ -128,12 +144,48 @@ update
                 return 0;
             }
         });
-        vars.gameTime.normal = (Func<int>) (() => vars.NORMAL_MODE_BASE_FRAMES_REMAINING - vars.adjustedFramesLeft );
+
+        vars.reset = new ExpandoObject();
+
+        vars.reset.normal = (Func<bool>) (() => {
+            // reset if starting level isn't 1 OR game has quit
+            bool notPlaying = (current.Start == 0x0) || (current.GameRunning == 0x0);
+            return notPlaying;
+        });
+
+        vars.reset.individualLevel = (Func<bool>) (() => {
+            bool levelRestartInProgress = (current.RestartFlag0 == -1) &&
+                                        (current.RestartFlag1 == -1) &&
+                                        (current.RestartFlag2 == -1);
+
+            bool levelTimeJustAppeared = (current.LevelTextTime == 24);
+            bool singleLevelModeRestart = (settings["single_level_mode"] && levelRestartInProgress && levelTimeJustAppeared);
+            bool singleLevelModeChangedLevel = (settings["single_level_mode"] && vars.levelChanged);
+
+            if (singleLevelModeRestart || singleLevelModeChangedLevel) {
+                if ((vars.levelChanged ||
+                    (current.Level == 1 && vars.adjustedFramesLeft <= vars.levelRestartTimestamp - vars.levelRestartSafetyBuffer) ||
+                    (current.Level != 1 && vars.adjustedFramesLeft <= vars.levelRestartTimestamp) ||
+                    (vars.adjustedFramesLeft > vars.levelRestartTimestamp)) &&
+                    !(current.Level == 3 && current.Level3CP == 1)) {
+                        vars.levelRestartTimestamp = vars.adjustedFramesLeft;
+                        vars.levelRestarted = true;
+                        vars.levelChanged = false;
+                        singleLevelModeRestart = true;
+                } else {
+                        singleLevelModeRestart = false;
+                }
+            }
+            return singleLevelModeRestart;
+        });
 
         vars.print("functions loaded");
     }
 
     vars.levelSkipActivated = vars.levelSkipActivated || vars.shiftLPressed() && (vars.levelSkipModeDetected || settings["level_skip_detection_shift_l"] == true);
+    if (old.MinutesLeft - current.MinutesLeft == 1) {
+        vars.leveTimerbugFrames++;
+    }
 }
 
 start
@@ -156,50 +208,26 @@ start
 onStart {
     vars.levelSkipActivated = false;
     vars.levelSkipModeDetected = vars.checkLevelSkipCategory();
+    vars.leveTimerbugFrames = 0;
 }
 
 reset
 {
-    // reset if starting level isn't 1 OR game has quit
-    bool notPlaying = (current.Start == 0x0) || (current.GameRunning == 0x0);
+    bool normalReset = vars.reset.normal();
+    bool individualLevelReset = vars.reset.individualLevel();
 
-    bool levelRestartInProgress = (current.RestartFlag0 == -1) &&
-                                  (current.RestartFlag1 == -1) &&
-                                  (current.RestartFlag2 == -1);
-
-    bool levelTimeJustAppeared = (current.LevelTextTime == 24);
-
-    //vars.print("flags: " + current.RestartFlag0 + " " + current.RestartFlag1 + " " + current.RestartFlag2);
-
-    bool singleLevelModeRestart = (settings["single_level_mode"] && levelRestartInProgress && levelTimeJustAppeared);
-    bool singleLevelModeChangedLevel = (settings["single_level_mode"] && vars.levelChanged);
-
-    if (notPlaying) {
-        vars.levelRestartTimestamp = 60*720;
+    if (normalReset) {
+        vars.levelRestartTimestamp = vars.NORMAL_MODE_BASE_FRAMES_REMAINING;
         vars.levelRestarted = false;
-        vars.levelSkipActivated = false;
-    } else if (singleLevelModeRestart || singleLevelModeChangedLevel) {
-        if ((vars.levelChanged ||
-            (current.Level == 1 && vars.adjustedFramesLeft <= vars.levelRestartTimestamp - vars.levelRestartSafetyBuffer) ||
-            (current.Level != 1 && vars.adjustedFramesLeft <= vars.levelRestartTimestamp) ||
-            (vars.adjustedFramesLeft > vars.levelRestartTimestamp)) &&
-            !(current.Level == 3 && current.Level3CP == 1)) {
-                vars.levelRestartTimestamp = vars.adjustedFramesLeft;
-                vars.levelRestarted = true;
-                vars.levelChanged = false;
-                singleLevelModeRestart = true;
-        } else {
-                singleLevelModeRestart = false;
-        }
     }
 
-    return (notPlaying || singleLevelModeRestart);
+    return (normalReset || individualLevelReset);
 }
 
 gameTime
 {
     vars.minutesLeft = current.MinutesLeft - 1;
-    vars.totalFramesLeft = (vars.minutesLeft * 720) + current.FrameSeconds;
+    vars.totalFramesLeft = (vars.minutesLeft * vars.FRAMES_PER_MINUTE) + current.FrameSeconds;
     vars.adjustedFramesLeft = (vars.minutesLeft < 0) ? 0 : vars.totalFramesLeft; //time has expired
 
     double secondsElapsed = 0.00;
@@ -213,22 +241,6 @@ gameTime
     }
 
     secondsElapsed = framesElapsed / 12.0;
-
-    //Level skip category detection
-    // if (!(old.MinutesLeft == 15 && (old.FrameSeconds == 718 || old.FrameSeconds == 719)) &&
-    //    (current.MinutesLeft == 15 && current.FrameSeconds == 718) &&
-    //    !settings["single_level_mode"] &&
-    //    !vars.levelSkipActivated) {
-    //     vars.levelSkipActivated = true;
-    // }
-
-    // int baseFramesRemaining = settings["single_level_mode"] ? vars.levelRestartTimestamp : ((vars.levelSkipActivated ? (15) : (60)) * 720);
-    // int elapsedFrames = baseFramesRemaining - vars.adjustedFramesLeft;
-    // double secondsElapsed = elapsedFrames / 12.0;
-
-    // if (vars.levelSkipModeDetected() && settings["level_skip_wait_for_shift_l"] && !vars.levelSkipActivated) {
-    //     secondsElapsed = 0.000;
-    // }
 
     if(old.Level == 13 && current.Level == 14 && !settings["single_level_mode"]) {
         secondsElapsed -= 0.002;   // hack for splits.io issue - if last split is empty, gametime won't be available
