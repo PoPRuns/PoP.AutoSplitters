@@ -58,7 +58,7 @@ startup
     settings.Add("level_skip", true, "Level Skip mode config");
         settings.Add("level_skip_detection_category_name", true, "Detect category name (keep time at 0:00.00 until SHIFT+L)", "level_skip");
         settings.SetToolTip("level_skip_detection_category_name", "Detect \"Level Skip\" or \"levelskip\" in category name to enable the mode");
-        settings.Add("level_skip_detection_shift_l", true, "Threat every SHIFT+L as Level Skip mode (even if category detection is disabled)", "level_skip");
+        settings.Add("level_skip_detection_shift_l", true, "Treat every SHIFT+L as Level Skip mode (even if category detection is disabled)", "level_skip");
         settings.Add("level_skip_split_initial_levels", false, "Keep splitting between levels 1-3 even if Level Skip mode detected", "level_skip");
 
     settings.Add("single_level_mode", false, "Individual level mode");
@@ -90,6 +90,9 @@ update
         vars.functionsInitialized = true;
         vars.print("loading functions...");
 
+        /**
+        * Routine for checking if game has been started
+        */
         vars.gameStarted = (Func<bool>) (() => {
             // start if sound check passes AND start variable = 1 AND if level = 1 AND if Minutes = 60 AND count is >= 47120384
             return ((current.Sound == 0 && settings["sound"] == true) || (settings["sound"] == false)) &&
@@ -99,6 +102,11 @@ update
                     (current.Count >= 0x2CE0000);
         });
 
+        /**
+        * Routine for checking if "level skip" is present in category name.
+        *
+        * Optimized to only be called on start.
+        */
         vars.checkLevelSkipCategory = (Func<bool>) (() => {
             bool isLevelSkipCategory = false;
             if (settings["level_skip_detection_category_name"] == true) {
@@ -106,11 +114,17 @@ update
                 vars.print("checkLevelSkipCategory() categoryName = " + categoryName);
                 isLevelSkipCategory = categoryName.Contains("level skip") || categoryName.Contains("levelskip");
             }
-            return isLevelSkipCategory || vars.levelSkipActivated;
+            return isLevelSkipCategory;
         });
 
+        /**
+        * Routine for checking if the autosplitter is currently in level skip mode.
+        */
         vars.levelSkipMode = (Func<bool>) (() => !settings["single_level_mode"] && (vars.levelSkipModeDetected || vars.levelSkipActivated) );
 
+        /**
+        * Routine for checking whether SHIFT+L was just pressed.
+        */
         vars.shiftLPressed = (Func<bool>) (() => {
             bool pressed = false;
             if (!(old.MinutesLeft == 15 && (old.FrameSeconds == 718 || old.FrameSeconds == 719)) &&
@@ -120,8 +134,10 @@ update
             return pressed;
         });
 
+        /**
+        * Routines for calculating game times for various categories.
+        */
         vars.gameTime = new ExpandoObject();
-
         vars.gameTime.normal = (Func<int>) (() => vars.NORMAL_MODE_BASE_FRAMES_REMAINING - vars.adjustedFramesLeft );
         vars.gameTime.individualLevel = (Func<int>) (() => {
             int frames = vars.levelRestartTimestamp - vars.adjustedFramesLeft;
@@ -145,16 +161,16 @@ update
             }
         });
 
+        /**
+        * Routines for calculating reset condition for various categories.
+        */
         vars.reset = new ExpandoObject();
-
         vars.reset.normal = (Func<bool>) (() => {
             // reset if starting level isn't 1 OR game has quit
             bool notPlaying = (current.Start == 0x0) || (current.GameRunning == 0x0);
             return notPlaying;
         });
-
         vars.reset.individualLevel = (Func<bool, bool>) ((levelJustRestarted) => {
-
             bool levelTimeJustAppeared = (current.LevelTextTime == 24);
             bool singleLevelModeRestart = (settings["single_level_mode"] && levelJustRestarted && levelTimeJustAppeared);
             bool singleLevelModeChangedLevel = (settings["single_level_mode"] && vars.levelChanged);
@@ -182,6 +198,7 @@ update
     vars.levelSkipActivated = vars.levelSkipActivated || vars.shiftLPressed() && (vars.levelSkipModeDetected || settings["level_skip_detection_shift_l"] == true);
     if (old.MinutesLeft - current.MinutesLeft == 1) {
         vars.leveTimerbugFrames++;
+        vars.print("timerbug frame detected in current run, total: " + vars.leveTimerbugFrames);
     }
 }
 
