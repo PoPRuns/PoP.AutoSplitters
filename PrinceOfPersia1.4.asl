@@ -71,7 +71,6 @@ startup
     vars.NORMAL_MODE_BASE_FRAMES_REMAINING = 60 * vars.FRAMES_PER_MINUTE;
     vars.LEVEL_SKIP_BASE_FRAMES_REMAINING = 15 * vars.FRAMES_PER_MINUTE;
 
-    vars.levelRestartSafetyBuffer = 30;  // resets are suppressed for 2.5s after CTRL+A
     vars.levelRestartTimestamp = vars.NORMAL_MODE_BASE_FRAMES_REMAINING;
     vars.leveTimerbugFrames = 0;
     vars.levelChanged = false;
@@ -177,7 +176,6 @@ update
 
             if (singleLevelModeRestart || singleLevelModeChangedLevel) {
                 if ((vars.levelChanged ||
-                    (current.Level == 1 && vars.adjustedFramesLeft <= vars.levelRestartTimestamp - vars.levelRestartSafetyBuffer) ||
                     (current.Level != 1 && vars.adjustedFramesLeft <= vars.levelRestartTimestamp) ||
                     (vars.adjustedFramesLeft > vars.levelRestartTimestamp)) &&
                     !(current.Level == 3 && current.Level3CP == 1)) {
