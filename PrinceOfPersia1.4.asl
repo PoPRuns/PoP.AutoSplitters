@@ -119,10 +119,10 @@ init
     /**
     * Routine for checking whether SHIFT+L was just pressed.
     */
-    vars.shiftLPressed = (Func<dynamic, dynamic, bool>) ((oldState, currentState) => {
+    vars.shiftLPressed = (Func<dynamic, bool>) ((OLD) => {
         bool pressed = false;
-        if (!(oldState.MinutesLeft == 15 && (oldState.FrameSeconds == 718 || oldState.FrameSeconds == 719)) &&
-        (currentState.MinutesLeft == 15 && currentState.FrameSeconds == 718)) {
+        if (!(OLD.MinutesLeft == 15 && (OLD.FrameSeconds == 718 || OLD.FrameSeconds == 719)) &&
+        (current.MinutesLeft == 15 && current.FrameSeconds == 718)) {
             vars.print("SHIFT+L detected");
             pressed = true;
         }
@@ -165,7 +165,11 @@ init
         bool notPlaying = (current.Start == 0x0) || (current.GameRunning == 0x0);
         return notPlaying;
     });
-    vars.reset.individualLevel = (Func<bool, bool>) ((levelJustRestarted) => {
+vars.reset.individualLevel = (Func<dynamic, bool>) ((OLD) => {
+        bool wasLevelRestartInProgress = (OLD.RestartFlag0 == -1) && (OLD.RestartFlag1 == -1) && (OLD.RestartFlag2 == -1);
+        bool isLevelRestartInProgress = (current.RestartFlag0 == -1) && (current.RestartFlag1 == -1) && (current.RestartFlag2 == -1);
+        bool levelJustRestarted = isLevelRestartInProgress && !wasLevelRestartInProgress;
+
         bool levelTimeJustAppeared = (current.LevelTextTime == 24);
         bool singleLevelModeRestart = (settings["single_level_mode"] && levelJustRestarted && levelTimeJustAppeared);
         bool singleLevelModeChangedLevel = (settings["single_level_mode"] && vars.levelChanged);
@@ -191,7 +195,7 @@ init
 
 update
 {
-    vars.levelSkipActivated = vars.levelSkipActivated || vars.shiftLPressed(old, current) && (vars.levelSkipModeDetected || settings["level_skip_detection_shift_l"] == true);
+    vars.levelSkipActivated = vars.levelSkipActivated || vars.shiftLPressed(old) && (vars.levelSkipModeDetected || settings["level_skip_detection_shift_l"] == true);
     if (old.MinutesLeft - current.MinutesLeft == 1) {
         vars.leveTimerbugFrames++;
         vars.print("timerbug frame detected in current run, total: " + vars.leveTimerbugFrames);
@@ -223,12 +227,8 @@ onStart {
 
 reset
 {
-    bool wasLevelRestartInProgress = (old.RestartFlag0 == -1) && (old.RestartFlag1 == -1) && (old.RestartFlag2 == -1);
-    bool isLevelRestartInProgress = (current.RestartFlag0 == -1) && (current.RestartFlag1 == -1) && (current.RestartFlag2 == -1);
-    bool levelJustRestarted = isLevelRestartInProgress && !wasLevelRestartInProgress;
-
     bool normalReset = vars.reset.normal();
-    bool individualLevelReset = vars.reset.individualLevel(levelJustRestarted);
+    bool individualLevelReset = vars.reset.individualLevel(old);
 
     if (normalReset) {
         vars.levelRestartTimestamp = vars.NORMAL_MODE_BASE_FRAMES_REMAINING;
