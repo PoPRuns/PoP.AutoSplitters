@@ -65,8 +65,6 @@ startup
         settings.Add("single_level_timerbug_fix", true, "Timer bug fix", "single_level_mode");
         settings.SetToolTip("single_level_timerbug_fix", "Ensure that the number of timerbug frames is equal to expected number in a full run");
 
-    vars.functionsInitialized = false;
-
     vars.FRAMES_PER_MINUTE = 720;
     vars.NORMAL_MODE_BASE_FRAMES_REMAINING = 60 * vars.FRAMES_PER_MINUTE;
     vars.LEVEL_SKIP_BASE_FRAMES_REMAINING = 15 * vars.FRAMES_PER_MINUTE;
@@ -82,118 +80,118 @@ startup
     vars.print = (Action<string>) (message => print("[POPASL] " + message));
 }
 
+init
+{
+    vars.print("initializing...");
+
+    /**
+    * Routine for checking if game has been started
+    */
+    vars.gameStarted = (Func<bool>) (() => {
+        // start if sound check passes AND start variable = 1 AND if level = 1 AND if Minutes = 60 AND count is >= 47120384
+        return ((current.Sound == 0 && settings["sound"] == true) || (settings["sound"] == false)) &&
+                (current.Start == 0x1) &&
+                (current.Level == 0x1) &&
+                (current.MinutesLeft == 0x3C) &&
+                (current.Count >= 0x2CE0000);
+    });
+
+    /**
+    * Routine for checking if "level skip" is present in category name.
+    *
+    * Optimized to only be called on start.
+    */
+    vars.checkLevelSkipCategory = (Func<bool>) (() => {
+        bool isLevelSkipCategory = false;
+        if (settings["level_skip_detection_category_name"] == true) {
+            string categoryName = timer.Run.GetExtendedCategoryName().ToLower();
+            vars.print("checkLevelSkipCategory() categoryName = " + categoryName);
+            isLevelSkipCategory = categoryName.Contains("level skip") || categoryName.Contains("levelskip");
+        }
+        return isLevelSkipCategory;
+    });
+
+    /**
+    * Routine for checking if the autosplitter is currently in level skip mode.
+    */
+    vars.levelSkipMode = (Func<bool>) (() => !settings["single_level_mode"] && (vars.levelSkipModeDetected || vars.levelSkipActivated) );
+
+    /**
+    * Routine for checking whether SHIFT+L was just pressed.
+    */
+    vars.shiftLPressed = (Func<dynamic, dynamic, bool>) ((oldState, currentState) => {
+        bool pressed = false;
+        if (!(oldState.MinutesLeft == 15 && (oldState.FrameSeconds == 718 || oldState.FrameSeconds == 719)) &&
+        (currentState.MinutesLeft == 15 && currentState.FrameSeconds == 718)) {
+            vars.print("SHIFT+L detected");
+            pressed = true;
+        }
+        return pressed;
+    });
+
+    /**
+    * Routines for calculating game times for various categories.
+    */
+    vars.gameTime = new ExpandoObject();
+    vars.gameTime.normal = (Func<int>) (() => vars.NORMAL_MODE_BASE_FRAMES_REMAINING - vars.adjustedFramesLeft );
+    vars.gameTime.individualLevel = (Func<int>) (() => {
+        int frames = vars.levelRestartTimestamp - vars.adjustedFramesLeft;
+
+        if (settings["single_level_timerbug_fix"] == false) return frames;
+
+        int expectedTimerbugFrames = (int) Math.Floor(Math.Max(0.0, frames - 1) / vars.FRAMES_PER_MINUTE);
+        int trueFrames = frames - vars.leveTimerbugFrames;
+        int correctedFrames = trueFrames + expectedTimerbugFrames;
+
+        // vars.print("FRAMES: elapsed: " + frames + ", timerbugs: " + vars.leveTimerbugFrames + ", expected: " + expectedTimerbugFrames);
+        // vars.print("TIME: elapsed: " + ((double)frames / 12) + ", corrected: " + ((double)correctedFrames / 12));
+
+        return correctedFrames;
+    });
+    vars.gameTime.levelSkip = (Func<int>) (() => {
+        if (vars.levelSkipActivated) {
+            return vars.LEVEL_SKIP_BASE_FRAMES_REMAINING - vars.adjustedFramesLeft;
+        } else {
+            return 0;
+        }
+    });
+
+    /**
+    * Routines for calculating reset condition for various categories.
+    */
+    vars.reset = new ExpandoObject();
+    vars.reset.normal = (Func<bool>) (() => {
+        // reset if starting level isn't 1 OR game has quit
+        bool notPlaying = (current.Start == 0x0) || (current.GameRunning == 0x0);
+        return notPlaying;
+    });
+    vars.reset.individualLevel = (Func<bool, bool>) ((levelJustRestarted) => {
+        bool levelTimeJustAppeared = (current.LevelTextTime == 24);
+        bool singleLevelModeRestart = (settings["single_level_mode"] && levelJustRestarted && levelTimeJustAppeared);
+        bool singleLevelModeChangedLevel = (settings["single_level_mode"] && vars.levelChanged);
+
+        if (singleLevelModeRestart || singleLevelModeChangedLevel) {
+            if ((vars.levelChanged ||
+                (current.Level != 1 && vars.adjustedFramesLeft <= vars.levelRestartTimestamp) ||
+                (vars.adjustedFramesLeft > vars.levelRestartTimestamp)) &&
+                !(current.Level == 3 && current.Level3CP == 1)) {
+                    vars.levelRestartTimestamp = vars.adjustedFramesLeft;
+                    vars.levelRestarted = true;
+                    vars.levelChanged = false;
+                    singleLevelModeRestart = true;
+            } else {
+                    singleLevelModeRestart = false;
+            }
+        }
+        return singleLevelModeRestart;
+    });
+
+    vars.print("initialization finished");
+}
+
 update
 {
-    //we have to do that here instead of 'startup' to access actual Settings and not SettingsBuilder
-    if (vars.functionsInitialized == false) {
-        vars.functionsInitialized = true;
-        vars.print("loading functions...");
-
-        /**
-        * Routine for checking if game has been started
-        */
-        vars.gameStarted = (Func<bool>) (() => {
-            // start if sound check passes AND start variable = 1 AND if level = 1 AND if Minutes = 60 AND count is >= 47120384
-            return ((current.Sound == 0 && settings["sound"] == true) || (settings["sound"] == false)) &&
-                    (current.Start == 0x1) &&
-                    (current.Level == 0x1) &&
-                    (current.MinutesLeft == 0x3C) &&
-                    (current.Count >= 0x2CE0000);
-        });
-
-        /**
-        * Routine for checking if "level skip" is present in category name.
-        *
-        * Optimized to only be called on start.
-        */
-        vars.checkLevelSkipCategory = (Func<bool>) (() => {
-            bool isLevelSkipCategory = false;
-            if (settings["level_skip_detection_category_name"] == true) {
-                string categoryName = timer.Run.GetExtendedCategoryName().ToLower();
-                vars.print("checkLevelSkipCategory() categoryName = " + categoryName);
-                isLevelSkipCategory = categoryName.Contains("level skip") || categoryName.Contains("levelskip");
-            }
-            return isLevelSkipCategory;
-        });
-
-        /**
-        * Routine for checking if the autosplitter is currently in level skip mode.
-        */
-        vars.levelSkipMode = (Func<bool>) (() => !settings["single_level_mode"] && (vars.levelSkipModeDetected || vars.levelSkipActivated) );
-
-        /**
-        * Routine for checking whether SHIFT+L was just pressed.
-        */
-        vars.shiftLPressed = (Func<bool>) (() => {
-            bool pressed = false;
-            if (!(old.MinutesLeft == 15 && (old.FrameSeconds == 718 || old.FrameSeconds == 719)) &&
-            (current.MinutesLeft == 15 && current.FrameSeconds == 718)) {
-                pressed = true;
-            }
-            return pressed;
-        });
-
-        /**
-        * Routines for calculating game times for various categories.
-        */
-        vars.gameTime = new ExpandoObject();
-        vars.gameTime.normal = (Func<int>) (() => vars.NORMAL_MODE_BASE_FRAMES_REMAINING - vars.adjustedFramesLeft );
-        vars.gameTime.individualLevel = (Func<int>) (() => {
-            int frames = vars.levelRestartTimestamp - vars.adjustedFramesLeft;
-
-            if (settings["single_level_timerbug_fix"] == false) return frames;
-
-            int expectedTimerbugFrames = (int) Math.Floor(Math.Max(0.0, frames - 1) / vars.FRAMES_PER_MINUTE);
-            int trueFrames = frames - vars.leveTimerbugFrames;
-            int correctedFrames = trueFrames + expectedTimerbugFrames;
-
-            // vars.print("FRAMES: elapsed: " + frames + ", timerbugs: " + vars.leveTimerbugFrames + ", expected: " + expectedTimerbugFrames);
-            // vars.print("TIME: elapsed: " + ((double)frames / 12) + ", corrected: " + ((double)correctedFrames / 12));
-
-            return correctedFrames;
-        });
-        vars.gameTime.levelSkip = (Func<int>) (() => {
-            if (vars.levelSkipActivated) {
-                return vars.LEVEL_SKIP_BASE_FRAMES_REMAINING - vars.adjustedFramesLeft;
-            } else {
-                return 0;
-            }
-        });
-
-        /**
-        * Routines for calculating reset condition for various categories.
-        */
-        vars.reset = new ExpandoObject();
-        vars.reset.normal = (Func<bool>) (() => {
-            // reset if starting level isn't 1 OR game has quit
-            bool notPlaying = (current.Start == 0x0) || (current.GameRunning == 0x0);
-            return notPlaying;
-        });
-        vars.reset.individualLevel = (Func<bool, bool>) ((levelJustRestarted) => {
-            bool levelTimeJustAppeared = (current.LevelTextTime == 24);
-            bool singleLevelModeRestart = (settings["single_level_mode"] && levelJustRestarted && levelTimeJustAppeared);
-            bool singleLevelModeChangedLevel = (settings["single_level_mode"] && vars.levelChanged);
-
-            if (singleLevelModeRestart || singleLevelModeChangedLevel) {
-                if ((vars.levelChanged ||
-                    (current.Level != 1 && vars.adjustedFramesLeft <= vars.levelRestartTimestamp) ||
-                    (vars.adjustedFramesLeft > vars.levelRestartTimestamp)) &&
-                    !(current.Level == 3 && current.Level3CP == 1)) {
-                        vars.levelRestartTimestamp = vars.adjustedFramesLeft;
-                        vars.levelRestarted = true;
-                        vars.levelChanged = false;
-                        singleLevelModeRestart = true;
-                } else {
-                        singleLevelModeRestart = false;
-                }
-            }
-            return singleLevelModeRestart;
-        });
-
-        vars.print("functions loaded");
-    }
-
-    vars.levelSkipActivated = vars.levelSkipActivated || vars.shiftLPressed() && (vars.levelSkipModeDetected || settings["level_skip_detection_shift_l"] == true);
+    vars.levelSkipActivated = vars.levelSkipActivated || vars.shiftLPressed(old, current) && (vars.levelSkipModeDetected || settings["level_skip_detection_shift_l"] == true);
     if (old.MinutesLeft - current.MinutesLeft == 1) {
         vars.leveTimerbugFrames++;
         vars.print("timerbug frame detected in current run, total: " + vars.leveTimerbugFrames);
