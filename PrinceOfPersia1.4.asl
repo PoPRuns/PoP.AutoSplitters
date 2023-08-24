@@ -70,7 +70,7 @@ startup
     vars.LEVEL_SKIP_BASE_FRAMES_REMAINING = 15 * vars.FRAMES_PER_MINUTE;
 
     vars.levelRestartTimestamp = vars.NORMAL_MODE_BASE_FRAMES_REMAINING;
-    vars.leveTimerbugFrames = 0;
+    vars.levelTimerbugFrames = 0;
     vars.levelChanged = false;
     vars.levelRestarted = false;
     vars.levelSkipModeDetected = false;
@@ -89,7 +89,7 @@ init
     */
     vars.gameStarted = (Func<bool>) (() => {
         // start if sound check passes AND start variable = 1 AND if level = 1 AND if Minutes = 60 AND count is >= 47120384
-        return ((current.Sound == 0 && settings["sound"] == true) || (settings["sound"] == false)) &&
+        return  (settings["sound"] == false || current.Sound == 0) &&
                 (current.Start == 0x1) &&
                 (current.Level == 0x1) &&
                 (current.MinutesLeft == 0x3C) &&
@@ -121,8 +121,8 @@ init
     */
     vars.shiftLPressed = (Func<dynamic, bool>) ((OLD) => {
         bool pressed = false;
-        if (!(OLD.MinutesLeft == 15 && (OLD.FrameSeconds == 718 || OLD.FrameSeconds == 719)) &&
-        (current.MinutesLeft == 15 && current.FrameSeconds == 718)) {
+        if (!(OLD.MinutesLeft == 15 && OLD.FrameSeconds >= 718) &&
+            (current.MinutesLeft == 15 && current.FrameSeconds == 718)) {
             vars.print("SHIFT+L detected");
             pressed = true;
         }
@@ -140,10 +140,10 @@ init
         if (settings["single_level_timerbug_fix"] == false) return frames;
 
         int expectedTimerbugFrames = (int) Math.Floor(Math.Max(0.0, frames - 1) / vars.FRAMES_PER_MINUTE);
-        int trueFrames = frames - vars.leveTimerbugFrames;
+        int trueFrames = frames - vars.levelTimerbugFrames;
         int correctedFrames = trueFrames + expectedTimerbugFrames;
 
-        // vars.print("FRAMES: elapsed: " + frames + ", timerbugs: " + vars.leveTimerbugFrames + ", expected: " + expectedTimerbugFrames);
+        // vars.print("FRAMES: elapsed: " + frames + ", timerbugs: " + vars.levelTimerbugFrames + ", expected: " + expectedTimerbugFrames);
         // vars.print("TIME: elapsed: " + ((double)frames / 12) + ", corrected: " + ((double)correctedFrames / 12));
 
         return correctedFrames;
@@ -165,7 +165,7 @@ init
         bool notPlaying = (current.Start == 0x0) || (current.GameRunning == 0x0);
         return notPlaying;
     });
-vars.reset.individualLevel = (Func<dynamic, bool>) ((OLD) => {
+    vars.reset.individualLevel = (Func<dynamic, bool>) ((OLD) => {
         bool wasLevelRestartInProgress = (OLD.RestartFlag0 == -1) && (OLD.RestartFlag1 == -1) && (OLD.RestartFlag2 == -1);
         bool isLevelRestartInProgress = (current.RestartFlag0 == -1) && (current.RestartFlag1 == -1) && (current.RestartFlag2 == -1);
         bool levelJustRestarted = isLevelRestartInProgress && !wasLevelRestartInProgress;
@@ -197,8 +197,8 @@ update
 {
     vars.levelSkipActivated = vars.levelSkipActivated || vars.shiftLPressed(old) && (vars.levelSkipModeDetected || settings["level_skip_detection_shift_l"] == true);
     if (old.MinutesLeft - current.MinutesLeft == 1) {
-        vars.leveTimerbugFrames++;
-        vars.print("timerbug frame detected in current run, total: " + vars.leveTimerbugFrames);
+        vars.levelTimerbugFrames++;
+        vars.print("timerbug frame detected in current run, total: " + vars.levelTimerbugFrames);
     }
 }
 
@@ -208,21 +208,19 @@ start
     bool singleLevelModeRestart = (settings["single_level_mode"] && vars.levelRestarted);
 
     if (startGame) {
-        vars.levelRestartTimestamp = 60*720;
-        vars.levelRestarted = false;
+        vars.levelRestartTimestamp = vars.NORMAL_MODE_BASE_FRAMES_REMAINING;
         vars.levelChanged = false;
         vars.levelSkipActivated = false;
-    } else if (singleLevelModeRestart) {
-        vars.levelRestarted = false;
     }
 
     return (startGame || singleLevelModeRestart);
 }
 
 onStart {
+    vars.levelRestarted = false;
     vars.levelSkipActivated = false;
     vars.levelSkipModeDetected = vars.checkLevelSkipCategory();
-    vars.leveTimerbugFrames = 0;
+    vars.levelTimerbugFrames = 0;
 }
 
 reset
@@ -256,7 +254,7 @@ gameTime
 
     secondsElapsed = framesElapsed / 12.0;
 
-    if(old.Level == 13 && current.Level == 14 && !settings["single_level_mode"]) {
+    if (old.Level == 13 && current.Level == 14 && !settings["single_level_mode"]) {
         secondsElapsed -= 0.002;   // hack for splits.io issue - if last split is empty, gametime won't be available
     }
 
