@@ -62,7 +62,7 @@ startup
         settings.Add("level_skip_split_initial_levels", false, "Keep splitting between levels 1-3 even if Level Skip mode detected", "level_skip");
 
     settings.Add("single_level_mode", false, "Individual level mode");
-        settings.Add("single_level_timerbug_fix", true, "Timer bug fix", "single_level_mode");
+        settings.Add("single_level_timerbug_fix", true, "Timer bug fix (disabling not recommended)", "single_level_mode");
         settings.SetToolTip("single_level_timerbug_fix", "Ensure that the number of timerbug frames is equal to expected number in a full run");
 
     vars.FRAMES_PER_MINUTE = 720;
