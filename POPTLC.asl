@@ -221,6 +221,7 @@ onStart
     vars.Log(current.level);
     vars.Log(current.inputMode);
     vars.Log(current.activeStatesHead.ToString("X"));
+    vars.Log(current.activeStatesCount);
     
     #region testing
     // tests
@@ -251,5 +252,5 @@ start
 isLoading
 {
     // moving between screens
-    return vars.states.Contains("GameFlowStateChangingLevel");
+    return vars.states.Contains("GameFlowStateChangingLevel") || vars.states.Contains("GameFlowStateLoading");
 }
