@@ -22,14 +22,69 @@ startup
 
 init
 {
+    vars.states = null;
+
     vars.Helper.TryLoad = (Func<dynamic, bool>)(mono =>
     {
+        // hardcoding some offsets which we can't get dynamically
+        var LINKED_LIST_COUNT_OFFSET = 0x18;
+        var LINKED_LIST_HEAD_OFFSET = 0x10;
+        var LINKED_LIST_NODE_NEXT_OFFSET = 0x18;
+        var LINKED_LIST_NODE_VALUE_OFFSET = 0x28;
+        
+        // not sure if the names are accurate but this is based on what I saw in memory
+        var CLASS_OFFSET = 0x0;
+        var CLASS_NAME_OFFSET = 0x10;
+
         // asl-help has this issue where sometimes offsets resolve to 0x10 less than what they are meant to be
         // this is a fix to that...
         var PAD = 0x10;
 
         var PM = mono["Alkawa.Gameplay", "PauseManager"];
         vars.Helper["isPaused"] = PM.Make<bool>("m_paused");
+
+        var GF = mono["Alkawa.Engine", "GameFlow"];
+        // a linked list of the states the game is in
+        vars.Helper["activeStatesHead"] = GF.Make<long>("m_activeStates", LINKED_LIST_HEAD_OFFSET);
+        vars.Helper["activeStatesCount"] = GF.Make<int>("m_activeStates", LINKED_LIST_COUNT_OFFSET);
+
+        // Traverse the active states linked list to get all the active... states...
+        // We have to figure out the active states from the names of the classes of the instances in this linked list,
+        //    there is no property on the instances themselves which describe this
+        // 
+        // Possible states (all prefixed by GameFlowState):
+        //   Default, FirstMandatoryUIScreens, FirstLoading, MainMenu, Loading, Game, CutScene, CutsceneVideo, GameOver,
+        //   Respawn, Menu, DiegeticMenu, FTUE, ChallengePause, NewGame, StartGameSelectSlot, ChangingLevel,
+        //   OptionMenu, UbiConnectNewsMenu, UbiConnectConnection, EndingCredits, Unused, NoInputDevice,
+        //   DemoDisclaimer, TitleScreen, FastTravel
+        vars.GetStates = (Func<HashSet<string>>)(() =>
+        {
+            var states = new HashSet<string>();
+
+            // probably susceptible to TOCTOU bugs
+            IntPtr head = (IntPtr) vars.Helper["activeStatesHead"].Current;
+            var count = vars.Helper["activeStatesCount"].Current;
+
+            IntPtr curr = head;
+            for (var i = 0; i < count; i++) {
+                // this is an ascii string so can't use the asl-help func
+                var p = new DeepPointer(
+                    curr + LINKED_LIST_NODE_VALUE_OFFSET,
+                    CLASS_OFFSET,
+                    CLASS_NAME_OFFSET,
+                    0x0
+                );
+                var value = p.DerefString(game, ReadStringType.ASCII, 128);
+                states.Add(value);
+
+                curr = vars.Helper.Read<IntPtr>(curr + LINKED_LIST_NODE_NEXT_OFFSET);
+                
+                // this is a double ended linked list or whatever, so if we go back to the start then we're at the end
+                if (curr == head) break;
+            }
+
+            return states;
+        });
 
         var PC = mono["Alkawa.Gameplay", "PlayerComponent"];
         var PHSC = mono["Alkawa.Gameplay", "PlayerHealthSubComponent"];
@@ -142,10 +197,18 @@ update
     current.loadingScene = vars.Helper.Scenes.Loaded[0].Name ?? current.loadingScene;
 
     vars.Watch(old, current, "activeScene");
-    vars.Watch(old, current, "loadingScene");
+    // vars.Watch(old, current, "loadingScene");
     vars.Watch(old, current, "level");
     vars.Watch(old, current, "shortLevel");
     vars.Watch(old, current, "inputMode");
+
+    if (vars.states == null || vars.states.Count != current.activeStatesCount) {
+        vars.states = vars.GetStates();
+        vars.Log("[" + vars.states.Count + "] State set changed.");
+        foreach (var state in vars.states) {
+            vars.Log("  " + state);
+        }
+    }
 }
 
 onStart
@@ -157,11 +220,12 @@ onStart
     vars.Log(current.health);
     vars.Log(current.level);
     vars.Log(current.inputMode);
+    vars.Log(current.activeStatesHead.ToString("X"));
     
     #region testing
     // tests
-    // vars.Log(current.world);
     // vars.Log(current.a.ToString("X"));
+    // vars.GetStates();
 
     vars.Log("active: " + vars.Helper.Scenes.Active.Address.ToString("X"));
     vars.Log(vars.Helper.Scenes.Active.Name);
@@ -169,11 +233,11 @@ onStart
 
     vars.Log("Loaded: " + vars.Helper.Scenes.Loaded.Count);
 
-    foreach (var scene in vars.Helper.Scenes.Loaded) {
-        vars.Log(scene.Address.ToString("X"));
-        vars.Log(scene.Name);
-        vars.Log(scene.Path);
-    }
+    // foreach (var scene in vars.Helper.Scenes.Loaded) {
+    //     vars.Log(scene.Address.ToString("X"));
+    //     vars.Log(scene.Name);
+    //     vars.Log(scene.Path);
+    // }
     #endregion testing
 }
 
@@ -182,4 +246,10 @@ start
     // cutscene -> gameplay while in the very first level
     return current.shortLevel == "BAT_02"
         && old.inputMode == 3 && current.inputMode == 0;
+}
+
+isLoading
+{
+    // moving between screens
+    return vars.states.Contains("GameFlowStateChangingLevel");
 }
