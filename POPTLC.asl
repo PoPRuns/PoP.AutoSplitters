@@ -252,5 +252,7 @@ start
 isLoading
 {
     // moving between screens
-    return vars.states.Contains("GameFlowStateChangingLevel") || vars.states.Contains("GameFlowStateLoading");
+    return vars.states.Contains("GameFlowStateChangingLevel")
+        // not sure when this one happens
+        || vars.states.Contains("GameFlowStateLoading");
 }
