@@ -23,7 +23,11 @@ startup
 init
 {
     vars.Helper.TryLoad = (Func<dynamic, bool>)(mono =>
-    {   
+    {
+        // asl-help has this issue where sometimes offsets resolve to 0x10 less than what they are meant to be
+        // this is a fix to that...
+        var PAD = 0x10;
+
         var PM = mono["Alkawa.Gameplay", "PauseManager"];
         vars.Helper["isPaused"] = PM.Make<bool>("m_paused"); // good
 
@@ -31,13 +35,23 @@ init
         var PHSC = mono["Alkawa.Gameplay", "PlayerHealthSubComponent"];
         var PHSI = mono["Alkawa.Gameplay", "PlayerHealthStateInfo", 1];
         
-        // good
         vars.Helper["health"] = PM.Make<int>(
             "m_PlayerComponent",
-            PC["PlayerHealth"] + 0x10,
-            PHSC["m_playerHealthStateInfo"] + 0x10,
-            PHSI["m_internalCurrentHP"] + 0x10
+            PC["PlayerHealth"] + PAD,
+            PHSC["m_playerHealthStateInfo"] + PAD,
+            PHSI["m_internalCurrentHP"] + PAD
         ); 
+        
+        var LM = mono["Alkawa.Gameplay", "LootManager", 1];
+        var LI = mono["Alkawa.Engine", "LevelInstance"];
+        var LD = mono["Alkawa.Engine", "LevelData", 1];
+
+        vars.Helper["level"] = LM.MakeString(
+            "m_instance",
+            LM["m_currentLevelInstance"] + PAD,
+            LI["m_levelData"] + PAD,
+            LD["m_prettyName"] + PAD
+        );
 
         // testing
 
@@ -48,17 +62,6 @@ init
         // vars.Helper["a"] = GSM.Make<long>("s_currentWorld");
         // vars.Helper["b"] = GSM.Make<long>("s_currentWorld", WI["m_worldData"]);
         // vars.Helper["c"] = GSM.MakeString("s_currentWorld", WI["m_worldData"] + 0x10, WD["m_labelName"] + 0x10);
-
-        // var WSM = mono["Alkawa.Engine", "WorldStreamingManager"];
-        // var LI = mono["Alkawa.Engine", "LevelInstance"];
-        // var LD = mono["Alkawa.Engine", "LevelData", 1];
-
-        // vars.Helper["level"] = WSM.MakeString(
-        //     "m_instance",
-        //     WSM["m_currentPlayerLevel"],
-        //     LI["m_levelData"],
-        //     LD["m_prettyName"]
-        // );
 
         return true;
     });
@@ -87,6 +90,7 @@ update
 
     vars.Watch(old, current, "activeScene");
     vars.Watch(old, current, "loadingScene");
+    vars.Watch(old, current, "level");
 }
 
 onStart
@@ -97,9 +101,9 @@ onStart
     // goods
     vars.Log(current.isPaused);
     vars.Log(current.health);
+    vars.Log(current.level);
     
     // tests
-
     // vars.Log(current.a.ToString("X"));
 
     vars.Log("active: " + vars.Helper.Scenes.Active.Address.ToString("X"));
