@@ -53,7 +53,40 @@ init
             LD["m_prettyName"] + PAD
         );
 
+        vars.Helper["shortLevel"] = LM.MakeString(
+            "m_instance",
+            LM["m_currentLevelInstance"] + PAD,
+            LI["m_levelData"] + PAD,
+            LD["m_shortPrettyName"] + PAD
+        );
+
+
         // testing
+        // var SC = mono["Alkawa.Engine", "SceenController"];
+        // vars.Helper["ilpc"] = SC.Make
+
+
+        // var WSM = mono["Alkawa.Engine", "WorldStreamingManager", 1];
+        // var WM = mono["Alkawa.Engine", "WorldManager"];
+        // var WI = mono["Alkawa.Engine", "WorldInstance"];
+        // var WD = mono["Alkawa.Engine", "WorldData", 1];
+
+
+        // vars.Helper["a"] = WSM.Make<long>(
+        //     "m_instance",
+        //     WSM["WorldManager"] + PAD,
+        //     WM["m_currentWorld"] + PAD,
+        //     WI["m_worldData"] + PAD
+        // );
+
+        // vars.Helper["world"] = WSM.MakeString(
+        //     "m_instance",
+        //     WSM["WorldManager"] + PAD,
+        //     WM["m_currentWorld"] + PAD,
+        //     WI["m_worldData"] + PAD,
+        //     WD["m_GUID"] + PAD
+        // );
+
 
         // var GSM = mono["Alkawa.Gameplay", "GameStatsManager"];
         // var WI = mono["Alkawa.Engine", "WorldInstance"];
@@ -91,6 +124,8 @@ update
     vars.Watch(old, current, "activeScene");
     vars.Watch(old, current, "loadingScene");
     vars.Watch(old, current, "level");
+    vars.Watch(old, current, "shortLevel");
+    // vars.Watch(old, current, "world");
 }
 
 onStart
@@ -104,6 +139,7 @@ onStart
     vars.Log(current.level);
     
     // tests
+    // vars.Log(current.world);
     // vars.Log(current.a.ToString("X"));
 
     vars.Log("active: " + vars.Helper.Scenes.Active.Address.ToString("X"));

@@ -1,0 +1,9 @@
+<Settings>
+    <Setting Id="world" Label="Split on entering world" State="false">
+        <!-- <Setting Id="world_KIN_BAT" Label="Battlefield" State="false" /> -->
+        <Setting Id="world_KIN_THO" Label="??? palace?" State="false" />
+        <Setting Id="world_CIT_OLD" Label="Old Citadel" State="false" />
+        <Setting Id="world_CIT_LOW" Label="Lower Citadel" State="false" />
+        <Setting Id="world_CIT_DEP" Label="The Depths" State="false" />
+    </Setting>
+</Settings>
