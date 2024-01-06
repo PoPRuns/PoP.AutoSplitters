@@ -29,7 +29,7 @@ init
         var PAD = 0x10;
 
         var PM = mono["Alkawa.Gameplay", "PauseManager"];
-        vars.Helper["isPaused"] = PM.Make<bool>("m_paused"); // good
+        vars.Helper["isPaused"] = PM.Make<bool>("m_paused");
 
         var PC = mono["Alkawa.Gameplay", "PlayerComponent"];
         var PHSC = mono["Alkawa.Gameplay", "PlayerHealthSubComponent"];
@@ -40,6 +40,17 @@ init
             PC["PlayerHealth"] + PAD,
             PHSC["m_playerHealthStateInfo"] + PAD,
             PHSI["m_internalCurrentHP"] + PAD
+        );
+
+        var PISC = mono["Alkawa.Gameplay", "PlayerInputSubComponent"];
+        var PISI = mono["Alkawa.Gameplay", "PlayerInputStateInfo", 1];
+        
+        // enum EPlayerInputMode: Gameplay=0, Menu=1, Conversation=2, CutScene=3, Popup=4, NoInput=5, Unknown=-1
+        vars.Helper["inputMode"] = PM.Make<int>(
+            "m_PlayerComponent",
+            PC["PlayerInput"] + PAD,
+            PISC["m_inputStateInfo"] + PAD,
+            PISI["m_inputMode"] + PAD
         ); 
         
         var LM = mono["Alkawa.Gameplay", "LootManager", 1];
@@ -61,7 +72,15 @@ init
         );
 
 
-        // testing
+        #region testing
+
+        // access to static fields was 0 :(
+        // var QM = mono["Alkawa.Gameplay", "QuestManager", 1];
+        // vars.Helper["quests"] = QM.MakeList<long>(
+        //     "m_instance",
+        //     QM["m_mainQuests"] + PAD
+        // );
+
         // var SC = mono["Alkawa.Engine", "SceenController"];
         // vars.Helper["ilpc"] = SC.Make
 
@@ -95,6 +114,7 @@ init
         // vars.Helper["a"] = GSM.Make<long>("s_currentWorld");
         // vars.Helper["b"] = GSM.Make<long>("s_currentWorld", WI["m_worldData"]);
         // vars.Helper["c"] = GSM.MakeString("s_currentWorld", WI["m_worldData"] + 0x10, WD["m_labelName"] + 0x10);
+        #endregion testing
 
         return true;
     });
@@ -125,7 +145,7 @@ update
     vars.Watch(old, current, "loadingScene");
     vars.Watch(old, current, "level");
     vars.Watch(old, current, "shortLevel");
-    // vars.Watch(old, current, "world");
+    vars.Watch(old, current, "inputMode");
 }
 
 onStart
@@ -133,11 +153,12 @@ onStart
     // refresh all splits when we start the run, none are yet completed
     vars.CompletedSplits.Clear();
 
-    // goods
     vars.Log(current.isPaused);
     vars.Log(current.health);
     vars.Log(current.level);
+    vars.Log(current.inputMode);
     
+    #region testing
     // tests
     // vars.Log(current.world);
     // vars.Log(current.a.ToString("X"));
@@ -153,4 +174,12 @@ onStart
         vars.Log(scene.Name);
         vars.Log(scene.Path);
     }
+    #endregion testing
+}
+
+start
+{
+    // cutscene -> gameplay while in the very first level
+    return current.shortLevel == "BAT_02"
+        && old.inputMode == 3 && current.inputMode == 0;
 }
