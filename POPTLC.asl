@@ -11,12 +11,17 @@ startup
     {
         var oldValue = oldLookup[key];
         var currentValue = currentLookup[key];
-        if (!oldValue.Equals(currentValue))
+
+        if (oldValue != null && currentValue != null && !oldValue.Equals(currentValue))
             vars.Log(key + ": " + oldValue + " -> " + currentValue);
     });
 
     vars.CompletedSplits = new HashSet<string>();
-    
+    // All the quests that have been in progress during this run
+    vars.SeenQuests = new HashSet<string>();
+    // the last checked list of active quests
+    vars.ActiveQuests = new List<string>();
+
     // vars.Helper.AlertLoadless();
 }
 
@@ -24,18 +29,42 @@ init
 {
     vars.states = null;
 
+    // hardcoding some offsets which we can't get dynamically
+    var LINKED_LIST_COUNT_OFFSET = 0x18;
+    var LINKED_LIST_HEAD_OFFSET = 0x10;
+    var LINKED_LIST_NODE_NEXT_OFFSET = 0x18;
+    var LINKED_LIST_NODE_VALUE_OFFSET = 0x28;
+    var ARRAY_ELEMENTS_OFFSET = 0x20;
+
+    // not sure if the names are accurate but this is based on what I saw in memory
+    var CLASS_OFFSET = 0x0;
+    var CLASS_NAME_OFFSET = 0x10;
+    
+    vars.GetClassNameOfInstance = (Func<IntPtr, bool, string>)((instance, isDereffed) =>
+    {
+        DeepPointer p;
+
+        if (isDereffed) {
+            p = new DeepPointer(
+                instance + CLASS_OFFSET,
+                CLASS_NAME_OFFSET,
+                0x0
+            );
+        } else {
+            p = new DeepPointer(
+                instance,
+                CLASS_OFFSET,
+                CLASS_NAME_OFFSET,
+                0x0
+            );
+        }
+        
+        // this is an ascii string so can't use the asl-help func
+        return p.DerefString(game, ReadStringType.ASCII, 128);
+    });
+
     vars.Helper.TryLoad = (Func<dynamic, bool>)(mono =>
     {
-        // hardcoding some offsets which we can't get dynamically
-        var LINKED_LIST_COUNT_OFFSET = 0x18;
-        var LINKED_LIST_HEAD_OFFSET = 0x10;
-        var LINKED_LIST_NODE_NEXT_OFFSET = 0x18;
-        var LINKED_LIST_NODE_VALUE_OFFSET = 0x28;
-        
-        // not sure if the names are accurate but this is based on what I saw in memory
-        var CLASS_OFFSET = 0x0;
-        var CLASS_NAME_OFFSET = 0x10;
-
         // asl-help has this issue where sometimes offsets resolve to 0x10 less than what they are meant to be
         // this is a fix to that...
         var PAD = 0x10;
@@ -67,14 +96,7 @@ init
 
             IntPtr curr = head;
             for (var i = 0; i < count; i++) {
-                // this is an ascii string so can't use the asl-help func
-                var p = new DeepPointer(
-                    curr + LINKED_LIST_NODE_VALUE_OFFSET,
-                    CLASS_OFFSET,
-                    CLASS_NAME_OFFSET,
-                    0x0
-                );
-                var value = p.DerefString(game, ReadStringType.ASCII, 128);
+                var value = vars.GetClassNameOfInstance(curr + LINKED_LIST_NODE_VALUE_OFFSET, false);
                 states.Add(value);
 
                 curr = vars.Helper.Read<IntPtr>(curr + LINKED_LIST_NODE_NEXT_OFFSET);
@@ -87,16 +109,6 @@ init
         });
 
         var PC = mono["Alkawa.Gameplay", "PlayerComponent"];
-        var PHSC = mono["Alkawa.Gameplay", "PlayerHealthSubComponent"];
-        var PHSI = mono["Alkawa.Gameplay", "PlayerHealthStateInfo", 1];
-        
-        vars.Helper["health"] = PM.Make<int>(
-            "m_PlayerComponent",
-            PC["PlayerHealth"] + PAD,
-            PHSC["m_playerHealthStateInfo"] + PAD,
-            PHSI["m_internalCurrentHP"] + PAD
-        );
-
         var PISC = mono["Alkawa.Gameplay", "PlayerInputSubComponent"];
         var PISI = mono["Alkawa.Gameplay", "PlayerInputStateInfo", 1];
         
@@ -130,7 +142,40 @@ init
         #region testing
 
         // access to static fields was 0 :(
-        // var QM = mono["Alkawa.Gameplay", "QuestManager", 1];
+        var UIM = mono["Alkawa.Gameplay", "UIManager", 1];
+
+        vars.Helper["uimanager"] = UIM.Make<IntPtr>("m_instance");
+        vars.Helper["menus"] = UIM.MakeArray<IntPtr>("m_instance", UIM["m_menus"] + PAD);
+
+        // var RVM = mono["Alkawa.Gameplay", "RiddleVisionMenu"];
+        var QME = mono["Alkawa.Gameplay", "QuestMenu"];
+        var QMA = mono["Alkawa.Gameplay", "QuestManager"];
+        var QC = mono["Alkawa.Gameplay", "QuestsContainer"];
+
+        // List<QuestBase>
+        vars.Helper["quests"] = UIM.MakeList<IntPtr>(
+            "m_instance",
+            UIM["m_menus"] + PAD,
+            // QuestMenu is probably always at index 8 in this array
+            // if quest splitting breaks this is where I'd put my money
+            ARRAY_ELEMENTS_OFFSET + 0x8 * 8,
+            QME["m_QuestManager"] + PAD,
+            QMA["m_questsContainer"] + PAD,
+            QC["m_Quests"] + PAD
+        );
+
+
+                // menu + 0x80,
+                // 0x68, // m_questsContainer
+                // // 0x18 // m_QuestsEnded
+                // 0x10 // m_Quests
+        // vars.Log("RVM: " + (UIM["m_RiddleVisionMenu"] + PAD).ToString("X"));
+        // vars.Helper["a"] = UIM.Make<long>(
+        //     "m_instance",
+        //     UIM["m_RiddleVisionMenu"] + PAD
+        //     // RVM["m_QuestMenu"] + PAD,
+        //     // QME["m_QuestManager"] + PAD
+        // );
         // vars.Helper["quests"] = QM.MakeList<long>(
         //     "m_instance",
         //     QM["m_mainQuests"] + PAD
@@ -209,24 +254,128 @@ update
             vars.Log("  " + state);
         }
     }
+
+    if (vars.ActiveQuests.Count != current.quests.Count) {
+        vars.Log("QUEST LIST CHANGED " + vars.ActiveQuests.Count + " -> " + current.quests.Count);
+        vars.ActiveQuests = new List<string>();
+
+        // TODO make this a TryLoad func
+        foreach (var quest in current.quests) {
+            var questName = vars.Helper.ReadString(
+                quest + 0x10 // Name 
+            );
+
+            vars.ActiveQuests.Add(questName);
+            
+            if (vars.SeenQuests.Add(questName)) {
+                vars.Log("Quest started! " + questName);
+            }
+        }
+
+        foreach (var seenQuest in vars.SeenQuests) {
+            if (!vars.ActiveQuests.Contains(seenQuest)) {
+                vars.Log("Quest completed! " + seenQuest);
+            }
+        }
+
+    }
 }
 
 onStart
 {
     // refresh all splits when we start the run, none are yet completed
     vars.CompletedSplits.Clear();
+    vars.SeenQuests.Clear();
 
     vars.Log(current.isPaused);
-    vars.Log(current.health);
     vars.Log(current.level);
     vars.Log(current.inputMode);
     vars.Log(current.activeStatesHead.ToString("X"));
     vars.Log(current.activeStatesCount);
+    vars.Log(current.uimanager.ToString("X"));
     
     #region testing
     // tests
     // vars.Log(current.a.ToString("X"));
     // vars.GetStates();
+
+    vars.Log("quests: " + current.quests.Count);
+
+    var i = 0;
+    foreach (var menu in current.menus)
+    {
+        var menuName = vars.GetClassNameOfInstance(menu, true);
+        vars.Log("[" + i + "] FOUND MENU: " + menuName + " at 0x" + menu.ToString("X"));
+
+        if (menuName == "QuestMenu") {
+            var quests = vars.Helper.ReadList<IntPtr>(
+                menu + 0x80,
+                0x68, // m_questsContainer
+                // 0x18 // m_QuestsEnded
+                0x10 // m_Quests
+            );
+            // var quests = vars.Helper.ReadList<IntPtr>(
+            //     menu + 0x80,
+            //     0x100 // m_mainQuests
+            // );
+
+            // var quests = vars.Helper.ReadList<IntPtr>(
+            //     menu + 0xB0 // m_mainQuests
+            // );
+
+            var currentQuestIndex = vars.Helper.Read<int>(
+                menu + 0xE8 // m_newMainQuestsCount
+                // 0x68, // m_questsContainer
+                // 0x2C
+            );
+
+            vars.Log("  QUEST COUNT: " + quests.Count + ", ACTIVE: " + currentQuestIndex);
+
+            foreach (var quest in quests) {
+                // var questName = "";
+                var questName = vars.Helper.ReadString(
+                    quest + 0x10 // Name
+                    // quest + 0x10, // m_questGraph
+                    // 0xF0, // m_creationInfos
+                    // 0x28, // m_buildingQuest
+                    // 0x10 // Name
+                );
+
+                
+                var isMain = vars.Helper.Read<bool>(
+                    quest + 0x98 // m_isMainQuest
+                );
+
+                var GUID = vars.Helper.ReadString(
+                    quest + 0x60 // m_GUID
+                );
+
+                vars.Log("  QUEST: " + questName + " [" + GUID + "] (Main? " + isMain + ") at 0x" + quest.ToString("X"));
+            }
+
+            // foreach (var quest in quests) {
+            //     // var questName = "";
+            //     var questName = vars.Helper.ReadString(
+            //         quest + 0x10, // m_questBase
+            //         0x10 // Name
+            //     );
+            //     var logState = vars.Helper.Read<int>(quest + 0x18);
+
+            //     vars.Log("  QUEST: " + questName + " [" + logState + "] at 0x" + quest.ToString("X"));
+
+            //     var logInfos = vars.Helper.ReadList<IntPtr>(
+            //         quest + 0x20
+            //     );
+
+            //     foreach (var logInfo in logInfos) {
+            //         var logInfoState = vars.Helper.Read<int>(logInfo + 0x48);
+            //         vars.Log("  Log: " + logInfoState);
+            //     }
+            // }
+        }
+
+        i++;
+    }
 
     vars.Log("active: " + vars.Helper.Scenes.Active.Address.ToString("X"));
     vars.Log(vars.Helper.Scenes.Active.Name);
@@ -255,4 +404,8 @@ isLoading
     return vars.states.Contains("GameFlowStateChangingLevel")
         // not sure when this one happens
         || vars.states.Contains("GameFlowStateLoading");
+}
+
+split
+{
 }
