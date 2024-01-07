@@ -8,8 +8,10 @@
         <Setting Id="world_CIT_UPP" Label="UPP_ Upper Citadel" State="false" />
         <Setting Id="world_HYR_AUT" Label="AUT_ Hyrcanian Forest" State="false" />
         Sunken harbour: HYR_AUT_04_ForestChildrenNest -> HYR_AUT_11_SunkenAccess (AUT_04, AUT_11)
+        Real: SUN_ VAL_SUN_
         <Setting Id="world_HYR_SOM" Label="SOM_ Soma Tree" State="false" />
         <Setting Id="world_SAC_SAC" Label="SAC_ Sacred Archives" State="false" />
+        CIT_DEP02 DEP_02 Catacombs
     </Setting> -->
 
     <Setting Id="quest" Label="Split on completing a quest" State="false">

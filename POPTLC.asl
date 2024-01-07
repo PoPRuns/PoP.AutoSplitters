@@ -4,7 +4,6 @@ startup
 {
     Assembly.Load(File.ReadAllBytes("Components/asl-help")).CreateInstance("Unity");
     vars.Helper.GameName = "Prince of Persia: The Lost Crown";
-    vars.Helper.LoadSceneManager = true;
     vars.Helper.Settings.CreateFromXml("Components/POPTLC.Settings.xml");
 
     vars.Watch = (Action<IDictionary<string, object>, IDictionary<string, object>, string>)((oldLookup, currentLookup, key) => 
@@ -233,12 +232,6 @@ init
 
 update
 {
-    // Assets/_Game/Scenes    
-    current.activeScene = vars.Helper.Scenes.Active.Name ?? current.activeScene;
-    current.loadingScene = vars.Helper.Scenes.Loaded[0].Name ?? current.loadingScene;
-
-    // vars.Watch(old, current, "activeScene");
-    // vars.Watch(old, current, "loadingScene");
     vars.Watch(old, current, "level");
     vars.Watch(old, current, "shortLevel");
     // vars.Watch(old, current, "inputMode");
@@ -376,17 +369,6 @@ onStart
         i++;
     }
 
-    // vars.Log("active: " + vars.Helper.Scenes.Active.Address.ToString("X"));
-    // vars.Log(vars.Helper.Scenes.Active.Name);
-    // vars.Log(vars.Helper.Scenes.Active.Path);
-
-    // vars.Log("Loaded: " + vars.Helper.Scenes.Loaded.Count);
-
-    // foreach (var scene in vars.Helper.Scenes.Loaded) {
-    //     vars.Log(scene.Address.ToString("X"));
-    //     vars.Log(scene.Name);
-    //     vars.Log(scene.Path);
-    // }
     #endregion testing
 }
 
