@@ -5,7 +5,7 @@ startup
     Assembly.Load(File.ReadAllBytes("Components/asl-help")).CreateInstance("Unity");
     vars.Helper.GameName = "Prince of Persia: The Lost Crown";
     vars.Helper.LoadSceneManager = true;
-    // vars.Helper.Settings.CreateFromXml("Components/TEMPLATE.Settings.xml");
+    vars.Helper.Settings.CreateFromXml("Components/POPTLC.Settings.xml");
 
     vars.Watch = (Action<IDictionary<string, object>, IDictionary<string, object>, string>)((oldLookup, currentLookup, key) => 
     {
@@ -139,15 +139,7 @@ init
         );
 
 
-        #region testing
-
-        // access to static fields was 0 :(
         var UIM = mono["Alkawa.Gameplay", "UIManager", 1];
-
-        vars.Helper["uimanager"] = UIM.Make<IntPtr>("m_instance");
-        vars.Helper["menus"] = UIM.MakeArray<IntPtr>("m_instance", UIM["m_menus"] + PAD);
-
-        // var RVM = mono["Alkawa.Gameplay", "RiddleVisionMenu"];
         var QME = mono["Alkawa.Gameplay", "QuestMenu"];
         var QMA = mono["Alkawa.Gameplay", "QuestManager"];
         var QC = mono["Alkawa.Gameplay", "QuestsContainer"];
@@ -164,6 +156,10 @@ init
             QC["m_Quests"] + PAD
         );
 
+        #region testing
+
+        vars.Helper["uimanager"] = UIM.Make<IntPtr>("m_instance");
+        vars.Helper["menus"] = UIM.MakeArray<IntPtr>("m_instance", UIM["m_menus"] + PAD);
 
                 // menu + 0x80,
                 // 0x68, // m_questsContainer
@@ -241,22 +237,22 @@ update
     current.activeScene = vars.Helper.Scenes.Active.Name ?? current.activeScene;
     current.loadingScene = vars.Helper.Scenes.Loaded[0].Name ?? current.loadingScene;
 
-    vars.Watch(old, current, "activeScene");
+    // vars.Watch(old, current, "activeScene");
     // vars.Watch(old, current, "loadingScene");
     vars.Watch(old, current, "level");
     vars.Watch(old, current, "shortLevel");
-    vars.Watch(old, current, "inputMode");
+    // vars.Watch(old, current, "inputMode");
 
-    if (vars.states == null || vars.states.Count != current.activeStatesCount) {
-        vars.states = vars.GetStates();
-        vars.Log("[" + vars.states.Count + "] State set changed.");
-        foreach (var state in vars.states) {
-            vars.Log("  " + state);
-        }
-    }
+    // if (vars.states == null || vars.states.Count != current.activeStatesCount) {
+    //     vars.states = vars.GetStates();
+    //     vars.Log("[" + vars.states.Count + "] State set changed.");
+    //     foreach (var state in vars.states) {
+    //         vars.Log("  " + state);
+    //     }
+    // }
 
-    if (vars.ActiveQuests.Count != current.quests.Count) {
-        vars.Log("QUEST LIST CHANGED " + vars.ActiveQuests.Count + " -> " + current.quests.Count);
+    if (vars.ActiveQuests.Count != current.quests.Count && current.quests.Count != 0) {
+        // vars.Log("QUEST LIST CHANGED " + vars.ActiveQuests.Count + " -> " + current.quests.Count);
         vars.ActiveQuests = new List<string>();
 
         // TODO make this a TryLoad func
@@ -268,13 +264,16 @@ update
             vars.ActiveQuests.Add(questName);
             
             if (vars.SeenQuests.Add(questName)) {
-                vars.Log("Quest started! " + questName);
+                // vars.Log("Quest started! " + questName);
             }
         }
 
         foreach (var seenQuest in vars.SeenQuests) {
-            if (!vars.ActiveQuests.Contains(seenQuest)) {
-                vars.Log("Quest completed! " + seenQuest);
+            if (!vars.ActiveQuests.Contains(seenQuest)
+             && timer.CurrentPhase == TimerPhase.Running
+             && vars.CheckSplit("quest_" + seenQuest)
+            ) {
+                vars.Helper.Timer.Split();
             }
         }
 
@@ -305,7 +304,7 @@ onStart
     foreach (var menu in current.menus)
     {
         var menuName = vars.GetClassNameOfInstance(menu, true);
-        vars.Log("[" + i + "] FOUND MENU: " + menuName + " at 0x" + menu.ToString("X"));
+        // vars.Log("[" + i + "] FOUND MENU: " + menuName + " at 0x" + menu.ToString("X"));
 
         if (menuName == "QuestMenu") {
             var quests = vars.Helper.ReadList<IntPtr>(
@@ -377,11 +376,11 @@ onStart
         i++;
     }
 
-    vars.Log("active: " + vars.Helper.Scenes.Active.Address.ToString("X"));
-    vars.Log(vars.Helper.Scenes.Active.Name);
-    vars.Log(vars.Helper.Scenes.Active.Path);
+    // vars.Log("active: " + vars.Helper.Scenes.Active.Address.ToString("X"));
+    // vars.Log(vars.Helper.Scenes.Active.Name);
+    // vars.Log(vars.Helper.Scenes.Active.Path);
 
-    vars.Log("Loaded: " + vars.Helper.Scenes.Loaded.Count);
+    // vars.Log("Loaded: " + vars.Helper.Scenes.Loaded.Count);
 
     // foreach (var scene in vars.Helper.Scenes.Loaded) {
     //     vars.Log(scene.Address.ToString("X"));
