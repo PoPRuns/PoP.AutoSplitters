@@ -10,11 +10,13 @@
         Sunken harbour: HYR_AUT_04_ForestChildrenNest -> HYR_AUT_11_SunkenAccess (AUT_04, AUT_11)
         Real: SUN_ VAL_SUN_
         <Setting Id="world_HYR_SOM" Label="SOM_ Soma Tree" State="false" />
+        HYR_HID_ HID_ Hidden Village
         <Setting Id="world_SAC_SAC" Label="SAC_ Sacred Archives" State="false" />
         CIT_DEP02 DEP_02 Catacombs
         NEC_TOW_ TOW_ Tower of Silence
         SAC_SAC02_ SAC02_ Temple of Knowledge
         END_PIT_ PIT_ Pit of Eternal Sands
+        VAL_RAG_ RAG_ Raging Seas
     </Setting> -->
 
     <Setting Id="quest" Label="Split on completing a quest" State="false">
@@ -25,6 +27,7 @@
         <Setting Id="quest_The Tiger and the Rat" Label="The Tiger and the Rat" State="false" />
         <Setting Id="quest_The Path to the Sand Prison" Label="The Path to the Sand Prison" State="false" />
         <Setting Id="quest_The Darkest of Souls" Label="The Darkest of Souls" State="false" />
+        <Setting Id="quest_The Celestial Guardians" Label="The Celestial Guardians" State="false" />
 
     </Setting>
 </Settings>
