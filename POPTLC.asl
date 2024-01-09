@@ -236,13 +236,13 @@ update
     vars.Watch(old, current, "shortLevel");
     // vars.Watch(old, current, "inputMode");
 
-    // if (vars.states == null || vars.states.Count != current.activeStatesCount) {
-    //     vars.states = vars.GetStates();
-    //     vars.Log("[" + vars.states.Count + "] State set changed.");
-    //     foreach (var state in vars.states) {
-    //         vars.Log("  " + state);
-    //     }
-    // }
+    if (vars.states == null || vars.states.Count != current.activeStatesCount) {
+        vars.states = vars.GetStates();
+        // vars.Log("[" + vars.states.Count + "] State set changed.");
+        // foreach (var state in vars.states) {
+        //     vars.Log("  " + state);
+        // }
+    }
 
     if (vars.ActiveQuests.Count != current.quests.Count && current.quests.Count != 0) {
         // vars.Log("QUEST LIST CHANGED " + vars.ActiveQuests.Count + " -> " + current.quests.Count);
@@ -257,11 +257,12 @@ update
             vars.ActiveQuests.Add(questName);
             
             if (vars.SeenQuests.Add(questName)) {
-                // vars.Log("Quest started! " + questName);
+                vars.Log("Quest started! " + questName);
             }
         }
 
         foreach (var seenQuest in vars.SeenQuests) {
+            // if (!vars.ActiveQuests.Contains(seenQuest)) { vars.Log("Quest maybe completed " + seenQuest); }
             if (!vars.ActiveQuests.Contains(seenQuest)
              && timer.CurrentPhase == TimerPhase.Running
              && vars.CheckSplit("quest_" + seenQuest)

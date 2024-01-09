@@ -5,22 +5,22 @@
         <Setting Id="world_CIT_OLD" Label="OLD_ Old Citadel / Old Royal Road" State="false" />
         <Setting Id="world_CIT_LOW" Label="LOW_ Lower Citadel" State="false" />
         <Setting Id="world_CIT_DEP" Label="DEP_ The Depths" State="false" />
-        <Setting Id="world_CIT_UPP" Label="UPP_ Upper Citadel" State="false" />
-        <Setting Id="world_HYR_AUT" Label="AUT_ Hyrcanian Forest" State="false" />
-        Sunken harbour: HYR_AUT_04_ForestChildrenNest -> HYR_AUT_11_SunkenAccess (AUT_04, AUT_11)
-        Real: SUN_ VAL_SUN_
-        <Setting Id="world_HYR_SOM" Label="SOM_ Soma Tree" State="false" />
-        HYR_HID_ HID_ Hidden Village
-        <Setting Id="world_SAC_SAC" Label="SAC_ Sacred Archives" State="false" />
         CIT_DEP02 DEP_02 Catacombs
-        NEC_TOW_ TOW_ Tower of Silence
+        <Setting Id="world_CIT_UPP" Label="UPP_ Upper Citadel" State="false" />
+        <Setting Id="world_SAC_SAC" Label="SAC_ Sacred Archives" State="false" />
         SAC_SAC02_ SAC02_ Temple of Knowledge
+        <Setting Id="world_HYR_AUT" Label="AUT_ Hyrcanian Forest" State="false" />
+        <Setting Id="world_HYR_SOM" Label="SOM_ Soma Tree" State="false" />
+        Sunken harbour: HYR_AUT_04_ForestChildrenNest -> HYR_AUT_11_SunkenAccess (AUT_04, AUT_11)
+        Real: SUN_ VAL_SUN_ Sunken Harbour
         END_PIT_ PIT_ Pit of Eternal Sands
         VAL_RAG_ RAG_ Raging Seas
+        HYR_HID_ HID_ Hidden Village
+        NEC_TOW_ TOW_ Tower of Silence
+        CRO_CRO_ CRO_ Crossroads of Time
     </Setting> -->
 
-    <Setting Id="quest" Label="Split on completing a quest" State="false">
-        <!-- <Setting Id="quest_" Label="" State="false" /> -->
+    <Setting Id="quest" Label="Split on completing a quest" State="true">
         <Setting Id="quest_Persia Under Attack" Label="Persia Under Attack (Battlefield + Thomyris Palace)" State="false" />
         <Setting Id="quest_Lost in Mount Qaf" Label="Lost in Mount Qaf" State="false" />
         <Setting Id="quest_The Abducted Prince" Label="The Abducted Prince" State="false" />
@@ -28,6 +28,8 @@
         <Setting Id="quest_The Path to the Sand Prison" Label="The Path to the Sand Prison" State="false" />
         <Setting Id="quest_The Darkest of Souls" Label="The Darkest of Souls" State="false" />
         <Setting Id="quest_The Celestial Guardians" Label="The Celestial Guardians" State="false" />
-
+        <Setting Id="quest_Return to the Past" Label="The Celestial Guardians" State="false" />
+        <Setting Id="quest_Father and Son" Label="Father and Son" State="false" />
+        <Setting Id="quest_The Crossroads of Time" Label="The Crossroads of Time (End)" State="true" />
     </Setting>
 </Settings>
