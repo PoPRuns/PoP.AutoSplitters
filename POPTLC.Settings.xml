@@ -28,7 +28,7 @@
         <Setting Id="quest_The Path to the Sand Prison" Label="The Path to the Sand Prison" State="false" />
         <Setting Id="quest_The Darkest of Souls" Label="The Darkest of Souls" State="false" />
         <Setting Id="quest_The Celestial Guardians" Label="The Celestial Guardians" State="false" />
-        <Setting Id="quest_Return to the Past" Label="The Celestial Guardians" State="false" />
+        <Setting Id="quest_Return to the Past" Label="Return to the Past" State="false" />
         <Setting Id="quest_Father and Son" Label="Father and Son" State="false" />
         <Setting Id="quest_The Crossroads of Time" Label="The Crossroads of Time (End)" State="true" />
     </Setting>
