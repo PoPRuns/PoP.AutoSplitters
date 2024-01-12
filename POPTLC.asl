@@ -244,8 +244,10 @@ update
         // }
     }
 
-    if (vars.ActiveQuests.Count != current.quests.Count && current.quests.Count != 0) {
-        vars.Log("QUEST LIST CHANGED " + vars.ActiveQuests.Count + " -> " + current.quests.Count);
+    if ((vars.ActiveQuests.Count != current.quests.Count && current.quests.Count != 0)
+     || (vars.ActiveQuests.Count > vars.SeenQuests.Count)
+    ) {
+        vars.Log("QUEST LIST CHANGED " + vars.ActiveQuests.Count + " -> " + current.quests.Count + " (SQ: " + vars.SeenQuests.Count + " )");
         vars.ActiveQuests = new List<string>();
 
         // TODO make this a TryLoad func
@@ -263,7 +265,11 @@ update
             }
         }
 
+        vars.Log("SEEN QUESTS (" + vars.SeenQuests.Count + "): ");
+
         foreach (var seenQuest in vars.SeenQuests) {
+            vars.Log("  " + seenQuest);
+
             // lazy debugging beat
             if (!vars.ActiveQuests.Contains(seenQuest)) { vars.Log("Quest maybe completed " + seenQuest); }
             
