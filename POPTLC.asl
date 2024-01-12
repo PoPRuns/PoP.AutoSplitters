@@ -245,7 +245,7 @@ update
     }
 
     if (vars.ActiveQuests.Count != current.quests.Count && current.quests.Count != 0) {
-        // vars.Log("QUEST LIST CHANGED " + vars.ActiveQuests.Count + " -> " + current.quests.Count);
+        vars.Log("QUEST LIST CHANGED " + vars.ActiveQuests.Count + " -> " + current.quests.Count);
         vars.ActiveQuests = new List<string>();
 
         // TODO make this a TryLoad func
@@ -253,6 +253,8 @@ update
             var questName = vars.Helper.ReadString(
                 quest + 0x10 // Name 
             );
+
+            vars.Log("  " + questName);
 
             vars.ActiveQuests.Add(questName);
             
@@ -262,9 +264,12 @@ update
         }
 
         foreach (var seenQuest in vars.SeenQuests) {
-            // if (!vars.ActiveQuests.Contains(seenQuest)) { vars.Log("Quest maybe completed " + seenQuest); }
+            // lazy debugging beat
+            if (!vars.ActiveQuests.Contains(seenQuest)) { vars.Log("Quest maybe completed " + seenQuest); }
+            
             if (!vars.ActiveQuests.Contains(seenQuest)
              && timer.CurrentPhase == TimerPhase.Running
+             && settings.SplitEnabled
              && vars.CheckSplit("quest_" + seenQuest)
             ) {
                 vars.Helper.Timer.Split();
@@ -280,13 +285,14 @@ onStart
     vars.CompletedSplits.Clear();
     vars.SeenQuests.Clear();
 
+    vars.Log(settings.SplitEnabled);
     vars.Log(current.isPaused);
     vars.Log(current.level);
     vars.Log(current.inputMode);
     vars.Log(current.activeStatesHead.ToString("X"));
     vars.Log(current.activeStatesCount);
     vars.Log(current.uimanager.ToString("X"));
-    
+
     #region testing
     // tests
     // vars.Log(current.a.ToString("X"));
@@ -390,4 +396,5 @@ isLoading
 
 split
 {
+    return false;
 }

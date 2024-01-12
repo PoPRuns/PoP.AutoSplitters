@@ -23,13 +23,54 @@
     <Setting Id="quest" Label="Split on completing a quest" State="true">
         <Setting Id="quest_Persia Under Attack" Label="Persia Under Attack (Battlefield + Thomyris Palace)" State="false" />
         <Setting Id="quest_Lost in Mount Qaf" Label="Lost in Mount Qaf" State="false" />
+        <!-- 
+            Reach the Upper Citadel
+            Pursue Anahita
+            Defeat Jahandar
+         -->
         <Setting Id="quest_The Abducted Prince" Label="The Abducted Prince" State="false" />
+        <!-- 
+            Head west to join forces with Vahram
+            Go through the Sacred Archives to reach the Upper Citadel
+            Explore the Upper Citadel to find Anahita
+            Neutralize Vahram
+         -->
         <Setting Id="quest_The Tiger and the Rat" Label="The Tiger and the Rat" State="false" />
+        <!-- 
+            Chase after the Old Man in the Depths of the Citadel to get your Eye back
+         -->
         <Setting Id="quest_The Path to the Sand Prison" Label="The Path to the Sand Prison" State="false" />
+        <!-- 
+            Find a way to enter the Pit of Eternal Sands
+            Enter the Pit of Eternal Sands
+         -->
         <Setting Id="quest_The Darkest of Souls" Label="The Darkest of Souls" State="false" />
+        <!-- 
+            Find the Darkest of Souls
+            Convince the Darkest of Souls
+         -->
         <Setting Id="quest_The Celestial Guardians" Label="The Celestial Guardians" State="false" />
+        <!-- 
+            Summon Tascheter, Guardian of the East
+            Summon Haftorang, Guardian of the North
+            Summon Venant, Guardian of the West
+            Summon Satevis, Guardian of the South
+         -->
         <Setting Id="quest_Return to the Past" Label="Return to the Past" State="false" />
+        <!-- 
+            Reach the Celestial Altar in the Upper city to return to the Past
+            Neutralize Vahram and save Ghassan
+         -->
         <Setting Id="quest_Father and Son" Label="Father and Son" State="false" />
+        <!-- 
+            Find the Key of Kings in the Tower of Silence
+            Use the Key of Kings to enter Darius' Palace
+            Defeat King Darius
+         -->
         <Setting Id="quest_The Crossroads of Time" Label="The Crossroads of Time (End)" State="true" />
+        <!-- 
+            Reach the Simurgh Gate
+            Stop Vahram
+         -->
     </Setting>
 </Settings>
