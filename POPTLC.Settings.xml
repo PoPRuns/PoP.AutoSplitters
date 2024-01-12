@@ -20,6 +20,7 @@
         CRO_CRO_ CRO_ Crossroads of Time
     </Setting> -->
 
+    <Setting Id="start_rebind" Label="Start after rebinding controls" State="false" />
     <Setting Id="quest" Label="Split on completing a quest" State="true">
         <Setting Id="quest_Persia Under Attack" Label="Persia Under Attack (Battlefield + Thomyris Palace)" State="false" />
         <Setting Id="quest_Lost in Mount Qaf" Label="Lost in Mount Qaf" State="false" />

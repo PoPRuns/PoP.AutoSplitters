@@ -4,6 +4,7 @@ startup
 {
     Assembly.Load(File.ReadAllBytes("Components/asl-help")).CreateInstance("Unity");
     vars.Helper.GameName = "Prince of Persia: The Lost Crown";
+    vars.Helper.LoadSceneManager = true;
     vars.Helper.Settings.CreateFromXml("Components/POPTLC.Settings.xml");
 
     vars.Watch = (Action<IDictionary<string, object>, IDictionary<string, object>, string>)((oldLookup, currentLookup, key) => 
@@ -27,6 +28,7 @@ startup
 init
 {
     vars.states = null;
+    current.isChangingLevel = false;
 
     // hardcoding some offsets which we can't get dynamically
     var LINKED_LIST_COUNT_OFFSET = 0x18;
@@ -232,16 +234,21 @@ init
 
 update
 {
+	current.activeScene = vars.Helper.Scenes.Active.Name ?? current.activeScene;
+    vars.Watch(old, current, "activeScene");
     vars.Watch(old, current, "level");
     vars.Watch(old, current, "shortLevel");
-    // vars.Watch(old, current, "inputMode");
+    vars.Watch(old, current, "inputMode");
 
     if (vars.states == null || vars.states.Count != current.activeStatesCount) {
         vars.states = vars.GetStates();
-        // vars.Log("[" + vars.states.Count + "] State set changed.");
-        // foreach (var state in vars.states) {
-        //     vars.Log("  " + state);
-        // }
+
+        current.isChangingLevel = vars.states.Contains("GameFlowStateChangingLevel");
+
+        vars.Log("[" + vars.states.Count + "] State set changed.");
+        foreach (var state in vars.states) {
+            vars.Log("  " + state);
+        }
     }
 
     if ((vars.ActiveQuests.Count != current.quests.Count && current.quests.Count != 0)
@@ -287,6 +294,8 @@ update
 
 onStart
 {
+	timer.IsGameTimePaused = true;
+    
     // refresh all splits when we start the run, none are yet completed
     vars.CompletedSplits.Clear();
     vars.SeenQuests.Clear();
@@ -387,6 +396,13 @@ onStart
 
 start
 {
+    if (settings["start_rebind"]) {
+        // if we're loading into the first level but not from the start screen
+        // it's just a changing level transition
+        return current.shortLevel == "BAT_02" && vars.states.Contains("GameFlowStateLoading")
+            && old.inputMode == 1 && current.inputMode == 0;
+    }
+
     // cutscene -> gameplay while in the very first level
     return current.shortLevel == "BAT_02"
         && old.inputMode == 3 && current.inputMode == 0;
@@ -395,7 +411,7 @@ start
 isLoading
 {
     // moving between screens
-    return vars.states.Contains("GameFlowStateChangingLevel")
+    return current.isChangingLevel
         // not sure when this one happens
         || vars.states.Contains("GameFlowStateLoading");
 }
