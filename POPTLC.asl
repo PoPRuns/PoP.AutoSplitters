@@ -22,7 +22,7 @@ startup
     // the last checked list of active quests
     vars.ActiveQuests = new List<string>();
 
-    // vars.Helper.AlertLoadless();
+    vars.Helper.AlertLoadless();
 }
 
 init
@@ -45,7 +45,8 @@ init
     {
         DeepPointer p;
 
-        if (isDereffed) {
+        if (isDereffed)
+        {
             p = new DeepPointer(
                 instance + CLASS_OFFSET,
                 CLASS_NAME_OFFSET,
@@ -418,5 +419,10 @@ isLoading
 
 split
 {
+    if (old.shortLevel != current.shortLevel && vars.CheckSplit("inlevel_" + current.shortLevel))
+    {
+        return true;
+    }
+
     return false;
 }
