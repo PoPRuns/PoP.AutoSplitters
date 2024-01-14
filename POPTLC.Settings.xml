@@ -41,7 +41,7 @@
             Chase after the Old Man in the Depths of the Citadel to get your Eye back
          -->
          <!-- Quest sometimes doesn't end correctly -->
-        <Setting Id="inlevel_PIT_01" Label="The Path to the Sand Prison" State="false" />
+        <Setting Id="inlevel_PIT_01" Label="The Path to the Sand Prison ($10,000 Challenge End)" State="false" />
         <!-- 
             Find a way to enter the Pit of Eternal Sands
             Enter the Pit of Eternal Sands
