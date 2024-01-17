@@ -245,6 +245,7 @@ update
         vars.states = vars.GetStates();
 
         current.isChangingLevel = vars.states.Contains("GameFlowStateChangingLevel");
+        current.isGSCutscene = vars.states.Contains("GameFlowStateCutScene");
 
         vars.Log("[" + vars.states.Count + "] State set changed.");
         foreach (var state in vars.states) {
@@ -302,6 +303,7 @@ onStart
     vars.SeenQuests.Clear();
 
     vars.Log(settings.SplitEnabled);
+    vars.Log(current.isGSCutscene);
     vars.Log(current.isPaused);
     vars.Log(current.level);
     vars.Log(current.inputMode);
@@ -397,16 +399,22 @@ onStart
 
 start
 {
+    if (current.shortLevel != "BAT_02" || current.inputMode != 0) return false;
+
     if (settings["start_rebind"]) {
         // if we're loading into the first level but not from the start screen
         // it's just a changing level transition
-        return current.shortLevel == "BAT_02" && vars.states.Contains("GameFlowStateLoading")
-            && old.inputMode == 1 && current.inputMode == 0;
+        return vars.states.Contains("GameFlowStateLoading") && old.inputMode == 1;
+    }
+
+    // using the GameFlowStateCutScene
+    if (old.isGSCutscene && !current.isGSCutscene)
+    {
+        return true;
     }
 
     // cutscene -> gameplay while in the very first level
-    return current.shortLevel == "BAT_02"
-        && old.inputMode == 3 && current.inputMode == 0;
+    return old.inputMode == 3;
 }
 
 isLoading
