@@ -215,6 +215,10 @@ update
         vars.Log("[" + vars.states.Count + "] State set changed: " + string.Join(", ", vars.states));
     }
 
+    if (old.shortLevel != current.shortLevel) {
+        current.isChangingLevel = false;
+    }
+
     if ((vars.ActiveQuests.Count != current.quests.Count && current.quests.Count != 0)
      || (vars.ActiveQuests.Count > vars.SeenQuests.Count)
     ) {
