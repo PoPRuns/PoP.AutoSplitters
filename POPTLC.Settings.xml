@@ -23,53 +23,75 @@
     <Setting Id="start_rebind" Label="Start after rebinding controls" State="false" />
     <Setting Id="quest" Label="Split on completing a quest" State="true">
         <Setting Id="inlevel_OLD_01" Label="Persia Under Attack (Battlefield + Thomyris Palace)" State="false" />
-        <Setting Id="quest_Lost in Mount Qaf" Label="Lost in Mount Qaf" State="false" />
         <!-- 
+            e36c64cd5a982ce4b8571f8190c1ad43
+         -->
+
+        <Setting Id="quest_end_d46f01520560b6446a4c366171e5e6d2" Label="Lost in Mount Qaf" State="false" />
+        <!-- 
+            d46f01520560b6446a4c366171e5e6d2
+
             Reach the Upper Citadel
             Pursue Anahita
             Defeat Jahandar
          -->
-        <Setting Id="quest_The Abducted Prince" Label="The Abducted Prince" State="false" />
+
+        <Setting Id="quest_start_89a9bdf53da19a744b22fad494884202" Label="The Abducted Prince" State="false" />
         <!-- 
+            cbc6e45ab294c3b409021fa2ef3067fd
+
             Head west to join forces with Vahram
             Go through the Sacred Archives to reach the Upper Citadel
             Explore the Upper Citadel to find Anahita
             Neutralize Vahram
          -->
-        <Setting Id="quest_The Tiger and the Rat" Label="The Tiger and the Rat" State="false" />
+
+        <Setting Id="quest_end_89a9bdf53da19a744b22fad494884202" Label="The Tiger and the Rat" State="false" />
         <!-- 
+            89a9bdf53da19a744b22fad494884202
+
             Chase after the Old Man in the Depths of the Citadel to get your Eye back
          -->
+
          <!-- Quest sometimes doesn't end correctly -->
         <Setting Id="inlevel_PIT_01" Label="The Path to the Sand Prison ($10,000 Challenge End)" State="false" />
         <!-- 
+            e499d16e671ee1b42b170dc0f71b6c8e
+
             Find a way to enter the Pit of Eternal Sands
             Enter the Pit of Eternal Sands
          -->
-        <Setting Id="quest_The Darkest of Souls" Label="The Darkest of Souls" State="false" />
+
+        <Setting Id="quest_end_59d515cfe12ef084d8df7ab2c38cce21" Label="The Darkest of Souls" State="false" />
         <!-- 
+            59d515cfe12ef084d8df7ab2c38cce21
+            
             Find the Darkest of Souls
             Convince the Darkest of Souls
          -->
-        <Setting Id="quest_The Celestial Guardians" Label="The Celestial Guardians" State="false" />
+
+        <Setting Id="quest_end_????" Label="The Celestial Guardians" State="false" />
         <!-- 
             Summon Tascheter, Guardian of the East
             Summon Haftorang, Guardian of the North
             Summon Venant, Guardian of the West
             Summon Satevis, Guardian of the South
          -->
-        <Setting Id="quest_Return to the Past" Label="Return to the Past" State="false" />
+
+        <Setting Id="quest_end_?????" Label="Return to the Past" State="false" />
         <!-- 
             Reach the Celestial Altar in the Upper city to return to the Past
             Neutralize Vahram and save Ghassan
          -->
-        <Setting Id="quest_Father and Son" Label="Father and Son" State="false" />
+
+        <Setting Id="quest_end_??????" Label="Father and Son" State="false" />
         <!-- 
             Find the Key of Kings in the Tower of Silence
             Use the Key of Kings to enter Darius' Palace
             Defeat King Darius
          -->
-        <Setting Id="quest_The Crossroads of Time" Label="The Crossroads of Time (End)" State="true" />
+
+        <Setting Id="quest_end_???????" Label="The Crossroads of Time (End)" State="true" />
         <!-- 
             Reach the Simurgh Gate
             Stop Vahram

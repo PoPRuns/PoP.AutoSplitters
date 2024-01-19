@@ -4,12 +4,15 @@ state("TheLostCrown_plus") { }
 startup
 {
     Assembly.Load(File.ReadAllBytes("Components/asl-help")).CreateInstance("Unity");
-    vars.Helper.GameName = "Prince of Persia: The Lost Crown";
+    vars.Helper.GameName = "POPTLC";
     vars.Helper.LoadSceneManager = true;
-    vars.Helper.Settings.CreateFromXml("Components/POPTLC.Settings.xml");
+    
     // The ubisoft+ version of this game is weird and requires overriding some config in asl-help
     vars.Helper.Il2CppModules.Add("GameAssembly_plus.dll");
     vars.Helper.DataDirectory = "TheLostCrown_Data";
+
+    vars.Helper.Settings.CreateFromXml("Components/POPTLC.Settings.xml");
+    vars.Helper.StartFileLogger("POPTLC Autosplitter.log");
 
     vars.Watch = (Action<IDictionary<string, object>, IDictionary<string, object>, string>)((oldLookup, currentLookup, key) => 
     {
@@ -149,6 +152,7 @@ init
         var QME = mono["Alkawa.Gameplay", "QuestMenu"];
         var QMA = mono["Alkawa.Gameplay", "QuestManager"];
         var QC = mono["Alkawa.Gameplay", "QuestsContainer"];
+        var QB = mono["Alkawa.Gameplay", "QuestBase"];
 
         // List<QuestBase>
         vars.Helper["quests"] = UIM.MakeList<IntPtr>(
@@ -162,61 +166,13 @@ init
             QC["m_Quests"] + PAD
         );
 
-        #region testing
-
-        vars.Helper["uimanager"] = UIM.Make<IntPtr>("m_instance");
-        vars.Helper["menus"] = UIM.MakeArray<IntPtr>("m_instance", UIM["m_menus"] + PAD);
-
-                // menu + 0x80,
-                // 0x68, // m_questsContainer
-                // // 0x18 // m_QuestsEnded
-                // 0x10 // m_Quests
-        // vars.Log("RVM: " + (UIM["m_RiddleVisionMenu"] + PAD).ToString("X"));
-        // vars.Helper["a"] = UIM.Make<long>(
-        //     "m_instance",
-        //     UIM["m_RiddleVisionMenu"] + PAD
-        //     // RVM["m_QuestMenu"] + PAD,
-        //     // QME["m_QuestManager"] + PAD
-        // );
-        // vars.Helper["quests"] = QM.MakeList<long>(
-        //     "m_instance",
-        //     QM["m_mainQuests"] + PAD
-        // );
-
-        // var SC = mono["Alkawa.Engine", "SceenController"];
-        // vars.Helper["ilpc"] = SC.Make
-
-
-        // var WSM = mono["Alkawa.Engine", "WorldStreamingManager", 1];
-        // var WM = mono["Alkawa.Engine", "WorldManager"];
-        // var WI = mono["Alkawa.Engine", "WorldInstance"];
-        // var WD = mono["Alkawa.Engine", "WorldData", 1];
-
-
-        // vars.Helper["a"] = WSM.Make<long>(
-        //     "m_instance",
-        //     WSM["WorldManager"] + PAD,
-        //     WM["m_currentWorld"] + PAD,
-        //     WI["m_worldData"] + PAD
-        // );
-
-        // vars.Helper["world"] = WSM.MakeString(
-        //     "m_instance",
-        //     WSM["WorldManager"] + PAD,
-        //     WM["m_currentWorld"] + PAD,
-        //     WI["m_worldData"] + PAD,
-        //     WD["m_GUID"] + PAD
-        // );
-
-
-        // var GSM = mono["Alkawa.Gameplay", "GameStatsManager"];
-        // var WI = mono["Alkawa.Engine", "WorldInstance"];
-        // var WD = mono["Alkawa.Engine", "WorldData", 1];
-
-        // vars.Helper["a"] = GSM.Make<long>("s_currentWorld");
-        // vars.Helper["b"] = GSM.Make<long>("s_currentWorld", WI["m_worldData"]);
-        // vars.Helper["c"] = GSM.MakeString("s_currentWorld", WI["m_worldData"] + 0x10, WD["m_labelName"] + 0x10);
-        #endregion testing
+        vars.ReadQuest = (Func<IntPtr, dynamic>)(quest =>
+        {
+            dynamic ret = new ExpandoObject();
+            ret.Name = vars.Helper.ReadString(quest + QB["Name"] + PAD);
+            ret.GUID = vars.Helper.ReadString(quest + QB["m_GUID"] + PAD);
+            return ret;
+        });
 
         return true;
     });
@@ -224,6 +180,11 @@ init
     // this function is a helper for checking splits that may or may not exist in settings,
     // and if we want to do them only once
     vars.CheckSplit = (Func<string, bool>)(key => {
+        // make sure splits are enabled and timer is running
+        if (!settings.SplitEnabled || timer.CurrentPhase != TimerPhase.Running) {
+            return false;
+        }
+
         // if the split doesn't exist, or it's off, or we've done it already
         if (!settings.ContainsKey(key)
           || !settings[key]
@@ -251,30 +212,28 @@ update
         current.isChangingLevel = vars.states.Contains("GameFlowStateChangingLevel");
         current.isGSCutscene = vars.states.Contains("GameFlowStateCutScene");
 
-        vars.Log("[" + vars.states.Count + "] State set changed.");
-        foreach (var state in vars.states) {
-            vars.Log("  " + state);
-        }
+        vars.Log("[" + vars.states.Count + "] State set changed: " + string.Join(", ", vars.states));
     }
 
     if ((vars.ActiveQuests.Count != current.quests.Count && current.quests.Count != 0)
      || (vars.ActiveQuests.Count > vars.SeenQuests.Count)
     ) {
-        vars.Log("QUEST LIST CHANGED " + vars.ActiveQuests.Count + " -> " + current.quests.Count + " (SQ: " + vars.SeenQuests.Count + " )");
+        vars.Log("QUEST LIST CHANGED " + vars.ActiveQuests.Count + " -> " + current.quests.Count + " (SQ: " + vars.SeenQuests.Count + ")");
         vars.ActiveQuests = new List<string>();
 
-        // TODO make this a TryLoad func
-        foreach (var quest in current.quests) {
-            var questName = vars.Helper.ReadString(
-                quest + 0x10 // Name 
-            );
+        foreach (var questPtr in current.quests) {
+            var quest = vars.ReadQuest(questPtr);
 
-            vars.Log("  " + questName);
+            vars.Log("  " + quest.Name + " [" + quest.GUID + "]");
 
-            vars.ActiveQuests.Add(questName);
+            vars.ActiveQuests.Add(quest.GUID);
             
-            if (vars.SeenQuests.Add(questName)) {
-                vars.Log("Quest started! " + questName);
+            if (vars.SeenQuests.Add(quest.GUID)) {
+                vars.Log("Quest started! " + quest.Name + " [" + quest.GUID + "]");
+                if (vars.CheckSplit("quest_start_" + quest.GUID))
+                {
+                    vars.Helper.Timer.Split();
+                }
             }
         }
 
@@ -283,13 +242,8 @@ update
         foreach (var seenQuest in vars.SeenQuests) {
             vars.Log("  " + seenQuest);
 
-            // lazy debugging beat
-            if (!vars.ActiveQuests.Contains(seenQuest)) { vars.Log("Quest maybe completed " + seenQuest); }
-            
             if (!vars.ActiveQuests.Contains(seenQuest)
-             && timer.CurrentPhase == TimerPhase.Running
-             && settings.SplitEnabled
-             && vars.CheckSplit("quest_" + seenQuest)
+             && vars.CheckSplit("quest_end_" + seenQuest)
             ) {
                 vars.Helper.Timer.Split();
             }
@@ -306,6 +260,7 @@ onStart
     vars.CompletedSplits.Clear();
     vars.SeenQuests.Clear();
 
+    vars.Log(vars.ActiveQuests.Count);
     vars.Log(settings.SplitEnabled);
     vars.Log(current.isGSCutscene);
     vars.Log(current.isPaused);
@@ -313,92 +268,6 @@ onStart
     vars.Log(current.inputMode);
     vars.Log(current.activeStatesHead.ToString("X"));
     vars.Log(current.activeStatesCount);
-    vars.Log(current.uimanager.ToString("X"));
-
-    #region testing
-    // tests
-    // vars.Log(current.a.ToString("X"));
-    // vars.GetStates();
-
-    vars.Log("quests: " + current.quests.Count);
-
-    var i = 0;
-    foreach (var menu in current.menus)
-    {
-        var menuName = vars.GetClassNameOfInstance(menu, true);
-        // vars.Log("[" + i + "] FOUND MENU: " + menuName + " at 0x" + menu.ToString("X"));
-
-        if (menuName == "QuestMenu") {
-            var quests = vars.Helper.ReadList<IntPtr>(
-                menu + 0x80,
-                0x68, // m_questsContainer
-                // 0x18 // m_QuestsEnded
-                0x10 // m_Quests
-            );
-            // var quests = vars.Helper.ReadList<IntPtr>(
-            //     menu + 0x80,
-            //     0x100 // m_mainQuests
-            // );
-
-            // var quests = vars.Helper.ReadList<IntPtr>(
-            //     menu + 0xB0 // m_mainQuests
-            // );
-
-            var currentQuestIndex = vars.Helper.Read<int>(
-                menu + 0xE8 // m_newMainQuestsCount
-                // 0x68, // m_questsContainer
-                // 0x2C
-            );
-
-            vars.Log("  QUEST COUNT: " + quests.Count + ", ACTIVE: " + currentQuestIndex);
-
-            foreach (var quest in quests) {
-                // var questName = "";
-                var questName = vars.Helper.ReadString(
-                    quest + 0x10 // Name
-                    // quest + 0x10, // m_questGraph
-                    // 0xF0, // m_creationInfos
-                    // 0x28, // m_buildingQuest
-                    // 0x10 // Name
-                );
-
-                
-                var isMain = vars.Helper.Read<bool>(
-                    quest + 0x98 // m_isMainQuest
-                );
-
-                var GUID = vars.Helper.ReadString(
-                    quest + 0x60 // m_GUID
-                );
-
-                vars.Log("  QUEST: " + questName + " [" + GUID + "] (Main? " + isMain + ") at 0x" + quest.ToString("X"));
-            }
-
-            // foreach (var quest in quests) {
-            //     // var questName = "";
-            //     var questName = vars.Helper.ReadString(
-            //         quest + 0x10, // m_questBase
-            //         0x10 // Name
-            //     );
-            //     var logState = vars.Helper.Read<int>(quest + 0x18);
-
-            //     vars.Log("  QUEST: " + questName + " [" + logState + "] at 0x" + quest.ToString("X"));
-
-            //     var logInfos = vars.Helper.ReadList<IntPtr>(
-            //         quest + 0x20
-            //     );
-
-            //     foreach (var logInfo in logInfos) {
-            //         var logInfoState = vars.Helper.Read<int>(logInfo + 0x48);
-            //         vars.Log("  Log: " + logInfoState);
-            //     }
-            // }
-        }
-
-        i++;
-    }
-
-    #endregion testing
 }
 
 start
