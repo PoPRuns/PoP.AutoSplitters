@@ -70,29 +70,37 @@
             Convince the Darkest of Souls
          -->
 
-        <Setting Id="quest_end_????" Label="The Celestial Guardians" State="false" />
+        <Setting Id="quest_end_0e3ee840951882f488ac11cf427a468b" Label="The Celestial Guardians" State="false" />
         <!-- 
+            0e3ee840951882f488ac11cf427a468b
+
             Summon Tascheter, Guardian of the East
             Summon Haftorang, Guardian of the North
             Summon Venant, Guardian of the West
             Summon Satevis, Guardian of the South
          -->
 
-        <Setting Id="quest_end_?????" Label="Return to the Past" State="false" />
+        <Setting Id="quest_end_5c788318b1a856943aadce9af84d8000" Label="Return to the Past" State="false" />
         <!-- 
+            5c788318b1a856943aadce9af84d8000
+
             Reach the Celestial Altar in the Upper city to return to the Past
             Neutralize Vahram and save Ghassan
          -->
 
-        <Setting Id="quest_end_??????" Label="Father and Son" State="false" />
+        <Setting Id="quest_end_959814af55fa48b4b962f7cff039f076" Label="Father and Son" State="false" />
         <!-- 
+            959814af55fa48b4b962f7cff039f076
+
             Find the Key of Kings in the Tower of Silence
             Use the Key of Kings to enter Darius' Palace
             Defeat King Darius
          -->
 
-        <Setting Id="quest_end_???????" Label="The Crossroads of Time (End)" State="true" />
+        <Setting Id="quest_end_93980f6721474124e99ede45f49a9e1c" Label="The Crossroads of Time (End)" State="true" />
         <!-- 
+            93980f6721474124e99ede45f49a9e1c
+            
             Reach the Simurgh Gate
             Stop Vahram
          -->
