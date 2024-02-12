@@ -128,6 +128,18 @@ init
             PISC["m_inputStateInfo"] + PAD,
             PISI["m_inputMode"] + PAD
         ); 
+
+        var PASC = mono["Alkawa.Gameplay", "PlayerAbilitiesSubComponent"];
+        var PASI = mono["Alkawa.Gameplay", "PlayerAbilitiesStateInfo"];
+        var ABILITY = mono["Alkawa.Gameplay", "Ability"];
+       
+        vars.Helper["playerAction"] = PM.Make<int>(
+            "m_PlayerComponent",
+            PC["PlayerAbilities"] + PAD,
+            PASC["m_stateInfo"] + PAD,
+            PASI["m_ability"] + PAD,
+            ABILITY["m_currentPlayerActionInternal"] + PAD
+        ); 
         
         var LM = mono["Alkawa.Gameplay", "LootManager", 1];
         var LI = mono["Alkawa.Engine", "LevelInstance"];
@@ -174,6 +186,36 @@ init
             return ret;
         });
 
+        // Boss
+        var UI_HP = mono["Alkawa.Gameplay", "UI_HP", 1];
+        var HSI = mono["Alkawa.Gameplay", "HealthStateInfo"];
+        var ED = mono["Alkawa.Gameplay", "EntityDescriptor"];
+        var UISLI = mono["Alkawa.Gameplay", "UISmartLocId"];
+
+        vars.Helper["boss1LocId"] = UIM.Make<int>(
+            "m_instance",
+            UIM["m_BossHealthBar"] + PAD,
+            UI_HP["m_entityDescriptor"] + PAD,
+            ED["Name"] + PAD,
+            UISLI["m_locId"] + PAD
+        );
+
+        vars.Helper["boss1Health"] = UIM.Make<int>(
+            "m_instance",
+            UIM["m_BossHealthBar"] + PAD,
+            UI_HP["m_healthStateInfo"] + PAD,
+            HSI["m_internalCurrentHP"] + PAD
+        );
+        vars.Helper["boss1Health"].FailAction = MemoryWatcher.ReadFailAction.SetZeroOrNull;
+
+        vars.Helper["boss2Health"] = UIM.Make<int>(
+            "m_instance",
+            UIM["m_SecondBossHealthBar"] + PAD,
+            UI_HP["m_healthStateInfo"] + PAD,
+            HSI["m_internalCurrentHP"] + PAD
+        );
+        vars.Helper["boss2Health"].FailAction = MemoryWatcher.ReadFailAction.SetZeroOrNull;
+
         return true;
     });
 
@@ -205,6 +247,10 @@ update
     vars.Watch(old, current, "level");
     vars.Watch(old, current, "shortLevel");
     vars.Watch(old, current, "inputMode");
+    vars.Watch(old, current, "boss1LocId");
+    vars.Watch(old, current, "boss1Health");
+    vars.Watch(old, current, "boss2Health");
+    vars.Watch(old, current, "playerAction");
 
     if (vars.states == null || vars.states.Count != current.activeStatesCount) {
         vars.states = vars.GetStates();
@@ -270,8 +316,13 @@ onStart
     vars.Log(current.isPaused);
     vars.Log(current.level);
     vars.Log(current.inputMode);
+    vars.Log(current.playerAction);
     vars.Log(current.activeStatesHead.ToString("X"));
     vars.Log(current.activeStatesCount);
+
+    vars.Log(current.boss1LocId);
+    vars.Log(current.boss1Health);
+    vars.Log(current.boss2Health);
 }
 
 start
@@ -304,10 +355,25 @@ isLoading
 
 split
 {
-    if (old.shortLevel != current.shortLevel && vars.CheckSplit("inlevel_" + current.shortLevel))
+    if (settings["quest"] && old.shortLevel != current.shortLevel && vars.CheckSplit("inlevel_" + current.shortLevel))
     {
         return true;
     }
 
-    return false;
+    if (settings["boss"])
+    {
+        var bothDead = current.boss1Health <= 0 && current.boss2Health <= 0;
+        var oneWasAlive = (old.boss1Health > 0 || old.boss2Health > 0);
+        var playerAlive = !vars.states.Contains("GameFlowStateGameOver");
+        var key = "boss__" + current.boss1LocId + "__" + current.level;
+        
+        if (bothDead && oneWasAlive && playerAlive && vars.CheckSplit(key))
+        {
+            return true;
+        }
+
+        if (old.playerAction != current.playerAction && vars.CheckSplit("player_action__" + old.playerAction)) {
+            return true;
+        }
+    }
 }

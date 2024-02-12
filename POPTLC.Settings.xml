@@ -21,13 +21,49 @@
     </Setting> -->
 
     <Setting Id="start_rebind" Label="Start after rebinding controls" State="false" />
-    <Setting Id="quest" Label="Split on completing a quest" State="true">
-        <Setting Id="inlevel_OLD_01" Label="Persia Under Attack (Battlefield + Thomyris Palace)" State="false" />
-        <!-- 
-            e36c64cd5a982ce4b8571f8190c1ad43
-         -->
 
-        <Setting Id="quest_end_d46f01520560b6446a4c366171e5e6d2" Label="Lost in Mount Qaf" State="false" />
+    <Setting Id="boss" Label="Split on beating boss" State="true">
+        <!-- boss_name localisation id__boss room -->
+        <Setting Id="boss__7415__KIN_BAT_08_Boss" Label="General Uvishka" State="false" />
+        <Setting Id="boss__14269__KIN_THO_03" Label="Sword Master" State="false" />
+        <Setting Id="boss__2922__CIT_LOW_13" Label="Undead Prisoner" State="false" />
+        <Setting Id="boss__2925__HYR_AUT_05_ErlikArena" Label="Erlik" State="false" />
+        <Setting Id="boss__7416__CIT_LOW_06_BOSS" Label="Jahandar" State="false" />
+        <!-- you don't actually kill this one -->
+        <!-- <Setting Id="boss__7414__UPP_04" Label="Vahram 1" State="false" /> -->
+        <Setting Id="boss__7413__CIT_DEP_09_CorruptedSargon" Label="Alternate Sargon (The Depths)" State="false" />
+        <Setting Id="boss__2927__HYR_SOM_14_ForestQueen" Label="Kiana" State="false" />
+        <Setting Id="boss__7417__END_PIT_20_AzdahaArena" Label="Azhdaha" State="false" />
+        
+        <Setting Id="orod" Label="Orod" State="false">
+            <!-- EPlayerAction 193 is QTEIntroVariationBoss_ORO -->
+            <Setting Id="player_action__193" Label="Split on the Quick-Time Event (QTE)" State="true" />
+            <Setting Id="boss__7419__VAL_RAG_13_Orod" Label="Split on the cutscene after the QTE" State="false" />
+        </Setting>
+        
+        <Setting Id="menolias" Label="Menolias" State="false">
+            <!-- EPlayerAction 191 is QTEIntroVariationBoss_MNL -->
+            <Setting Id="player_action__191" Label="Split on the Quick-Time Event (QTE)" State="true" />
+            <Setting Id="boss__7420__CIT_UPP_06_Menolias_Arena" Label="Split on the cutscene after the QTE" State="false" />
+        </Setting>
+        
+        <Setting Id="boss__7418__NEC_TOW_04_DARIUS" Label="King Darius" State="false" />
+        
+        <!-- EPlayerAction 192 is QTEIntroVariationBoss_VGD, the last input. -->
+        <Setting Id="player_action__192" Label="Vahram 3 (END SPLIT)" State="true" ToolTip="Last input for most categories" />
+        
+        <Setting Id="boss__3454__CIT_DEP_11_UndeadErlik" Label="Undead Erlik" State="false" />
+        <Setting Id="boss__7548__CIT_DEP02_03_nolight2_sphincterhall" Label="Giant Crab" State="false" />
+        <Setting Id="boss__7056__CIT_LOW_22_Radjen" Label="Ardashir" State="false" />
+        <!-- <Setting Id="boss__7413__270" Label="Alternate Sargon (Sacred Archives)" State="false" /> -->
+        <Setting Id="boss__7413__HYR_SOM_22_CorruptedTwinSargon" Label="Alternate Sargons (Hyrcanian Forest)" State="false" />
+        <Setting Id="boss__7413__END_PIT_15_CorruptedSargon" Label="Alternate Sargon (Pit of Eternal Sand)" State="false" />
+    </Setting>
+
+    <Setting Id="quest" Label="Split on story progression" State="true">
+        <Setting Id="inlevel_OLD_01" Label="Enter Mount Qaf" State="false" ToolTip="Splits on entering Mount Qaf after Battlefield and Thomyris Palace" />
+        
+        <Setting Id="quest_end_d46f01520560b6446a4c366171e5e6d2" Label="Quest: Lost in Mount Qaf" State="false" ToolTip="Splits after defeating Jahandar" />
         <!-- 
             d46f01520560b6446a4c366171e5e6d2
 
@@ -36,7 +72,7 @@
             Defeat Jahandar
          -->
 
-        <Setting Id="quest_start_89a9bdf53da19a744b22fad494884202" Label="The Abducted Prince" State="false" />
+        <Setting Id="quest_start_89a9bdf53da19a744b22fad494884202" Label="Quest: The Abducted Prince" State="false" ToolTip="Splits after Varham 1 encounter" />
         <!-- 
             cbc6e45ab294c3b409021fa2ef3067fd
 
@@ -46,23 +82,16 @@
             Neutralize Vahram
          -->
 
-        <Setting Id="quest_end_89a9bdf53da19a744b22fad494884202" Label="The Tiger and the Rat" State="false" />
+        <Setting Id="quest_end_89a9bdf53da19a744b22fad494884202" Label="Quest: The Tiger and the Rat" State="false" ToolTip="Splits on talking to old man after getting shadow" />
         <!-- 
             89a9bdf53da19a744b22fad494884202
 
             Chase after the Old Man in the Depths of the Citadel to get your Eye back
          -->
 
-         <!-- Quest sometimes doesn't end correctly -->
-        <Setting Id="inlevel_PIT_01" Label="The Path to the Sand Prison ($10,000 Challenge End)" State="false" />
-        <!-- 
-            e499d16e671ee1b42b170dc0f71b6c8e
+        <Setting Id="inlevel_PIT_01" Label="Enter Pit of Eternal Sands" State="false" ToolTip="Splits on entering Pit of Eternal Sands for the first time"/>
 
-            Find a way to enter the Pit of Eternal Sands
-            Enter the Pit of Eternal Sands
-         -->
-
-        <Setting Id="quest_end_59d515cfe12ef084d8df7ab2c38cce21" Label="The Darkest of Souls" State="false" />
+        <Setting Id="quest_end_59d515cfe12ef084d8df7ab2c38cce21" Label="Quest: The Darkest of Souls" State="false" ToolTip="Splits after defeating Azhdaha" />
         <!-- 
             59d515cfe12ef084d8df7ab2c38cce21
             
@@ -70,7 +99,7 @@
             Convince the Darkest of Souls
          -->
 
-        <Setting Id="quest_end_0e3ee840951882f488ac11cf427a468b" Label="The Celestial Guardians" State="false" />
+        <Setting Id="quest_end_0e3ee840951882f488ac11cf427a468b" Label="Quest: The Celestial Guardians" State="false" ToolTip="Splits after getting all 4 celestials" />
         <!-- 
             0e3ee840951882f488ac11cf427a468b
 
@@ -80,7 +109,7 @@
             Summon Satevis, Guardian of the South
          -->
 
-        <Setting Id="quest_end_5c788318b1a856943aadce9af84d8000" Label="Return to the Past" State="false" />
+        <Setting Id="quest_end_5c788318b1a856943aadce9af84d8000" Label="Quest: Return to the Past" State="false" ToolTip="Splits after defeating Varham 2" />
         <!-- 
             5c788318b1a856943aadce9af84d8000
 
@@ -88,21 +117,13 @@
             Neutralize Vahram and save Ghassan
          -->
 
-        <Setting Id="quest_end_959814af55fa48b4b962f7cff039f076" Label="Father and Son" State="false" />
+        <Setting Id="quest_end_959814af55fa48b4b962f7cff039f076" Label="Quest: Father and Son" State="false" ToolTip="Splits after defeating King Darius" />
         <!-- 
             959814af55fa48b4b962f7cff039f076
 
             Find the Key of Kings in the Tower of Silence
             Use the Key of Kings to enter Darius' Palace
             Defeat King Darius
-         -->
-
-        <Setting Id="quest_end_93980f6721474124e99ede45f49a9e1c" Label="The Crossroads of Time (End)" State="true" />
-        <!-- 
-            93980f6721474124e99ede45f49a9e1c
-            
-            Reach the Simurgh Gate
-            Stop Vahram
          -->
     </Setting>
 </Settings>
