@@ -13,11 +13,11 @@
 state("snes9x-x64")
 {
     byte Level          : "snes9x-x64.exe", 0x08D8C38, 0x0544;          // next level - shows level 1-20 changes as door is entered
-	byte Menu           : "snes9x-x64.exe", 0x08D8C38, 0xE0C8;          // 180 in menu and 0 when game start is clicked
-	byte Jaffar         : "snes9x-x64.exe", 0x08D8C38, 0x050B;          // Jaffar HP
+    byte Menu           : "snes9x-x64.exe", 0x08D8C38, 0xE0C8;          // 180 in menu and 0 when game start is clicked
+    byte Jaffar         : "snes9x-x64.exe", 0x08D8C38, 0x050B;          // Jaffar HP
     byte Scene          : "snes9x-x64.exe", 0x08D8C38, 0x0579;          // current level - shows level 1-20 changes as scenes end 
     byte Hourglass      : "snes9x-x64.exe", 0x08D8C38, 0x0629;          // hourglass present - 2 if present, 0 otherwise [If you interrupt the intro before the hourglass appears then it stays 0 until the next cutscene]
-	byte Cutscene       : "snes9x-x64.exe", 0x08D8C38, 0x0A84;          // current cutscene - 06 = bad ending, 07 = good ending. It stays so even after the cutscene ends
+    byte Cutscene       : "snes9x-x64.exe", 0x08D8C38, 0x0A84;          // current cutscene - 06 = bad ending, 07 = good ending. It stays so even after the cutscene ends
     byte Start          : "snes9x-x64.exe", 0x08D8C38, 0x0E5D;          // decoded level - level number decoded from an entered password; it stays 00 if you start the training so it's not exactly the same as the DOS variable
     ushort FrameCount   : "snes9x-x64.exe", 0x08D8C38, 0x052D;			// number of elapsed ticks - 1 minute = 0x1A9 (425) ticks, 1 second = 7 ticks
     byte CharScrn       : "snes9x-x64.exe", 0x08D8C38, 0x0462;          // character screen
@@ -31,21 +31,21 @@ state("snes9x-x64")
 
 reset
 {
-	return (old.Menu != 180 && current.Menu == 180 && current.Level == 0);
+    return (old.Menu != 180 && current.Menu == 180 && current.Level == 0);
 }
 
 start
 {
     // start when menu goes from 180 to 0
     vars.JaffarDied = false;
-	return (old.Menu == 180 && current.Menu == 0);
+    return (old.Menu == 180 && current.Menu == 0);
 }
 
 split
 {
     if(current.Level == 20 && old.Jaffar != 0 && current.Jaffar == 0){
-		vars.JaffarDied = true;
-	}
-	bool skipSplit = ((old.Level == 19 && !vars.JaffarDied) || (old.Level == 20 && current.Level == 19));
+        vars.JaffarDied = true;
+    }
+    bool skipSplit = ((old.Level == 19 && !vars.JaffarDied) || (old.Level == 20 && current.Level == 19));
     return((old.Level == current.Level - 1) && !skipSplit);
 }
