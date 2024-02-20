@@ -60,6 +60,19 @@
         <Setting Id="boss__7413__END_PIT_15_CorruptedSargon" Label="Alternate Sargon (Pit of Eternal Sand)" State="false" />
     </Setting>
 
+    <Setting Id="abilites" Label="Split on obtaining abilities" State="true">
+        <Setting Id="ability__7" Label="Verethragna's Smite" State="false" />
+        <Setting Id="ability__14" Label="Bow of Menolias" State="false" />
+        <Setting Id="ability__15" Label="Chakram of Menolias" State="false" />
+        <Setting Id="ability__1" Label="Rush of the Simurgh (Dash)" State="false" />
+        <Setting Id="ability__16" Label="Shadow of the Simurgh" State="false" />
+        <Setting Id="clairvoyance" Label="Clairvoyance" State="false" />
+        <Setting Id="ability__17" Label="Dimensional Claw" State="false" />
+        <Setting Id="ability__0" Label="Gravity Wings (Double Jump)" State="false" />
+        <Setting Id="ability__18" Label="Chakram Shadow of the Simurgh" State="false" />
+        <Setting Id="ability__19" Label="Fabric of Time" State="false" />
+    </Setting>
+
     <Setting Id="quest" Label="Split on story progression" State="true">
         <Setting Id="inlevel_OLD_01" Label="Enter Mount Qaf" State="false" ToolTip="Splits on entering Mount Qaf after Battlefield and Thomyris Palace" />
         

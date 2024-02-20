@@ -139,7 +139,27 @@ init
             PASC["m_stateInfo"] + PAD,
             PASI["m_ability"] + PAD,
             ABILITY["m_currentPlayerActionInternal"] + PAD
-        ); 
+        );
+
+        vars.Helper["unlockableAbilities"] = PM.MakeList<IntPtr>(
+            "m_PlayerComponent",
+            PC["PlayerAbilities"] + PAD,
+            PASC["m_stateInfo"] + PAD,
+            PASI["m_unlockableAbilities"] + PAD
+        );
+
+        vars.CheckIfAbilityUnlocked = (Func<IntPtr, bool>)(ability =>
+        {
+            bool unlocked = vars.Helper.Read<bool>(ability + ABILITY["m_enabled"] + PAD);
+            return unlocked;
+        });
+
+        vars.Helper["isClairvoyanceUnlocked"] = PM.Make<bool>(
+            "m_PlayerComponent",
+            PC["PlayerAbilities"] + PAD,
+            PASC["m_stateInfo"] + PAD,
+            PASI["m_isClairvoyanceEnabled"] + PAD
+        );
         
         var LM = mono["Alkawa.Gameplay", "LootManager", 1];
         var LI = mono["Alkawa.Engine", "LevelInstance"];
@@ -355,6 +375,17 @@ isLoading
 
 split
 {
+    if (settings["abilites"]) {
+        for (int index = 0; index < current.unlockableAbilities.Count; index++) {
+            if (vars.CheckIfAbilityUnlocked(current.unlockableAbilities[index]) && vars.CheckSplit("ability__" + index)) {
+                return true;
+            }
+        }
+        if (current.isClairvoyanceUnlocked && vars.CheckSplit("clairvoyance")) {
+            return true;
+        }
+    }
+
     if (settings["quest"] && old.shortLevel != current.shortLevel && vars.CheckSplit("inlevel_" + current.shortLevel))
     {
         return true;
