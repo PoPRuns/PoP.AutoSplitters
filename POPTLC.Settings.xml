@@ -55,7 +55,7 @@
         <Setting Id="boss__3454__CIT_DEP_11_UndeadErlik" Label="Undead Erlik" State="false" />
         <Setting Id="boss__7548__CIT_DEP02_03_nolight2_sphincterhall" Label="Giant Crab" State="false" />
         <Setting Id="boss__7056__CIT_LOW_22_Radjen" Label="Ardashir" State="false" />
-        <!-- <Setting Id="boss__7413__270" Label="Alternate Sargon (Sacred Archives)" State="false" /> -->
+        <Setting Id="boss__7413__SAC_SAC_19_CorruptedSargon" Label="Alternate Sargon (Sacred Archives)" State="false" />
         <Setting Id="boss__7413__HYR_SOM_22_CorruptedTwinSargon" Label="Alternate Sargons (Hyrcanian Forest)" State="false" />
         <Setting Id="boss__7413__END_PIT_15_CorruptedSargon" Label="Alternate Sargon (Pit of Eternal Sand)" State="false" />
     </Setting>
@@ -65,6 +65,7 @@
         <Setting Id="ability__14" Label="Bow of Menolias" State="false" />
         <Setting Id="ability__15" Label="Chakram of Menolias" State="false" />
         <Setting Id="ability__1" Label="Rush of the Simurgh (Dash)" State="false" />
+        <Setting Id="ability__8" Label="Wind of Sistan" State="false" />
         <Setting Id="ability__16" Label="Shadow of the Simurgh" State="false" />
         <Setting Id="clairvoyance" Label="Clairvoyance" State="false" />
         <Setting Id="ability__17" Label="Dimensional Claw" State="false" />
