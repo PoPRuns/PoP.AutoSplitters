@@ -1,6 +1,6 @@
 state("POP2"){
-//Some memory value that reliably changes when you gain control after a load.
-	int startValue : 0x0096602C, 0x8, 0x28, 0xA8, 0x3E0;
+//this variable is 0 during gameplay, 1 in cutscenes, 2 when a cutscene ends
+	int cutscene : 0x0096602C, 0x8, 0x28, 0xA8, 0x3E0;
 	
 //Story counter/gate/value
 	int storyValue : 0x523578;	
@@ -8,585 +8,710 @@ state("POP2"){
 //A value that changes reliably depending on which weapon you pick up
 	int secondaryWeapon : 0x0053F8F0, 0x4, 0x164, 0xC, 0x364;
 	
-//The address used for all bosses' health
+//The address used for most bosses' health
 	int bossHealth : 0x0090C418, 0x18, 0x4, 0x48, 0x198;
 
 //The Prince's coords
 	float xPos : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x30;	
 	float yPos : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x34;
 	float zPos : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x38;	
+	
+//currently loaded area id (changes with every load trigger)
+	int map : 0x523594;
+	
+//state of the prince (11 is drinking)
+	int state : 0x90C414, 0x18, 0x4, 0x48, 0x3F8;
 }
 
 startup{
-	settings.Add("RNG 63", true, "RNG 63");
+	settings.Add("Any", true, "Any% (Standard) and Any% (Zipless) splits");
+	settings.Add("TeStandard", true, "True Ending (Standard) splits");
+	settings.Add("TeZipless", true, "True Ending (Zipless) splits");
+	settings.Add("AnyNmg", true, "Any% (No Major Glitches) splits");
+	settings.Add("TeNmg", true, "True Ending (No Major Glitches) splits");
+	
+	string currentCategory = "Any";
+	int i = 0;
+	
+	Action<bool, string, string> AddSetting = (defaultCheck, name, tooltip) => {													//function for easier settings management
+		settings.Add(currentCategory + i, defaultCheck, name, currentCategory);
+		settings.SetToolTip(currentCategory + i, tooltip);
+		i++;
+	};
+	
+	AddSetting(true, "Boat", "Split when the boat ending cutscene starts playing");
+	AddSetting(true, "Raven man", "Split on the cutscene where you're introduced to a raven master");
+	AddSetting(true, "Time portal", "Split when you go through the first time portal");
+	AddSetting(true, "Foundy fountain", "Split when you drink from the foundry fountain while having 58/59 storygate");
+	AddSetting(true, "Scorpion sword", "Split when you get the scorpion sword");
+	AddSetting(false, "Light sword", "Split when you pick up the light sword in mystic caves");
+	AddSetting(true, "Mechanical tower (63)", "Split when you acquire storygate 63");
+	AddSetting(true, "Second portal", "Split when you go through the time portal in the throne room");
+	AddSetting(true, "Kaileena", "Split when you kill Kaileena in sacred caves");
+
+	currentCategory = "TeStandard";
+	i = 0;
+	AddSetting(true, "Boat", "Split when the boat ending cutscene starts playing");
+	AddSetting(true, "Raven man", "Split on the cutscene where you're introduced to a raven master");
+	AddSetting(true, "Time portal", "Split when you go through the first time portal");
+	AddSetting(true, "(1) fortress entrance LU", "Split when you acquire the life upgrade in fortress entrance");
+	AddSetting(true, "(2) Prison LU", "Split when you acquire the life upgrade in prison");
+	AddSetting(true, "(3) Library LU", "Split when you acquire the life upgrade in library");
+	AddSetting(true, "(4) Mechanical tower LU", "Split when you acquire the life upgrade in mechanical tower");
+	AddSetting(true, "(5) Garden LU", "Split when you acquire the life upgrade in garden");
+	AddSetting(true, "(6) Waterworks LU", "Split when you acquire the life upgrade in waterworks");
+	AddSetting(true, "(7) Sacrificial altar LU", "Split when you acquire the life upgrade in sacrificial altar");
+	AddSetting(true, "(8) Southern passage LU", "Split when you acquire the life upgrade in southern passage");
+	AddSetting(true, "(9) Central hall LU", "Split when you acquire the life upgrade in central hall");
+	AddSetting(true, "Water sword", "Split when you get the water sword");
+	AddSetting(true, "Dahaka", "Split when you defeat Dahaka");
+
+	
+	currentCategory = "TeZipless";
+	i = 0;
+	AddSetting(true, "Boat", "Split when the boat ending cutscene starts playing");
+	AddSetting(true, "Raven man", "Split on the cutscene where you're introduced to a raven master");
+	AddSetting(false, "Time portal", "Split when you go through the first time portal");
+	AddSetting(true, "(1) Central hall LU", "Split when you acquire the life upgrade in central hall");
+	AddSetting(true, "(2) Waterworks LU", "Split when you acquire the life upgrade in waterworks");
+	AddSetting(true, "(3) Garden LU", "Split when you acquire the life upgrade in garden");
+	AddSetting(true, "(4) Fortress entrance LU", "Split when you acquire the life upgrade in fortress entrance");
+	AddSetting(true, "Foundry (59)", "Split when you acquire storygate 59");
+	AddSetting(true, "(5) Prison LU", "Split when you acquire the life upgrade in prison");
+	AddSetting(true, "(6) Library LU", "Split when you acquire the life upgrade in library");
+	AddSetting(false, "Light sword", "Split when you pick up the light sword in mystic caves");
+	AddSetting(true, "Mechanical tower (63)", "Split when you acquire storygate 63");
+	AddSetting(true, "(7) Mechanical tower LU", "Split when you acquire the life upgrade in mechanical tower");
+	AddSetting(true, "(8) Southern passage LU", "Split when you acquire the life upgrade in southern passage");
+	AddSetting(true, "(9) Sacrificial altar LU", "Split when you acquire the life upgrade in sacrificial altar");
+	AddSetting(true, "Water sword", "Split when you get the water sword");
+	AddSetting(true, "Dahaka", "Split when you defeat Dahaka");
+
+	i = 0;
+	int k = 0;
+	Action<bool, bool, string, string, bool> AddNmgSettings = (anycheck, techeck, name, tooltip, teonly) => {						//since Any%(NMG) and TE(NMG) follow the same route, we can process them at the same time to skip repeating alot of the same code
+		if (!teonly) {																												//just have to add extra checks for TE only splits
+			settings.Add("AnyNmg" + i, anycheck, name, "AnyNmg");
+			settings.SetToolTip("AnyNmg" + i, tooltip);
+			i++;
+		}
+		settings.Add("TeNmg" + k, techeck, name, "TeNmg");
+		settings.SetToolTip("TeNmg" + k, tooltip);
+		k++;
+	};
+	AddNmgSettings(true, true, "Boat", "Split when the boat ending cutscene starts playing", false);
+	AddNmgSettings(true, true, "Spider sword", "Split on the cutscene where you get the spider sword", false);
+	AddNmgSettings(false, false, "Raven man", "Split on the cutscene where you're introduced to a raven master", false);
+	AddNmgSettings(false, false, "Time portal", "Split when you go through the first time portal", false);
+	AddNmgSettings(true, true, "Soutern passage (chasing Shahdee)", "Split when you come to southern passage past", false);
+	AddNmgSettings(false, true, "(1) Southern passage LU", "Split when you acquire the life upgrade in southern passage", true);
+	AddNmgSettings(true, true, "Shahdee (a damsel in distress)", "Split when you kill Shahdee", false);
+	AddNmgSettings(false, true, "(2) Sacrificial alter LU", "Split when you acquire the life upgrade in sacrificial altar", true);
+	AddNmgSettings(true, true, "The Dahaka", "Split on the cutscene before the first Dahaka chase (southern passage present)", false);
+	AddNmgSettings(false, true, "(3) Fortress entrance LU", "Split when you acquire the life upgrade in fortress entrance", true);
+	AddNmgSettings(true, true, "Serpent sword", "Split on the cutscene where you get the serpent sword (hourglass chamber)", false);
+	AddNmgSettings(true, true, "Garden hall", "Split when you come to garden hall", false);
+	AddNmgSettings(true, false, "Waterworks", "Split when you come to garden waterworks", false);
+	AddNmgSettings(false, true, "(4) Waterworks LU", "Split when you acquire the life upgrade in waterworks", true);
+	AddNmgSettings(false, true, "(5) Garden LU", "Split when you acquire the life upgrade in garden", true);
+	AddNmgSettings(false, true, "(6) Central hall LU", "Split when you acquire the life upgrade in central hall", true);
+	AddNmgSettings(true, false, "Lion sword", "Split on the cutscene where you get the lion sword (central hall)", false);
+	AddNmgSettings(true, true, "Mechanical tower", "Split when you clilmb up into the mechanical tower", false);
+	AddNmgSettings(false, false, "Mechanical tower v2 (elevator cutscene)", "Split on the cutscene where you jump down on the elevator at the start of mech tower", false);
+	AddNmgSettings(true, true, "Ravages of time", "Split when you go through the time portal in mechanical pit", false);
+	AddNmgSettings(true, true, "Activation room in ruin", "Split when you come to the mech tower activation room in the present", false);
+	AddNmgSettings(true, false, "Activation room restored", "Split when you come to the mech tower activation room in the past", false);
+	AddNmgSettings(false, true, "(7) Mechanical tower LU", "Split when you acquire the life upgrade in mechanical tower", true);
+	AddNmgSettings(true, true, "The death of a sand wraith (central hall)", "Split in centrall hall next to the fountain after you've activated both towers", false);
+	AddNmgSettings(false, false, "The death of a sand wraith v2 (central hall)", "This is slightly different version of the previous split. It's located deeper into the corridor so you can't hit it early when jumping down", false);
+	AddNmgSettings(true, true, "Death of the empress", "Split when you kill Kaileena in the throne room (34->38)", false);
+	AddNmgSettings(true, true, "Exit the tomb", "Split when you leave the tomb", false);
+	AddNmgSettings(true, true, "Scorpion sword", "Split when you get the scorpion sword", false);
+	AddNmgSettings(false, true, "(8) Prison LU", "Split when you acquire the life upgrade in prison", true);
+	AddNmgSettings(false, false, "Library", "Split on the library opening cutscene", false);
+	AddNmgSettings(true, false, "Library v2", "Split when you move into the library (after the opening cutscene)", false);
+	AddNmgSettings(false, true, "(9) Library LU", "Split when you acquire the life upgrade in library", true);
+	AddNmgSettings(true, false, "Hourglass revisited", "Split when you come back to the hourglass chamber after you've killed Kaileena", false);
+	AddNmgSettings(false, true, "Water sword", "Split when you get the water sword", true);
+	AddNmgSettings(true, true, "The mask of the wraith", "Split when you get to the mask", false);
+	AddNmgSettings(true, true, "Sand griffin", "Split when you kill the griffin", false);
+	AddNmgSettings(false, false, "Sand griffin v2", "Split when you jump to the platform after you've killed the griffin", false);
+	AddNmgSettings(true, true, "Mirrored fates", "Split on the sacrificial altar cutscene (sand wraith pov)", false);
+	AddNmgSettings(true, true, "A favor unknown", "Split on the cutscene where the sand wraith saves the prince by throwing an axe (sand wraith pov)", false);
+	AddNmgSettings(true, true, "Library revisited", "Split when you enter the library", false);
+	AddNmgSettings(true, true, "Light sword", "Split when you pick up the light sword in mystic caves", false);
+	AddNmgSettings(true, true, "The death of a prince", "Split on the cutscene where you take the mask off", false);
+	AddNmgSettings(false, true, "Dahaka", "Split when you defeat Dahaka", true);
+	settings.Add("AnyNmg" + i, true, "Kaileena", "AnyNmg");
+	settings.SetToolTip("AnyNmg" + i, "Split when you kill Kaileena in sacred caves");
+
+	
+	vars.oldTimerPhase = TimerPhase.NotRunning;																						//this var holds the old timer phase
 }
 
 start{
-	//Detecting if the game has started on the boat.
-	if(old.startValue == 1 && current.startValue == 2){
-		if(current.xPos >= -997.6757 && current.xPos <= -997.6755)
-			return true;
-	}
+	if (current.map == 1292342859 && old.cutscene == 1 && current.cutscene == 2)													//start the timer when a new game is started (after the opening cutscene has ended)
+		return true;
 }
 
 reset{
-	//Detecting if the game has started on the boat.
-		if(current.startValue == 1 && current.yPos <= -976.0555 && current.yPos >= -976.0557)
-			return true;
+	if (old.map == 234881388 && current.map == 1292342859)																			//reset the timer when a new game is started (when the first area of the boat loads)
+		return true;
+}
+
+update{
+	if (vars.oldTimerPhase == TimerPhase.NotRunning && timer.CurrentPhase == TimerPhase.Running) {									//check if the timer has started (both manually and automatically)
+		int i = 0;
+		string category;
+		vars.splitList = new List<Func<dynamic, dynamic, bool>>{};																	//this list is gonna hold all the split functions needed for the run
+		switch(timer.Run.GetExtendedCategoryName())
+		{
+			case "Any% (Standard)":																									//Any% (Standard) splits
+			case "Any% (Zipless)":																									//Any% (Zipless) splits, same as Any% (Standard) splits
+				category = "Any";
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67109218 && Current.bossHealth == 0 && Old.cutscene == 0 && Current.cutscene == 1;			//boat
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 135462572 && Old.cutscene == 0 && Current.cutscene == 1;										//raven man
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 285231807 && Old.cutscene == 0 && Current.cutscene == 1;										//portal
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.storyValue == 58 || Current.storyValue == 59) && Old.state != 11 && Current.state == 11;			//foundry fountain
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 135505359 || Current.map == 135516393 || Current.map == 135483948 || Current.map == 16809649 || Current.map == 135483950) && Current.xPos < -164 && Old.cutscene == 0 && Current.cutscene == 1;	//scorpion
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 587202754 || Current.map == 587203393) && Old.secondaryWeapon != 50 && Current.secondaryWeapon == 50;	//banana
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Old.storyValue != 63 && Current.storyValue == 63;															//63
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == -1509855113 || Current.map == 285233488) && Old.cutscene == 0 && Current.cutscene == 1;		//second portal
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 989966866 && Current.bossHealth == 0 && Old.cutscene == 0 && Current.cutscene == 1;			//kaileena
+						vars.splitList.Add(split);
+				}
+				break;
+			
+
+			case "True Ending (Standard)":																							//True Ending (Standard) splits
+				category = "TeStandard";
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67109218 && Current.bossHealth == 0 && Old.cutscene == 0 && Current.cutscene == 1;			//boat
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 135462572 && Old.cutscene == 0 && Current.cutscene == 1;										//raven man
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 285231807 && Old.cutscene == 0 && Current.cutscene == 1;										//portal
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 135501679 && Old.cutscene == 0 && Current.cutscene == 1;										//life 1 (fortress entrance)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 135516393 || Current.map == 135483948 || Current.map ==  16809649) && Current.xPos > -120 && Old.cutscene == 0 && Current.cutscene == 1;	//life 2 (prison)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 67144064 || Current.map == 67144084) && Old.cutscene == 0 && Current.cutscene == 1;			//life 3 (library)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67145445 && Old.cutscene == 0 && Current.cutscene == 1;										//life 4 (mech tower)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 1006690753 || Current.map == 1006690755) && Old.cutscene == 0 && Current.cutscene == 1;		//life 5 (garden)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 687877046 || Current.map == 687877489) && Current.xPos > 70 && Old.cutscene == 0 && Current.cutscene == 1;	//life 6 (waterworks)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 285225347 || Current.map == 1006717295) && Old.cutscene == 0 && Current.cutscene == 1;		//life 7 (sac altar)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 989860398 || Current.map == 1006711848) && Old.cutscene == 0 && Current.cutscene == 1;		//life 8 (southern passage)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67144144 && Old.cutscene == 0 && Current.cutscene == 1;										//life 9 (main hall)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 1006704429 || Current.map == 1006704427) && Old.xPos > -98 && Old.cutscene == 0 && Current.cutscene == 1;	//water sword
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 989966868 && Current.yPos > 200 && Old.cutscene == 0 && Current.cutscene == 1;				//dahaka
+						vars.splitList.Add(split);
+				}
+				break;
+
+				
+			case "True Ending (Zipless)":																							//True Ending (Zipless) splits
+				category = "TeZipless";
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67109218 && Current.bossHealth == 0 && Old.cutscene == 0 && Current.cutscene == 1;			//boat
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 135462572 && Old.cutscene == 0 && Current.cutscene == 1;										//raven man
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 285231807 && Old.cutscene == 0 && Current.cutscene == 1;										//portal
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67144144 && Old.cutscene == 0 && Current.cutscene == 1;										//life 1 (main hall)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 687877046 || Current.map == 687877489) && Current.xPos > 70 && Old.cutscene == 0 && Current.cutscene == 1;	//life 2 (waterworks)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 1006690753 || Current.map == 1006690755) && Old.cutscene == 0 && Current.cutscene == 1;		//life 3 (garden)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 135501679 && Old.cutscene == 0 && Current.cutscene == 1;										//life 4 (fortress entrance)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Old.storyValue == 58 && Current.storyValue == 59;															//59
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 135516393 || Current.map == 135483948 || Current.map ==  16809649) && Current.xPos > -120 && Old.cutscene == 0 && Current.cutscene == 1;		//life 5 (prison)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67144084 && Old.cutscene == 0 && Current.cutscene == 1;										//life 6 (library)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 587202754 || Current.map == 587203393) && Old.secondaryWeapon != 50 && Current.secondaryWeapon == 50;	//banana
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Old.storyValue != 63 && Current.storyValue == 63;															//63
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67145445 && Old.cutscene == 0 && Current.cutscene == 1;										//life 7 (mech tower)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 989860398 || Current.map == 1006711848) && Old.cutscene == 0 && Current.cutscene == 1;		//life 8 (southern passage)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 285225347 || Current.map == 1006717295) && Old.cutscene == 0 && Current.cutscene == 1;		//life 9 (sacrificial altar)
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 1006704429 || Current.map == 1006704427) && Old.xPos > -98 && Old.cutscene == 0 && Current.cutscene == 1;	//water sword
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 989966868 && Current.yPos > 200 && Old.cutscene == 0 && Current.cutscene == 1;				//dahaka
+						vars.splitList.Add(split);
+				}
+				break;
+			
+			
+			case "Any% (No Major Glitches)":																						//Any% (No Major Glitches) splits
+			case "True Ending (No Major Glitches)":																					//True Ending (No Major Glitches) splits
+				if (timer.Run.GetExtendedCategoryName() == "Any% (No Major Glitches)")
+					category = "AnyNmg";
+				else category = "TeNmg";
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67109218 && Current.bossHealth == 0 && Old.cutscene == 0 && Current.cutscene == 1;			//boat
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 135462576 && Old.cutscene == 0 && Current.cutscene == 1;										//spider sword
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 135462572 && Old.cutscene == 0 && Current.cutscene == 1;										//raven man
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 285231807 && Old.cutscene == 0 && Current.cutscene == 1;										//portal
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 989860400 && Old.cutscene == 0 && Current.cutscene == 1;										//chasing shahdee
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (category == "TeNmg") {
+					if (settings[category + i]) {
+						Func<dynamic, dynamic, bool> split = (Old, Current) =>
+							Current.map == 1006711848 && Old.cutscene == 0 && Current.cutscene == 1;								//life 1 (southern passage) (TE only)
+						vars.splitList.Add(split);
+					}
+					i++;
+				}
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 1006801609 && Current.bossHealth == 0 && Old.cutscene == 0 && Current.cutscene == 1;			//a damsel in distress
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (category == "TeNmg") {
+					if (settings[category + i]) {
+						Func<dynamic, dynamic, bool> split = (Old, Current) =>
+							Current.map == 1006717295 && Old.cutscene == 0 && Current.cutscene == 1;								//life 2 (sacrificial altar) (TE only)
+						vars.splitList.Add(split);
+					}
+					i++;
+				}
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 989884886 && Old.cutscene == 0 && Current.cutscene == 1;										//the dahaka
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (category == "TeNmg") {
+					if (settings[category + i]) {
+						Func<dynamic, dynamic, bool> split = (Old, Current) =>
+							Current.map == 135501679 && Old.cutscene == 0 && Current.cutscene == 1;									//life 3 (fortress entrance) (TE only)
+						vars.splitList.Add(split);
+					}
+					i++;
+				}
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 1006704429 && Old.cutscene == 0 && Current.cutscene == 1 && Current.storyValue == 13;		//serpent sword
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 135495099 || Current.map == 135495097) && Old.cutscene == 0 && Current.cutscene == 1;		//garden hall
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 687877048 && Old.cutscene == 0 && Current.cutscene == 1;										//waterworks
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (category == "TeNmg") {
+					if (settings[category + i]) {
+						Func<dynamic, dynamic, bool> split = (Old, Current) =>
+							Current.map == 687877489 && Old.cutscene == 0 && Current.cutscene == 1;									//life 4 (waterworks) (TE only)
+						vars.splitList.Add(split);
+					}
+					i++;
+					if (settings[category + i]) {
+						Func<dynamic, dynamic, bool> split = (Old, Current) =>
+							Current.map == 1006690755 && Old.cutscene == 0 && Current.cutscene == 1;								//life 5 (garden) (TE only)
+						vars.splitList.Add(split);
+					}
+					i++;
+					if (settings[category + i]) {
+						Func<dynamic, dynamic, bool> split = (Old, Current) =>
+							Current.map == 67144144 && Old.cutscene == 0 && Current.cutscene == 1;									//life 6 (main hall) (TE only)
+						vars.splitList.Add(split);
+					}
+					i++;
+				}
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67112526 && Old.cutscene == 0 && Current.cutscene == 1 && Current.storyValue == 21;			//lion sword
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 687876481 && Old.zPos < 410 && Current.zPos >= 410;											//mech tower
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 687876652 && Old.cutscene == 0 && Current.cutscene == 1;										//mech tower elevator
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 285235400 && Old.cutscene == 0 && Current.cutscene == 1;										//breath of fate
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67145437 && Old.cutscene == 0 && Current.cutscene == 1;										//activation room in ruin
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67145455 && Old.cutscene == 0 && Current.cutscene == 1;										//activation room restored
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (category == "TeNmg") {
+					if (settings[category + i]) {
+						Func<dynamic, dynamic, bool> split = (Old, Current) =>
+							Current.map == 67145445 && Old.cutscene == 0 && Current.cutscene == 1;									//life 7 (mech tower) (TE only)
+						vars.splitList.Add(split);
+					}
+					i++;
+				}
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67112526 && Old.yPos < -13 && Current.yPos >= -13 && Current.zPos < 391 && Current.storyValue == 33;		//the death of a sand wraith
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67112526 && Old.yPos < -8 && Current.yPos >= -8 && Current.storyValue == 33;					//the death of a sand wraith v2
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Old.storyValue == 34 && Current.storyValue == 38;															//the death of the empress
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 135464247 && Current.zPos > 33 && Old.cutscene == 0 && Current.cutscene == 1;				//exit the tomb
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 135483950 && Old.cutscene == 0 && Current.cutscene == 1;										//scorpion sword
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (category == "TeNmg") {
+					if (settings[category + i]) {
+						Func<dynamic, dynamic, bool> split = (Old, Current) =>
+							Current.map ==  16809649 && Old.cutscene == 0 && Current.cutscene == 1;									//life 8 (prison) (TE only)
+						vars.splitList.Add(split);
+					}
+					i++;
+				}
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 67116821 || Current.map == 67116816) && Old.cutscene == 0 && Current.cutscene == 1;			//library cutscene
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67116821 && Old.xPos < -112 && Current.xPos >= -112 && Current.storyValue == 42;				//library v2
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (category == "TeNmg") {
+					if (settings[category + i]) {
+						Func<dynamic, dynamic, bool> split = (Old, Current) =>
+							Current.map == 67144084 && Old.cutscene == 0 && Current.cutscene == 1;									//life 9 (library) (TE only)
+						vars.splitList.Add(split);
+					}
+					i++;
+				}
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Old.map == 1006704427 && Current.map == 1006704429 && Current.storyValue == 45;								//hourglass revisited
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (category == "TeNmg") {
+					if (settings[category + i]) {
+						Func<dynamic, dynamic, bool> split = (Old, Current) =>
+							Current.map == 1006704429 && Old.xPos > -98 && Old.cutscene == 0 && Current.cutscene == 1;				//water sword (TE only)
+						vars.splitList.Add(split);
+					}
+					i++;
+				}
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 285231214 && Old.cutscene == 0 && Current.cutscene == 1;										//mask on
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 285231574 && Current.yPos < 195 && Old.cutscene == 0 && Current.cutscene == 1;				//sand griffin
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 285231574 && Old.yPos > 166.5 && Current.yPos <= 166.5;										//sand griffin v2
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 1006801611 && Old.cutscene == 0 && Current.cutscene == 1;									//mirrored fates
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 135501700 && Old.cutscene == 0 && Current.cutscene == 1;										//a favor unknown
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67116821 && Old.xPos < -112 && Current.xPos >= -112 && Current.storyValue == 60;				//library revisited
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						(Current.map == 587202754 || Current.map == 587203393) && Old.secondaryWeapon != 50 && Current.secondaryWeapon == 50;	//banana
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i]) {
+					Func<dynamic, dynamic, bool> split = (Old, Current) =>
+						Current.map == 67112526 && Old.cutscene == 0 && Current.cutscene == 1 && Current.storyValue == 64;			//mask off
+					vars.splitList.Add(split);
+				}
+				i++;
+				if (settings[category + i])
+					if (category == "TeNmg") {
+						Func<dynamic, dynamic, bool> split = (Old, Current) =>
+							Current.map == 989966868 && Current.yPos > 200 && Old.cutscene == 0 && Current.cutscene == 1;			//dahaka (if TE)
+							vars.splitList.Add(split);
+					}
+					else {
+						Func<dynamic, dynamic, bool> split = (Old, Current) =>
+							Current.map == 989966866 && Current.bossHealth == 0 && Old.cutscene == 0 && Current.cutscene == 1;		//kaileena (if Any%)
+							vars.splitList.Add(split);
+					}
+				break;
+				
+			default:
+				break;
+		}				
+	}
+	vars.oldTimerPhase = timer.CurrentPhase;
 }
 
 split{
-	
-	switch(timer.Run.GetExtendedCategoryName())
-	{
-		case "Any% (Normal)":
-			switch (timer.CurrentSplitIndex)
-			{
-			//The Boat
-			case 0:
-				if(current.xPos >= -1003 		&& current.yPos >= -1028 		&& current.zPos >= 14 			&& current.xPos <= -995 		&& current.yPos <= -1016 		&& current.zPos <= 15 		&& current.storyValue == 0 && current.bossHealth == 0)
-					return true;
-				break;
-			//The Raven Man
-			case 1:
-				if(current.xPos >= -5.359 		&& current.yPos >= -161.539 	&& current.zPos >= 66.5 		&& current.xPos <= -4.913 		&& current.yPos <= -161.500 	&& current.zPos <= 67.5 	&& current.storyValue == 2)
-					return true;
-				break;
-			//The Time Portal
-			case 2:
-				if(current.xPos >= 122.8 		&& current.yPos >= -156.1 		&& current.zPos >= 368.5 		&& current.xPos <= 122.9 		&& current.yPos <= -156 		&& current.zPos <= 369.5 	&& current.storyValue == 2)			
-					return true;
-				break;
-			//Mask of the Wraith (59)
-			case 3:
-				if(current.storyValue == 59)
-					return true;
-				break;
-			//The Scorpion Sword
-			case 4:
-				if(current.xPos >= -170.1 		&& current.yPos >= -127.3 		&& current.zPos >= 335.5 		&& current.xPos <= -170 		&& current.yPos <= -127.2 		&& current.zPos <= 336.5 	&& current.storyValue == 59)
-					return true;
-				break;
-			//The Light Sword
-			case 5:
-				if (settings["RNG 63"] && current.storyValue == 63)
-					return true;
-				if(current.secondaryWeapon == 50 && current.storyValue == 61)
-					return true;
-				break;
-			//Back to the Future
-			case 6:
-				if(current.xPos >= -52.7 		&& current.yPos >= 137.2 		&& current.zPos >= 418 			&& current.xPos <= -52.6 		&& current.yPos <= 137.3 		&& current.zPos <= 419 		&& current.storyValue == 66)
-					return true;
-				break;
-			//The End
-			case 7:
-				if(current.xPos >= -35 			&& current.yPos >= 170 			&& current.zPos >= 128.9 		&& current.xPos <= -5 			&& current.yPos <= 205 			&& current.zPos <= 129.1 	&& current.storyValue >= 66 && current.bossHealth == 0)
-					return true;
-				break;
-		}
-		break;
-		
-		case "Any% (Zipless)":
-			switch (timer.CurrentSplitIndex)
-			{
-			//The Boat
-			case 0:
-				if(current.xPos >= -1003 		&& current.yPos >= -1028 		&& current.zPos >= 14 			&& current.xPos <= -995 		&& current.yPos <= -1016 		&& current.zPos <= 15 		&& current.storyValue == 0 && current.bossHealth == 0)
-					return true;
-				break;
-			//The Raven Man
-			case 1:
-				if(current.xPos >= -5.359 		&& current.yPos >= -161.539 	&& current.zPos >= 66.5 		&& current.xPos <= -4.913 		&& current.yPos <= -161.500 	&& current.zPos <= 67.5 	&& current.storyValue == 2)
-					return true;
-				break;
-			//The Time Portal
-			case 2:
-				if(current.xPos >= 122.8 		&& current.yPos >= -156.1 		&& current.zPos >= 368.5 		&& current.xPos <= 122.9 		&& current.yPos <= -156 		&& current.zPos <= 369.5 	&& current.storyValue == 2)			
-					return true;
-				break;
-			//Mask of the Wraith (59)
-			case 3:
-				if(current.storyValue == 59)
-					return true;
-				break;
-			//The Scorpion Sword
-			case 4:
-				if(current.xPos >= -170.1 		&& current.yPos >= -127.3 		&& current.zPos >= 335.5 		&& current.xPos <= -170 		&& current.yPos <= -127.2 		&& current.zPos <= 336.5 	&& current.storyValue == 59)
-					return true;
-				break;
-			//The Light Sword
-			case 5:
-				if (settings["RNG 63"] && current.storyValue == 63)
-					return true;
-				if(current.secondaryWeapon == 50 && current.storyValue == 61)
-					return true;
-				break;
-			//Back to the Future
-			case 6:
-				if(current.xPos >= -52.7 		&& current.yPos >= 137.2 		&& current.zPos >= 418 			&& current.xPos <= -52.6 		&& current.yPos <= 137.3 		&& current.zPos <= 419 		&& current.storyValue == 66)
-					return true;
-				break;
-			//The End
-			case 7:
-				if(current.xPos >= -35 			&& current.yPos >= 170 			&& current.zPos >= 128.9 		&& current.xPos <= -5 			&& current.yPos <= 205 			&& current.zPos <= 129.1 	&& current.storyValue == 67 && current.bossHealth == 0)
-					return true;
-				break;
-		}
-		break;
-		
-		case "Any% (No Major Glitches)":
-			switch (timer.CurrentSplitIndex)
-			{
-			//The Boat
-			case 0:
-				if(current.xPos >= -1003 		&& current.yPos >=  -1028 		&& current.zPos >=  14 			&& current.xPos <=  -995 		&& current.yPos <=  -1016 		&& current.zPos <=  15			&& current.storyValue == 0		&& current.bossHealth == 0)
-					return true;
-				break;
-			//The Spider Sword
-			case 1:
-				if(current.xPos >= -46.3 		&& current.yPos >=  -139.7 		&& current.zPos >=  67 			&& current.xPos <=  -46 		&& current.yPos <=  -138 		&& current.zPos <=  68			&& current.storyValue == 2)
-					return true;
-				break;
-			//Chasing Shadee
-			case 2:
-				if(current.xPos >= 43.3 		&& current.yPos >=  -75.7 		&& current.zPos >=  370 		&& current.xPos <=  43.4 		&& current.yPos <=  -75.6 		&& current.zPos <=  370.1		&& current.storyValue == 7)
-					return true;
-				break;
-			//A Damsel in Distress
-			case 3:
-				if(current.xPos >= 115 			&& current.yPos >=  -114 		&& current.zPos >=  357 		&& current.xPos <=  132 		&& current.yPos <=  -80 		&& current.zPos <=  361			&& current.storyValue == 8		&& current.bossHealth == 0)
-					return true;
-				break;
-			//The Dahaka
-			case 4:
-				if(current.xPos >= 40.1 		&& current.yPos >=  -96.1 		&& current.zPos >=  86 			&& current.xPos <=  42.4 		&& current.yPos <=  -95.9 		&& current.zPos <=  86.1		&& current.storyValue == 9)
-					return true;
-				break;
-			//The Serpent Sword
-			case 5:
-				if(current.xPos >= -96.5 		&& current.yPos >=  41.3 		&& current.zPos >=  407.4 		&& current.xPos <=  -96.4 		&& current.yPos <=  41.4 		&& current.zPos <=  407.5		&& current.storyValue == 13)
-					return true;
-				break;
-			//The Garden Hall
-			case 6:
-				if(current.xPos >= 66.9 		&& current.yPos >=  11.4 		&& current.zPos >=  400 		&& current.xPos <=  67.1 		&& current.yPos <=  11.6 		&& current.zPos <=  400.2		&& current.storyValue == 22)
-					return true;
-				break;
-			//The Waterworks Restored
-			case 7:
-				if(current.xPos >= 23 			&& current.yPos >=  41 			&& current.zPos >=  441 		&& current.xPos <=  29 			&& current.yPos <=  43 			&& current.zPos <=  450			&& current.storyValue == 22)
-					return true;
-				break;
-			//The Lion Sword
-			case 8:
-				if(current.xPos >= -44.7 		&& current.yPos >=  -27.1 		&& current.zPos >=  389 		&& current.xPos <=  -44.6 		&& current.yPos <=  -27 		&& current.zPos <=  389.1		&& current.storyValue == 21)
-					return true;
-				break;
-			//The Mechanical Tower
-			case 9:
-				if(current.xPos >= -167 		&& current.yPos >=  -47.5 		&& current.zPos >=  409.6363 	&& current.xPos <=  -162 		&& current.yPos <=  -46 		&& current.zPos <=  412			&& current.storyValue == 15)
-					return true;
-				break;
-			//Breath of Fate
-			case 10:
-				if(current.xPos >= -210.018 	&& current.yPos >=  164.259 	&& current.zPos >=  440.9 		&& current.xPos <=  -210.016 	&& current.yPos <=  164.261 	&& current.zPos <=  441.1		&& current.storyValue == 16)
-					return true;
-				break;
-			//Activation Room in Ruin
-			case 11:
-				if(current.xPos >= -206 		&& current.yPos >=  59.8 		&& current.zPos >=  162.6 		&& current.xPos <=  -205.8 		&& current.yPos <=  67.4 		&& current.zPos <=  163.1		&& current.storyValue == 18)
-					return true;
-				break;
-			//Activation Room Restored
-			case 12:
-				if(current.xPos >= -192.5 		&& current.yPos >=  109 		&& current.zPos >=  471.9 		&& current.xPos <=  -189.5 		&& current.yPos <=  111 		&& current.zPos <=  472.1		&& current.storyValue == 19)
-					return true;
-				break;
-			//The Death of a Sand Wraith
-			case 13:
-				if(current.xPos >= -50 			&& current.yPos >=  -13 		&& current.zPos >=  388.9 		&& current.xPos <=  -39 		&& current.yPos <=  -5 			&& current.zPos <=  389.8		&& current.storyValue == 33)
-					return true;
-				break;
-			//Death of the Empress
-			case 14:
-				if(current.xPos >= -74 			&& current.yPos >=  53.5 		&& current.zPos >=  414 		&& current.xPos <=  -31 		&& current.yPos <=  104 		&& current.zPos <=  422			&& current.storyValue == 38		&& current.bossHealth == 0)
-					return true;
-				break;
-			//Exit the Tomb
-			case 15:
-				if(current.xPos >= -100 		&& current.yPos >=  -190 		&& current.zPos >=  33 			&& current.xPos <=  -97.5 		&& current.yPos <=  -187 		&& current.zPos <=  33.2		&& current.storyValue == 39)
-					return true;
-				break;
-			//The Scorpion Sword
-			case 16:
-				if(current.xPos >= -170.1 		&& current.yPos >=  -127.3 		&& current.zPos >=  335.5 		&& current.xPos <=  -170 		&& current.yPos <=  -127.2 		&& current.zPos <=  336.5		&& current.storyValue == 41)
-					return true;
-				break;
-			//The Library
-			case 17:
-				if(current.xPos >= -112 		&& current.yPos >=  -144 		&& current.zPos >=  384.9 		&& current.xPos <=  -111 		&& current.yPos <=  -137 		&& current.zPos <=  389			&& current.storyValue == 42)
-					return true;
-				break;
-			//The Hourglass Revisited
-			case 18:
-				if(current.xPos >= -108.3 		&& current.yPos >=  40 			&& current.zPos >=  407.3 		&& current.xPos <=  -106 		&& current.yPos <=  45 			&& current.zPos <=  407.5		&& current.storyValue == 45)
-					return true;
-				break;
-			//The Mask of the Wraith
-			case 19:
-				if(current.xPos >= -20.5 		&& current.yPos >=  236.8 		&& current.zPos >=  133 		&& current.xPos <=  -20.4 		&& current.yPos <=  267 		&& current.zPos <=  133.1		&& current.storyValue == 46)
-					return true;
-				break;
-			//The Sand Griffin
-			case 20:
-				if(current.xPos >= -23 			&& current.yPos >=  163 		&& current.zPos >=  429 		&& current.xPos <=  -15 		&& current.yPos <=  166.5 		&& current.zPos <=  431			&& current.storyValue == 48)
-					return true;
-				break;
-			//Mirrored Fates
-			case 21:
-				if(current.xPos >= 136.7 		&& current.yPos >=  -110.6 		&& current.zPos >=  377.9 		&& current.xPos <=  136.9 		&& current.yPos <=  -110.4 		&& current.zPos <=  378			&& current.storyValue == 55)
-					return true;
-				break;
-			//A Favor Unknown
-			case 22:
-				if(current.xPos >= 41.1 		&& current.yPos >=  -180.1 		&& current.zPos >=  368.9 		&& current.xPos <=  41.2 		&& current.yPos <=  -180 		&& current.zPos <=  369.1		&& current.storyValue == 57)
-					return true;
-				break;
-			//The Library Revisited
-			case 23:
-				if(current.xPos >= -112 		&& current.yPos >=  -144 		&& current.zPos >=  384.9 		&& current.xPos <=  -111 		&& current.yPos <=  -137 		&& current.zPos <=  389			&& current.storyValue == 60)
-					return true;
-				break;
-			//The Light Sword
-			case 24:
-				if(current.secondaryWeapon == 50 && current.storyValue == 61)
-					return true;
-				break;
-			//The Death of a Prince
-			case 25:
-				if(current.xPos >= -67 			&& current.yPos >=  -23.3 		&& current.zPos >=  399.9 		&& current.xPos <=  -65.1 		&& current.yPos <=  -23.1 		&& current.zPos <=  400			&& current.storyValue == 64)
-					return true;
-				break;
-			//The End
-			case 26:
-				if(current.xPos >= -35 			&& current.yPos >=  170 		&& current.zPos >=  128.9 		&& current.xPos <=  -5 			&& current.yPos <=  205 		&& current.zPos <=  129.1		&& current.storyValue == 67		&& current.bossHealth == 0)
-					return true;
-				break;
-		}
-		break;
-		
-		case "True Ending (Normal)":
-			switch (timer.CurrentSplitIndex)
-			{
-			//The Boat
-			case 0:
-				if(current.xPos >= -1003 		&& current.yPos >= -1028 		&& current.zPos >= 14 			&& current.xPos <= -995 		&& current.yPos <= -1016 		&& current.zPos <= 15 			&& current.storyValue == 0 && current.bossHealth == 0)
-					return true;
-				break;
-			//The Raven Man
-			case 1:
-				if(current.xPos >= -5.359 		&& current.yPos >= -161.539 	&& current.zPos >= 66.5 		&& current.xPos <= -4.913 		&& current.yPos <= -161.500 	&& current.zPos <= 67.5 		&& current.storyValue == 2)
-					return true;
-				break;
-			//Life Upgrade 1
-			case 2:
-				if(current.xPos >= 52			&& current.yPos >= -188.7		&& current.zPos >= 381.9		&& current.xPos <= 52.8			&& current.yPos <= -188.6		&& current.zPos <= 382.1		&& current.storyValue == 2)
-					return true;
-				break;
-			//Life Upgrade 2
-			case 3:
-				if(current.xPos >= -112.1		&& current.yPos >= -66.1		&& current.zPos >= 360.9		&& current.xPos <= -112			&& current.yPos <= -65.2		&& current.zPos <= 361			&& current.storyValue == 59)
-					return true;
-				break;
-			//Life Upgrade 3
-			case 4:
-				if(current.xPos >= -74.8		&& current.yPos >= -102.8		&& current.zPos >= 378.9		&& current.xPos <= -74.2		&& current.yPos <= -102.7		&& current.zPos <= 379			&& current.storyValue == 60)
-					return true;
-				break;
-			//Life Upgrade 4
-			case 5:
-				if(current.xPos >= -161.2		&& current.yPos >= 170.3		&& current.zPos >= 471.9		&& current.xPos <= -161			&& current.yPos <= 171			&& current.zPos <= 472.1		&& current.storyValue == 63)
-					return true;
-				break;
-			//Life Upgrade 5
-			case 6:
-				if(current.xPos >= 138.8		&& current.yPos >= 115.3		&& current.zPos >= 382.5		&& current.xPos <= 139			&& current.yPos <= 116.7		&& current.zPos <= 382.6		&& current.storyValue == 64)
-					return true;
-				break;
-			//Life Upgrade 6
-			case 7:
-				if(current.xPos >= 76.1			&& current.yPos >= 64.1			&& current.zPos >= 461.4		&& current.xPos <= 76.2			&& current.yPos <= 64.9			&& current.zPos <= 461.6		&& current.storyValue == 64)
-					return true;
-				break;
-			//Life Upgrade 7
-			case 8:
-				if(current.xPos >= 190.2		&& current.yPos >= -131.9		&& current.zPos >= 353.9		&& current.xPos <= 190.4		&& current.yPos <= -131.8		&& current.zPos <= 354.1		&& current.storyValue == 64)
-					return true;
-				break;
-			//Life Upgrade 8
-			case 9:
-				if(current.xPos >= 162.2		&& current.yPos >= -37.5		&& current.zPos >= 392.9		&& current.xPos <= 162.7		&& current.yPos <= -37.3		&& current.zPos <= 393.1		&& current.storyValue == 64)
-					return true;
-				break;
-			//Life Upgrade 9
-			case 10:
-				if(current.xPos >= -114.7		&& current.yPos >= -47.2		&& current.zPos >= 368.9		&& current.xPos <= -114.1		&& current.yPos <= -47			&& current.zPos <= 369.1		&& current.storyValue == 64)
-					return true;
-				break;
-			//The Water Sword
-			case 11:
-				if(current.xPos >= -96.643		&& current.yPos >= 43.059		&& current.zPos >= 407.4		&& current.xPos <= -96.641		&& current.yPos <= 43.061		&& current.zPos <= 407.5		&& current.storyValue == 66)
-					return true;
-				break;
-			//The End
-			case 12:
-				if(current.xPos >= -18.959 		&& current.yPos >= 203.667 		&& current.zPos >= 129 			&& current.xPos <= -18.956 		&& current.yPos <= 203.755 		&& current.zPos <=129.2 		&& current.storyValue == 68)
-					return true;
-				break;
-		}
-		break;
-		
-		case "True Ending (Zipless)":
-			switch (timer.CurrentSplitIndex)
-			{
-			//The Boat
-			case 0:
-				if(current.xPos >= -1003 		&& current.yPos >= -1028 		&& current.zPos >= 14 			&& current.xPos <= -995 		&& current.yPos <= -1016 		&& current.zPos <= 15 			&& current.storyValue == 0 && current.bossHealth == 0)
-					return true;
-				break;
-			//The Raven Man
-			case 1:
-				if(current.xPos >= -5.359 		&& current.yPos >= -161.539 	&& current.zPos >= 66.5 		&& current.xPos <= -4.913 		&& current.yPos <= -161.500 	&& current.zPos <= 67.5 		&& current.storyValue == 2)
-					return true;
-				break;
-			//Life Upgrade 1
-			case 2:
-				if(current.xPos >= -114.7		&& current.yPos >= -47.2		&& current.zPos >= 368.9		&& current.xPos <= -114.1		&& current.yPos <= -47			&& current.zPos <= 369.1		&& current.storyValue == 36)
-					return true;
-				break;
-			//Life Upgrade 2
-			case 3:
-				if(current.xPos >= 76.1			&& current.yPos >= 64.1			&& current.zPos >= 461.4		&& current.xPos <= 76.2			&& current.yPos <= 64.9			&& current.zPos <= 461.6		&& current.storyValue == 36)
-					return true;
-				break;
-			//Life Upgrade 3
-			case 4:
-				if(current.xPos >= 138.8		&& current.yPos >= 115.3		&& current.zPos >= 382.5		&& current.xPos <= 139			&& current.yPos <= 116.7		&& current.zPos <= 382.6		&& current.storyValue == 36)
-					return true;
-				break;
-			//Life Upgrade 4
-			case 5:
-				if(current.xPos >= 52			&& current.yPos >= -188.7		&& current.zPos >= 381.9		&& current.xPos <= 52.8			&& current.yPos <= -188.6		&& current.zPos <= 382.1		&& current.storyValue == 36)
-					return true;
-				break;
-			//Mask of the Wraith (59)
-			case 6:
-				if(current.storyValue == 59)
-					return true;
-				break;
-			//Life Upgrade 5
-			case 7:
-				if(current.xPos >= -112.1		&& current.yPos >= -66.1		&& current.zPos >= 360.9		&& current.xPos <= -112			&& current.yPos <= -65.2		&& current.zPos <= 361			&& current.storyValue == 59)
-					return true;
-				break;			
-			//Life Upgrade 6
-			case 8:
-				if(current.xPos >= -74.8		&& current.yPos >= -102.8		&& current.zPos >= 378.9		&& current.xPos <= -74.2		&& current.yPos <= -102.7		&& current.zPos <= 379			&& current.storyValue == 60)
-					return true;
-				break;
-			//The Mechanical Tower
-			case 9:
-				if(current.xPos >= -208			&& current.yPos >= -35.5		&& current.zPos >= 419.9		&& current.xPos <= -205			&& current.yPos <= -32.5		&& current.zPos <= 423			&& current.storyValue == 63)
-					return true;
-				break;					
-			//Life Upgrade 7
-			case 10:
-				if(current.xPos >= -161.2		&& current.yPos >= 170.3		&& current.zPos >= 471.9		&& current.xPos <= -161			&& current.yPos <= 171			&& current.zPos <= 472.1		&& current.storyValue == 63)
-					return true;
-				break;
-			//Life Upgrade 8
-			case 11:
-				if(current.xPos >= 162.2		&& current.yPos >= -37.5		&& current.zPos >= 392.9		&& current.xPos <= 162.7		&& current.yPos <= -37.3		&& current.zPos <= 393.1		&& current.storyValue == 64)
-					return true;
-				break;
-			//Life Upgrade 9
-			case 12:
-				if(current.xPos >= 190.2		&& current.yPos >= -131.9		&& current.zPos >= 353.9		&& current.xPos <= 190.4		&& current.yPos <= -131.8		&& current.zPos <= 354.1		&& current.storyValue == 64)
-					return true;
-				break;
-			//The Water Sword
-			case 13:
-				if(current.xPos >= -96.643		&& current.yPos >= 43.059		&& current.zPos >= 407.4		&& current.xPos <= -96.641		&& current.yPos <= 43.061		&& current.zPos <= 407.5		&& current.storyValue == 66)
-					return true;
-				break;
-			//The End
-			case 14:
-				if(current.xPos >= -18.959 		&& current.yPos >= 203.667 		&& current.zPos >= 129 			&& current.xPos <= -18.956 		&& current.yPos <= 203.755 		&& current.zPos <=129.2 		&& current.storyValue == 68)
-					return true;
-				break;
-		}
-		break;
-		
-		case "True Ending (No Major Glitches)":
-			switch (timer.CurrentSplitIndex)
-			{
-			//The Boat
-			case 0:
-				if(current.xPos >= -1003 		&& current.yPos >=  -1028 		&& current.zPos >=  14 			&& current.xPos <=  -995 		&& current.yPos <=  -1016 		&& current.zPos <=  15			&& current.storyValue == 0		&& current.bossHealth == 0)
-					return true;
-				break;
-			//The Spider Sword
-			case 1:
-				if(current.xPos >= -46.3 		&& current.yPos >=  -139.7 		&& current.zPos >=  67 			&& current.xPos <=  -46 		&& current.yPos <=  -138 		&& current.zPos <=  68			&& current.storyValue == 2)
-					return true;
-				break;
-			//Life Upgrade 1
-			case 2:
-				if(current.xPos >= 162.2		&& current.yPos >= -37.5		&& current.zPos >= 392.9		&& current.xPos <= 162.7		&& current.yPos <= -37.3		&& current.zPos <= 393.1		&& current.storyValue == 7)
-					return true;
-				break;
-			//A Damsel in Distress
-			case 3:
-				if(current.xPos >= 115 			&& current.yPos >=  -114 		&& current.zPos >=  357 		&& current.xPos <=  132 		&& current.yPos <=  -80 		&& current.zPos <=  361			&& current.storyValue == 8		&& current.bossHealth == 0)
-					return true;
-				break;
-			//Life Upgrade 2
-			case 4:
-				if(current.xPos >= 190.2		&& current.yPos >= -131.9		&& current.zPos >= 353.9		&& current.xPos <= 190.4		&& current.yPos <= -131.8		&& current.zPos <= 354.1		&& current.storyValue == 8)
-					return true;
-				break;
-			//The Dahaka
-			case 5:
-				if(current.xPos >= 40.1 		&& current.yPos >=  -96.1 		&& current.zPos >=  86 			&& current.xPos <=  42.4 		&& current.yPos <=  -95.9 		&& current.zPos <=  86.1		&& current.storyValue == 9)
-					return true;
-				break;
-			//Life Upgrade 3
-			case 6:
-				if(current.xPos >= 52			&& current.yPos >= -188.7		&& current.zPos >= 381.9		&& current.xPos <= 52.8			&& current.yPos <= -188.6		&& current.zPos <= 382.1		&& current.storyValue == 11)
-					return true;
-				break;
-			//The Serpent Sword
-			case 7:
-				if(current.xPos >= -96.5 		&& current.yPos >=  41.3 		&& current.zPos >=  407.4 		&& current.xPos <=  -96.4 		&& current.yPos <=  41.4 		&& current.zPos <=  407.5		&& current.storyValue == 13)
-					return true;
-				break;
-			//The Garden Hall
-			case 8:
-				if(current.xPos >= 66.9 		&& current.yPos >=  11.4 		&& current.zPos >=  400 		&& current.xPos <=  67.1 		&& current.yPos <=  11.6 		&& current.zPos <=  400.2		&& current.storyValue == 22)
-					return true;
-				break;
-			//Life Upgrade 4
-			case 9:
-				if(current.xPos >= 76.1			&& current.yPos >= 64.1			&& current.zPos >= 461.4		&& current.xPos <= 76.2			&& current.yPos <= 64.9			&& current.zPos <= 461.6		&& current.storyValue == 22)
-					return true;
-				break;
-			//Life Upgrade 5
-			case 10:
-				if(current.xPos >= 138.8		&& current.yPos >= 115.3		&& current.zPos >= 382.5		&& current.xPos <= 139			&& current.yPos <= 116.7		&& current.zPos <= 382.6		&& current.storyValue == 32)
-					return true;
-				break;
-			//Life Upgrade 6
-			case 11:
-				if(current.xPos >= -114.7		&& current.yPos >= -47.2		&& current.zPos >= 368.9		&& current.xPos <= -114.1		&& current.yPos <= -47			&& current.zPos <= 369.1		&& current.storyValue == 21)
-					return true;
-				break;
-			//The Mechanical Tower
-			case 12:
-				if(current.xPos >= -167 		&& current.yPos >=  -47.5 		&& current.zPos >=  409.6363 	&& current.xPos <=  -162 		&& current.yPos <=  -46 		&& current.zPos <=  412			&& current.storyValue == 15)
-					return true;
-				break;
-			//Breath of Fate
-			case 13:
-				if(current.xPos >= -210.018 	&& current.yPos >=  164.259 	&& current.zPos >=  440.9 		&& current.xPos <=  -210.016 	&& current.yPos <=  164.261 	&& current.zPos <=  441.1		&& current.storyValue == 16)
-					return true;
-				break;
-			//Activation Room in Ruin
-			case 14:
-				if(current.xPos >= -206 		&& current.yPos >=  59.8 		&& current.zPos >=  162.6 		&& current.xPos <=  -205.8 		&& current.yPos <=  67.4 		&& current.zPos <=  163.1		&& current.storyValue == 18)
-					return true;
-				break;
-			//Life Upgrade 7
-			case 15:
-				if(current.xPos >= -161.2		&& current.yPos >= 170.3		&& current.zPos >= 471.9		&& current.xPos <= -161			&& current.yPos <= 171			&& current.zPos <= 472.1		&& current.storyValue == 19)
-					return true;
-				break;
-			//The Death of a Sand Wraith
-			case 16:
-				if(current.xPos >= -50 			&& current.yPos >=  -13 		&& current.zPos >=  388.9 		&& current.xPos <=  -39 		&& current.yPos <=  -5 			&& current.zPos <=  389.8		&& current.storyValue == 33)
-					return true;
-				break;
-			//Death of the Empress
-			case 17:
-				if(current.xPos >= -74 			&& current.yPos >=  53.5 		&& current.zPos >=  414 		&& current.xPos <=  -31 		&& current.yPos <=  104 		&& current.zPos <=  422			&& current.storyValue == 38		&& current.bossHealth == 0)
-					return true;
-				break;
-			//Exit the Tomb
-			case 18:
-				if(current.xPos >= -100 		&& current.yPos >=  -190 		&& current.zPos >=  33 			&& current.xPos <=  -97.5 		&& current.yPos <=  -187 		&& current.zPos <=  33.2		&& current.storyValue == 39)
-					return true;
-				break;
-			//The Scorpion Sword
-			case 19:
-				if(current.xPos >= -170.1 		&& current.yPos >=  -127.3 		&& current.zPos >=  335.5 		&& current.xPos <=  -170 		&& current.yPos <=  -127.2 		&& current.zPos <=  336.5		&& current.storyValue == 41)
-					return true;
-				break;
-			//Life Upgrade 8
-			case 20:
-				if(current.xPos >= -112.1		&& current.yPos >= -66.1		&& current.zPos >= 360.9		&& current.xPos <= -112			&& current.yPos <= -65.2		&& current.zPos <= 361			&& current.storyValue == 41)
-					return true;
-				break;
-			//Life Upgrade 9
-			case 21:
-				if(current.xPos >= -74.8		&& current.yPos >= -102.8		&& current.zPos >= 378.9		&& current.xPos <= -74.2		&& current.yPos <= -102.7		&& current.zPos <= 379			&& current.storyValue == 42)
-					return true;
-				break;
-			//The Water Sword
-			case 22:
-				if(current.xPos >= -96.643		&& current.yPos >= 43.059		&& current.zPos >= 407.4		&& current.xPos <= -96.641		&& current.yPos <= 43.061		&& current.zPos <= 407.5		&& current.storyValue == 45)
-					return true;
-				break;
-			//The Mask of the Wraith
-			case 23:
-				if(current.xPos >= -20.5 		&& current.yPos >=  236.8 		&& current.zPos >=  133 		&& current.xPos <=  -20.4 		&& current.yPos <=  267 		&& current.zPos <=  133.1		&& current.storyValue == 46)
-					return true;
-				break;
-			//The Sand Griffin
-			case 24:
-				if(current.xPos >= -23 			&& current.yPos >=  163 		&& current.zPos >=  429 		&& current.xPos <=  -15 		&& current.yPos <=  166.5 		&& current.zPos <=  431			&& current.storyValue == 48)
-					return true;
-				break;
-			//Mirrored Fates
-			case 25:
-				if(current.xPos >= 136.7 		&& current.yPos >=  -110.6 		&& current.zPos >=  377.9 		&& current.xPos <=  136.9 		&& current.yPos <=  -110.4 		&& current.zPos <=  378			&& current.storyValue == 55)
-					return true;
-				break;
-			//A Favor Unknown
-			case 26:
-				if(current.xPos >= 41.1 		&& current.yPos >=  -180.1 		&& current.zPos >=  368.9 		&& current.xPos <=  41.2 		&& current.yPos <=  -180 		&& current.zPos <=  369.1		&& current.storyValue == 57)
-					return true;
-				break;
-			//The Library Revisited
-			case 27:
-				if(current.xPos >= -112 		&& current.yPos >=  -144 		&& current.zPos >=  384.9 		&& current.xPos <=  -111 		&& current.yPos <=  -137 		&& current.zPos <=  389			&& current.storyValue == 60)
-					return true;
-				break;
-			//The Light Sword
-			case 28:
-				if(current.secondaryWeapon == 50 && current.storyValue == 61)
-					return true;
-				break;
-			//The Death of a Prince
-			case 29:
-				if(current.xPos >= -67 			&& current.yPos >=  -23.3 		&& current.zPos >=  399.9 		&& current.xPos <=  -65.1 		&& current.yPos <=  -23.1 		&& current.zPos <=  400			&& current.storyValue == 64)
-					return true;
-				break;
-			//The End
-			case 30:
-				if(current.xPos >= -18.959 		&& current.yPos >= 203.667 		&& current.zPos >= 129 			&& current.xPos <= -18.956 		&& current.yPos <= 203.755 		&& current.zPos <=129.2 		&& current.storyValue == 68)
-					return true;
-				break;
-		}
-		break;
-	}	
+	return vars.splitList[timer.CurrentSplitIndex](old, current);
 }
