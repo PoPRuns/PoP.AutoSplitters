@@ -28,6 +28,8 @@ startup
     vars.SeenQuests = new HashSet<string>();
     // the last checked list of active quests
     vars.ActiveQuests = new List<string>();
+    vars.IGTValue = 0;
+    vars.IGTOffset = 0;
 
     vars.Helper.AlertLoadless();
 }
@@ -236,6 +238,15 @@ init
         );
         vars.Helper["boss2Health"].FailAction = MemoryWatcher.ReadFailAction.SetZeroOrNull;
 
+        var SM = mono["Alkawa.Gameplay", "SpeedrunManager", 1];
+        var SI = mono["Alkawa.Gameplay", "SpeedrunInstance"];
+
+        vars.Helper["speedrunTimer"] = SM.Make<double>(
+            "m_instance",
+            SM["m_mainGameSpeedrunInstance"] + PAD,
+            SI["m_currentTimer"] + PAD
+        );
+
         return true;
     });
 
@@ -345,6 +356,12 @@ onStart
     vars.Log(current.boss2Health);
 }
 
+onReset
+{
+    vars.IGTValue = 0;
+    vars.IGTOffset = 0;
+}
+
 start
 {
     if (current.shortLevel != "BAT_02" || current.inputMode != 0) return false;
@@ -367,10 +384,18 @@ start
 
 isLoading
 {
-    // moving between screens
-    return current.isChangingLevel
-        // not sure when this one happens
-        || vars.states.Contains("GameFlowStateLoading");
+    return true;
+}
+
+gameTime
+{
+    if (current.speedrunTimer > 0) {
+        if (vars.IGTValue > current.speedrunTimer) {
+            vars.IGTOffset += (vars.IGTValue - current.speedrunTimer);
+        }
+        vars.IGTValue = current.speedrunTimer;
+    }
+    return TimeSpan.FromSeconds(vars.IGTValue + vars.IGTOffset);
 }
 
 split
