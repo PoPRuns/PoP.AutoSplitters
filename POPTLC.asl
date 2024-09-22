@@ -279,9 +279,9 @@ update
     vars.Watch(old, current, "shortLevel");
     vars.Watch(old, current, "inputMode");
     vars.Watch(old, current, "boss1LocId");
-    vars.Watch(old, current, "boss1Health");
-    vars.Watch(old, current, "boss2Health");
-    vars.Watch(old, current, "playerAction");
+    // vars.Watch(old, current, "boss1Health");
+    // vars.Watch(old, current, "boss2Health");
+    // vars.Watch(old, current, "playerAction");
 
     if (vars.states == null || vars.states.Count != current.activeStatesCount) {
         vars.states = vars.GetStates();
@@ -299,13 +299,13 @@ update
     if ((vars.ActiveQuests.Count != current.quests.Count && current.quests.Count != 0)
      || (vars.ActiveQuests.Count > vars.SeenQuests.Count)
     ) {
-        vars.Log("QUEST LIST CHANGED " + vars.ActiveQuests.Count + " -> " + current.quests.Count + " (SQ: " + vars.SeenQuests.Count + ")");
+        // vars.Log("QUEST LIST CHANGED " + vars.ActiveQuests.Count + " -> " + current.quests.Count + " (SQ: " + vars.SeenQuests.Count + ")");
         vars.ActiveQuests = new List<string>();
 
         foreach (var questPtr in current.quests) {
             var quest = vars.ReadQuest(questPtr);
 
-            vars.Log("  " + quest.Name + " [" + quest.GUID + "]");
+            // vars.Log("  " + quest.Name + " [" + quest.GUID + "]");
 
             vars.ActiveQuests.Add(quest.GUID);
             
@@ -318,7 +318,7 @@ update
             }
         }
 
-        vars.Log("SEEN QUESTS (" + vars.SeenQuests.Count + "): ");
+        // vars.Log("SEEN QUESTS (" + vars.SeenQuests.Count + "): ");
 
         foreach (var seenQuest in vars.SeenQuests) {
             vars.Log("  " + seenQuest);
@@ -364,22 +364,14 @@ onReset
 
 start
 {
-    if (current.shortLevel != "BAT_02" || current.inputMode != 0) return false;
-
-    if (settings["start_rebind"]) {
-        // if we're loading into the first level but not from the start screen
-        // it's just a changing level transition
-        return vars.states.Contains("GameFlowStateLoading") && old.inputMode == 1;
-    }
-
-    // using the GameFlowStateCutScene
-    if (old.isGSCutscene && !current.isGSCutscene)
-    {
+    // Start in either base game or DLC starting scene when speedrun mode is active and the opening cutscene is playing
+    if ((current.activeScene == "KIN_BAT_02" || current.activeScene == "CIT_LOW_DLC_FAKEFEATHER") && current.inputMode == 3 && current.speedrunTimer > 0) {
+        // For the DLC, set offset for the timer accordingly
+        if (current.activeScene == "CIT_LOW_DLC_FAKEFEATHER") {
+            vars.IGTOffset = -current.speedrunTimer;
+        }
         return true;
-    }
-
-    // cutscene -> gameplay while in the very first level
-    return old.inputMode == 3;
+    };
 }
 
 isLoading
