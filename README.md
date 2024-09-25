@@ -10,7 +10,7 @@ Prince of Persia: The Sands of Time | Start, Split, Reset | Samabam, GMP | [GMP]
 Prince of Persia: Warrior Within | Start, Split, Reset | Samabam, Creditor | [GMP](https://github.com/GMPranav)
 Prince of Persia: The Two Thrones | Start, Split, Reset | Samabam, Vynneve, GMP | [GMP](https://github.com/GMPranav)
 Prince of Persia 2008 | Start, Split, Reset | Samabam, GMP | [GMP](https://github.com/GMPranav)
-Prince of Persia: The Fallen King | Start, Split, Reset, IGT | NoTeefy, Smathlax, GMP | [GMP](https://github.com/GMPranav)
+Prince of Persia: The Fallen King | Start, Split, IGT | NoTeefy, Smathlax, GMP | [GMP](https://github.com/GMPranav)
 Prince of Persia: The Forgotten Sands | Start, Split, Reset, LRT | Samabam, SuicideMachine, GMP | [GMP](https://github.com/GMPranav)
 Multi-Prince of Persia-Runs | Start, Split, Reset, LRT/IGT | _Everyone above_ | [GMP](https://github.com/GMPranav)
 
