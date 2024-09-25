@@ -367,7 +367,7 @@ onReset
 start
 {
     // Start in either base game or DLC starting scene when speedrun mode is active
-    if ((current.activeScene == vars.NORMAL_START_SCENE && current.inputMode == 3) || (current.activeScene == vars.DLC_START_SCENE && old.activeScene != "RAD_INT_01_BATTLEFIELD" && current.isGSCutscene == false) && current.speedrunTimer > 0) {
+    if ((current.activeScene == vars.NORMAL_START_SCENE && current.inputMode == 3) || (current.activeScene == vars.DLC_START_SCENE && old.activeScene != vars.DLC_START_SCENE && current.isGSCutscene == false)) {
         // For the DLC, set offset for the timer accordingly
         if (current.activeScene == vars.DLC_START_SCENE) {
             vars.IGTOffset = -current.speedrunTimer;
