@@ -25,13 +25,6 @@ init {
     }
 }
 
-onStart {
-    vars.hasCrashed = false;
-    vars.hasStarted = false;
-    vars.framesPassed = 0;
-    vars.timerModel = new TimerModel { CurrentState = timer };
-}
-
 exit {
     if (vars.timerModel.CurrentState.CurrentPhase == TimerPhase.Running) {
         // Assumption - timer is still running but the game closed down. Probably crashed.
@@ -39,6 +32,13 @@ exit {
         vars.hasCrashed = true;
         vars.hasStarted = false;
     }
+}
+
+onStart {
+    vars.hasCrashed = false;
+    vars.hasStarted = false;
+    vars.framesPassed = 0;
+    vars.timerModel = new TimerModel { CurrentState = timer };
 }
 
 update {
