@@ -20,8 +20,6 @@
         CRO_CRO_ CRO_ Crossroads of Time
     </Setting> -->
 
-    <Setting Id="start_rebind" Label="Start after rebinding controls" State="false" />
-
     <Setting Id="boss" Label="Split on beating boss" State="true">
         <!-- boss_name localisation id__boss room -->
         <Setting Id="boss__7415__KIN_BAT_08_Boss" Label="General Uvishka" State="false" />

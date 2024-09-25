@@ -38,6 +38,8 @@ init
 {
     vars.states = null;
     current.isChangingLevel = false;
+    vars.NORMAL_START_SCENE = "KIN_BAT_02";
+    vars.DLC_START_SCENE = "RAD_INT_01_BATTLEFIELD";
 
     // hardcoding some offsets which we can't get dynamically
     var LINKED_LIST_COUNT_OFFSET = 0x18;
@@ -364,10 +366,10 @@ onReset
 
 start
 {
-    // Start in either base game or DLC starting scene when speedrun mode is active and the opening cutscene is playing
-    if ((current.activeScene == "KIN_BAT_02" || current.activeScene == "CIT_LOW_DLC_FAKEFEATHER") && current.inputMode == 3 && current.speedrunTimer > 0) {
+    // Start in either base game or DLC starting scene when speedrun mode is active
+    if ((current.activeScene == vars.NORMAL_START_SCENE && current.inputMode == 3) || (current.activeScene == vars.DLC_START_SCENE && old.activeScene != "RAD_INT_01_BATTLEFIELD" && current.isGSCutscene == false) && current.speedrunTimer > 0) {
         // For the DLC, set offset for the timer accordingly
-        if (current.activeScene == "CIT_LOW_DLC_FAKEFEATHER") {
+        if (current.activeScene == vars.DLC_START_SCENE) {
             vars.IGTOffset = -current.speedrunTimer;
         }
         return true;
