@@ -34,6 +34,13 @@ exit {
     }
 }
 
+onStart {
+    vars.hasCrashed = false;
+    vars.hasStarted = false;
+    vars.framesPassed = 0;
+    vars.timerModel = new TimerModel { CurrentState = timer };
+}
+
 update {
     if(vars.hasStarted) {
         if (old.frameCount != null && current.frameCount != null) {
