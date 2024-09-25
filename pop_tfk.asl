@@ -15,7 +15,7 @@ startup {
     vars.timerModel = new TimerModel { CurrentState = timer };
     
     // Setting refresh rate of the memory check cycle
-    refreshRate = 60;
+    refreshRate = 120;
 
     // Global Constants
     vars.PlatformFrameRate = 59.82609828808082;
