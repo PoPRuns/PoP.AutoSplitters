@@ -323,7 +323,7 @@ update
         // vars.Log("SEEN QUESTS (" + vars.SeenQuests.Count + "): ");
 
         foreach (var seenQuest in vars.SeenQuests) {
-            vars.Log("  " + seenQuest);
+            // vars.Log("  " + seenQuest);
 
             if (!vars.ActiveQuests.Contains(seenQuest)
              && vars.CheckSplit("quest_end_" + seenQuest)
@@ -366,12 +366,11 @@ onReset
 
 start
 {
-    // Start in either base game or DLC starting scene when speedrun mode is active
-    if ((current.activeScene == vars.NORMAL_START_SCENE && current.inputMode == 3) || (current.activeScene == vars.DLC_START_SCENE && old.activeScene != vars.DLC_START_SCENE && current.isGSCutscene == false)) {
-        // For the DLC, set offset for the timer accordingly
-        if (current.activeScene == vars.DLC_START_SCENE) {
-            vars.IGTOffset = -current.speedrunTimer;
-        }
+    if (old.activeScene == "UIManager") return false;
+    // Start in either base game or DLC starting scene
+    if ((current.activeScene == vars.NORMAL_START_SCENE && old.activeScene == vars.NORMAL_START_SCENE) ||
+        (current.activeScene == vars.DLC_START_SCENE && old.activeScene != vars.DLC_START_SCENE)) {
+        vars.IGTOffset = -current.speedrunTimer;
         return true;
     };
 }
@@ -386,6 +385,9 @@ gameTime
     if (current.speedrunTimer > 0) {
         if (vars.IGTValue > current.speedrunTimer) {
             vars.IGTOffset += (vars.IGTValue - current.speedrunTimer);
+        }
+        if ((current.activeScene == vars.NORMAL_START_SCENE || current.activeScene == vars.DLC_START_SCENE) && current.inputMode == 3) {
+            vars.IGTOffset = -current.speedrunTimer;
         }
         vars.IGTValue = current.speedrunTimer;
     }
