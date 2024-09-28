@@ -1,5 +1,7 @@
 state("DeSmuME_0.9.9_x64") {
     int frameCount : 0x51D04A8;
+    byte mainMenu3 : 0x54D2403; // 1 at main menu main screen, 0 as soon as the full game run starts, unstable otherwise
+    byte skirmishMenu1 : 0x531A490; // 1 just before a game starts and just after a game ends, 0 during a game, unstable otherwise
 }
 
 startup {
@@ -34,11 +36,18 @@ exit {
     }
 }
 
-onStart {
+start {
+    bool fullGameStartCondition = old.mainMenu3 == 1 && current.mainMenu3 == 0;
+    bool levelStartCondition = old.skirmishMenu1 == 1 && current.skirmishMenu1 == 0;
+    bool startCondition = fullGameStartCondition || levelStartCondition;
+    if (!startCondition)
+        return false;
+
     vars.hasCrashed = false;
     vars.hasStarted = false;
     vars.framesPassed = 0;
     vars.timerModel = new TimerModel { CurrentState = timer };
+    return true;
 }
 
 update {
