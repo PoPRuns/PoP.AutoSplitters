@@ -74,3 +74,8 @@ gameTime {
         return TimeSpan.FromMilliseconds( (1000 * vars.framesPassed) / vars.PlatformFrameRate );
     }
 }
+
+split {
+    bool splitCondition = old.skirmishMenu1 == 0 && current.skirmishMenu1 == 1;
+    return splitCondition;
+}
