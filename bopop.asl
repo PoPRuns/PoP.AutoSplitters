@@ -76,6 +76,6 @@ gameTime {
 }
 
 split {
-    bool splitCondition = old.skirmishMenu1 == 0 && current.skirmishMenu1 == 1;
+    bool splitCondition = old.skirmishMenu1 == 0 && current.skirmishMenu1 == 1 && current.frameCount > 200;
     return splitCondition;
 }
