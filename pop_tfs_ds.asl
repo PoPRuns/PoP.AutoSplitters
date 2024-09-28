@@ -13,6 +13,20 @@ startup {
 }
 
 update {
+    vars.oldInMainMenu =
+        old.mainMenu1 == 1 &&
+        old.mainMenu2 == 1 &&
+        old.mainMenu4 == 1 &&
+        old.mainMenu11 == 1 &&
+        old.frameCount > 200;
+    
+    vars.currentInMainMenu =
+        current.mainMenu1 == 1 &&
+        current.mainMenu2 == 1 &&
+        current.mainMenu4 == 1 &&
+        current.mainMenu11 == 1 &&
+        current.frameCount > 200;
+    
     vars.oldInGame =
         old.mainMenu1 == 0 &&
         old.mainMenu2 == 0 &&
@@ -49,6 +63,8 @@ gameTime {
 }
 
 split {
-    bool splitCondition = vars.oldInGame && !vars.currentInGame;
+    bool levelExitSplitCondition = vars.oldInGame && !vars.currentInGame;
+    bool mainMenuExitSplitCondition = vars.oldInMainMenu && !vars.currentInMainMenu;
+    bool splitCondition = levelExitSplitCondition || mainMenuExitSplitCondition;
     return splitCondition;
 }
