@@ -1,6 +1,6 @@
 state("DeSmuME_0.9.9_x64") {
     uint frameCount : 0x51D04A8;
-    byte mainMenu1 : 0x51DA974; // 0 when entering standard level (before load), 1 in main menu, unstable otherwise
+    byte mainMenu1 : 0x51DA974; // 1 in main menu, unstable otherwise
     byte mainMenu2 : 0x51DA9A8; // 0 when entering standard level (before load), 1 in main menu, unstable otherwise
     byte mainMenu3 : 0x51DA9B8; // 1 in main menu, unstable otherwise
     byte mainMenu4 : 0x5334F1C; // 0 when entering standard level (before load), 1 in main menu, unstable otherwise
@@ -49,13 +49,11 @@ update {
         current.frameCount > 200;
     
     vars.oldInGame =
-        old.mainMenu1 == 0 &&
         old.mainMenu4 == 0 &&
         old.mainMenu11 == 0 &&
         old.frameCount > 200;
     
     vars.currentInGame =
-        current.mainMenu1 == 0 &&
         current.mainMenu4 == 0 &&
         current.mainMenu11 == 0 &&
         current.frameCount > 200;
