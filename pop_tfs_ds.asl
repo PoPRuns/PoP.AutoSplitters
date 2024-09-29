@@ -29,14 +29,12 @@ update {
     
     vars.oldInGame =
         old.mainMenu1 == 0 &&
-        old.mainMenu2 == 0 &&
         old.mainMenu4 == 0 &&
         old.mainMenu11 == 0 &&
         old.frameCount > 200;
     
     vars.currentInGame =
         current.mainMenu1 == 0 &&
-        current.mainMenu2 == 0 &&
         current.mainMenu4 == 0 &&
         current.mainMenu11 == 0 &&
         current.frameCount > 200;
