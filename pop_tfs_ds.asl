@@ -48,14 +48,34 @@ update {
         current.mainMenu11 == 1 &&
         current.frameCount > 200;
     
-    vars.oldInGame =
+    bool oldInStandardLevel =
         old.mainMenu4 == 0 &&
-        old.mainMenu11 == 0 &&
+        old.mainMenu11 == 0;
+    
+    bool currentInStandardLevel =
+        current.mainMenu4 == 0 &&
+        current.mainMenu11 == 0;
+    
+    bool oldInHorseLevel =
+        old.mainMenu4 == 1 &&
+        old.mainMenu9 == 0 &&
+        old.mainMenu10 == 0 &&
+        old.mainMenu11 == 0;
+
+    bool currentInHorseLevel =
+        current.mainMenu4 == 1 &&
+        current.mainMenu9 == 0 &&
+        current.mainMenu10 == 0 &&
+        current.mainMenu11 == 0;
+
+    vars.oldInGame =
+        (oldInStandardLevel ||
+        oldInHorseLevel) &&
         old.frameCount > 200;
     
     vars.currentInGame =
-        current.mainMenu4 == 0 &&
-        current.mainMenu11 == 0 &&
+        (currentInStandardLevel ||
+        currentInHorseLevel) &&
         current.frameCount > 200;
 }
 
