@@ -11,6 +11,10 @@ state("DeSmuME_0.9.9_x64") {
     byte mainMenu9 : 0x55954FF; // 1 in main menu, unstable otherwise
     byte mainMenu10 : 0x55AF9AF; // 1 in main menu, unstable otherwise
     byte mainMenu11 : 0x7268F6C; // 0 when in a level or in the shop menu, 1 otherwise
+    byte boss1Hp : 0x550D16C;
+    byte boss2Hp : 0x55169B4;
+    byte boss3Hp : 0x552538C;
+    byte boss4Hp : 0x54FD1CC;
 }
 
 startup {
@@ -68,14 +72,100 @@ update {
         current.mainMenu10 == 0 &&
         current.mainMenu11 == 0;
 
+    bool oldBoss1Proxy =
+        old.boss2Hp == 0 &&
+        old.boss3Hp == 0 &&
+        old.boss4Hp == 18;
+
+    bool oldBoss2Proxy =
+        old.boss1Hp == 4 &&
+        old.boss3Hp == 0 &&
+        old.boss4Hp == 189;
+
+    bool oldBoss3Proxy =
+        old.boss1Hp == 0 &&
+        old.boss2Hp == 65 &&
+        old.boss4Hp == 0;
+
+    bool oldBoss4Proxy =
+        old.boss1Hp == 0 &&
+        old.boss2Hp == 0 &&
+        old.boss3Hp == 157;
+
+    bool oldInBoss1Level =
+        (old.boss1Hp == 100 && oldBoss1Proxy) ||
+        (old.mainMenu11 == 22 && old.boss1Hp != 0 && oldBoss1Proxy);
+
+    bool oldInBoss2Level =
+        (old.boss2Hp == 100 && oldBoss2Proxy) ||
+        (old.mainMenu11 == 22 && old.boss2Hp != 0 && oldBoss2Proxy);
+
+    bool oldInBoss3Level =
+        (old.boss3Hp == 100 && oldBoss3Proxy) ||
+        (old.mainMenu11 == 22 && old.boss3Hp != 0 && oldBoss3Proxy);
+
+    bool oldInBoss4Level =
+        (old.boss4Hp == 100 && oldBoss4Proxy) ||
+        (old.mainMenu11 == 22 && old.boss4Hp != 0 && oldBoss4Proxy);
+
+    bool oldInBossLevel =
+        oldInBoss1Level ||
+        oldInBoss2Level ||
+        oldInBoss3Level ||
+        oldInBoss4Level;
+    
+    bool currentBoss1Proxy =
+        current.boss2Hp == 0 &&
+        current.boss3Hp == 0 &&
+        current.boss4Hp == 18;
+    
+    bool currentBoss2Proxy =
+        current.boss1Hp == 4 &&
+        current.boss3Hp == 0 &&
+        current.boss4Hp == 189;
+
+    bool currentBoss3Proxy =
+        current.boss1Hp == 0 &&
+        current.boss2Hp == 65 &&
+        current.boss4Hp == 0;
+
+    bool currentBoss4Proxy =
+        current.boss1Hp == 0 &&
+        current.boss2Hp == 0 &&
+        current.boss3Hp == 157;
+    
+    bool currentInBoss1Level =
+        (current.boss1Hp == 100 && currentBoss1Proxy) ||
+        (current.mainMenu11 == 22 && current.boss1Hp != 0 && currentBoss1Proxy);
+    
+    bool currentInBoss2Level =
+        (current.boss2Hp == 100 && currentBoss2Proxy) ||
+        (current.mainMenu11 == 22 && current.boss2Hp != 0 && currentBoss2Proxy);
+
+    bool currentInBoss3Level =
+        (current.boss3Hp == 100 && currentBoss3Proxy) ||
+        (current.mainMenu11 == 22 && current.boss3Hp != 0 && currentBoss3Proxy);
+
+    bool currentInBoss4Level =
+        (current.boss4Hp == 100 && currentBoss4Proxy) ||
+        (current.mainMenu11 == 22 && current.boss4Hp != 0 && currentBoss4Proxy);
+
+    bool currentInBossLevel =
+        currentInBoss1Level ||
+        currentInBoss2Level ||
+        currentInBoss3Level ||
+        currentInBoss4Level;
+
     vars.oldInGame =
         (oldInStandardLevel ||
-        oldInHorseLevel) &&
+        oldInHorseLevel ||
+        oldInBossLevel) &&
         old.frameCount > 200;
     
     vars.currentInGame =
         (currentInStandardLevel ||
-        currentInHorseLevel) &&
+        currentInHorseLevel ||
+        currentInBossLevel) &&
         current.frameCount > 200;
 }
 
