@@ -1,5 +1,5 @@
 state("DeSmuME_0.9.9_x64") {
-    int frameCount : 0x51D04A8;
+    uint frameCount : 0x51D04A8;
     byte mainMenu1 : 0x51DA974; // 0 when entering level (before load), unstable otherwise
     byte mainMenu2 : 0x51DA9A8; // as above
     byte mainMenu4 : 0x5334F1C; // as above
