@@ -39,23 +39,18 @@ startup {
     vars.framesPassed = 0;
     refreshRate = 120;
     vars.PlatformFrameRate = 59.82609828808082;
+
+    vars.oldInMainMenu = false;
+    vars.currentInMainMenu = false;
+
+    vars.oldInGame = false;
+    vars.currentInGame = false;
 }
 
 update {
-    vars.oldInMainMenu =
-        old.mainMenu1 == 1 &&
-        old.mainMenu2 == 1 &&
-        old.mainMenu3 == 1 &&
-        old.mainMenu4 == 1 &&
-        old.mainMenu5 == 1 &&
-        old.mainMenu6 == 1 &&
-        old.mainMenu7 == 1 &&
-        old.mainMenu8 == 1 &&
-        old.mainMenu9 == 1 &&
-        old.mainMenu10 == 1 &&
-        old.mainMenu11 == 1 &&
-        old.frameCount > 300;
-    
+    vars.oldInMainMenu = vars.currentInMainMenu;
+    vars.oldInGame = vars.currentInGame;
+
     vars.currentInMainMenu =
         current.mainMenu1 == 1 &&
         current.mainMenu2 == 1 &&
@@ -70,100 +65,50 @@ update {
         current.mainMenu11 == 1 &&
         current.frameCount > 300;
     
-    bool oldInStandardLevel =
-        old.mainMenu4 == 0 &&
-        old.mainMenu11 == 0;
-    
-    bool currentInStandardLevel =
+    bool inStandardLevel =
         current.mainMenu4 == 0 &&
         current.mainMenu11 == 0;
-    
-    bool oldInHorseLevel =
-        old.mainMenu3 == 0 &&
-        old.mainMenu4 == 1 &&
-        old.mainMenu9 == 0 &&
-        old.mainMenu10 == 0 &&
-        old.mainMenu11 == 0;
 
-    bool currentInHorseLevel =
+    bool inHorseLevel =
         current.mainMenu3 == 0 &&
         current.mainMenu4 == 1 &&
         current.mainMenu9 == 0 &&
         current.mainMenu10 == 0 &&
         current.mainMenu11 == 0;
-
-    bool oldInBoss1Level =
-        old.boss1_1 == 1 &&
-        old.boss1_2 == 1 &&
-        old.boss1_3 == 1 &&
-        old.boss1_4 == 1;
-
-    bool oldInBoss2Level =
-        old.boss2_2 == 1 &&
-        old.boss2_4 == 1 &&
-        old.boss2_8 == 1 &&
-        old.boss2_10 == 1 &&
-        old.boss2_12 == 1;
-
-    bool oldInBoss3Level =
-        old.boss3_1 == 1 &&
-        old.boss3_2 == 1 &&
-        old.boss3_3 == 1 &&
-        old.boss3_4 == 1;
-
-    bool oldInBoss4Level =
-        old.boss4_1 == 1 &&
-        old.boss4_2 == 1 &&
-        old.boss4_3 == 1 &&
-        old.boss4_4 == 1;
-
-    bool oldInBossLevel =
-        oldInBoss1Level ||
-        oldInBoss2Level ||
-        oldInBoss3Level ||
-        oldInBoss4Level;
     
-    bool currentInBoss1Level =
+    bool inBoss1Level =
         current.boss1_1 == 1 &&
         current.boss1_2 == 1 &&
         current.boss1_3 == 1 &&
         current.boss1_4 == 1;
 
-    bool currentInBoss2Level =
+    bool inBoss2Level =
         current.boss2_2 == 1 &&
         current.boss2_4 == 1 &&
         current.boss2_8 == 1 &&
         current.boss2_10 == 1 &&
         current.boss2_12 == 1;
 
-    bool currentInBoss3Level =
+    bool inBoss3Level =
         current.boss3_1 == 1 &&
         current.boss3_2 == 1 &&
         current.boss3_3 == 1 &&
         current.boss3_4 == 1;
 
-    bool currentInBoss4Level =
+    bool inBoss4Level =
         current.boss4_1 == 1 &&
         current.boss4_2 == 1 &&
         current.boss4_3 == 1 &&
         current.boss4_4 == 1;
 
-    bool currentInBossLevel =
-        currentInBoss1Level ||
-        currentInBoss2Level ||
-        currentInBoss3Level ||
-        currentInBoss4Level;
-
-    vars.oldInGame =
-        (oldInStandardLevel ||
-        oldInHorseLevel ||
-        oldInBossLevel) &&
-        old.frameCount > 300;
+    bool inBossLevel =
+        inBoss1Level ||
+        inBoss2Level ||
+        inBoss3Level ||
+        inBoss4Level;
     
     vars.currentInGame =
-        (currentInStandardLevel ||
-        currentInHorseLevel ||
-        currentInBossLevel) &&
+        (inStandardLevel || inHorseLevel || inBossLevel) &&
         current.frameCount > 300;
 }
 
