@@ -23,6 +23,11 @@ state("DeSmuME_0.9.9_x64") {
     byte boss2_8 : 0x5552244;
     byte boss2_10 : 0x555233C;
     byte boss2_12 : 0x5552434;
+
+    byte boss3_1 : 0x55533D9;
+    byte boss3_2 : 0x555AB6C;
+    byte boss3_3 : 0x555B3BC;
+    byte boss3_4 : 0x555B424;
 }
 
 startup {
@@ -93,7 +98,12 @@ update {
         old.boss2_10 == 1 &&
         old.boss2_12 == 1;
 
-    bool oldInBoss3Level = false;
+    bool oldInBoss3Level =
+        old.boss3_1 == 1 &&
+        old.boss3_2 == 1 &&
+        old.boss3_3 == 1 &&
+        old.boss3_4 == 1;
+
     bool oldInBoss4Level = false;
 
     bool oldInBossLevel =
@@ -115,7 +125,12 @@ update {
         current.boss2_10 == 1 &&
         current.boss2_12 == 1;
 
-    bool currentInBoss3Level = false;
+    bool currentInBoss3Level =
+        current.boss3_1 == 1 &&
+        current.boss3_2 == 1 &&
+        current.boss3_3 == 1 &&
+        current.boss3_4 == 1;
+
     bool currentInBoss4Level = false;
 
     bool currentInBossLevel =
