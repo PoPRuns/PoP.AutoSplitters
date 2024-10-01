@@ -36,7 +36,7 @@ update {
         old.mainMenu9 == 1 &&
         old.mainMenu10 == 1 &&
         old.mainMenu11 == 1 &&
-        old.frameCount > 200;
+        old.frameCount > 300;
     
     vars.currentInMainMenu =
         current.mainMenu1 == 1 &&
@@ -50,7 +50,7 @@ update {
         current.mainMenu9 == 1 &&
         current.mainMenu10 == 1 &&
         current.mainMenu11 == 1 &&
-        current.frameCount > 200;
+        current.frameCount > 300;
     
     bool oldInStandardLevel =
         old.mainMenu4 == 0 &&
@@ -160,13 +160,13 @@ update {
         (oldInStandardLevel ||
         oldInHorseLevel ||
         oldInBossLevel) &&
-        old.frameCount > 200;
+        old.frameCount > 300;
     
     vars.currentInGame =
         (currentInStandardLevel ||
         currentInHorseLevel ||
         currentInBossLevel) &&
-        current.frameCount > 200;
+        current.frameCount > 300;
 }
 
 start {
