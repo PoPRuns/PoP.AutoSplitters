@@ -74,12 +74,14 @@ update {
         current.mainMenu11 == 0;
     
     bool oldInHorseLevel =
+        old.mainMenu3 == 0 &&
         old.mainMenu4 == 1 &&
         old.mainMenu9 == 0 &&
         old.mainMenu10 == 0 &&
         old.mainMenu11 == 0;
 
     bool currentInHorseLevel =
+        current.mainMenu3 == 0 &&
         current.mainMenu4 == 1 &&
         current.mainMenu9 == 0 &&
         current.mainMenu10 == 0 &&
