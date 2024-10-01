@@ -45,6 +45,48 @@ startup {
 
     vars.oldInGame = false;
     vars.currentInGame = false;
+
+    vars.isInStandardLevel = (Func<bool>)(() => { return
+        current.mainMenu4 == 0 &&
+        current.mainMenu11 == 0;
+    });
+    
+    vars.isInHorseLevel = (Func<bool>)(() => { return
+        current.mainMenu3 == 0 &&
+        current.mainMenu4 == 1 &&
+        current.mainMenu9 == 0 &&
+        current.mainMenu10 == 0 &&
+        current.mainMenu11 == 0;
+    });
+    
+    vars.isInBoss1Level = (Func<bool>)(() => { return
+        current.boss1_1 == 1 &&
+        current.boss1_2 == 1 &&
+        current.boss1_3 == 1 &&
+        current.boss1_4 == 1;
+    });
+
+    vars.isInBoss2Level = (Func<bool>)(() => { return
+        current.boss2_2 == 1 &&
+        current.boss2_4 == 1 &&
+        current.boss2_8 == 1 &&
+        current.boss2_10 == 1 &&
+        current.boss2_12 == 1;
+    });
+
+    vars.isInBoss3Level = (Func<bool>)(() => { return
+        current.boss3_1 == 1 &&
+        current.boss3_2 == 1 &&
+        current.boss3_3 == 1 &&
+        current.boss3_4 == 1;
+    });
+
+    vars.isInBoss4Level = (Func<bool>)(() => { return
+        current.boss4_1 == 1 &&
+        current.boss4_2 == 1 &&
+        current.boss4_3 == 1 &&
+        current.boss4_4 == 1;
+    });
 }
 
 update {
@@ -64,51 +106,15 @@ update {
         current.mainMenu9 == 1 &&
         current.mainMenu10 == 1 &&
         current.mainMenu11 == 1;
-
-    Func<bool> isInStandardLevel = () =>
-        current.mainMenu4 == 0 &&
-        current.mainMenu11 == 0;
-    
-    Func<bool> isInHorseLevel = () =>
-        current.mainMenu3 == 0 &&
-        current.mainMenu4 == 1 &&
-        current.mainMenu9 == 0 &&
-        current.mainMenu10 == 0 &&
-        current.mainMenu11 == 0;
-    
-    Func<bool> isInBoss1Level = () =>
-        current.boss1_1 == 1 &&
-        current.boss1_2 == 1 &&
-        current.boss1_3 == 1 &&
-        current.boss1_4 == 1;
-
-    Func<bool> isInBoss2Level = () =>
-        current.boss2_2 == 1 &&
-        current.boss2_4 == 1 &&
-        current.boss2_8 == 1 &&
-        current.boss2_10 == 1 &&
-        current.boss2_12 == 1;
-
-    Func<bool> isInBoss3Level = () =>
-        current.boss3_1 == 1 &&
-        current.boss3_2 == 1 &&
-        current.boss3_3 == 1 &&
-        current.boss3_4 == 1;
-
-    Func<bool> isInBoss4Level = () =>
-        current.boss4_1 == 1 &&
-        current.boss4_2 == 1 &&
-        current.boss4_3 == 1 &&
-        current.boss4_4 == 1;
     
     vars.currentInGame =
         current.frameCount > 300 && (
-        isInStandardLevel() ||
-        isInHorseLevel() ||
-        isInBoss1Level() ||
-        isInBoss2Level() ||
-        isInBoss3Level() ||
-        isInBoss4Level());
+        vars.isInStandardLevel() ||
+        vars.isInHorseLevel() ||
+        vars.isInBoss1Level() ||
+        vars.isInBoss2Level() ||
+        vars.isInBoss3Level() ||
+        vars.isInBoss4Level());
 }
 
 start {
