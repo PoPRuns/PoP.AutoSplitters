@@ -52,6 +52,7 @@ update {
     vars.oldInGame = vars.currentInGame;
 
     vars.currentInMainMenu =
+        current.frameCount > 300 &&
         current.mainMenu1 == 1 &&
         current.mainMenu2 == 1 &&
         current.mainMenu3 == 1 &&
@@ -62,54 +63,52 @@ update {
         current.mainMenu8 == 1 &&
         current.mainMenu9 == 1 &&
         current.mainMenu10 == 1 &&
-        current.mainMenu11 == 1 &&
-        current.frameCount > 300;
-    
-    bool inStandardLevel =
+        current.mainMenu11 == 1;
+
+    Func<bool> isInStandardLevel = () =>
         current.mainMenu4 == 0 &&
         current.mainMenu11 == 0;
-
-    bool inHorseLevel =
+    
+    Func<bool> isInHorseLevel = () =>
         current.mainMenu3 == 0 &&
         current.mainMenu4 == 1 &&
         current.mainMenu9 == 0 &&
         current.mainMenu10 == 0 &&
         current.mainMenu11 == 0;
     
-    bool inBoss1Level =
+    Func<bool> isInBoss1Level = () =>
         current.boss1_1 == 1 &&
         current.boss1_2 == 1 &&
         current.boss1_3 == 1 &&
         current.boss1_4 == 1;
 
-    bool inBoss2Level =
+    Func<bool> isInBoss2Level = () =>
         current.boss2_2 == 1 &&
         current.boss2_4 == 1 &&
         current.boss2_8 == 1 &&
         current.boss2_10 == 1 &&
         current.boss2_12 == 1;
 
-    bool inBoss3Level =
+    Func<bool> isInBoss3Level = () =>
         current.boss3_1 == 1 &&
         current.boss3_2 == 1 &&
         current.boss3_3 == 1 &&
         current.boss3_4 == 1;
 
-    bool inBoss4Level =
+    Func<bool> isInBoss4Level = () =>
         current.boss4_1 == 1 &&
         current.boss4_2 == 1 &&
         current.boss4_3 == 1 &&
         current.boss4_4 == 1;
-
-    bool inBossLevel =
-        inBoss1Level ||
-        inBoss2Level ||
-        inBoss3Level ||
-        inBoss4Level;
     
     vars.currentInGame =
-        (inStandardLevel || inHorseLevel || inBossLevel) &&
-        current.frameCount > 300;
+        current.frameCount > 300 &&
+        (isInStandardLevel() ||
+        isInHorseLevel() ||
+        isInBoss1Level() ||
+        isInBoss2Level() ||
+        isInBoss3Level() ||
+        isInBoss4Level());
 }
 
 start {
