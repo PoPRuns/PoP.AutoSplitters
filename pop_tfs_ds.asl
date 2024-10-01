@@ -102,8 +102,8 @@ update {
         current.boss4_4 == 1;
     
     vars.currentInGame =
-        current.frameCount > 300 &&
-        (isInStandardLevel() ||
+        current.frameCount > 300 && (
+        isInStandardLevel() ||
         isInHorseLevel() ||
         isInBoss1Level() ||
         isInBoss2Level() ||
