@@ -1,5 +1,6 @@
 state("DeSmuME_0.9.9_x64") {
     uint frameCount : 0x51D04A8;
+
     byte mainMenu1 : 0x51DA974;
     byte mainMenu2 : 0x51DA9A8;
     byte mainMenu3 : 0x51DA9B8;
@@ -11,10 +12,17 @@ state("DeSmuME_0.9.9_x64") {
     byte mainMenu9 : 0x55954FF;
     byte mainMenu10 : 0x55AF9AF;
     byte mainMenu11 : 0x7268F6C;
+
     byte boss1_1 : 0x552F8E1;
     byte boss1_2 : 0x55303A4;
     byte boss1_3 : 0x553049C;
     byte boss1_4 : 0x5536485;
+
+    byte boss2_2 : 0x553754D;
+    byte boss2_4 : 0x5552054;
+    byte boss2_8 : 0x5552244;
+    byte boss2_10 : 0x555233C;
+    byte boss2_12 : 0x5552434;
 }
 
 startup {
@@ -78,7 +86,13 @@ update {
         old.boss1_3 == 1 &&
         old.boss1_4 == 1;
 
-    bool oldInBoss2Level = false;
+    bool oldInBoss2Level =
+        old.boss2_2 == 1 &&
+        old.boss2_4 == 1 &&
+        old.boss2_8 == 1 &&
+        old.boss2_10 == 1 &&
+        old.boss2_12 == 1;
+
     bool oldInBoss3Level = false;
     bool oldInBoss4Level = false;
 
@@ -94,7 +108,13 @@ update {
         current.boss1_3 == 1 &&
         current.boss1_4 == 1;
 
-    bool currentInBoss2Level = false;
+    bool currentInBoss2Level =
+        current.boss2_2 == 1 &&
+        current.boss2_4 == 1 &&
+        current.boss2_8 == 1 &&
+        current.boss2_10 == 1 &&
+        current.boss2_12 == 1;
+
     bool currentInBoss3Level = false;
     bool currentInBoss4Level = false;
 
