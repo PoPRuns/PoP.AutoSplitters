@@ -1,0 +1,33 @@
+name: Syntax Checker
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0'
+
+    - name: Restore dependencies
+      run: dotnet restore syntax_checker/syntax_checker.csproj
+
+    - name: Build the project
+      run: dotnet build syntax_checker/syntax_checker.csproj --configuration Release
+
+    - name: Run syntax checker
+      run: |
+        # Find all .asl files and run the syntax checker on each one
+        for file in $(find . -name '*.asl'); do
+          echo "Checking syntax for $file"
+          dotnet run --configuration Release --project syntax_checker/syntax_checker.csproj "$file"
+        done
