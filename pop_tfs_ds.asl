@@ -45,7 +45,9 @@ startup {
 
     vars.oldInGame = false;
     vars.currentInGame = false;
+}
 
+init {
     vars.isInStandardLevel = (Func<bool>)(() => { return
         current.mainMenu4 == 0 &&
         current.mainMenu11 == 0;
