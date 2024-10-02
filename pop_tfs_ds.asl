@@ -34,6 +34,11 @@ state("DeSmuME_0.9.9_x64") {
     byte boss3_3 : 0x555B3BC;
     byte boss3_4 : 0x555B424;
 
+    byte boss3Alt1 : 0x55533AC;
+    byte boss3Alt2 : 0x5553441;
+    byte boss3Alt3 : 0x555463C;
+    byte boss3Alt4 : 0x55546CC;
+
     byte boss4_1 : 0x51DAB58;
     byte boss4_2 : 0x51DAB59;
     byte boss4_3 : 0x51DAC68;
@@ -90,10 +95,18 @@ init {
     });
 
     vars.isInBoss3Level = (Func<bool>)(() => { return
-        current.boss3_1 == 1 &&
-        current.boss3_2 == 1 &&
-        current.boss3_3 == 1 &&
-        current.boss3_4 == 1;
+        (
+            current.boss3_1 == 1 &&
+            current.boss3_2 == 1 &&
+            current.boss3_3 == 1 &&
+            current.boss3_4 == 1
+        ) ||
+        (
+            current.boss3Alt1 == 1 &&
+            current.boss3Alt2 == 1 &&
+            current.boss3Alt3 == 1 &&
+            current.boss3Alt4 == 1
+        );
     });
 
     vars.isInBoss4Level = (Func<bool>)(() => { return
