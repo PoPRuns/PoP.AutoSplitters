@@ -33,6 +33,10 @@ gameTime {
 }
 
 split {
+    // This covers all three types of split:
+    // 1. finishing campaign level
+    // 2. finishing skirmish level
+    // 3. opening the game
     bool splitCondition = old.skirmishMenu1 == 0 && current.skirmishMenu1 == 1;
     return splitCondition;
 }
