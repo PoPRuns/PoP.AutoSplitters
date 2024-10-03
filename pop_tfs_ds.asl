@@ -168,6 +168,6 @@ gameTime {
 split {
     bool levelExitSplitCondition = vars.oldInGame && !vars.currentInGame;
     bool mainMenuExitSplitCondition = vars.oldInMainMenu && !vars.currentInMainMenu;
-    bool splitCondition = current.frameCount > 0 && levelExitSplitCondition || mainMenuExitSplitCondition;
+    bool splitCondition = current.frameCount > 0 && (levelExitSplitCondition || mainMenuExitSplitCondition);
     return splitCondition;
 }
