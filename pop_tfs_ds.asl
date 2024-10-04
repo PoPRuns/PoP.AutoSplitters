@@ -1,8 +1,14 @@
 state("DeSmuME_0.9.9_x64") {
     uint frameCount : 0x51D04A8;
 
+    byte mainMenu1 : 0x51DA974;
+    byte mainMenu2 : 0x51DA9A8;
     byte mainMenu3 : 0x51DA9B8;
     byte mainMenu4 : 0x5334F1C;
+    byte mainMenu5 : 0x5342E00;
+    byte mainMenu6 : 0x5365C46;
+    byte mainMenu7 : 0x54351A3;
+    byte mainMenu8 : 0x555483B;
     byte mainMenu9 : 0x55954FF;
     byte mainMenu10 : 0x55AF9AF;
     byte mainMenu11 : 0x7268F6C;
@@ -43,6 +49,9 @@ startup {
     vars.framesPassed = 0;
     refreshRate = 120;
     vars.PlatformFrameRate = 59.82609828808082;
+
+    vars.oldInMainMenu = false;
+    vars.currentInMainMenu = false;
 
     vars.oldInGame = false;
     vars.currentInGame = false;
@@ -109,15 +118,31 @@ init {
 }
 
 update {
+    vars.oldInMainMenu = vars.currentInMainMenu;
     vars.oldInGame = vars.currentInGame;
+
+    vars.currentInMainMenu =
+        current.frameCount > 300 &&
+        current.mainMenu1 == 1 &&
+        current.mainMenu2 == 1 &&
+        current.mainMenu3 == 1 &&
+        current.mainMenu4 == 1 &&
+        current.mainMenu5 == 1 &&
+        current.mainMenu6 == 1 &&
+        current.mainMenu7 == 1 &&
+        current.mainMenu8 == 1 &&
+        current.mainMenu9 == 1 &&
+        current.mainMenu10 == 1 &&
+        current.mainMenu11 == 1;
     
     vars.currentInGame =
+        current.frameCount > 300 && (
         vars.isInStandardLevel() ||
         vars.isInHorseLevel() ||
         vars.isInBoss1Level() ||
         vars.isInBoss2Level() ||
         vars.isInBoss3Level() ||
-        vars.isInBoss4Level();
+        vars.isInBoss4Level());
 }
 
 start {
@@ -141,6 +166,8 @@ gameTime {
 }
 
 split {
-    bool splitCondition = vars.oldInGame && !vars.currentInGame;
+    bool levelExitSplitCondition = vars.oldInGame && !vars.currentInGame;
+    bool mainMenuExitSplitCondition = vars.oldInMainMenu && !vars.currentInMainMenu;
+    bool splitCondition = current.frameCount > 0 && (levelExitSplitCondition || mainMenuExitSplitCondition);
     return splitCondition;
 }
