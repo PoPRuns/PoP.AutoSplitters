@@ -14,6 +14,7 @@ Prince of Persia 2008 | Start, Split, Reset | Samabam, GMP | [GMP](https://githu
 Prince of Persia: The Fallen King | Start, Split, IGT | NoTeefy, Smathlax, GMP | [GMP](https://github.com/GMPranav)
 Prince of Persia: The Forgotten Sands | Start, Split, Reset, LRT | Samabam, SuicideMachine, GMP | [GMP](https://github.com/GMPranav)
 Prince of Persia: The Forgotten Sands (DS) | Start, Split, IGT | NoTeefy, Smathlax, GMP | [Smathlax](https://github.com/saulm314)
+Prince of Persia: The Lost Crown | Start, Split, IGT | Diggity, GMP | [GMP](https://github.com/GMPranav)
 Multi-Prince of Persia-Runs | Start, Split, Reset, LRT/IGT | _Everyone above_ | [GMP](https://github.com/GMPranav)
 
 For any quries, please join the [Prince of Persia Speedrunning discord](https://discordapp.com/invite/0Ss0agDWPoiSvr3E) server and head over to the `#tools-and-modding` channel.
