@@ -89,7 +89,7 @@
          -->
 
         <Setting Id="quest_start_89a9bdf53da19a744b22fad494884202" Label="Quest: The Abducted Prince" State="false" ToolTip="Splits after Varham 1 encounter" />
-            <!-- 
+        <!-- 
             cbc6e45ab294c3b409021fa2ef3067fd
 
             Head west to join forces with Vahram
@@ -97,9 +97,11 @@
             Explore the Upper Citadel to find Anahita
             Neutralize Vahram
          -->
+        
+        <Setting Id="inlevel_DEP_12" Label="Enter the Depths (Alkara Encounter)" State="false" ToolTip="Splits on entering the depths room where Alkara steals the eye" />
 
         <Setting Id="quest_end_89a9bdf53da19a744b22fad494884202" Label="Quest: The Tiger and the Rat" State="false" ToolTip="Splits on talking to old man after getting shadow" />
-            <!-- 
+        <!-- 
             89a9bdf53da19a744b22fad494884202
 
             Chase after the Old Man in the Depths of the Citadel to get your Eye back
@@ -108,7 +110,7 @@
         <Setting Id="inlevel_PIT_01" Label="Enter Pit of Eternal Sands" State="false" ToolTip="Splits on entering Pit of Eternal Sands for the first time"/>
 
         <Setting Id="quest_end_59d515cfe12ef084d8df7ab2c38cce21" Label="Quest: The Darkest of Souls" State="false" ToolTip="Splits after defeating Azhdaha" />
-            <!-- 
+        <!-- 
             59d515cfe12ef084d8df7ab2c38cce21
             
             Find the Darkest of Souls
@@ -116,7 +118,7 @@
          -->
 
         <Setting Id="quest_end_0e3ee840951882f488ac11cf427a468b" Label="Quest: The Celestial Guardians" State="false" ToolTip="Splits after getting all 4 celestials" />
-            <!-- 
+        <!-- 
             0e3ee840951882f488ac11cf427a468b
 
             Summon Tascheter, Guardian of the East
@@ -126,7 +128,7 @@
          -->
 
         <Setting Id="quest_end_5c788318b1a856943aadce9af84d8000" Label="Quest: Return to the Past" State="false" ToolTip="Splits after defeating Varham 2" />
-            <!-- 
+        <!-- 
             5c788318b1a856943aadce9af84d8000
 
             Reach the Celestial Altar in the Upper city to return to the Past
@@ -134,7 +136,7 @@
          -->
 
         <Setting Id="quest_end_959814af55fa48b4b962f7cff039f076" Label="Quest: Father and Son" State="false" ToolTip="Splits after defeating King Darius" />
-            <!-- 
+        <!-- 
             959814af55fa48b4b962f7cff039f076
 
             Find the Key of Kings in the Tower of Silence
