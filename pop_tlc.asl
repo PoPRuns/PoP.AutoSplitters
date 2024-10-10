@@ -24,10 +24,6 @@ startup
     });
 
     vars.CompletedSplits = new HashSet<string>();
-    // All the quests that have been in progress during this run
-    vars.SeenQuests = new HashSet<string>();
-    // the last checked list of active quests
-    vars.ActiveQuests = new List<string>();
     vars.IGTValue = 0;
     vars.IGTOffset = 0;
 
@@ -36,45 +32,8 @@ startup
 
 init
 {
-    vars.states = null;
-    current.isChangingLevel = false;
     vars.NORMAL_START_SCENE = "KIN_BAT_02";
     vars.DLC_START_SCENE = "RAD_INT_01_BATTLEFIELD";
-
-    // hardcoding some offsets which we can't get dynamically
-    var LINKED_LIST_COUNT_OFFSET = 0x18;
-    var LINKED_LIST_HEAD_OFFSET = 0x10;
-    var LINKED_LIST_NODE_NEXT_OFFSET = 0x18;
-    var LINKED_LIST_NODE_VALUE_OFFSET = 0x28;
-    var ARRAY_ELEMENTS_OFFSET = 0x20;
-
-    // not sure if the names are accurate but this is based on what I saw in memory
-    var CLASS_OFFSET = 0x0;
-    var CLASS_NAME_OFFSET = 0x10;
-    
-    vars.GetClassNameOfInstance = (Func<IntPtr, bool, string>)((instance, isDereffed) =>
-    {
-        DeepPointer p;
-
-        if (isDereffed)
-        {
-            p = new DeepPointer(
-                instance + CLASS_OFFSET,
-                CLASS_NAME_OFFSET,
-                0x0
-            );
-        } else {
-            p = new DeepPointer(
-                instance,
-                CLASS_OFFSET,
-                CLASS_NAME_OFFSET,
-                0x0
-            );
-        }
-        
-        // this is an ascii string so can't use the asl-help func
-        return p.DerefString(game, ReadStringType.ASCII, 128);
-    });
 
     vars.Helper.TryLoad = (Func<dynamic, bool>)(mono =>
     {
@@ -84,42 +43,6 @@ init
 
         var PM = mono["Alkawa.Gameplay", "PauseManager"];
         vars.Helper["isPaused"] = PM.Make<bool>("m_paused");
-
-        var GF = mono["Alkawa.Engine", "GameFlow"];
-        // a linked list of the states the game is in
-        vars.Helper["activeStatesHead"] = GF.Make<long>("m_activeStates", LINKED_LIST_HEAD_OFFSET);
-        vars.Helper["activeStatesCount"] = GF.Make<int>("m_activeStates", LINKED_LIST_COUNT_OFFSET);
-
-        // Traverse the active states linked list to get all the active... states...
-        // We have to figure out the active states from the names of the classes of the instances in this linked list,
-        //    there is no property on the instances themselves which describe this
-        // 
-        // Possible states (all prefixed by GameFlowState):
-        //   Default, FirstMandatoryUIScreens, FirstLoading, MainMenu, Loading, Game, CutScene, CutsceneVideo, GameOver,
-        //   Respawn, Menu, DiegeticMenu, FTUE, ChallengePause, NewGame, StartGameSelectSlot, ChangingLevel,
-        //   OptionMenu, UbiConnectNewsMenu, UbiConnectConnection, EndingCredits, Unused, NoInputDevice,
-        //   DemoDisclaimer, TitleScreen, FastTravel
-        vars.GetStates = (Func<HashSet<string>>)(() =>
-        {
-            var states = new HashSet<string>();
-
-            // probably susceptible to TOCTOU bugs
-            IntPtr head = (IntPtr) vars.Helper["activeStatesHead"].Current;
-            var count = vars.Helper["activeStatesCount"].Current;
-
-            IntPtr curr = head;
-            for (var i = 0; i < count; i++) {
-                var value = vars.GetClassNameOfInstance(curr + LINKED_LIST_NODE_VALUE_OFFSET, false);
-                states.Add(value);
-
-                curr = vars.Helper.Read<IntPtr>(curr + LINKED_LIST_NODE_NEXT_OFFSET);
-                
-                // this is a double ended linked list or whatever, so if we go back to the start then we're at the end
-                if (curr == head) break;
-            }
-
-            return states;
-        });
 
         var PC = mono["Alkawa.Gameplay", "PlayerComponent"];
         var PISC = mono["Alkawa.Gameplay", "PlayerInputSubComponent"];
@@ -184,33 +107,8 @@ init
         );
 
 
-        var UIM = mono["Alkawa.Gameplay", "UIManager", 1];
-        var QME = mono["Alkawa.Gameplay", "QuestMenu"];
-        var QMA = mono["Alkawa.Gameplay", "QuestManager"];
-        var QC = mono["Alkawa.Gameplay", "QuestsContainer"];
-        var QB = mono["Alkawa.Gameplay", "QuestBase"];
-
-        // List<QuestBase>
-        vars.Helper["quests"] = UIM.MakeList<IntPtr>(
-            "m_instance",
-            UIM["m_menus"] + PAD,
-            // QuestMenu is probably always at index 8 in this array
-            // if quest splitting breaks this is where I'd put my money
-            ARRAY_ELEMENTS_OFFSET + 0x8 * 8,
-            QME["m_QuestManager"] + PAD,
-            QMA["m_questsContainer"] + PAD,
-            QC["m_Quests"] + PAD
-        );
-
-        vars.ReadQuest = (Func<IntPtr, dynamic>)(quest =>
-        {
-            dynamic ret = new ExpandoObject();
-            ret.Name = vars.Helper.ReadString(quest + QB["Name"] + PAD);
-            ret.GUID = vars.Helper.ReadString(quest + QB["m_GUID"] + PAD);
-            return ret;
-        });
-
         // Boss
+        var UIM = mono["Alkawa.Gameplay", "UIManager", 1];
         var UI_HP = mono["Alkawa.Gameplay", "UI_HP", 1];
         var HSI = mono["Alkawa.Gameplay", "HealthStateInfo"];
         var ED = mono["Alkawa.Gameplay", "EntityDescriptor"];
@@ -284,55 +182,6 @@ update
     // vars.Watch(old, current, "boss1Health");
     // vars.Watch(old, current, "boss2Health");
     // vars.Watch(old, current, "playerAction");
-
-    if (vars.states == null || vars.states.Count != current.activeStatesCount) {
-        vars.states = vars.GetStates();
-
-        current.isChangingLevel = vars.states.Contains("GameFlowStateChangingLevel");
-        current.isGSCutscene = vars.states.Contains("GameFlowStateCutScene");
-
-        vars.Log("[" + vars.states.Count + "] State set changed: " + string.Join(", ", vars.states));
-    }
-
-    if (old.shortLevel != current.shortLevel) {
-        current.isChangingLevel = false;
-    }
-
-    if ((vars.ActiveQuests.Count != current.quests.Count && current.quests.Count != 0)
-     || (vars.ActiveQuests.Count > vars.SeenQuests.Count)
-    ) {
-        // vars.Log("QUEST LIST CHANGED " + vars.ActiveQuests.Count + " -> " + current.quests.Count + " (SQ: " + vars.SeenQuests.Count + ")");
-        vars.ActiveQuests = new List<string>();
-
-        foreach (var questPtr in current.quests) {
-            var quest = vars.ReadQuest(questPtr);
-
-            // vars.Log("  " + quest.Name + " [" + quest.GUID + "]");
-
-            vars.ActiveQuests.Add(quest.GUID);
-            
-            if (vars.SeenQuests.Add(quest.GUID)) {
-                vars.Log("Quest started! " + quest.Name + " [" + quest.GUID + "]");
-                if (vars.CheckSplit("quest_start_" + quest.GUID))
-                {
-                    vars.Helper.Timer.Split();
-                }
-            }
-        }
-
-        // vars.Log("SEEN QUESTS (" + vars.SeenQuests.Count + "): ");
-
-        foreach (var seenQuest in vars.SeenQuests) {
-            // vars.Log("  " + seenQuest);
-
-            if (!vars.ActiveQuests.Contains(seenQuest)
-             && vars.CheckSplit("quest_end_" + seenQuest)
-            ) {
-                vars.Helper.Timer.Split();
-            }
-        }
-
-    }
 }
 
 onStart
@@ -341,17 +190,12 @@ onStart
     
     // refresh all splits when we start the run, none are yet completed
     vars.CompletedSplits.Clear();
-    vars.SeenQuests.Clear();
 
-    vars.Log(vars.ActiveQuests.Count);
     vars.Log(settings.SplitEnabled);
-    vars.Log(current.isGSCutscene);
     vars.Log(current.isPaused);
     vars.Log(current.level);
     vars.Log(current.inputMode);
     vars.Log(current.playerAction);
-    vars.Log(current.activeStatesHead.ToString("X"));
-    vars.Log(current.activeStatesCount);
 
     vars.Log(current.boss1LocId);
     vars.Log(current.boss1Health);
@@ -407,25 +251,20 @@ split
         }
     }
 
-    if (settings["quest"] && old.shortLevel != current.shortLevel && vars.CheckSplit("inlevel_" + current.shortLevel))
-    {
-        return true;
+    if (settings["quest"]) {
+        if (old.shortLevel != current.shortLevel && vars.CheckSplit("inlevel_" + current.shortLevel)) return true;
+
+        if (vars.CheckSplit("level_action__" + current.level + "__" + current.playerAction)) return true;
     }
 
-    if (settings["boss"])
-    {
+    if (settings["boss"]) {
         var bothDead = current.boss1Health <= 0 && current.boss2Health <= 0;
         var oneWasAlive = (old.boss1Health > 0 || old.boss2Health > 0);
-        var playerAlive = !vars.states.Contains("GameFlowStateGameOver");
+        var playerAlive = current.playerAction != 65 && !old.isPaused;
         var key = "boss__" + current.boss1LocId + "__" + current.level;
         
-        if (bothDead && oneWasAlive && playerAlive && vars.CheckSplit(key))
-        {
-            return true;
-        }
+        if (bothDead && oneWasAlive && playerAlive && vars.CheckSplit(key)) return true;
 
-        if (old.playerAction != current.playerAction && vars.CheckSplit("player_action__" + old.playerAction)) {
-            return true;
-        }
+        if (old.playerAction != current.playerAction && vars.CheckSplit("player_action__" + old.playerAction)) return true;
     }
 }

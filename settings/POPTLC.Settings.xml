@@ -1,25 +1,4 @@
 <Settings>
-    <!-- <Setting Id="world" Label="Split on entering world" State="false">
-        <Setting Id="world_KIN_BAT" Label="BAT_ Battlefield" State="false" />
-        <Setting Id="world_KIN_THO" Label="THO_ Thomyris Palace" State="false" />
-        <Setting Id="world_CIT_OLD" Label="OLD_ Old Citadel / Old Royal Road" State="false" />
-        <Setting Id="world_CIT_LOW" Label="LOW_ Lower Citadel" State="false" />
-        <Setting Id="world_CIT_DEP" Label="DEP_ The Depths" State="false" />
-        CIT_DEP02 DEP_02 Catacombs
-        <Setting Id="world_CIT_UPP" Label="UPP_ Upper Citadel" State="false" />
-        <Setting Id="world_SAC_SAC" Label="SAC_ Sacred Archives" State="false" />
-        SAC_SAC02_ SAC02_ Temple of Knowledge
-        <Setting Id="world_HYR_AUT" Label="AUT_ Hyrcanian Forest" State="false" />
-        <Setting Id="world_HYR_SOM" Label="SOM_ Soma Tree" State="false" />
-        Sunken harbour: HYR_AUT_04_ForestChildrenNest -> HYR_AUT_11_SunkenAccess (AUT_04, AUT_11)
-        Real: SUN_ VAL_SUN_ Sunken Harbour
-        END_PIT_ PIT_ Pit of Eternal Sands
-        VAL_RAG_ RAG_ Raging Seas
-        HYR_HID_ HID_ Hidden Village
-        NEC_TOW_ TOW_ Tower of Silence
-        CRO_CRO_ CRO_ Crossroads of Time
-    </Setting> -->
-
     <Setting Id="boss" Label="Split on beating boss" State="true">
         <!-- boss_name localisation id__boss room -->
         <Setting Id="boss__7415__KIN_BAT_08_Boss" Label="General Uvishka" State="false" />
@@ -78,71 +57,9 @@
 
     <Setting Id="quest" Label="Split on story progression" State="true">
         <Setting Id="inlevel_OLD_01" Label="Enter Mount Qaf" State="false" ToolTip="Splits on entering Mount Qaf after Battlefield and Thomyris Palace" />
-        
-        <Setting Id="quest_end_d46f01520560b6446a4c366171e5e6d2" Label="Quest: Lost in Mount Qaf" State="false" ToolTip="Splits after defeating Jahandar" />
-            <!-- 
-            d46f01520560b6446a4c366171e5e6d2
-
-            Reach the Upper Citadel
-            Pursue Anahita
-            Defeat Jahandar
-         -->
-
-        <Setting Id="quest_start_89a9bdf53da19a744b22fad494884202" Label="Quest: The Abducted Prince" State="false" ToolTip="Splits after Varham 1 encounter" />
-        <!-- 
-            cbc6e45ab294c3b409021fa2ef3067fd
-
-            Head west to join forces with Vahram
-            Go through the Sacred Archives to reach the Upper Citadel
-            Explore the Upper Citadel to find Anahita
-            Neutralize Vahram
-         -->
-        
         <Setting Id="inlevel_DEP_12" Label="Enter the Depths (Alkara Encounter)" State="false" ToolTip="Splits on entering the depths room where Alkara steals the eye" />
-
-        <Setting Id="quest_end_89a9bdf53da19a744b22fad494884202" Label="Quest: The Tiger and the Rat" State="false" ToolTip="Splits on talking to old man after getting shadow" />
-        <!-- 
-            89a9bdf53da19a744b22fad494884202
-
-            Chase after the Old Man in the Depths of the Citadel to get your Eye back
-         -->
-
         <Setting Id="inlevel_PIT_01" Label="Enter Pit of Eternal Sands" State="false" ToolTip="Splits on entering Pit of Eternal Sands for the first time"/>
-
-        <Setting Id="quest_end_59d515cfe12ef084d8df7ab2c38cce21" Label="Quest: The Darkest of Souls" State="false" ToolTip="Splits after defeating Azhdaha" />
-        <!-- 
-            59d515cfe12ef084d8df7ab2c38cce21
-            
-            Find the Darkest of Souls
-            Convince the Darkest of Souls
-         -->
-
-        <Setting Id="quest_end_0e3ee840951882f488ac11cf427a468b" Label="Quest: The Celestial Guardians" State="false" ToolTip="Splits after getting all 4 celestials" />
-        <!-- 
-            0e3ee840951882f488ac11cf427a468b
-
-            Summon Tascheter, Guardian of the East
-            Summon Haftorang, Guardian of the North
-            Summon Venant, Guardian of the West
-            Summon Satevis, Guardian of the South
-         -->
-
-        <Setting Id="quest_end_5c788318b1a856943aadce9af84d8000" Label="Quest: Return to the Past" State="false" ToolTip="Splits after defeating Varham 2" />
-        <!-- 
-            5c788318b1a856943aadce9af84d8000
-
-            Reach the Celestial Altar in the Upper city to return to the Past
-            Neutralize Vahram and save Ghassan
-         -->
-
-        <Setting Id="quest_end_959814af55fa48b4b962f7cff039f076" Label="Quest: Father and Son" State="false" ToolTip="Splits after defeating King Darius" />
-        <!-- 
-            959814af55fa48b4b962f7cff039f076
-
-            Find the Key of Kings in the Tower of Silence
-            Use the Key of Kings to enter Darius' Palace
-            Defeat King Darius
-         -->
+        <Setting Id="level_action__CIT_UPP_15_Puzzle_Constellation__140" Label="Complete the clockwork puzzle in Night Temple" State="false" ToolTip="Splits on shooting the celestial arrow after the puzzle"/>
         <Setting Id="dlc_locations" Label="Mask of Darkness DLC" State="false">
             <Setting Id="inlevel_INT_03" Label="Enter Radjen's Mind Palace" State="false" ToolTip="Splits on entering the main area of the DLC"/>
             <Setting Id="inlevel_KAL_08" Label="End of Left Path in Radjen's Mind Palace" State="false" ToolTip="Splits on finishing left path in the DLC for the first time"/>
