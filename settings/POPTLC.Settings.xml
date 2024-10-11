@@ -11,24 +11,24 @@
         <Setting Id="boss__7413__CIT_DEP_09_CorruptedSargon" Label="Alternate Sargon (The Depths)" State="false" />
         <Setting Id="boss__2927__HYR_SOM_14_ForestQueen" Label="Kiana" State="false" />
         <Setting Id="boss__7417__END_PIT_20_AzdahaArena" Label="Azhdaha" State="false" />
-        
+
         <Setting Id="orod" Label="Orod" State="false">
             <!-- EPlayerAction 193 is QTEIntroVariationBoss_ORO -->
             <Setting Id="player_action__193" Label="Split on the Quick-Time Event (QTE)" State="true" />
             <Setting Id="boss__7419__VAL_RAG_13_Orod" Label="Split on the cutscene after the QTE" State="false" />
         </Setting>
-        
+
         <Setting Id="menolias" Label="Menolias" State="false">
             <!-- EPlayerAction 191 is QTEIntroVariationBoss_MNL -->
             <Setting Id="player_action__191" Label="Split on the Quick-Time Event (QTE)" State="true" />
             <Setting Id="boss__7420__CIT_UPP_06_Menolias_Arena" Label="Split on the cutscene after the QTE" State="false" />
         </Setting>
-        
+
         <Setting Id="boss__7418__NEC_TOW_04_DARIUS" Label="King Darius" State="false" />
-        
+
         <!-- EPlayerAction 192 is QTEIntroVariationBoss_VGD, the last input. -->
         <Setting Id="player_action__192" Label="Vahram 3 (END SPLIT)" State="true" ToolTip="Last input for most categories" />
-        
+
         <Setting Id="boss__3454__CIT_DEP_11_UndeadErlik" Label="Undead Erlik" State="false" />
         <Setting Id="boss__7548__CIT_DEP02_03_nolight2_sphincterhall" Label="Giant Crab" State="false" />
         <Setting Id="boss__7056__CIT_LOW_22_Radjen" Label="Ardashir" State="false" />

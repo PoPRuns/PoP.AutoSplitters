@@ -1,12 +1,12 @@
-state("TheLostCrown") { }
-state("TheLostCrown_plus") { }
+state("TheLostCrown") {}
+state("TheLostCrown_plus") {}
 
 startup
 {
     Assembly.Load(File.ReadAllBytes("Components/asl-help")).CreateInstance("Unity");
     vars.Helper.GameName = "POPTLC";
     vars.Helper.LoadSceneManager = true;
-    
+
     // The ubisoft+ version of this game is weird and requires overriding some config in asl-help
     vars.Helper.Il2CppModules.Add("GameAssembly_plus.dll");
     vars.Helper.DataDirectory = "TheLostCrown_Data";
@@ -14,8 +14,7 @@ startup
     vars.Helper.Settings.CreateFromXml("Components/POPTLC.Settings.xml");
     vars.Helper.StartFileLogger("POPTLC Autosplitter.log");
 
-    vars.Watch = (Action<IDictionary<string, object>, IDictionary<string, object>, string>)((oldLookup, currentLookup, key) => 
-    {
+    vars.Watch = (Action<IDictionary<string, object>, IDictionary<string, object>, string>)((oldLookup, currentLookup, key) => {
         var oldValue = oldLookup[key];
         var currentValue = currentLookup[key];
 
@@ -35,8 +34,7 @@ init
     vars.NORMAL_START_SCENE = "KIN_BAT_02";
     vars.DLC_START_SCENE = "RAD_INT_01_BATTLEFIELD";
 
-    vars.Helper.TryLoad = (Func<dynamic, bool>)(mono =>
-    {
+    vars.Helper.TryLoad = (Func<dynamic, bool>)(mono => {
         // asl-help has this issue where sometimes offsets resolve to 0x10 less than what they are meant to be
         // this is a fix to that...
         var PAD = 0x10;
@@ -47,19 +45,19 @@ init
         var PC = mono["Alkawa.Gameplay", "PlayerComponent"];
         var PISC = mono["Alkawa.Gameplay", "PlayerInputSubComponent"];
         var PISI = mono["Alkawa.Gameplay", "PlayerInputStateInfo", 1];
-        
+
         // enum EPlayerInputMode: Gameplay=0, Menu=1, Conversation=2, CutScene=3, Popup=4, NoInput=5, Unknown=-1
         vars.Helper["inputMode"] = PM.Make<int>(
             "m_PlayerComponent",
             PC["PlayerInput"] + PAD,
             PISC["m_inputStateInfo"] + PAD,
             PISI["m_inputMode"] + PAD
-        ); 
+        );
 
         var PASC = mono["Alkawa.Gameplay", "PlayerAbilitiesSubComponent"];
         var PASI = mono["Alkawa.Gameplay", "PlayerAbilitiesStateInfo"];
         var ABILITY = mono["Alkawa.Gameplay", "Ability"];
-       
+
         vars.Helper["playerAction"] = PM.Make<int>(
             "m_PlayerComponent",
             PC["PlayerAbilities"] + PAD,
@@ -75,8 +73,7 @@ init
             PASI["m_unlockableAbilities"] + PAD
         );
 
-        vars.CheckIfAbilityUnlocked = (Func<IntPtr, bool>)(ability =>
-        {
+        vars.CheckIfAbilityUnlocked = (Func<IntPtr, bool>)(ability => {
             bool unlocked = vars.Helper.Read<bool>(ability + ABILITY["m_enabled"] + PAD);
             return unlocked;
         });
@@ -87,7 +84,7 @@ init
             PASC["m_stateInfo"] + PAD,
             PASI["m_isClairvoyanceEnabled"] + PAD
         );
-        
+
         var LM = mono["Alkawa.Gameplay", "LootManager", 1];
         var LI = mono["Alkawa.Engine", "LevelInstance"];
         var LD = mono["Alkawa.Engine", "LevelData", 1];
@@ -173,7 +170,7 @@ init
 
 update
 {
-	current.activeScene = vars.Helper.Scenes.Active.Name ?? current.activeScene;
+    current.activeScene = vars.Helper.Scenes.Active.Name ?? current.activeScene;
     vars.Watch(old, current, "activeScene");
     vars.Watch(old, current, "level");
     vars.Watch(old, current, "shortLevel");
@@ -186,8 +183,8 @@ update
 
 onStart
 {
-	timer.IsGameTimePaused = true;
-    
+    timer.IsGameTimePaused = true;
+
     // refresh all splits when we start the run, none are yet completed
     vars.CompletedSplits.Clear();
 
@@ -258,11 +255,11 @@ split
     }
 
     if (settings["boss"]) {
-        var bothDead = current.boss1Health <= 0 && current.boss2Health <= 0;
-        var oneWasAlive = (old.boss1Health > 0 || old.boss2Health > 0);
-        var playerAlive = current.playerAction != 65 && !old.isPaused;
-        var key = "boss__" + current.boss1LocId + "__" + current.level;
-        
+        bool bothDead = current.boss1Health <= 0 && current.boss2Health <= 0;
+        bool oneWasAlive = (old.boss1Health > 0 || old.boss2Health > 0);
+        bool playerAlive = current.playerAction != 65 && !old.isPaused;
+        string key = "boss__" + current.boss1LocId + "__" + current.level;
+
         if (bothDead && oneWasAlive && playerAlive && vars.CheckSplit(key)) return true;
 
         if (old.playerAction != current.playerAction && vars.CheckSplit("player_action__" + old.playerAction)) return true;

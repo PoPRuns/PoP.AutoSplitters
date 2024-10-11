@@ -21,7 +21,7 @@ namespace ASLSyntaxChecker
             var scriptContent = File.ReadAllText(scriptPath);
             var methodMatches = MethodRegex.Matches(scriptContent);
             bool errorsFound = false;
-            
+
             foreach (Match match in methodMatches)
             {
                 string methodName = match.Groups["name"].Value;
@@ -48,7 +48,8 @@ namespace ASLSyntaxChecker
                 }
             }
 
-            if (errorsFound) {
+            if (errorsFound)
+            {
                 throw new InvalidOperationException($"Syntax error(s) found in script {scriptPath}");
             }
         }
@@ -57,8 +58,7 @@ namespace ASLSyntaxChecker
         {
             if (args.Length == 0)
             {
-                // throw new ArgumentException("No files provided.");
-                args = new string[] {"../multipop.asl"};
+                throw new ArgumentException("No files provided.");
             }
 
             string scriptPath = args[0];
