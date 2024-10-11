@@ -216,7 +216,8 @@ start
     return (startGame || singleLevelModeRestart);
 }
 
-onStart {
+onStart
+{
     vars.levelRestarted = false;
     vars.levelSkipActivated = false;
     vars.levelSkipModeDetected = vars.checkLevelSkipCategory();
@@ -255,7 +256,7 @@ gameTime
     secondsElapsed = framesElapsed / 12.0;
 
     if (old.Level == 13 && current.Level == 14 && !settings["single_level_mode"]) {
-        secondsElapsed -= 0.002;   // hack for splits.io issue - if last split is empty, gametime won't be available
+        secondsElapsed -= 0.002;   // hack for splits.io issue - if last split is empty, gameTime won't be available
     }
 
     // vars.print("secondsElapsed = " + secondsElapsed);

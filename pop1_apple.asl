@@ -31,11 +31,11 @@ start
 gameTime
 {
     double secondsElapsed = current.Ticks / 12.0;
-    
-    if(old.Level == 13 && current.Level == 14) {
-        secondsElapsed -= 0.002;   // hack for splits.io issue - if last split is empty, gametime won't be available
+
+    if (old.Level == 13 && current.Level == 14) {
+        secondsElapsed -= 0.002;   // hack for splits.io issue - if last split is empty, gameTime won't be available
     }
-    
+
     return TimeSpan.FromSeconds(secondsElapsed);
 }
 
@@ -47,7 +47,7 @@ reset
 split
 {
     return ((old.Level == current.Level - 1) || (current.Level == 14 && current.EndGame == 0xFF));    // if level changes or if currently on level 14 and EndGame changes to 255 (FF in hexadecimal)
-    
+
 }
 
 isLoading

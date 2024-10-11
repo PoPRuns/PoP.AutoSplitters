@@ -1,37 +1,36 @@
-state("PrinceOfPersia_Launcher", "Digital") {
-    int seedCount : 0x00B37F64, 0xDC;
-    float xPos : 0x00B30D08, 0x40;
-    float yPos : 0x00B30D08, 0x44;
-    float zPos : 0x00B30D08, 0x48;
-    int combat : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
-    int enemyHP : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8, 0x250;
-    byte deathStorage: 0x00B30D08, 0x74, 0x104, 0x48, 0x1C, 0x50, 0xC, 0x1768;
+state("PrinceOfPersia_Launcher", "Digital")
+{
+    int seedCount       : 0x00B37F64, 0xDC;
+    float xPos          : 0x00B30D08, 0x40;
+    float yPos          : 0x00B30D08, 0x44;
+    float zPos          : 0x00B30D08, 0x48;
+    int combat          : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
+    int enemyHP         : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8, 0x250;
+    byte deathStorage   : 0x00B30D08, 0x74, 0x104, 0x48, 0x1C, 0x50, 0xC, 0x1768;
 }
 
-state("Prince of Persia", "DRM Free") {
-    int seedCount : 0x00B37F64, 0xDC;
-    float xPos : 0x00B30D08, 0x40;
-    float yPos : 0x00B30D08, 0x44;
-    float zPos : 0x00B30D08, 0x48;
-    int combat : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
-    int enemyHP : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8, 0x250;
-    byte deathStorage: 0x00B30D08, 0x74, 0x104, 0x48, 0x1C, 0x50, 0xC, 0x1768;
+state("Prince of Persia", "DRM Free")
+{
+    int seedCount       : 0x00B37F64, 0xDC;
+    float xPos          : 0x00B30D08, 0x40;
+    float yPos          : 0x00B30D08, 0x44;
+    float zPos          : 0x00B30D08, 0x48;
+    int combat          : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
+    int enemyHP         : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8, 0x250;
+    byte deathStorage   : 0x00B30D08, 0x74, 0x104, 0x48, 0x1C, 0x50, 0xC, 0x1768;
 }
 
 state("Prince of Persia", "Unknown") {}
 
-
-startup {
-
-    vars.splitTypes = new Dictionary<string, string>
-    {
+startup
+{
+    vars.splitTypes = new Dictionary<string, string> {
         {"specialEvents", "Split on scripted game events"},
         {"combatEvents", "Split on defeating bosses in specific levels"},
         {"anyStandard", "Splits specific to the Any% (Standard) route"},
     };
 
-	vars.splitsData = new Dictionary<string, Tuple<string, string, string, Func<bool>>>
-    {
+    vars.splitsData = new Dictionary<string, Tuple<string, string, string, Func<bool>>> {
         {"CollapsingBridge", Tuple.Create(
             "Collapsing Bridge",
             "specialEvents",
@@ -340,25 +339,23 @@ startup {
         )},
     };
 
-    foreach (var splitType in vars.splitTypes)
-    {
+    foreach (var splitType in vars.splitTypes) {
         settings.Add(splitType.Key, true, splitType.Value);
     }
-    
-    foreach (var data in vars.splitsData)
-    {
+
+    foreach (var data in vars.splitsData) {
         settings.Add(data.Key, true, data.Value.Item1, data.Value.Item2);
         settings.SetToolTip(data.Key, data.Value.Item3);
     }
 }
 
 
-init {
+init
+{
     refreshRate = 120;
     if (game.ProcessName == "PrinceOfPersia_Launcher") {
         version = "Digital";
-    }
-    else {
+    } else {
         string MD5Hash;
         using (var md5 = System.Security.Cryptography.MD5.Create())
             using (var s = File.Open(modules.First().FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -376,8 +373,7 @@ init {
     vars.inXRange = (Func<float, float, bool>)((xMin, xMax) => { return current.xPos >= xMin && current.xPos <= xMax; });
     vars.inYRange = (Func<float, float, bool>)((yMin, yMax) => { return current.yPos >= yMin && current.yPos <= yMax; });
     vars.inZRange = (Func<float, float, bool>)((zMin, zMax) => { return current.zPos >= zMin && current.zPos <= zMax; });
-    vars.inPosWithRange = (Func<float, float, float, int, bool>)((xTarg, yTarg, zTarg, range) =>
-    {
+    vars.inPosWithRange = (Func<float, float, float, int, bool>)((xTarg, yTarg, zTarg, range) => {
         return
             vars.inXRange(xTarg - range, xTarg + range) &&
             vars.inYRange(yTarg - range, yTarg + range) &&
@@ -385,24 +381,21 @@ init {
     });
 
     // Checks if x,y,z co-ordinates are in a certain range and if a seed has just been picked
-    vars.splitSeed = (Func<float, float, float, bool>)((xTarg, yTarg, zTarg) =>
-    { 
+    vars.splitSeed = (Func<float, float, float, bool>)((xTarg, yTarg, zTarg) => {
         return
             vars.inPosWithRange(xTarg, yTarg, zTarg, 3) &&
             vars.seedGet ? true : false;
     });
 
     // Checks if x,y,z co-ordinates are in a certain range and if a combat has just ended
-    vars.splitBoss = (Func<float, float, float, bool>)((xTarg, yTarg, zTarg) =>
-    { 
+    vars.splitBoss = (Func<float, float, float, bool>)((xTarg, yTarg, zTarg) => {
         return
             vars.inPosWithRange(xTarg, yTarg, zTarg, 30) &&
             vars.kill ? true : false;
     });
 
     // Having this check because desert dad fight doesn't have combat value set for some reason
-    vars.splitDad = (Func<float, float, float, bool>)((xTarg, yTarg, zTarg) =>
-    { 
+    vars.splitDad = (Func<float, float, float, bool>)((xTarg, yTarg, zTarg) => {
         return
             vars.inPosWithRange(xTarg, yTarg, zTarg, 30) &&
             vars.dadKill ? true : false;
@@ -411,39 +404,40 @@ init {
     vars.CompletedSplits = new HashSet<string>();
 
     //This function will check if settings are enabled for a triggered split and adds it to completed splits
-    vars.CheckSplit = (Func<string, bool>)(key =>
-    {
+    vars.CheckSplit = (Func<string, bool>)(key => {
         return (vars.CompletedSplits.Add(key) && settings[key]);
     });
 }
 
 
-reset {
-	//When the Prince's x coordinate is set after loading into the Canyon, reset.
-	return old.xPos != -465 && current.xPos == -465 && old.deathStorage == 0 && current.deathStorage == 1;
+reset
+{
+    //When the Prince's x coordinate is set after loading into the Canyon, reset.
+    return old.xPos != -465 && current.xPos == -465 && old.deathStorage == 0 && current.deathStorage == 1;
 }
 
 
-start {
-	//When the Prince's y coordinate is set after loading into the Canyon, start.
-	return old.xPos == -465 && old.yPos == -351 && (current.xPos != -465 || current.yPos != -351);
+start
+{
+    //When the Prince's y coordinate is set after loading into the Canyon, start.
+    return old.xPos == -465 && old.yPos == -351 && (current.xPos != -465 || current.yPos != -351);
 }
 
 
-onStart {
-	vars.CompletedSplits.Clear();
+onStart
+{
+    vars.CompletedSplits.Clear();
 }
 
 
-split {
-	vars.kill = (old.combat == 2 && current.combat == 0);
+split
+{
+    vars.kill = (old.combat == 2 && current.combat == 0);
     vars.dadKill = (old.enemyHP > 0 && current.enemyHP == 0);
     vars.seedGet = (current.seedCount == old.seedCount + 1);
 
-    foreach (var data in vars.splitsData)
-    {
-        if (data.Value.Item4() && vars.CheckSplit(data.Key))
-        {
+    foreach (var data in vars.splitsData) {
+        if (data.Value.Item4() && vars.CheckSplit(data.Key)) {
             print(data.Key);
             return true;
         }

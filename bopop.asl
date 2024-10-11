@@ -1,16 +1,19 @@
-state("DeSmuME_0.9.9_x64") {
-    uint frameCount : 0x51D04A8;
-    byte mainMenu3 : 0x54D2403; // 1 at main menu main screen, 0 as soon as the full game run starts, unstable otherwise
-    byte skirmishMenu1 : 0x531A490; // 1 just before a game starts and just after a game ends, 0 during a game, unstable otherwise
+state("DeSmuME_0.9.9_x64")
+{
+    uint frameCount     : 0x51D04A8;
+    byte mainMenu3      : 0x54D2403; // 1 at main menu main screen, 0 as soon as the full game run starts, unstable otherwise
+    byte skirmishMenu1  : 0x531A490; // 1 just before a game starts and just after a game ends, 0 during a game, unstable otherwise
 }
 
-startup {
+startup
+{
     vars.framesPassed = 0;
     refreshRate = 120;
     vars.PlatformFrameRate = 59.82609828808082;
 }
 
-start {
+start
+{
     bool fullGameStartCondition = old.mainMenu3 == 1 && current.mainMenu3 == 0;
     bool levelStartCondition = old.skirmishMenu1 == 1 && current.skirmishMenu1 == 0;
     bool startCondition = current.frameCount > 0 && (fullGameStartCondition || levelStartCondition);
@@ -21,18 +24,21 @@ start {
     return true;
 }
 
-isLoading {
+isLoading
+{
     return true;
 }
 
-gameTime {
+gameTime
+{
     if (current.frameCount > old.frameCount) {
         vars.framesPassed += (current.frameCount - old.frameCount);
     }
     return TimeSpan.FromMilliseconds((1000 * vars.framesPassed) / vars.PlatformFrameRate);
 }
 
-split {
+split
+{
     // This covers all three types of split:
     // 1. finishing campaign level
     // 2. finishing skirmish level
