@@ -665,9 +665,9 @@ split
                     if (vars.T2TLU5)
                         return true;
                     break;
-                //Exit Structure's Mind
+                //Well Death
                 case 15:
-                    return vars.StructurezMind();
+                    return vars.BottomofWell();
                 //Exit Labyrinth
                 case 16:
                     return vars.TheLabyrinth();
