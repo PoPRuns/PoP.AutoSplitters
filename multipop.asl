@@ -195,19 +195,21 @@ init
                     current.yPos >= yTarg - range && current.yPos <= yTarg + range &&
                     current.zPos >= zTarg - range && current.zPos <= zTarg + range ? true : false;
             });
-            break;
 
             // PoP 2008 - This function checks if x,y,z co-ordinates are in a certain range and if a seed has just been picked:
-            vars.splitSeed = (Func <float, float, float, bool>)((xTarg, yTarg, zTarg) => { return vars.inPosWithRange(xTarg, yTarg, zTarg, 3) && seedGet ? true : false; });
+            vars.splitSeed = (Func <float, float, float, bool>)((xTarg, yTarg, zTarg) => { return vars.inPosWithRange(xTarg, yTarg, zTarg, 3) && vars.seedGet ? true : false; });
 
             // PoP 2008 - This function checks if x,y,z co-ordinates are in a certain range and if a combat has just ended:
-            vars.splitBoss = (Func <float, float, float, bool>)((xTarg, yTarg, zTarg) => { return vars.inPosWithRange(xTarg, yTarg, zTarg, 3) && kill ? true : false; });
+            vars.splitBoss = (Func <float, float, float, bool>)((xTarg, yTarg, zTarg) => { return vars.inPosWithRange(xTarg, yTarg, zTarg, 3) && vars.kill ? true : false; });
 
             //TFS: This function checks if x,y,z co-ordinates are in a certain range and if a checkpoint has just been acquired:
             vars.splitCP = (Func <float, float, float, bool>)((xTarg, yTarg, zTarg) => { return vars.inPosWithRange(xTarg, yTarg, zTarg, 10) && vars.cpGet ? true : false; });
 
             //TFS: This function checks if x,y,z co-ordinates are within range of 1 unit from the target split location:
             vars.splitXYZ = (Func <float, float, float, bool>)((xTarg, yTarg, zTarg) => { return vars.inPosWithRange(xTarg, yTarg, zTarg, 1) ? true : false; });
+
+            break;
+
     }
 }
 
@@ -1029,12 +1031,12 @@ split
         //Prince of Persia (2008):
         case 7:
             //Unmarking flags from previous cycle:
-            bool kill = false;
-            bool seedGet = false;
+            vars.kill = false;
+            vars.seedGet = false;
 
             //Checking and setting flags if conditions are met:
-            if (old.combat == 2 && current.combat == 0) kill = true;
-            if (current.seedCount == old.seedCount + 1) seedGet = true;
+            if (old.combat == 2 && current.combat == 0) vars.kill = true;
+            if (current.seedCount == old.seedCount + 1) vars.seedGet = true;
 
             // Initializing 2k8 Splits:
             bool Alchemist        = vars.splitBoss(-296.593f, 697.233f, 296.199f) ? true : false;
