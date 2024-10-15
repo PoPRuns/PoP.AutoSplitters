@@ -945,7 +945,7 @@ split
                     case 12: return RoyalWorkshop;  // The Royal Workshop
                     case 13: return KingsRoad;      // The King's Road
                     case 14: return T2TLU5;         // Life Upgrade 5
-                    case 15: return StructuresMind; // Exit Structure's Mind
+                    case 15: return BottomofWell;   // Well Death
                     case 16: return Labyrinth;      // Exit Labyrinth
                     case 17: return T2TLU6;         // Life Upgrade 6
                     case 18: return UpperTower;     // The Upper Tower
