@@ -306,9 +306,9 @@ init
         return false;
     });
     vars.MentalRealm = (Func <bool>)(() => {
-        if (current.xPos >= 189 && current.xPos <= 193 &&
+        if (current.xPos >= 189 && current.xPos <= 194 &&
            current.yPos >= 319.135 && current.yPos <= 320 &&
-           current.zPos >= 542 && current.zPos <= 543)
+           current.zPos >= 542 && current.zPos <= 544)
             return true;
         return false;
     });
