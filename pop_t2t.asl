@@ -4,8 +4,11 @@ state("POP3")
     float xPos  : 0x00A2A498, 0xC, 0x30;
     float yPos  : 0x00A2A498, 0xC, 0x34;
     float zPos  : 0x00A2A498, 0xC, 0x38;
+
     float xCam  : 0x928548;
     float yCam  : 0x928554;
+
+    int princeAction   : 0x005EBD78, 0x30, 0x18, 0x4, 0x48, 0x7F0;
 }
 
 init
@@ -307,8 +310,8 @@ init
     });
     vars.MentalRealm = (Func <bool>)(() => {
         if (current.xPos >= 189 && current.xPos <= 194 &&
-           current.yPos >= 319.135 && current.yPos <= 320 &&
-           current.zPos >= 542 && current.zPos <= 544)
+           current.yPos >= 318 && current.zPos >= 540 &&
+           current.princeAction == 17)
             return true;
         return false;
     });
