@@ -25,6 +25,7 @@ startup
     vars.CompletedSplits = new HashSet<string>();
     vars.IGTValue = 0;
     vars.IGTOffset = 0;
+    vars.isDivineTrialsMode = false;
 
     vars.Helper.AlertLoadless();
 }
@@ -38,6 +39,7 @@ init
         // asl-help has this issue where sometimes offsets resolve to 0x10 less than what they are meant to be
         // this is a fix to that...
         var PAD = 0x10;
+        var CBH_STATE_OFFSET = 0x40;
 
         var PM = mono["Alkawa.Gameplay", "PauseManager"];
         vars.Helper["isPaused"] = PM.Make<bool>("m_paused");
@@ -144,6 +146,20 @@ init
             SI["m_currentTimer"] + PAD
         );
 
+        // Divine Trials
+        var CM = mono["Alkawa.Gameplay", "ChallengeManager", 1];
+
+        vars.Helper["challengeType"] = CM.Make<int>(
+            "m_instance",
+            CM["m_currentChallengeType"] + PAD
+        );
+
+        vars.Helper["challengeState"] = CM.Make<int>(
+            "m_instance",
+            CM["m_currentHandler"] + PAD,
+            CBH_STATE_OFFSET
+        );
+
         return true;
     });
 
@@ -214,6 +230,19 @@ start
         vars.IGTOffset = -current.speedrunTimer;
         return true;
     };
+
+    if (current.challengeType == 6 && old.challengeState == 2 && current.challengeState == 4 && current.speedrunTimer > 0) {
+        vars.IGTOffset = -current.speedrunTimer;
+        vars.isDivineTrialsMode = true;
+        return true;
+    }
+}
+
+reset {
+    if (vars.isDivineTrialsMode && current.challengeState != 4 && current.challengeState != 8) {
+        vars.isDivineTrialsMode = false;
+        return true;
+    }
 }
 
 isLoading
@@ -263,5 +292,10 @@ split
         if (bothDead && oneWasAlive && playerAlive && vars.CheckSplit(key)) return true;
 
         if (old.playerAction != current.playerAction && vars.CheckSplit("player_action__" + old.playerAction)) return true;
+    }
+
+    if (vars.isDivineTrialsMode && current.challengeState == 8) {
+        vars.isDivineTrialsMode = false;
+        return true;
     }
 }
