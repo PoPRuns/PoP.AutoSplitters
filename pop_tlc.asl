@@ -266,32 +266,34 @@ gameTime
 
 split
 {
-    if (settings["abilites"]) {
-        for (int index = 0; index < current.unlockableAbilities.Count; index++) {
-            if (vars.CheckIfAbilityUnlocked(current.unlockableAbilities[index]) && vars.CheckSplit("ability__" + index)) {
+    if (!vars.isDivineTrialsMode) {
+        if (settings["abilites"]) {
+            for (int index = 0; index < current.unlockableAbilities.Count; index++) {
+                if (vars.CheckIfAbilityUnlocked(current.unlockableAbilities[index]) && vars.CheckSplit("ability__" + index)) {
+                    return true;
+                }
+            }
+            if (current.isClairvoyanceUnlocked && vars.CheckSplit("clairvoyance")) {
                 return true;
             }
         }
-        if (current.isClairvoyanceUnlocked && vars.CheckSplit("clairvoyance")) {
-            return true;
+
+        if (settings["quest"]) {
+            if (old.shortLevel != current.shortLevel && vars.CheckSplit("inlevel_" + current.shortLevel)) return true;
+
+            if (vars.CheckSplit("level_action__" + current.level + "__" + current.playerAction)) return true;
         }
-    }
 
-    if (settings["quest"]) {
-        if (old.shortLevel != current.shortLevel && vars.CheckSplit("inlevel_" + current.shortLevel)) return true;
+        if (settings["boss"]) {
+            bool bothDead = current.boss1Health <= 0 && current.boss2Health <= 0;
+            bool oneWasAlive = (old.boss1Health > 0 || old.boss2Health > 0);
+            bool playerAlive = current.playerAction != 65 && !old.isPaused;
+            string key = "boss__" + current.boss1LocId + "__" + current.level;
 
-        if (vars.CheckSplit("level_action__" + current.level + "__" + current.playerAction)) return true;
-    }
+            if (bothDead && oneWasAlive && playerAlive && vars.CheckSplit(key)) return true;
 
-    if (settings["boss"]) {
-        bool bothDead = current.boss1Health <= 0 && current.boss2Health <= 0;
-        bool oneWasAlive = (old.boss1Health > 0 || old.boss2Health > 0);
-        bool playerAlive = current.playerAction != 65 && !old.isPaused;
-        string key = "boss__" + current.boss1LocId + "__" + current.level;
-
-        if (bothDead && oneWasAlive && playerAlive && vars.CheckSplit(key)) return true;
-
-        if (old.playerAction != current.playerAction && vars.CheckSplit("player_action__" + old.playerAction)) return true;
+            if (old.playerAction != current.playerAction && vars.CheckSplit("player_action__" + old.playerAction)) return true;
+        }
     }
 
     if (vars.isDivineTrialsMode && current.challengeState == 8) {
