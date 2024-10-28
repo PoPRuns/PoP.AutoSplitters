@@ -30,6 +30,7 @@ startup
         {"anyStandard", "Splits specific to the Any% (Standard) route"},
     };
 
+    // Key - Setting ID, Value - Tuple of (Description, Split type, Tooltip and Trigger condition).
     vars.splitsData = new Dictionary<string, Tuple<string, string, string, Func<bool>>> {
         {"CollapsingBridge", Tuple.Create(
             "Collapsing Bridge",
@@ -403,7 +404,7 @@ init
 
     vars.CompletedSplits = new HashSet<string>();
 
-    //This function will check if settings are enabled for a triggered split and adds it to completed splits
+    // This function will check if settings are enabled for a triggered split and adds it to completed splits
     vars.CheckSplit = (Func<string, bool>)(key => {
         return (vars.CompletedSplits.Add(key) && settings[key]);
     });
@@ -412,14 +413,14 @@ init
 
 reset
 {
-    //When the Prince's x coordinate is set after loading into the Canyon, reset.
+    // When the Prince's x coordinate is set after loading into the Canyon, reset.
     return old.xPos != -465 && current.xPos == -465 && old.deathStorage == 0 && current.deathStorage == 1;
 }
 
 
 start
 {
-    //When the Prince's y coordinate is set after loading into the Canyon, start.
+    // When the Prince's y coordinate is set after loading into the Canyon, start.
     return old.xPos == -465 && old.yPos == -351 && (current.xPos != -465 || current.yPos != -351);
 }
 

@@ -1,11 +1,11 @@
 state("DeSmuME_0.9.9_x64")
 {
     uint frameCount : 0x51D04A8;
-    byte load1      : 0x5304E34; //0 at loads and 1 at all other screens
-    byte load2      : 0x55BB464; //255 at ubi screen, 24 at profile screen, 0 at lang screen/erase screen/loads, 1 at gameplay (including dialouge)
-    uint load3      : 0x82365C4; //0 at world dialouge/quit screen/loads, 1 at gameplay
-    ushort load4    : 0x55BB040; //1 at loads and 0 in other situations
-    ushort bosshp   : 0x55AB0D4; //Boss health
+    byte load1      : 0x5304E34;        // 0 at loads and 1 at all other screens
+    byte load2      : 0x55BB464;        // 255 at ubi screen, 24 at profile screen, 0 at lang screen/erase screen/loads, 1 at gameplay (including dialouge)
+    uint load3      : 0x82365C4;        // 0 at world dialouge/quit screen/loads, 1 at gameplay
+    ushort load4    : 0x55BB040;        // 1 at loads and 0 in other situations
+    ushort bosshp   : 0x55AB0D4;        // Boss health
 }
 
 startup
@@ -63,7 +63,7 @@ startup
 
 start
 {
-    //Detecting first load screen over
+    // Detecting first load screen over
     if (old.load2 == 0 && current.load2 == 1 && old.load3 == 0) {
         return true;
     }

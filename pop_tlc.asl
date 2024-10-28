@@ -36,8 +36,7 @@ init
     vars.DLC_START_SCENE = "RAD_INT_01_BATTLEFIELD";
 
     vars.Helper.TryLoad = (Func<dynamic, bool>)(mono => {
-        // asl-help has this issue where sometimes offsets resolve to 0x10 less than what they are meant to be
-        // this is a fix to that...
+        // Asl-help has this issue where sometimes offsets resolve to 0x10 less than what they are meant to be, this is a fix to that...
         var PAD = 0x10;
         var CBH_STATE_OFFSET = 0x40;
 
@@ -163,15 +162,14 @@ init
         return true;
     });
 
-    // this function is a helper for checking splits that may or may not exist in settings,
-    // and if we want to do them only once
+    // This function is a helper for checking splits that may or may not exist in settings and if we want to do them only once
     vars.CheckSplit = (Func<string, bool>)(key => {
-        // make sure splits are enabled and timer is running
+        // Make sure splits are enabled and timer is running
         if (!settings.SplitEnabled || timer.CurrentPhase != TimerPhase.Running) {
             return false;
         }
 
-        // if the split doesn't exist, or it's off, or we've done it already
+        // If the split doesn't exist, or it's off, or we've done it already
         if (!settings.ContainsKey(key)
           || !settings[key]
           || !vars.CompletedSplits.Add(key)
@@ -201,7 +199,7 @@ onStart
 {
     timer.IsGameTimePaused = true;
 
-    // refresh all splits when we start the run, none are yet completed
+    // Refresh all splits when we start the run, none are yet completed
     vars.CompletedSplits.Clear();
 
     vars.Log(settings.SplitEnabled);

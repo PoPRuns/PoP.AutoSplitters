@@ -1,29 +1,29 @@
 state("POP2")
 {
-    //this variable is 0 during gameplay, 1 in cutscenes, 2 when a cutscene ends
+    // This variable is 0 during gameplay, 1 in cutscenes, 2 when a cutscene ends
     int cutscene        : 0x9665D0, 0x18, 0x4, 0x48, 0xE0;
 
-    //Story counter/gate/value
+    // Story counter/gate/value
     int storyValue      : 0x523578;
 
-    //A value that changes reliably depending on which weapon you pick up
+    // A value that changes reliably depending on which weapon you pick up
     int secondaryWeapon : 0x53F8F0, 0x4, 0x164, 0xC, 0x364;
 
-    //The address used for most bosses' health
+    // The address used for most bosses' health
     int bossHealth      : 0x90C418, 0x18, 0x4, 0x48, 0x198;
 
-    //The Prince's coords
+    // The Prince's coords
     float xPos          : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x30;
     float yPos          : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x34;
     float zPos          : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x38;
 
-    //currently loaded area id (changes with every load trigger)
+    // Currently loaded area id (changes with every load trigger)
     int map             : 0x523594;
 
-    //state of the prince (11 is drinking)
+    // State of the prince (11 is drinking)
     int state           : 0x90C414, 0x18, 0x4, 0x48, 0x3F8;
 
-    //Gallery trackers
+    // Gallery trackers
     ulong chestBits     : 0x8D2EA8;
     ulong weaponBits    : 0x8D2EB0;
 }
@@ -37,7 +37,7 @@ startup
         { "TEZipless", "True Ending (Zipless) splits" },
         { "TENMG", "True Ending (No Major Glitches) splits" },
     };
-    
+
     // Key - Setting ID, Value - Tuple of (Default setting, Description, Split type, Tooltip and Trigger condition).
     // The keys have been named the way they are to not mess-up users' already set settings.
     // To anyone looking add new splits - please make the key descriptive too, it won't affect anything already added.
@@ -51,7 +51,7 @@ startup
         {"Any6", Tuple.Create(true, "Mechanical tower (63)", "AnyGlitched", "Split when you acquire storygate 63", new Func<bool>(() => vars.rng63()))},
         {"Any7", Tuple.Create(true, "Second portal", "AnyGlitched", "Split when you go through the time portal in the throne room", new Func<bool>(() => vars.lastPortal()))},
         {"Any8", Tuple.Create(true, "Kaileena", "AnyGlitched", "Split when you kill Kaileena in sacred caves", new Func<bool>(() => vars.kaileena()))},
-        
+
         {"TeStandard0", Tuple.Create(true, "Boat", "TEStandard", "Split when the boat ending cutscene starts playing", new Func<bool>(() => vars.boat()))},
         {"TeStandard1", Tuple.Create(true, "Raven man", "TEStandard", "Split on the cutscene where you're introduced to a raven master", new Func<bool>(() => vars.ravenMan()))},
         {"TeStandard2", Tuple.Create(true, "Time portal", "TEStandard", "Split when you go through the first time portal", new Func<bool>(() => vars.firstPortal()))},
@@ -375,7 +375,7 @@ start
 
 onStart
 {
-    // refresh all splits when we start the run, none are yet completed
+    // Refresh all splits when we start the run, none are yet completed
     vars.CompletedSplits.Clear();
 }
 

@@ -1,14 +1,14 @@
 state("POP")
 {
-    //Some memory value that reliably changes when 'New Game' is pressed.
+    // Some memory value that reliably changes when 'New Game' is pressed.
     int startValue      : 0x6BC980;
 
-    //Prince's position
+    // Prince's position
     float xPos          : 0x00699474, 0xC, 0x30;
     float yPos          : 0x00699474, 0xC, 0x34;
     float zPos          : 0x00699474, 0xC, 0x38;
 
-    //The Vizier's health where 0 is unharmed and 4 is dead.
+    // The Vizier's health where 0 is unharmed and 4 is dead.
     int vizierHealth    : 0x0040E518, 0x6C, 0x18, 0x4, 0x44, 0x0;
 
     int resetValue      : 0x0040E388, 0x4, 0x398;
@@ -21,7 +21,7 @@ startup
 
 init
 {
-    //List of SoT Splits across categories
+    // List of SoT Splits across categories
     vars.GasStation = (Func <bool>)(() => {
         if (current.xPos >= 252 && current.xPos <= 258 &&
            current.yPos >= 130.647 && current.yPos <= 134 &&
@@ -343,7 +343,7 @@ init
 
 start
 {
-    //Detecting if the game has started on the balcony.
+    // Detecting if the game has started on the balcony.
     return (current.xPos >= -103.264 && current.yPos >= -4.8 && current.zPos >= 1.341 && current.xPos <= -103.262 && current.yPos <= -4.798 && current.zPos <= 1.343 && current.startValue == 1);
 }
 

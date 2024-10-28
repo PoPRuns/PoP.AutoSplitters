@@ -23,18 +23,18 @@
 
 state("DOSBOX")
 {
-    byte Level          : "DOSBox.exe", 0x193C370, 0x1D0F4;          // shows level 1-14 changes as door is entered ('next_level' variable)
-    byte Scene          : "DOSBox.exe", 0x193C370, 0x1A4BA;          // shows level 1-14 changes as cutscenes end   ('curr_level' variable)
+    byte Level          : "DOSBox.exe", 0x193C370, 0x1D0F4;          // Shows level 1-14 changes as door is entered ('next_level' variable)
+    byte Scene          : "DOSBox.exe", 0x193C370, 0x1A4BA;          // Shows level 1-14 changes as cutscenes end   ('curr_level' variable)
     byte EndGame        : "DOSBox.exe", 0x193C370, 0x1D74A;          // 0 before endgame, 255 at endgame cutscene
-    byte Start          : "DOSBox.exe", 0x193C370, 0x1D694;          // the level you start the game at
+    byte Start          : "DOSBox.exe", 0x193C370, 0x1D694;          // The level you start the game at
     byte GameRunning    : "DOSBox.exe", 0x19175EA;                   // 0 if game isn't running
     byte MinutesLeft    : "DOSBox.exe", 0x193C370, 0x1E350;          // Minutes
     int  Count          : "DOSBox.exe", 0x193C370, 0x1E354;          // Frames
     short FrameSeconds  : "DOSBox.exe", 0x193C370, 0x1E356;          // Frames in second part of time (720-0)
     byte Sound          : "DOSBox.exe", 0x193C370, 0x2F233;          // 0 if sound is on, 1 if sound is off
-    byte Room           : "DOSBox.exe", 0x193C370, 0x1D107;          // shows current room ID
-    byte IsRestartLevel : "DOSBox.exe", 0x193C370, 0x1E16A;          // the is_restart_level (Ctrl+A) flag
-    byte LevelTextTime  : "DOSBox.exe", 0x193C370, 0x1F35E;          // frames left for showing the "Level N" text
+    byte Room           : "DOSBox.exe", 0x193C370, 0x1D107;          // Shows current room ID
+    byte IsRestartLevel : "DOSBox.exe", 0x193C370, 0x1E16A;          // The is_restart_level (Ctrl+A) flag
+    byte LevelTextTime  : "DOSBox.exe", 0x193C370, 0x1F35E;          // Frames left for showing the "Level N" text
     byte Level3CP       : "DOSBox.exe", 0x193C370, 0x1E050;          // Level 3 checkpoint flag (changes from 0-1)
 
     int RestartFlag0    : "DOSBox.exe", 0x193C370, 0x1D0E2;          // eien86's flag for restart detection
@@ -88,7 +88,7 @@ init
     * Routine for checking if game has been started
     */
     vars.gameStarted = (Func<bool>) (() => {
-        // start if sound check passes AND start variable = 1 AND if level = 1 AND if Minutes = 60 AND count is >= 47120384
+        // Start if sound check passes AND start variable = 1 AND if level = 1 AND if Minutes = 60 AND count is >= 47120384
         return  (settings["sound"] == false || current.Sound == 0) &&
                 (current.Start == 0x1) &&
                 (current.Level == 0x1) &&
@@ -161,7 +161,7 @@ init
     */
     vars.reset = new ExpandoObject();
     vars.reset.normal = (Func<bool>) (() => {
-        // reset if starting level isn't 1 OR game has quit
+        // Reset if starting level isn't 1 OR game has quit
         bool notPlaying = (current.Start == 0x0) || (current.GameRunning == 0x0);
         return notPlaying;
     });
@@ -241,7 +241,7 @@ gameTime
 {
     vars.minutesLeft = current.MinutesLeft - 1;
     vars.totalFramesLeft = (vars.minutesLeft * vars.FRAMES_PER_MINUTE) + current.FrameSeconds;
-    vars.adjustedFramesLeft = (vars.minutesLeft < 0) ? 0 : vars.totalFramesLeft; //time has expired
+    vars.adjustedFramesLeft = (vars.minutesLeft < 0) ? 0 : vars.totalFramesLeft; // Time has expired
 
     double secondsElapsed = 0.00;
     int framesElapsed = 0;
@@ -255,8 +255,9 @@ gameTime
 
     secondsElapsed = framesElapsed / 12.0;
 
+    // Hack for splits.io issue - if last split is empty, gameTime won't be available
     if (old.Level == 13 && current.Level == 14 && !settings["single_level_mode"]) {
-        secondsElapsed -= 0.002;   // hack for splits.io issue - if last split is empty, gameTime won't be available
+        secondsElapsed -= 0.002;
     }
 
     // vars.print("secondsElapsed = " + secondsElapsed);
@@ -273,8 +274,8 @@ split
 
     bool skipSplit = (suppressFirstLevels || suppressJaffarLevel);
 
-    bool levelChanged = (oldLevel != currentLevel);                       // if level changes
-    bool gameFinished = (current.Level == 14 && current.EndGame == 0xFF); // if currently on level 14 and EndGame changes to 255 (FF in hexadecimal)
+    bool levelChanged = (oldLevel != currentLevel);                       // If level changes
+    bool gameFinished = (current.Level == 14 && current.EndGame == 0xFF); // If currently on level 14 and EndGame changes to 255 (FF in hexadecimal)
 
     bool doSplit = (levelChanged && !skipSplit) || gameFinished;
 

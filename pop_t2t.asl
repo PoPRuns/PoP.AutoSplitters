@@ -1,6 +1,6 @@
 state("POP3")
 {
-    //The Prince's coords
+    // The Prince's coords
     float xPos  : 0x00A2A498, 0xC, 0x30;
     float yPos  : 0x00A2A498, 0xC, 0x34;
     float zPos  : 0x00A2A498, 0xC, 0x38;
@@ -81,7 +81,7 @@ init
             vars.inYRange(yMin, yMax) &&
             vars.inZRange(zMin, zMax); });
 
-    //List of T2T Splits across categories
+    // List of T2T Splits across categories
     vars.TheRamparts = (Func <bool>)(() => { return vars.splitByXYZ(-271f, -265f, 187f, 188f, 74f, 75f); });
     vars.HarborDistrict = (Func <bool>)(() => { return vars.splitByXYZ(-93f, -88f, 236.2f, 238f, 83f, 88f); });
     vars.ThePalace = (Func <bool>)(() => { return vars.splitByXYZ(-35.5f, -35.4f, 232.3f, 232.4f, 146.9f, 147f); });
@@ -129,7 +129,7 @@ init
     vars.T2TLU5 = (Func <bool>)(() => { return vars.splitByXYZ(-30.1223f, -30.1221f, 281.8893f, 281.8895f, 104.0796f, 104.0798f); });
     vars.T2TLU6 = (Func <bool>)(() => { return vars.splitByXYZ(-23.9663f, -23.9661f, 253.9438f, 253.944f, 183.0634f, 183.0636f); });
 
-    //Deprecated or Unused Splits
+    // Deprecated or Unused Splits
     vars.LCRooftopZips = (Func <bool>)(() => { return vars.splitByXYZ(-246f, -241.5f, 373.5f, 383.6f, 66f, 69f); });
     vars.WellofZipless = (Func <bool>)(() => { return vars.splitByXYZ(-28f, -26.5f, 250f, 255f, 20.9f, 30f); });
     vars.UndergroundCaveZipnt = (Func <bool>)(() => { return vars.splitByXYZ(27f, 29f, 316.5f, 318f, 99.9f, 100.1f); });
@@ -143,20 +143,20 @@ init
 
 start
 {
-    //Detecting if the game has started on the ramparts.
+    // Detecting if the game has started on the ramparts.
     if (current.xPos >= -404.9 && current.xPos <= -404.8 && current.yCam <= 0.1082 && current.yCam >= 0.1080 && current.xCam <= 0.832 && current.xCam >= 0.8318)
         return true;
 }
 
 onStart
 {
-    // refresh all splits when we start the run, none are yet completed
+    // Refresh all splits when we start the run, none are yet completed
     vars.CompletedSplits.Clear();
 }
 
 reset
 {
-    //Detecting if the game has started on the ramparts.
+    // Detecting if the game has started on the ramparts.
     if (current.xPos >= -443 && current.xPos <= -442.9 && current.yCam == 0)
         return true;
 }
