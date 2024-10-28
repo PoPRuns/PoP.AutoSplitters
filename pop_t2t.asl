@@ -11,351 +11,133 @@ state("POP3")
     int princeAction   : 0x005EBD78, 0x30, 0x18, 0x4, 0x48, 0x7F0;
 }
 
+startup
+{
+    // Key - Setting ID, Value - Tuple of (Default setting, Description, Tooltip and Trigger condition).
+    vars.splitsData = new Dictionary<string, Tuple<bool, string, string, Func<bool>>> {
+        {"TheRamparts", Tuple.Create(true, "The Ramparts", "Split after the harbor district save fountain", new Func<bool>(() => vars.TheRamparts()))},
+        {"HarborDistrict", Tuple.Create(true, "The Harbor District", "Split after first palace save fountain", new Func<bool>(() => vars.HarborDistrict()))},
+        {"ThePalace", Tuple.Create(true, "The Palace", "Split at the end of throne room", new Func<bool>(() => vars.ThePalace()))},
+        {"TrappedHallway", Tuple.Create(false, "The Trapped Hallway", "Split at end of trapped hallway at the cutscene", new Func<bool>(() => vars.TrappedHallway()))},
+        {"TheSewers", Tuple.Create(false, "The Sewers", "Split on finishing the sewers dark prince section", new Func<bool>(() => vars.TheSewers()))},
+        {"TheSewerz", Tuple.Create(false, "The Sewers (v2)", "Split just before the tunnels save fountain", new Func<bool>(() => vars.TheSewerz()))},
+        {"TheFortress", Tuple.Create(false, "The Fortress", "Split just before entering the first Chariot", new Func<bool>(() => vars.TheFortress()))},
+        {"Chariot1", Tuple.Create(false, "Chariot 1", "Split on finishing the first chariot", new Func<bool>(() => vars.Chariot1()))},
+        {"LowerCity", Tuple.Create(false, "The Lower City", "Split after the lower city dark prince section", new Func<bool>(() => vars.LowerCity()))},
+        {"LowerCityRooftops", Tuple.Create(false, "The Lower City Rooftops", "Split after killing Klompa", new Func<bool>(() => vars.LowerCityRooftops()))},
+        {"ArenaDeload", Tuple.Create(false, "Arena Deload", "Split at the black crushers in the arena dark prince section", new Func<bool>(() => vars.ArenaDeload()))},
+        {"TheBalconies", Tuple.Create(false, "The Balconies", "Split on exiting the room with the slomo gate", new Func<bool>(() => vars.TheBalconies()))},
+        {"DarkAlley", Tuple.Create(false, "The Dark Alley", "Split on entering the cutscene at start of temple rooftops", new Func<bool>(() => vars.DarkAlley()))},
+        {"TheTempleRooftops", Tuple.Create(true, "The Temple Rooftops", "Split on entering the door into temple", new Func<bool>(() => vars.TheTempleRooftops()))},
+        {"TheTemple", Tuple.Create(false, "The Temple", "Split on finishing the temple dark prince section", new Func<bool>(() => vars.TheTemple()))},
+        {"TheMarketplace", Tuple.Create(true, "The Marketplace", "Split at save fountain before cutscene drop", new Func<bool>(() => vars.TheMarketplace()))},
+        {"MarketDistrict", Tuple.Create(false, "The Market District", "Split at the save fountain after the long cutscene", new Func<bool>(() => vars.MarketDistrict()))},
+        {"TheBrothel", Tuple.Create(false, "The Brothel", "Split on finishing the brothel dark prince section", new Func<bool>(() => vars.TheBrothel()))},
+        {"ThePlaza", Tuple.Create(true, "The Plaza", "Split at the door after Mahasti fight", new Func<bool>(() => vars.ThePlaza()))},
+        {"TheUpperCity", Tuple.Create(false, "The Upper City", "Split just before the skippable Farah cutscene", new Func<bool>(() => vars.TheUpperCity()))},
+        {"CityGarderns", Tuple.Create(false, "The City Garderns", "Split just before the Stone Guardian encounter", new Func<bool>(() => vars.CityGarderns()))},
+        {"ThePromenade", Tuple.Create(false, "The Promenade", "Split on entering the royal workshop", new Func<bool>(() => vars.ThePromenade()))},
+        {"RoyalWorkshop", Tuple.Create(true, "Royal Workshop", "Split on entering the king's road", new Func<bool>(() => vars.RoyalWorkshop()))},
+        {"KingsRoad", Tuple.Create(false, "The King's Road", "Split on defeating the twins", new Func<bool>(() => vars.KingsRoad()))},
+        {"KingzRoad", Tuple.Create(false, "The King's Road (v2)", "Split on the transition to palace entrance after twins fight", new Func<bool>(() => vars.KingzRoad()))},
+        {"PalaceEntrance", Tuple.Create(false, "The Palace Entrance", "Split on entering the elevator cutscene", new Func<bool>(() => vars.PalaceEntrance()))},
+        {"HangingGardens", Tuple.Create(false, "The Hanging Gardens", "Split at the swing pole before the last sand gate", new Func<bool>(() => vars.HangingGardens()))},
+        {"HangingGardenz", Tuple.Create(false, "The Hanging Gardens (v2)", "Split at the structure's mind save fountain", new Func<bool>(() => vars.HangingGardenz()))},
+        {"StructuresMind", Tuple.Create(false, "The Structure's Mind", "Split at the cutscene after the puzzle", new Func<bool>(() => vars.StructuresMind()))},
+        {"StructurezMind", Tuple.Create(false, "The Structure's Mind (v2)", "Split after the transition to Well of Ancestors", new Func<bool>(() => vars.StructurezMind()))},
+        {"BottomofWell", Tuple.Create(false, "Bottom of the Well", "Split after the death abuse at the bottom of the well", new Func<bool>(() => vars.BottomofWell()))},
+        {"WellofAncestors", Tuple.Create(false, "The Well of Ancestors", "Split on finishing the well dark prince section", new Func<bool>(() => vars.WellofAncestors()))},
+        {"TheLabyrinth", Tuple.Create(false, "The Labyrinth", "Split on entering the underground cave after breakable wall", new Func<bool>(() => vars.TheLabyrinth()))},
+        {"CaveDeath", Tuple.Create(false, "Underground Cave Death", "Split on the death abuse at the end of underground cave (for zipping categories)", new Func<bool>(() => vars.CaveDeath()))},
+        {"UndergroundCave", Tuple.Create(false, "The Underground Cave", "Split on entering the kitchen", new Func<bool>(() => vars.UndergroundCave()))},
+        {"LowerTower", Tuple.Create(false, "The Lower Tower", "Split on entering the trap corridor after lower tower", new Func<bool>(() => vars.LowerTower()))},
+        {"MiddleTower", Tuple.Create(false, "The Middle Tower", "Split on entering the trap corridor after middle tower", new Func<bool>(() => vars.MiddleTower()))},
+        {"UpperTower", Tuple.Create(true, "The Upper Tower", "Split at the upper tower save fountain", new Func<bool>(() => vars.UpperTower()))},
+        {"TheTerrace", Tuple.Create(true, "The Terrace", "Split on entering the mental realm", new Func<bool>(() => vars.TheTerrace()))},
+        {"MentalRealm", Tuple.Create(true, "The Mental Realm", "Split on finishing the game", new Func<bool>(() => vars.MentalRealm()))},
+
+        {"T2TLU1", Tuple.Create(false, "Life Upgrade 1", "Split after obtaining the first life upgrade in Tunnels", new Func<bool>(() => vars.T2TLU1()))},
+        {"T2TLU2", Tuple.Create(false, "Life Upgrade 2", "Split after obtaining the second life upgrade in Lower City Rooftops", new Func<bool>(() => vars.T2TLU2()))},
+        {"T2TLU3", Tuple.Create(false, "Life Upgrade 3", "Split after obtaining the third life upgrade in Temple", new Func<bool>(() => vars.T2TLU3()))},
+        {"T2TLU4", Tuple.Create(false, "Life Upgrade 4", "Split after obtaining the fourth life upgrade in Tunnels", new Func<bool>(() => vars.T2TLU4()))},
+        {"T2TLU5", Tuple.Create(false, "Life Upgrade 5", "Split after obtaining the fifth life upgrade in Canal", new Func<bool>(() => vars.T2TLU5()))},
+        {"T2TLU6", Tuple.Create(false, "Life Upgrade 6", "Split after obtaining the sixth life upgrade in Middle Tower", new Func<bool>(() => vars.T2TLU6()))},
+    };
+
+    foreach (var data in vars.splitsData) {
+        settings.Add(data.Key, data.Value.Item1, data.Value.Item2);
+        settings.SetToolTip(data.Key, data.Value.Item3);
+    }
+}
+
 init
 {
+    vars.inXRange = (Func<float, float, bool>)((xMin, xMax) => { return current.xPos >= xMin && current.xPos <= xMax; });
+    vars.inYRange = (Func<float, float, bool>)((yMin, yMax) => { return current.yPos >= yMin && current.yPos <= yMax; });
+    vars.inZRange = (Func<float, float, bool>)((zMin, zMax) => { return current.zPos >= zMin && current.zPos <= zMax; });
+    vars.splitByXYZ = (Func<float, float, float, float, float, float, bool>)((xMin, xMax, yMin, yMax, zMin, zMax) => {
+        return
+            vars.inXRange(xMin, xMax) &&
+            vars.inYRange(yMin, yMax) &&
+            vars.inZRange(zMin, zMax); });
+
     //List of T2T Splits across categories
-    vars.TheRamparts = (Func <bool>)(() => {
-        if (current.xPos >= -271 && current.xPos <= -265 &&
-           current.yPos >= 187 && current.yPos <= 188 &&
-           current.zPos >= 74 && current.zPos <= 75)
-            return true;
-        return false;
-    });
-    vars.HarbourDistrict = (Func <bool>)(() => {
-        if (current.xPos >= -93 && current.xPos <= -88 &&
-           current.yPos >= 236.2 && current.yPos <= 238 &&
-           current.zPos >= 83 && current.zPos <= 88)
-            return true;
-        return false;
-    });
-    vars.ThePalace = (Func <bool>)(() => {
-        if (current.xPos >= -35.5 && current.xPos <= -35.4 &&
-           current.yPos >= 232.3 && current.yPos <= 232.4 &&
-           current.zPos >= 146.9 && current.zPos <= 147)
-            return true;
-        return false;
-    });
-    vars.TrappedHallway = (Func <bool>)(() => {
-        if (current.xPos >= -52.1 && current.xPos <= -52.0 &&
-           current.yPos >= 135.8 && current.yPos <= 135.9 &&
-           current.zPos >= 75.8 && current.zPos <= 76)
-            return true;
-        return false;
-    });
-    vars.TheSewerz = (Func <bool>)(() => {
-        if (current.xPos >= -100 && current.xPos <= -96 &&
-           current.yPos >= -83 && current.yPos <= -79 &&
-           current.zPos >= 19.9 && current.zPos <= 20)
-            return true;
-        return false;
-    });
-    vars.TheSewers = (Func <bool>)(() => {
-        if (current.xPos >= -89.0 && current.xPos <= -88.0 &&
-           current.yPos >= -15.2 && current.yPos <= -14.7 &&
-           current.zPos >= 4.9 && current.zPos <= 5.1)
-            return true;
-        return false;
-    });
-    vars.TheFortress = (Func <bool>)(() => {
-        if (current.xPos >= -71.4 && current.xPos <= -71.3 &&
-           current.yPos >= 9.6 && current.yPos <= 9.7 &&
-           current.zPos >= 44 && current.zPos <= 44.1)
-            return true;
-        return false;
-    });
-    vars.Chariot1 = (Func <bool>)(() => {
-        if (current.xPos >= -443.37 && current.xPos <= -443.36 &&
-           current.yPos >= 355.80 && current.yPos <= 355.81 &&
-           current.zPos >= 57.71 && current.zPos <= 57.72)
-            return true;
-        return false;
-    });
-    vars.LowerCity = (Func <bool>)(() => {
-        if (current.xPos >= -319 && current.xPos <= -316.5 &&
-           current.yPos >= 317 && current.yPos <= 332.6 &&
-           current.zPos >= 95.1 && current.zPos <= 98)
-            return true;
-        return false;
-    });
-    vars.ArenaDeload = (Func <bool>)(() => {
-        if (current.xPos >= -256.1 && current.xPos <= -251.9 &&
-           current.yPos >= 358 && current.yPos <= 361.5 &&
-           current.zPos >= 53.9 && current.zPos <= 63.3)
-            return true;
-        return false;
-    });
-    vars.LowerCityRooftops = (Func <bool>)(() => {
-        if (current.xPos >= -261.5 && current.xPos <= -261 &&
-           current.yPos >= 318 && current.yPos <= 319.5 &&
-           current.zPos >= 46 && current.zPos <= 48)
-            return true;
-        return false;
-    });
-    vars.LCRooftopZips = (Func <bool>)(() => {
-        if (current.xPos >= -246 && current.xPos <= -241.5 &&
-           current.yPos >= 373.5 && current.yPos <= 383.6 &&
-           current.zPos >= 66 && current.zPos <= 69)
-            return true;
-        return false;
-    });
-    vars.TheBalconies = (Func <bool>)(() => {
-        if (current.xPos >= -194 && current.xPos <= -190 &&
-           current.yPos >= 328 && current.yPos <= 329.7 &&
-           current.zPos >= 32.6 && current.zPos <= 33.6)
-            return true;
-        return false;
-    });
-    vars.DarkAlley = (Func <bool>)(() => {
-        if (current.xPos >= -114 && current.xPos <= -110 &&
-           current.yPos >= 328 && current.yPos <= 338 &&
-           current.zPos >= 55 && current.zPos <= 59)
-            return true;
-        return false;
-    });
-    vars.TheTempleRooftops = (Func <bool>)(() => {
-        if (current.xPos >= -122.6 && current.xPos <= -117.7 &&
-           current.yPos >= 421.6 && current.yPos <= 423 &&
-           current.zPos >= 107 && current.zPos <= 108.1)
-            return true;
-        return false;
-    });
-    vars.TheTemple = (Func <bool>)(() => {
-        if (current.xPos >= -212.2 && current.xPos <= -211.9 &&
-           current.yPos >= 419.0 && current.yPos <= 419.8 &&
-           current.zPos >= 81 && current.zPos <= 82)
-            return true;
-        return false;
-    });
-    vars.TheMarketplace= (Func <bool>)(() => {
-        if (current.xPos >= -213 && current.xPos <= -207 &&
-           current.yPos >= 484 && current.yPos <= 490 &&
-           current.zPos >= 101 && current.zPos <= 103)
-            return true;
-        return false;
-    });
-    vars.MarketDistrict = (Func <bool>)(() => {
-        if (current.xPos >= -185.5 && current.xPos <= -175.5 &&
-           current.yPos >= 524 && current.yPos <= 530 &&
-           current.zPos >= 90 && current.zPos <= 92)
-            return true;
-        return false;
-    });
-    vars.TheBrothel = (Func <bool>)(() => {
-        if (current.xPos >= -152.3 && current.xPos <= -152.0 &&
-           current.yPos >= 549.8 && current.yPos <= 549.9 &&
-           current.zPos >= 91.8 && current.zPos <= 92)
-            return true;
-        return false;
-    });
-    vars.ThePlaza = (Func <bool>)(() => {
-        if (current.xPos >= -104 && current.xPos <= -100 &&
-           current.yPos >= 548 && current.yPos <= 553 &&
-           current.zPos >= 105.5 && current.zPos <= 106.1)
-            return true;
-        return false;
-    });
-    vars.TheUpperCity = (Func <bool>)(() => {
-        if (current.xPos >= -124.5 && current.xPos <= -122.5 &&
-           current.yPos >= 500 && current.yPos <= 505 &&
-           current.zPos >= 97 && current.zPos <= 99)
-            return true;
-        return false;
-    });
-    vars.CityGarderns = (Func <bool>)(() => {
-        if (current.xPos >= -63.5 && current.xPos <= -63.4 &&
-           current.yPos >= 389.7 && current.yPos <= 389.8 &&
-           current.zPos >= 85.2 && current.zPos <= 85.3)
-            return true;
-        return false;
-    });
-    vars.ThePromenade = (Func <bool>)(() => {
-        if (current.xPos >= -3 && current.xPos <= -1 &&
-           current.yPos >= 515 && current.yPos <= 519 &&
-           current.zPos >= 72 && current.zPos <= 75)
-            return true;
-        return false;
-    });
-    vars.RoyalWorkshop = (Func <bool>)(() => {
-        if (current.xPos >= 58 && current.xPos <= 62 &&
-           current.yPos >= 470 && current.yPos <= 480 &&
-           current.zPos >= 79 && current.zPos <= 81)
-            return true;
-        return false;
-    });
-    vars.KingsRoad = (Func <bool>)(() => {
-        if (current.xPos >= 91.9289 && current.xPos <= 91.9290 &&
-           current.yPos >= 230.0479 && current.yPos <= 230.0480 &&
-           current.zPos >= 70.9877 && current.zPos <= 70.9879)
-            return true;
-        return false;
-    });
-    vars.KingzRoad = (Func <bool>)(() => {
-        if (current.xPos >= 53 && current.xPos <= 70 &&
-           current.yPos >= 240 && current.yPos <= 250 &&
-           current.zPos >= 70 && current.zPos <= 73)
-            return true;
-        return false;
-    });
-    vars.PalaceEntrance = (Func <bool>)(() => {
-        if (current.xPos >= 30.8 && current.xPos <= 30.9 &&
-           current.yPos >= 271.2 && current.yPos <= 271.3 &&
-           current.zPos >= 126 && current.zPos <= 126.1)
-            return true;
-        return false;
-    });
-    vars.HangingGardens = (Func <bool>)(() => {
-        if (current.xPos >= 26 && current.xPos <= 28 &&
-           current.yPos >= 211 && current.yPos <= 213 &&
-           current.zPos >= 191 && current.zPos <= 193)
-            return true;
-        return false;
-    });
-    vars.HangingGardenz = (Func <bool>)(() => {
-        if (current.xPos >= 5.2 && current.xPos <= 5.4 &&
-           current.yPos >= 213.5 && current.yPos <= 215.6 &&
-           current.zPos >= 194.9 && current.zPos <= 196.2)
-            return true;
-        return false;
-    });
-    vars.StructuresMind = (Func <bool>)(() => {
-        if (current.xPos >= -34 && current.xPos <= -27 &&
-           current.yPos >= 240 && current.yPos <= 250 &&
-           current.zPos >= 178 && current.zPos <= 180)
-            return true;
-        return false;
-    });
-    vars.StructurezMind = (Func <bool>)(() => {
-        if (current.xPos >= 5 && current.xPos <= 12 &&
-           current.yPos >= 243 && current.yPos <= 265 &&
-           current.zPos >= 104 && current.zPos <= 104.1)
-            return true;
-        return false;
-    });
-    vars.WellofZipless = (Func <bool>)(() => {
-        if (current.xPos >= -28 && current.xPos <= -26.5 &&
-           current.yPos >= 250 && current.yPos <= 255 &&
-           current.zPos >= 20.9 && current.zPos <= 30)
-            return true;
-        return false;
-    });
-    vars.BottomofWell = (Func <bool>)(() => {
-        if (current.xPos >= -21.35 && current.xPos <= -21.34 &&
-           current.yPos >= 252.67 && current.yPos <= 252.68 &&
-           current.zPos >= 20.95 && current.zPos <= 20.96)
-            return true;
-        return false;
-    });
-    vars.WellofAncestors = (Func <bool>)(() => {
-        if (current.xPos >= -12.6 && current.xPos <= -12.5 &&
-           current.yPos >= 241.2 && current.yPos <= 241.3 &&
-           current.zPos >= 0.9 && current.zPos <= 1)
-            return true;
-        return false;
-    });
-    vars.CaveDeath = (Func <bool>)(() => {
-        if (current.xPos >= 5.99 && current.xPos <= 6.00 &&
-           current.yPos >= 306.96 && current.yPos <= 306.97 &&
-           current.zPos >= 42 && current.zPos <= 42.01)
-            return true;
-        return false;
-    });
-    vars.TheLabyrinth = (Func <bool>)(() => {
-        if (current.xPos >= -25.5 && current.xPos <= -23 &&
-           current.yPos >= 325 && current.yPos <= 338 &&
-           current.zPos >= 35.9 && current.zPos <= 37.5)
-            return true;
-        return false;
-    });
-    vars.UndergroundCave = (Func <bool>)(() => {
-        if (current.xPos >= -11 && current.xPos <= -9 &&
-           current.yPos >= 327 && current.yPos <= 334 &&
-           current.zPos >= 73 && current.zPos <= 74)
-            return true;
-        return false;
-    });
-    vars.UndergroundCaveZipnt = (Func <bool>)(() => {
-        if (current.xPos >= 27 && current.xPos <= 29 &&
-           current.yPos >= 316.5 && current.yPos <= 318 &&
-           current.zPos >= 99.9 && current.zPos <= 100.1)
-            return true;
-        return false;
-    });
-    vars.LowerTower = (Func <bool>)(() => {
-        if (current.xPos >= -5 && current.xPos <= -3 &&
-           current.yPos >= 316 && current.yPos <= 317.5 &&
-           current.zPos >= 139.9 && current.zPos <= 140.1)
-            return true;
-        return false;
-    });
-    vars.MiddleTower = (Func <bool>)(() => {
-        if (current.xPos >= -18 && current.xPos <= -12 &&
-           current.yPos >= 303 && current.yPos <= 305 &&
-           current.zPos >= 184.8 && current.zPos <= 185.1)
-            return true;
-        return false;
-    });
-    vars.UpperTower = (Func <bool>)(() => {
-        if (current.xPos >= -8 && current.xPos <= -7 &&
-           current.yPos >= 296 && current.yPos <= 298 &&
-           current.zPos >= 226.9 && current.zPos <= 227)
-            return true;
-        return false;
-    });
-    vars.TheTerrace = (Func <bool>)(() => {
-        if (current.xPos >= -7.2 && current.xPos <= -6.9 &&
-           current.yPos >= 245.6 && current.yPos <= 245.9 &&
-           current.zPos >= 677 && current.zPos <= 679)
-            return true;
-        return false;
-    });
-    vars.MentalRealm = (Func <bool>)(() => {
-        if (current.xPos >= 189 && current.xPos <= 194 &&
-           current.yPos >= 318 && current.zPos >= 540 &&
-           current.princeAction == 17)
-            return true;
-        return false;
-    });
-    vars.T2TLU1 = (Func <bool>)(() => {
-        if (current.xPos >= -14.9972 && current.xPos <= -14.9970 &&
-           current.yPos >= -112.8152 && current.yPos <= -112.8150 &&
-           current.zPos >= 20.0732 && current.zPos <= 20.0734)
-            return true;
-        return false;
-    });
-    vars.T2TLU2 = (Func <bool>)(() => {
-        if (current.xPos >= -302.0919 && current.xPos <= -302.0917 &&
-           current.yPos >= 370.8710 && current.yPos <= 370.8712 &&
-           current.zPos >= 52.858 && current.zPos <= 52.8582)
-            return true;
-        return false;
-    });
-    vars.T2TLU3 = (Func <bool>)(() => {
-        if (current.xPos >= -187.3369 && current.xPos <= -187.3367 &&
-           current.yPos >= -455.9863 && current.yPos <= 455.9865 &&
-           current.zPos >= 78.0330 && current.zPos <= 78.0332)
-            return true;
-        return false;
-    });
-    vars.T2TLU4 = (Func <bool>)(() => {
-        if (current.xPos >= -55.0147 && current.xPos <= -55.0145 &&
-           current.yPos >= 395.7608 && current.yPos <= 395.761 &&
-           current.zPos >= 72.0774 && current.zPos <= 72.0776)
-            return true;
-        return false;
-    });
-    vars.T2TLU5 = (Func <bool>)(() => {
-        if (current.xPos >= -30.1223 && current.xPos <= -30.1221 &&
-           current.yPos >= 281.8893 && current.yPos <= 281.8895 &&
-           current.zPos >= 104.0796 && current.zPos <= 104.0798)
-            return true;
-        return false;
-    });
-    vars.T2TLU6 = (Func <bool>)(() => {
-        if (current.xPos >= -23.9663 && current.xPos <= -23.9661 &&
-           current.yPos >= 253.9438 && current.yPos <= 253.944 &&
-           current.zPos >= 183.0634 && current.zPos <= 183.0636)
-            return true;
-        return false;
+    vars.TheRamparts = (Func <bool>)(() => { return vars.splitByXYZ(-271f, -265f, 187f, 188f, 74f, 75f); });
+    vars.HarborDistrict = (Func <bool>)(() => { return vars.splitByXYZ(-93f, -88f, 236.2f, 238f, 83f, 88f); });
+    vars.ThePalace = (Func <bool>)(() => { return vars.splitByXYZ(-35.5f, -35.4f, 232.3f, 232.4f, 146.9f, 147f); });
+    vars.TrappedHallway = (Func <bool>)(() => { return vars.splitByXYZ(-52.1f, -52.0f, 135.8f, 135.9f, 75.8f, 76f); });
+    vars.TheSewerz = (Func <bool>)(() => { return vars.splitByXYZ(-100f, -96f, -83f, -79f, 19.9f, 20f); });
+    vars.TheSewers = (Func <bool>)(() => { return vars.splitByXYZ(-89.0f, -88.0f, -15.2f, -14.7f, 4.9f, 5.1f); });
+    vars.TheFortress = (Func <bool>)(() => { return vars.splitByXYZ(-71.4f, -71.3f, 9.6f, 9.7f, 44f, 44.1f); });
+    vars.Chariot1 = (Func <bool>)(() => { return vars.splitByXYZ(-443.37f, -443.36f, 355.80f, 355.81f, 57.71f, 57.72f); });
+    vars.LowerCity = (Func <bool>)(() => { return vars.splitByXYZ(-319f, -316.5f, 317f, 332.6f, 95.1f, 98f); });
+    vars.LowerCityRooftops = (Func <bool>)(() => { return vars.splitByXYZ(-261.5f, -261f, 318f, 319.5f, 46f, 48f); });
+    vars.ArenaDeload = (Func <bool>)(() => { return vars.splitByXYZ(-256.1f, -251.9f, 358f, 361.5f, 53.9f, 63.3f); });
+    vars.TheBalconies = (Func <bool>)(() => { return vars.splitByXYZ(-194f, -190f, 328f, 329.7f, 32.6f, 33.6f); });
+    vars.DarkAlley = (Func <bool>)(() => { return vars.splitByXYZ(-114f, -110f, 328f, 338f, 55f, 59f); });
+    vars.TheTempleRooftops = (Func <bool>)(() => { return vars.splitByXYZ(-122.6f, -117.7f, 421.6f, 423f, 107f, 108.1f); });
+    vars.TheTemple = (Func <bool>)(() => { return vars.splitByXYZ(-212.2f, -211.9f, 419.0f, 419.8f, 81f, 82f); });
+    vars.TheMarketplace= (Func <bool>)(() => { return vars.splitByXYZ(-213f, -207f, 484f, 490f, 101f, 103f); });
+    vars.MarketDistrict = (Func <bool>)(() => { return vars.splitByXYZ(-185.5f, -175.5f, 524f, 530f, 90f, 92f); });
+    vars.TheBrothel = (Func <bool>)(() => { return vars.splitByXYZ(-152.3f, -152.0f, 549.8f, 549.9f, 91.8f, 92f); });
+    vars.ThePlaza = (Func <bool>)(() => { return vars.splitByXYZ(-104f, -100f, 548f, 553f, 105.5f, 106.1f); });
+    vars.TheUpperCity = (Func <bool>)(() => { return vars.splitByXYZ(-124.5f, -122.5f, 500f, 505f, 97f, 99f); });
+    vars.CityGarderns = (Func <bool>)(() => { return vars.splitByXYZ(-63.5f, -63.4f, 389.7f, 389.8f, 85.2f, 85.3f); });
+    vars.ThePromenade = (Func <bool>)(() => { return vars.splitByXYZ(-3f, -1f, 515f, 519f, 72f, 75f); });
+    vars.RoyalWorkshop = (Func <bool>)(() => { return vars.splitByXYZ(58f, 62f, 470f, 480f, 79f, 81f); });
+    vars.KingsRoad = (Func <bool>)(() => { return vars.splitByXYZ(91.9289f, 91.9290f, 230.0479f, 230.0480f, 70.9877f, 70.9879f); });
+    vars.KingzRoad = (Func <bool>)(() => { return vars.splitByXYZ(53f, 70f, 240f, 250f, 70f, 73f); });
+    vars.PalaceEntrance = (Func <bool>)(() => { return vars.splitByXYZ(30.8f, 30.9f, 271.2f, 271.3f, 126f, 126.1f); });
+    vars.HangingGardens = (Func <bool>)(() => { return vars.splitByXYZ(26f, 28f, 211f, 213f, 191f, 193f); });
+    vars.HangingGardenz = (Func <bool>)(() => { return vars.splitByXYZ(5.2f, 5.4f, 213.5f, 215.6f, 194.9f, 196.2f); });
+    vars.StructuresMind = (Func <bool>)(() => { return vars.splitByXYZ(-34f, -27f, 240f, 250f, 178f, 180f); });
+    vars.StructurezMind = (Func <bool>)(() => { return vars.splitByXYZ(5f, 12f, 243f, 265f, 104f, 104.1f); });
+    vars.BottomofWell = (Func <bool>)(() => { return vars.splitByXYZ(-21.35f, -21.34f, 252.67f, 252.68f, 20.95f, 20.96f); });
+    vars.WellofAncestors = (Func <bool>)(() => { return vars.splitByXYZ(-12.6f, -12.5f, 241.2f, 241.3f, 0.9f, 1f); });
+    vars.CaveDeath = (Func <bool>)(() => { return vars.splitByXYZ(5.99f, 6.00f, 306.96f, 306.97f, 42f, 42.01f); });
+    vars.TheLabyrinth = (Func <bool>)(() => { return vars.splitByXYZ(-25.5f, -23f, 325f, 338f, 35.9f, 37.5f); });
+    vars.UndergroundCave = (Func <bool>)(() => { return vars.splitByXYZ(-11f, -9f, 327f, 334f, 73f, 74f); });
+    vars.LowerTower = (Func <bool>)(() => { return vars.splitByXYZ(-5f, -3f, 316f, 317.5f, 139.9f, 140.1f); });
+    vars.MiddleTower = (Func <bool>)(() => { return vars.splitByXYZ(-18f, -12f, 303f, 305f, 184.8f, 185.1f); });
+    vars.UpperTower = (Func <bool>)(() => { return vars.splitByXYZ(-8f, -7f, 296f, 298f, 226.9f, 227f); });
+    vars.TheTerrace = (Func <bool>)(() => { return vars.splitByXYZ(-7.2f, -6.9f, 245.6f, 245.9f, 677f, 679f); });
+    vars.MentalRealm = (Func <bool>)(() => { return vars.splitByXYZ(189f, 194f, 318f, 330f, 540f, 560f) && current.princeAction == 17; });
+    vars.T2TLU1 = (Func <bool>)(() => { return vars.splitByXYZ(-14.9972f, -14.9970f, -112.8152f, -112.8150f, 20.0732f, 20.0734f); });
+    vars.T2TLU2 = (Func <bool>)(() => { return vars.splitByXYZ(-302.0919f, -302.0917f, 370.8710f, 370.8712f, 52.858f, 52.8582f); });
+    vars.T2TLU3 = (Func <bool>)(() => { return vars.splitByXYZ(-187.3369f, -187.3367f, -455.9863f, 455.9865f, 78.0330f, 78.0332f); });
+    vars.T2TLU4 = (Func <bool>)(() => { return vars.splitByXYZ(-55.0147f, -55.0145f, 395.7608f, 395.761f, 72.0774f, 72.0776f); });
+    vars.T2TLU5 = (Func <bool>)(() => { return vars.splitByXYZ(-30.1223f, -30.1221f, 281.8893f, 281.8895f, 104.0796f, 104.0798f); });
+    vars.T2TLU6 = (Func <bool>)(() => { return vars.splitByXYZ(-23.9663f, -23.9661f, 253.9438f, 253.944f, 183.0634f, 183.0636f); });
+
+    //Deprecated or Unused Splits
+    vars.LCRooftopZips = (Func <bool>)(() => { return vars.splitByXYZ(-246f, -241.5f, 373.5f, 383.6f, 66f, 69f); });
+    vars.WellofZipless = (Func <bool>)(() => { return vars.splitByXYZ(-28f, -26.5f, 250f, 255f, 20.9f, 30f); });
+    vars.UndergroundCaveZipnt = (Func <bool>)(() => { return vars.splitByXYZ(27f, 29f, 316.5f, 318f, 99.9f, 100.1f); });
+
+    vars.CompletedSplits = new HashSet<string>();
+
+    vars.CheckSplit = (Func<string, bool>)(key => {
+        return (vars.CompletedSplits.Add(key) && settings[key]);
     });
 }
 
@@ -364,6 +146,12 @@ start
     //Detecting if the game has started on the ramparts.
     if (current.xPos >= -404.9 && current.xPos <= -404.8 && current.yCam <= 0.1082 && current.yCam >= 0.1080 && current.xCam <= 0.832 && current.xCam >= 0.8318)
         return true;
+}
+
+onStart
+{
+    // refresh all splits when we start the run, none are yet completed
+    vars.CompletedSplits.Clear();
 }
 
 reset
@@ -375,517 +163,10 @@ reset
 
 split
 {
-    switch(timer.Run.GetExtendedCategoryName()) {
-        case "Any% (Standard)":
-            switch (timer.CurrentSplitIndex) {
-                //The Ramparts
-                case 0:
-                    return vars.TheRamparts();
-                //The Harbor District
-                case 1:
-                    return vars.HarbourDistrict();
-                //The Palace
-                case 2:
-                    return vars.ThePalace();
-                //Exit Sewers
-                case 3:
-                    return vars.TheSewerz();
-                //Finish Chariot 1
-                case 4:
-                    return vars.Chariot1();
-                //Arena Deload
-                case 5:
-                    return vars.ArenaDeload();
-                //Exit Temple Rooftops
-                case 6:
-                    return vars.TheTempleRooftops();
-                //Exit Marketplace
-                case 7:
-                    return vars.TheMarketplace();
-                //Exit Plaza
-                case 8:
-                    return vars.ThePlaza();
-                //Exit City Gardens
-                case 9:
-                    return vars.CityGarderns();
-                //Exit Royal Workshop
-                case 10:
-                    return vars.RoyalWorkshop();
-                //The King's Road
-                case 11:
-                    return vars.KingzRoad();
-                //Well Death
-                case 12:
-                    return vars.BottomofWell();
-                //Exit Cave Death
-                case 13:
-                    return vars.CaveDeath();
-                //The Towers
-                case 14:
-                    return vars.UpperTower();
-                //The Terrace
-                case 15:
-                    return vars.TheTerrace();
-                //The Mental Realm
-                case 16:
-                    return vars.MentalRealm();
-            }
-            break;
-
-        case "Any% (Zipless)":
-            switch (timer.CurrentSplitIndex) {
-                //The Ramparts
-                case 0:
-                    return vars.TheRamparts();
-                //The Harbor District
-                case 1:
-                    return vars.HarbourDistrict();
-                //The Palace
-                case 2:
-                    return vars.ThePalace();
-                //The Trapped Hallway
-                case 3:
-                    return vars.TrappedHallway();
-                //The Sewers
-                case 4:
-                    return vars.TheSewers();
-                //The Fortress
-                case 5:
-                    return vars.TheFortress();
-                //The Lower City
-                case 6:
-                    return vars.LowerCity();
-                //The Lower City Rooftops (Klompa)
-                case 7:
-                    return vars.LowerCityRooftops();
-                //The Balconies (Eye of the Storm)
-                case 8:
-                    return vars.TheBalconies();
-                //The Dark Alley
-                case 9:
-                    return vars.DarkAlley();
-                //The Temple Rooftops()
-                case 10:
-                    return vars.TheTempleRooftops();
-                //Exit Marketplace
-                case 11:
-                    return vars.TheMarketplace();
-                //The Market District
-                case 12:
-                    return vars.MarketDistrict();
-                //Exit Plaza (Mahasti)
-                case 13:
-                    return vars.ThePlaza();
-                //The Upper City
-                case 14:
-                    return vars.TheUpperCity();
-                //The City Garderns
-                case 15:
-                    return vars.CityGarderns();
-                //The Royal Workshop (Puzzle Skip)
-                case 16:
-                    return vars.RoyalWorkshop();
-                //The King's Road (Twins)
-                case 17:
-                    return vars.KingsRoad();
-                //The Palace Entrance (Enter Elevator)
-                case 18:
-                    return vars.PalaceEntrance();
-                //The Hanging Gardenz
-                case 19:
-                    return vars.HangingGardenz();
-                //The Structure's Mind
-                case 20:
-                    return vars.WellofZipless();
-                //The Well of Ancestors
-                case 21:
-                    return vars.WellofAncestors();
-                //The Labyrinth
-                case 22:
-                    return vars.TheLabyrinth();
-                //The Lower Tower
-                case 23:
-                    return vars.LowerTower();
-                //The Middle and Upper Towers
-                case 24:
-                    return vars.UpperTower();
-                //The Death of the Vizier
-                case 25:
-                    return vars.TheTerrace();
-                //The Mental Realm
-                case 26:
-                    return vars.MentalRealm();
-            }
-            break;
-
-        case "Any% (No Major Glitches)":
-            switch (timer.CurrentSplitIndex) {
-                //The Ramparts
-                case 0:
-                    return vars.TheRamparts();
-                //The Harbor District
-                case 1:
-                    return vars.HarbourDistrict();
-                //The Palace
-                case 2:
-                    return vars.ThePalace();
-                //The Trapped Hallway
-                case 3:
-                    return vars.TrappedHallway();
-                //The Sewers
-                case 4:
-                    return vars.TheSewers();
-                //The Fortress
-                case 5:
-                    return vars.TheFortress();
-                //The Lower City
-                case 6:
-                    return vars.LowerCity();
-                //The Lower City Rooftops
-                case 7:
-                    return vars.LowerCityRooftops();
-                //The Balconies
-                case 8:
-                    return vars.TheBalconies();
-                //The Dark Alley
-                case 9:
-                    return vars.DarkAlley();
-                //The Temple Rooftops
-                case 10:
-                    return vars.TheTempleRooftops();
-                //The Temple
-                case 11:
-                    return vars.TheTemple();
-                //The Marketplace
-                case 12:
-                    return vars.TheMarketplace();
-                //The Market District
-                case 13:
-                    return vars.MarketDistrict();
-                //The Brothel
-                case 14:
-                    return vars.TheBrothel();
-                //The Plaza
-                case 15:
-                    return vars.ThePlaza();
-                //The Upper City
-                case 16:
-                    return vars.TheUpperCity();
-                //The City Gardens
-                case 17:
-                    return vars.CityGarderns();
-                //The Promenade
-                case 18:
-                    return vars.ThePromenade();
-                //The Royal Workshop
-                case 19:
-                    return vars.RoyalWorkshop();
-                //The King's Road
-                case 20:
-                    return vars.KingsRoad();
-                //The Palace Entrance
-                case 21:
-                    return vars.PalaceEntrance();
-                //The Hanging Gardens
-                case 22:
-                    return vars.HangingGardens();
-                //The Structure's Mind
-                case 23:
-                    return vars.StructuresMind();
-                //The Well of Ancestors
-                case 24:
-                    return vars.WellofAncestors();
-                //The Labyrinth
-                case 25:
-                    return vars.TheLabyrinth();
-                //The Underground Cave
-                case 26:
-                    return vars.UndergroundCave();
-                //The Lower Tower
-                case 27:
-                    return vars.LowerTower();
-                //The Middle Tower
-                case 28:
-                    return vars.MiddleTower();
-                    //The Upper Tower
-                case 29:
-                    return vars.UpperTower();
-                //The Terrace
-                case 30:
-                    return vars.TheTerrace();
-                //The Mental Realm
-                case 31:
-                    return vars.MentalRealm();
-            }
-            break;
-
-        case "All Powers (Standard)":
-            switch (timer.CurrentSplitIndex) {
-                //The Ramparts
-                case 0:
-                    return vars.TheRamparts();
-                //The Harbour District
-                case 1:
-                    return vars.HarbourDistrict();
-                //The Palace
-                case 2:
-                    return vars.ThePalace();
-                //Life Upgrade 1
-                case 3:
-                    return vars.T2TLU1();
-                //Exit Lower City
-                case 4:
-                    return vars.LowerCity();
-                //Life Upgrade 2
-                case 5:
-                    return vars.T2TLU2();
-                //The Arena
-                case 6:
-                    return vars.LCRooftopZips();
-                //The Temple Rooftops Exit
-                case 7:
-                    return vars.TheTempleRooftops();
-                //Life Upgrade 3
-                case 8:
-                    return vars.T2TLU3();
-                //The Marketplace
-                case 9:
-                    return vars.TheMarketplace();
-                //Exit Plaza
-                case 10:
-                    return vars.ThePlaza();
-                //Life Upgrade 4
-                case 11:
-                    return vars.T2TLU4();
-                //The Royal Workshop
-                case 12:
-                    return vars.RoyalWorkshop();
-                //The King's Road
-                case 13:
-                    return vars.KingzRoad();
-                //Life Upgrade 5
-                case 14:
-                    if (vars.T2TLU5)
-                        return true;
-                    break;
-                //Well Death
-                case 15:
-                    return vars.BottomofWell();
-                //Exit Labyrinth
-                case 16:
-                    return vars.TheLabyrinth();
-                //Life Upgrade 6
-                case 17:
-                    return vars.T2TLU6();
-                //The Upper Tower
-                case 18:
-                    return vars.UpperTower();
-                //The Terrace
-                case 19:
-                    return vars.TheTerrace();
-                //The Mental Realm
-                case 20:
-                    return vars.MentalRealm();
-            }
-            break;
-
-        case "All Powers (Zipless)":
-            switch (timer.CurrentSplitIndex) {
-                //The Ramparts
-                case 0:
-                    return vars.TheRamparts();
-                //The Harbour District
-                case 1:
-                    return vars.HarbourDistrict();
-                //The Palace
-                case 2:
-                    return vars.ThePalace();
-                //The Trapped Hallway
-                case 3:
-                    return vars.TrappedHallway();
-                //Life Upgrade 1
-                case 4:
-                    return vars.T2TLU1();
-                //The Fortress
-                case 5:
-                    return vars.TheFortress();
-                //The Lower City
-                case 6:
-                    return vars.LowerCity();
-                //Life Upgrade 2
-                case 7:
-                    return vars.T2TLU2();
-                //The Arena
-                case 8:
-                    return vars.LowerCityRooftops();
-                //The Balconies
-                case 9:
-                    return vars.TheBalconies();
-                //The Dark Alley
-                case 10:
-                    return vars.DarkAlley();
-                //The Temple Rooftops
-                case 11:
-                    return vars.TheTempleRooftops();
-                //Life Upgrade 3
-                case 12:
-                    return vars.T2TLU3();
-                //The Marketplace
-                case 13:
-                    return vars.TheMarketplace();
-                //The Market District
-                case 14:
-                    return vars.MarketDistrict();
-                //Exit Plaza
-                case 15:
-                    return vars.ThePlaza();
-                //The Upper City
-                case 16:
-                    return vars.TheUpperCity();
-                //Life Upgrade 4
-                case 17:
-                    return vars.T2TLU4();
-                //The Royal Workshop (Puzzle Skip)
-                case 18:
-                    return vars.RoyalWorkshop();
-                //The King's Road (Twins)
-                case 19:
-                    return vars.KingsRoad();
-                //Life Upgrade 5
-                case 20:
-                    return vars.T2TLU5();
-                //The Hanging Gardens
-                case 21:
-                    return vars.HangingGardenz();
-                //The Structures Mind
-                case 22:
-                    return vars.WellofZipless();
-                //The Well of Ancestors
-                case 23:
-                    return vars.WellofAncestors();
-                //The Labyrinth
-                case 24:
-                    return vars.TheLabyrinth();
-                //The Lower Tower
-                case 25:
-                    return vars.LowerTower();
-                //Life Upgrade 6
-                case 26:
-                    return vars.T2TLU6();
-                //The Upper Tower
-                case 27:
-                    return vars.UpperTower();
-                //The Terrace
-                case 28:
-                    return vars.TheTerrace();
-                //The Mental Realm
-                case 29:
-                    return vars.MentalRealm();
-            }
-            break;
-
-        case "All Powers (No Major Glitches)":
-            switch (timer.CurrentSplitIndex) {
-                //The Ramparts
-                case 0:
-                    return vars.TheRamparts();
-                //The Harbour District
-                case 1:
-                    return vars.HarbourDistrict();
-                //The Palace
-                case 2:
-                    return vars.ThePalace();
-                //The Trapped Hallway
-                case 3:
-                    return vars.TrappedHallway();
-                //Life Upgrade 1
-                case 4:
-                    return vars.T2TLU1();
-                //The Fortress
-                case 5:
-                    return vars.TheFortress();
-                //The Lower City
-                case 6:
-                    return vars.LowerCity();
-                //Life Upgrade 2
-                case 7:
-                    return vars.T2TLU2();
-                //The Arena
-                case 8:
-                    return vars.LowerCityRooftops();
-                //The Balconies
-                case 9:
-                    return vars.TheBalconies();
-                //The Dark Alley
-                case 10:
-                    return vars.DarkAlley();
-                //The Temple Rooftops
-                case 11:
-                    return vars.TheTempleRooftops();
-                //Life Upgrade 3
-                case 12:
-                    return vars.T2TLU3();
-                //The Marketplace
-                case 13:
-                    return vars.TheMarketplace();
-                //The Market District
-                case 14:
-                    return vars.MarketDistrict();
-                //The Brothel
-                case 15:
-                    return vars.TheBrothel();
-                //The Plaza
-                case 16:
-                    return vars.ThePlaza();
-                //The Upper City
-                case 17:
-                    return vars.TheUpperCity();
-                //Life Upgrade 4
-                case 18:
-                    return vars.T2TLU4();
-                //The Promenade
-                case 19:
-                    return vars.ThePromenade();
-                //The Royal Workshop
-                case 20:
-                    return vars.RoyalWorkshop();
-                //The King's Road
-                case 21:
-                    return vars.KingsRoad();
-                //Life Upgrade 5
-                case 22:
-                    return vars.T2TLU5();
-                //The Hanging Gardens
-                case 23:
-                    return vars.HangingGardens();
-                //The Structure's Mind
-                case 24:
-                    return vars.StructuresMind();
-                //The Well of Ancestors
-                case 25:
-                    return vars.WellofAncestors();
-                //The Labyrinth
-                case 26:
-                    return vars.TheLabyrinth();
-                //The Underground Cave
-                case 27:
-                    return vars.UndergroundCave();
-                //The Lower Tower
-                case 28:
-                    return vars.LowerTower();
-                //Life Upgrade 6
-                case 29:
-                    return vars.T2TLU6();
-                //The Upper Tower
-                case 30:
-                    return vars.UpperTower();
-                //The Terrace
-                case 31:
-                    return vars.TheTerrace();
-                //The Mental Realm
-                case 32:
-                    return vars.MentalRealm();
-            }
-            break;
+    foreach (var data in vars.splitsData) {
+        if (data.Value.Item4() && vars.CheckSplit(data.Key)) {
+            print(data.Key);
+            return true;
+        }
     }
 }
