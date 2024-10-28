@@ -240,14 +240,15 @@ startup
 
 init
 {
-    vars.countBits = (Func<ulong, int>)((number) => {
-        int count = 0;
-        while (number > 0)
-        {
-            number &= (number - 1);
-            count++;
-        }
-        return count;
+    // Hamming Weight algorithm
+    vars.countBits = (Func<ulong, int>)((x) => {
+        x = x - ((x >> 1) & 0x5555555555555555UL);
+        x = (x & 0x3333333333333333UL) + ((x >> 2) & 0x3333333333333333UL);
+        x = (x + (x >> 4)) & 0x0F0F0F0F0F0F0F0FUL;
+        x = x + (x >> 8);
+        x = x + (x >> 16);
+        x = x + (x >> 32);
+        return (int)(x & 0x7F);
     });
 
     vars.splitCutsceneByMap = (Func<HashSet<int>, bool>)((mapIds) => {
