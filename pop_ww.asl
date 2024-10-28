@@ -372,6 +372,12 @@ start
     return (current.map == 1292342859 && vars.oldCutscene == 1 && current.cutscene == 2);
 }
 
+onStart
+{
+    // refresh all splits when we start the run, none are yet completed
+    vars.CompletedSplits.Clear();
+}
+
 reset
 {
     // Reset the timer when a new game is started (when the first area of the boat loads)
