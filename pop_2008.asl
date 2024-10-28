@@ -427,6 +427,7 @@ start
 
 onStart
 {
+    // Refresh all splits when we start the run, none are yet completed
     vars.CompletedSplits.Clear();
 }
 
