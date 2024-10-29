@@ -20,7 +20,7 @@ startup
         {"ThePalace", Tuple.Create(true, "The Palace", "Split at the end of throne room", new Func<bool>(() => vars.ThePalace()))},
         {"TrappedHallway", Tuple.Create(false, "The Trapped Hallway", "Split at end of trapped hallway at the cutscene", new Func<bool>(() => vars.TrappedHallway()))},
         {"TheSewers", Tuple.Create(false, "The Sewers", "Split on finishing the sewers dark prince section", new Func<bool>(() => vars.TheSewers()))},
-        {"TheSewerz", Tuple.Create(false, "The Sewers (v2)", "Split just before the tunnels save fountain", new Func<bool>(() => vars.TheSewerz()))},
+        {"TheSewerz", Tuple.Create(false, "The Sewers (alternate)", "Split just before the tunnels save fountain", new Func<bool>(() => vars.TheSewerz()))},
         {"TheFortress", Tuple.Create(false, "The Fortress", "Split just before entering the first Chariot", new Func<bool>(() => vars.TheFortress()))},
         {"Chariot1", Tuple.Create(false, "Chariot 1", "Split on finishing the first chariot", new Func<bool>(() => vars.Chariot1()))},
         {"LowerCity", Tuple.Create(false, "The Lower City", "Split after the lower city dark prince section", new Func<bool>(() => vars.LowerCity()))},
@@ -39,12 +39,12 @@ startup
         {"ThePromenade", Tuple.Create(false, "The Promenade", "Split on entering the royal workshop", new Func<bool>(() => vars.ThePromenade()))},
         {"RoyalWorkshop", Tuple.Create(true, "Royal Workshop", "Split on entering the king's road", new Func<bool>(() => vars.RoyalWorkshop()))},
         {"KingsRoad", Tuple.Create(false, "The King's Road", "Split on defeating the twins", new Func<bool>(() => vars.KingsRoad()))},
-        {"KingzRoad", Tuple.Create(false, "The King's Road (v2)", "Split on the transition to palace entrance after twins fight", new Func<bool>(() => vars.KingzRoad()))},
+        {"KingzRoad", Tuple.Create(false, "The King's Road (alternate)", "Split on the transition to palace entrance after twins fight", new Func<bool>(() => vars.KingzRoad()))},
         {"PalaceEntrance", Tuple.Create(false, "The Palace Entrance", "Split on entering the elevator cutscene", new Func<bool>(() => vars.PalaceEntrance()))},
         {"HangingGardens", Tuple.Create(false, "The Hanging Gardens", "Split at the swing pole before the last sand gate", new Func<bool>(() => vars.HangingGardens()))},
-        {"HangingGardenz", Tuple.Create(false, "The Hanging Gardens (v2)", "Split at the structure's mind save fountain", new Func<bool>(() => vars.HangingGardenz()))},
+        {"HangingGardenz", Tuple.Create(false, "The Hanging Gardens (alternate)", "Split at the structure's mind save fountain", new Func<bool>(() => vars.HangingGardenz()))},
         {"StructuresMind", Tuple.Create(false, "The Structure's Mind", "Split at the cutscene after the puzzle", new Func<bool>(() => vars.StructuresMind()))},
-        {"StructurezMind", Tuple.Create(false, "The Structure's Mind (v2)", "Split after the transition to Well of Ancestors", new Func<bool>(() => vars.StructurezMind()))},
+        {"StructurezMind", Tuple.Create(false, "The Structure's Mind (alternate)", "Split after the transition to Well of Ancestors", new Func<bool>(() => vars.StructurezMind()))},
         {"BottomofWell", Tuple.Create(false, "Bottom of the Well", "Split after the death abuse at the bottom of the well", new Func<bool>(() => vars.BottomofWell()))},
         {"WellofAncestors", Tuple.Create(false, "The Well of Ancestors", "Split on finishing the well dark prince section", new Func<bool>(() => vars.WellofAncestors()))},
         {"TheLabyrinth", Tuple.Create(false, "The Labyrinth", "Split on entering the underground cave after breakable wall", new Func<bool>(() => vars.TheLabyrinth()))},
@@ -79,7 +79,8 @@ init
         return
             vars.inXRange(xMin, xMax) &&
             vars.inYRange(yMin, yMax) &&
-            vars.inZRange(zMin, zMax); });
+            vars.inZRange(zMin, zMax);
+    });
 
     // List of T2T Splits across categories
     vars.TheRamparts = (Func <bool>)(() => { return vars.splitByXYZ(-271f, -265f, 187f, 188f, 74f, 75f); });

@@ -16,328 +16,119 @@ state("POP")
 
 startup
 {
-    settings.Add("Lastfightskip", false, "Last Fight Skip Route");
+    // Key - Setting ID, Value - Tuple of (Default setting, Description, Tooltip and Trigger condition).
+    vars.splitsData = new Dictionary<string, Tuple<bool, string, string, Func<bool>>> {
+        {"GasStation", Tuple.Create(true, "Enter Treasure Vaults", "Split just before the first save prompt", new Func<bool>(() => vars.GasStation()))},
+        {"SandsUnleashed", Tuple.Create(true, "Sands Unleashed", "Split on starting the first fight after the CGI cutscene", new Func<bool>(() => vars.SandsUnleashed()))},
+        {"FirstGuestRoom", Tuple.Create(false, "First Guest Room", "Split on entering the first guest room", new Func<bool>(() => vars.FirstGuestRoom()))},
+        {"SultanChamberZipless", Tuple.Create(false, "Sultan's Chamber", "Split on entering the Sultan's chamber at the cutscene", new Func<bool>(() => vars.SultanChamberZipless()))},
+        {"SultanChamber", Tuple.Create(false, "The Sultan's Chamber (death)", "Split at the death abuse in Sultan's chamber", new Func<bool>(() => vars.SultanChamber()))},
+        {"PalaceDefence", Tuple.Create(false, "The Palace's Defence System", "Split on exiting the palace defense system", new Func<bool>(() => vars.PalaceDefence()))},
+        {"DadStart", Tuple.Create(false, "Dad Fight (Start)", "Split on starting the fight with the Sand King", new Func<bool>(() => vars.DadStart()))},
+        {"DadDead", Tuple.Create(true, "Dad Fight (End)", "Split at the end of the fight on loading the next area", new Func<bool>(() => vars.DadDead()))},
+        {"TheWarehouse", Tuple.Create(false, "The Warehouse", "Split on hitting the button to let Farah enter Warehouse", new Func<bool>(() => vars.TheWarehouse()))},
+        {"TheZoo", Tuple.Create(false, "The Sultan's Zoo", "Split on entering the zoo", new Func<bool>(() => vars.TheZoo()))},
+        {"BirdCage", Tuple.Create(false, "Atop a Bird Cage", "Split at the 'Atop a bird cage' save vortex", new Func<bool>(() => vars.BirdCage()))},
+        {"CliffWaterfalls", Tuple.Create(false, "Cliffs and Waterfall", "Split at the start of cliffs and waterfall", new Func<bool>(() => vars.CliffWaterfalls()))},
+        {"TheBathsZipless", Tuple.Create(false, "The Baths", "Split at the end of cliffs and Waterfall", new Func<bool>(() => vars.TheBathsZipless()))},
+        {"TheBaths", Tuple.Create(false, "The Baths (death)", "Split on death abuse at the start of baths", new Func<bool>(() => vars.TheBaths()))},
+        {"SecondSword", Tuple.Create(false, "Second Sword", "Split on obtaining the second sword at baths", new Func<bool>(() => vars.SecondSword()))},
+        {"TheDaybreak", Tuple.Create(false, "Daybreak", "Split at the start of daybreak", new Func<bool>(() => vars.TheDaybreak()))},
+        {"TheMesshall", Tuple.Create(false, "Soldiers' Mess Hall (death)", "Split on death abuse in the mess hall", new Func<bool>(() => vars.TheMesshall()))},
+        {"DrawbridgeTower", Tuple.Create(false, "Drawbridge Tower", "Split near the first lever at Drawbridge Tower", new Func<bool>(() => vars.DrawbridgeTower()))},
+        {"BrokenBridge", Tuple.Create(false, "A Broken Bridge", "Split at the end of the collapsing bridge", new Func<bool>(() => vars.BrokenBridge()))},
+        {"TheCavesZipless", Tuple.Create(false, "The Caves", "Split on entering the caves after the door", new Func<bool>(() => vars.TheCavesZipless()))},
+        {"TheCaves", Tuple.Create(false, "The Caves (alternate)", "Split on the beam at the start of Waterfall", new Func<bool>(() => vars.TheCaves()))},
+        {"TheWaterfall", Tuple.Create(false, "The Waterfall", "Split at the end of the descent in Waterfall", new Func<bool>(() => vars.TheWaterfall()))},
+        {"TheUGReservoirZipless", Tuple.Create(false, "An Underground Reservoir", "Split on entering the underground reservoir", new Func<bool>(() => vars.TheUGReservoirZipless()))},
+        {"TheUGReservoir", Tuple.Create(false, "An Underground Reservoir", "Split on exiting the underground reservoir", new Func<bool>(() => vars.TheUGReservoir()))},
+        {"HallofLearning", Tuple.Create(false, "The Hall of Learning", "Split on entering the hall of learning", new Func<bool>(() => vars.HallofLearning()))},
+        {"TheObservatory", Tuple.Create(false, "Observatory (death)", "Split on death abuse at the end of observatory", new Func<bool>(() => vars.TheObservatory()))},
+        {"ObservatoryExit", Tuple.Create(false, "Exit Observatory", "Split on exiting the observatory", new Func<bool>(() => vars.ObservatoryExit()))},
+        {"HoLCourtyardsExit", Tuple.Create(false, "Exit Hall of Learning Courtyards", "Split on exiting hall of learning courtyards", new Func<bool>(() => vars.HoLCourtyardsExit()))},
+        {"TheAzadPrison", Tuple.Create(false, "The Azad Prison", "Split on entering the prison", new Func<bool>(() => vars.TheAzadPrison()))},
+        {"TortureChamberZipless", Tuple.Create(false, "Torture Chamber", "Split on entering the torture chamber", new Func<bool>(() => vars.TortureChamberZipless()))},
+        {"TortureChamber", Tuple.Create(false, "Torture Chamber (death)", "Split on death abuse at the start of torture chamber", new Func<bool>(() => vars.TortureChamber()))},
+        {"TheElevator", Tuple.Create(false, "The Elevator", "Split on entering the elevator", new Func<bool>(() => vars.TheElevator()))},
+        {"TheDreamZipless", Tuple.Create(false, "A Magic Cavern", "Split at the start of the long unskippable cutscene", new Func<bool>(() => vars.TheDreamZipless()))},
+        {"TheDream", Tuple.Create(false, "A Magic Cavern (alternate)", "Split at the start of the 'infinite' stairs", new Func<bool>(() => vars.TheDream()))},
+        {"TheTomb", Tuple.Create(false, "The Tomb", "Split at the start of the tomb", new Func<bool>(() => vars.TheTomb()))},
+        {"TowerofDawn", Tuple.Create(false, "Tower of Dawn", "Split at the start of the ascent back up the Tower of Dawn", new Func<bool>(() => vars.TowerofDawn()))},
+        {"SettingSun", Tuple.Create(false, "Setting Sun", "Split on the Ladder near the setting sun save", new Func<bool>(() => vars.SettingSun()))},
+        {"HonorGlory", Tuple.Create(true, "Honor and Glory", "Split on starting the last fight with enemies", new Func<bool>(() => vars.HonorGlory()))},
+        {"GrandRewind", Tuple.Create(true, "Grand Rewind", "Split on starting the Vizier fight", new Func<bool>(() => vars.GrandRewind()))},
+        {"SoTEnd", Tuple.Create(true, "The End", "Split on defeating the Vizier or hitting the credits trigger", new Func<bool>(() => vars.SoTEnd()))},
+        {"SoTLU", Tuple.Create(false, "Life Upgrades", "Split on obtaining each life upgrade", new Func<bool>(() => vars.SoTLU()))},
+    };
+
+    foreach (var data in vars.splitsData) {
+        settings.Add(data.Key, data.Value.Item1, data.Value.Item2);
+        settings.SetToolTip(data.Key, data.Value.Item3);
+    }
 }
 
 init
 {
+    vars.inXRange = (Func<float, float, bool>)((xMin, xMax) => { return current.xPos >= xMin && current.xPos <= xMax; });
+    vars.inYRange = (Func<float, float, bool>)((yMin, yMax) => { return current.yPos >= yMin && current.yPos <= yMax; });
+    vars.inZRange = (Func<float, float, bool>)((zMin, zMax) => { return current.zPos >= zMin && current.zPos <= zMax; });
+    vars.splitByXYZ = (Func<float, float, float, float, float, float, bool>)((xMin, xMax, yMin, yMax, zMin, zMax) => {
+        return
+            vars.inXRange(xMin, xMax) &&
+            vars.inYRange(yMin, yMax) &&
+            vars.inZRange(zMin, zMax);
+    });
+
     // List of SoT Splits across categories
-    vars.GasStation = (Func <bool>)(() => {
-        if (current.xPos >= 252 && current.xPos <= 258 &&
-           current.yPos >= 130.647 && current.yPos <= 134 &&
-           current.zPos >= 22.999 && current.zPos <= 23.001)
-            return true;
-        return false;
-    });
-    vars.SandsUnleashed = (Func <bool>)(() => {
-        if (current.xPos >= -6.177 && current.xPos <= -6.175 &&
-           current.yPos >= 62.905 && current.yPos <= 62.907 &&
-           current.zPos >= 7.604 && current.zPos <= 7.606)
-            return true;
-        return false;
-    });
-    vars.FirstGuestRoom = (Func <bool>)(() => {
-        if (current.xPos >= 30.297 && current.xPos <= 30.299 &&
-           current.yPos >= 42.126 && current.yPos <= 42.128 &&
-           current.zPos >= 12.998 && current.zPos <= 13)
-            return true;
-        return false;
-    });
-    vars.SultanChamberZipless = (Func <bool>)(() => {
-        if (current.xPos >= 98.445 && current.xPos <= 98.447 &&
-           current.yPos >= 39.567 && current.yPos <= 39.57 &&
-           current.zPos >= -8.96 && current.zPos <= -8.958)
-            return true;
-        return false;
-    });
-    vars.SultanChamber = (Func <bool>)(() => {
-        if (current.xPos >= 134.137 && current.xPos <= 134.139 &&
-           current.yPos >= 54.990 && current.yPos <= 54.992 &&
-           current.zPos >= -32.791 && current.zPos <= -32.789)
-            return true;
-        return false;
-    });
-    vars.PalaceDefence = (Func <bool>)(() => {
-        if (current.xPos >= 4.547 && current.xPos <= 8.851 &&
-           current.yPos >= 40.494 && current.yPos <= 47.519 &&
-           current.zPos >= -39.001 && current.zPos <= -38.999)
-            return true;
-        return false;
-    });
-    vars.DadStart = (Func <bool>)(() => {
-        if (current.xPos >= 6.714 && current.xPos <= 6.716 &&
-           current.yPos >= 57.698 && current.yPos <= 57.7 &&
-           current.zPos >= 21.005 && current.zPos <= 21.007)
-            return true;
-        return false;
-    });
-    vars.DadDead = (Func <bool>)(() => {
-        if (current.xPos >= -6.001 && current.xPos <= -5.999 &&
-           current.yPos >= -18.6 && current.yPos <= -18.4 &&
-           current.zPos >= 1.998 && current.zPos <= 2.001)
-            return true;
-        return false;
-    });
-    vars.TheWarehouse = (Func <bool>)(() => {
-        if (current.xPos >= -73.352 && current.xPos <= -71.233 &&
-           current.yPos >= -28.5 && current.yPos <= -26.868 &&
-           current.zPos >= -1.001 && current.zPos <= -0.818)
-            return true;
-        return false;
-    });
-    vars.TheZoo = (Func <bool>)(() => {
-        if (current.xPos >= -141.299 && current.xPos <= -139.797 &&
-           current.yPos >= -47.21 && current.yPos <= -42.801 &&
-           current.zPos >= -31.1 && current.zPos <= -30.9)
-            return true;
-        return false;
-    });
-    vars.BirdCage = (Func <bool>)(() => {
-        if (current.xPos >= -211 && current.xPos <= -208 &&
-           current.yPos >= -23 && current.yPos <= -21 &&
-           current.zPos >= -9 && current.zPos <= -8.8)
-            return true;
-        return false;
-    });
-    vars.CliffWaterfalls = (Func <bool>)(() => {
-        if (current.xPos >= -233.6 && current.xPos <= -231.4 &&
-           current.yPos >= 33.7 && current.yPos <= 35 &&
-           current.zPos >= -42.6 && current.zPos <= -42.4)
-            return true;
-        return false;
-    });
-    vars.TheBathsZipless = (Func <bool>)(() => {
-        if (current.xPos >= -215.85 && current.xPos <= -214.089 &&
-           current.yPos >= 54.261 && current.yPos <= 58.699 &&
-           current.zPos >= -43.501 && current.zPos <= -43.499)
-            return true;
-        return false;
-    });
-    vars.TheBaths = (Func <bool>)(() => {
-        if (current.xPos >= -211.427 && current.xPos <= -211.425 &&
-           current.yPos >= 56.602 && current.yPos <= 56.604 &&
-           current.zPos >= -43.501 && current.zPos <= -43.499)
-            return true;
-        return false;
-    });
-    vars.SecondSword = (Func <bool>)(() => {
-        if (current.xPos >= -106.819 && current.xPos <= -106.817 &&
-           current.yPos >= 81.097 && current.yPos <= 81.099 &&
-           current.zPos >= -27.269 && current.zPos <= -27.267)
-            return true;
-        return false;
-    });
-    vars.TheDaybreak = (Func <bool>)(() => {
-        if (current.xPos >= -76 && current.xPos <= -70 &&
-           current.yPos >= 192.4 && current.yPos <= 197.6 &&
-           current.zPos >= -56.6 && current.zPos <= -54)
-            return true;
-        return false;
-    });
-    vars.TheMesshall = (Func <bool>)(() => {
-        if (current.xPos >= -183.267 && current.xPos <= -183.265 &&
-           current.yPos >= 234.685 && current.yPos <= 234.687 &&
-           current.zPos >= -37.528 && current.zPos <= -37.526)
-            return true;
-        return false;
-    });
-    vars.DrawbridgeTower = (Func <bool>)(() => {
-        if (current.xPos >= -267 && current.xPos <= -262 &&
-           current.yPos >= 232 && current.yPos <= 267 &&
-           current.zPos >= -35.6 && current.zPos <= -35.5)
-            return true;
-        return false;
-    });
-    vars.BrokenBridge = (Func <bool>)(() => {
-        if (current.xPos >= -265 && current.xPos <= -257 &&
-           current.yPos >= 159 && current.yPos <= 167 &&
-           current.zPos >= -13.6 && current.zPos <= -13.4)
-            return true;
-        return false;
-    });
-    vars.TheCavesZipless = (Func <bool>)(() => {
-        if (current.xPos >= -303 && current.xPos <= -297.5 &&
-           current.yPos >= 112 && current.yPos <= 113.5 &&
-           current.zPos >= -56.1 && current.zPos <= -55.9)
-            return true;
-        return false;
-    });
-    vars.TheCaves = (Func <bool>)(() => {
-        if (current.xPos >= -246.839 && current.xPos <= -241.677 &&
-           current.yPos >= 78.019 && current.yPos <= 87.936 &&
-           current.zPos >= -71.731 && current.zPos <= -70.7)
-            return true;
-        return false;
-    });
-    vars.TheCavesAC = (Func <bool>)(() => {
-        if (current.xPos >=-171.193 && current.xPos <= -171.191 &&
-           current.yPos >= -52.07 && current.yPos <= -52.068 &&
-           current.zPos >= -119.863 && current.zPos <= -119.861)
-            return true;
-        return false;
-    });
-    vars.TheWaterfall = (Func <bool>)(() => {
-        if (current.xPos >= -242 && current.xPos <= -240.5 &&
-           current.yPos >= 79.5 && current.yPos <= 83 &&
-           current.zPos >= -121 && current.zPos <= -118)
-            return true;
-        return false;
-    });
-    vars.TheUGReservoirZipless = (Func <bool>)(() => {
-        if (current.xPos >= -121 && current.xPos <= -110 &&
-           current.yPos >= -9 && current.yPos <= -7 &&
-           current.zPos >= -154.1 && current.zPos <= -153.9)
-            return true;
-        return false;
-    });
-    vars.TheUGReservoir = (Func <bool>)(() => {
-        if (current.xPos >= -51.477 && current.xPos <= -48.475 &&
-           current.yPos >= 72.155 && current.yPos <= 73.657 &&
-           current.zPos >= -24.802 && current.zPos <= -24.799)
-            return true;
-        return false;
-    });
-    vars.HallofLearning = (Func <bool>)(() => {
-        if (current.xPos >= 73 && current.xPos <= 79 &&
-           current.yPos >= 161 && current.yPos <= 163 &&
-           current.zPos >= -24.1 && current.zPos <= -23.9)
-            return true;
-        return false;
-    });
-    vars.TheObservatory = (Func <bool>)(() => {
-        if (current.xPos >= 139.231 && current.xPos <= 139.233 &&
-           current.yPos >= 162.556 && current.yPos <= 162.558 &&
-           current.zPos >= -29.502 && current.zPos <= -29.5)
-            return true;
-        return false;
-    });
-    vars.ObservatoryExit = (Func <bool>)(() => {
-        if (current.xPos >= 137 && current.xPos <= 141 &&
-           current.yPos >= 164 && current.yPos <= 164.67 &&
-           current.zPos >= -29.5 && current.zPos <= -29.2)
-            return true;
-        return false;
-    });
-    vars.HoLCourtyardsExit = (Func <bool>)(() => {
-        if (current.xPos >= 72 && current.xPos <= 77 &&
-           current.yPos >= 90 && current.yPos <= 95.7 &&
-           current.zPos >= -27.1 && current.zPos <= -26.9)
-            return true;
-        return false;
-    });
-    vars.TheAzadPrison = (Func <bool>)(() => {
-        if (current.xPos >= 190 && current.xPos <= 195 &&
-           current.yPos >= -21 && current.yPos <= -19 &&
-           current.zPos >= -17.6 && current.zPos <= -17.3)
-            return true;
-        return false;
-    });
-    vars.TortureChamberZipless = (Func <bool>)(() => {
-        if (current.xPos >= 187.5 && current.xPos <= 192.5 &&
-           current.yPos >= -39 && current.yPos <= -37.5 &&
-           current.zPos >= -119.1 && current.zPos <= -118.9)
-            return true;
-        return false;
-    });
-    vars.TortureChamber = (Func <bool>)(() => {
-        if (current.xPos >= 189.999 && current.xPos <= 190.001 &&
-           current.yPos >= -43.278 && current.yPos <= -43.276 &&
-           current.zPos >= -119.001 && current.zPos <= -118.999)
-            return true;
-        return false;
-    });
-    vars.TheElevator = (Func <bool>)(() => {
-        if (current.xPos >= 74 && current.xPos <= 75 &&
-           current.yPos >= -46.751 && current.yPos <= -43.252 &&
-           current.zPos >= -34 && current.zPos <= -33)
-            return true;
-        return false;
-    });
-    vars.TheDreamZipless = (Func <bool>)(() => {
-        if (current.xPos >= 99 && current.xPos <= 101 &&
-           current.yPos >= -11 && current.yPos <= -10 &&
-           current.zPos >= -56 && current.zPos <= -54)
-            return true;
-        return false;
-    });
-    vars.TheDream = (Func <bool>)(() => {
-        if (current.xPos >= 95.8 && current.xPos <= 96 &&
-           current.yPos >= -25.1 && current.yPos <= -24.9 &&
-           current.zPos >= -74.9 && current.zPos <= -74.7)
-            return true;
-        return false;
-    });
-    vars.TheTomb = (Func <bool>)(() => {
-        if (current.xPos >= 100.643 && current.xPos <= 100.645 &&
-           current.yPos >= -11.543 && current.yPos <= -11.541 &&
-           current.zPos >= -67.588 && current.zPos <= -67.586)
-            return true;
-        return false;
-    });
-    vars.TowerofDawn = (Func <bool>)(() => {
-        if (current.xPos >= 35.5 && current.xPos <= 35.7 &&
-           current.yPos >= -50 && current.yPos <= -39 &&
-           current.zPos >= -32 && current.zPos <= -30)
-            return true;
-        return false;
-    });
-    vars.SettingSun = (Func <bool>)(() => {
-        if (current.xPos >= 60 && current.xPos <= 61 &&
-           current.yPos >= -58 && current.yPos <= -57 &&
-           current.zPos >= 30 && current.zPos <= 32)
-            return true;
-        return false;
-    });
-    vars.HonorGlory = (Func <bool>)(() => {
-        if (current.xPos >= 81 && current.xPos <= 82 &&
-           current.yPos >= -60.3 && current.yPos <= -59.7 &&
-           current.zPos >= 89 && current.zPos <= 90)
-            return true;
-        return false;
-    });
-    vars.LastFightSkip = (Func <bool>)(() => {
-        if (current.xPos >= 58 && current.xPos <= 61 &&
-           current.yPos >= -60 && current.yPos <= -57.5 &&
-           current.zPos >= 29 && current.zPos <= 30.5 &&
-           settings["Lastfightskip"])
-            return true;
-        return false;
-    });
-    vars.GrandRewind = (Func <bool>)(() => {
-        if (current.xPos >= 660.376 && current.xPos <= 660.378 &&
-          current.yPos >= 190.980 && current.yPos <= 190.983 &&
-          current.zPos >= 0.432 && current.zPos <= 0.434)
-            return true;
-        return false;
-    });
-    vars.SoTEnd = (Func <bool>)(() => {
-        if (current.xPos >= 658.26 && current.xPos <= 661.46 &&
-           current.yPos >= 210.92 && current.yPos <= 213.72 &&
-           current.zPos >= 12.5)
-            vars.aboveCredits = true;
-        if (current.xPos >= 658.26 && current.xPos <= 661.46 &&
-           current.yPos >= 210.92 && current.yPos <= 213.72 &&
-           current.zPos >= 9.8 && current.zPos <= 12.5 &&
-           vars.aboveCredits)
-            return true;
-        if (current.vizierHealth == 4)
-            return true;
-        return false;
-    });
-    vars.SoTLU = (Func <bool>)(() => {
-        if (current.xPos >= -477.88 && current.xPos <= -477 &&
-           current.yPos >= -298 && current.yPos <= -297.1 &&
-           current.zPos >= -0.5 && current.zPos <= -0.4) {
-            vars.newFountain = true;
-            }
-        if (current.xPos >= -492.608 && current.xPos <= -492.606 &&
-           current.yPos >= -248.833 && current.yPos <= -248.831 &&
-           current.zPos >= 0.219 && current.zPos <= 0.221 &&
-           vars.newFountain) {
-            vars.newFountain = false;
-            return true;
-            }
-        return false;
+    vars.GasStation = (Func <bool>)(() => { return vars.splitByXYZ(252f, 258f, 130.647f, 134f, 22.999f, 23.001f); });
+    vars.SandsUnleashed = (Func <bool>)(() => { return vars.splitByXYZ(-6.177f, -6.175f, 62.905f, 62.907f, 7.604f, 7.606f); });
+    vars.FirstGuestRoom = (Func <bool>)(() => { return vars.splitByXYZ(30.297f, 30.299f, 42.126f, 42.128f, 12.998f, 13f); });
+    vars.SultanChamberZipless = (Func <bool>)(() => { return vars.splitByXYZ(98.445f, 98.447f, 39.567f, 39.57f, -8.96f, -8.958f); });
+    vars.SultanChamber = (Func <bool>)(() => { return vars.splitByXYZ(134.137f, 134.139f, 54.990f, 54.992f, -32.791f, -32.789f); });
+    vars.PalaceDefence = (Func <bool>)(() => { return vars.splitByXYZ(4.547f, 8.851f, 40.494f, 47.519f, -39.001f, -38.999f); });
+    vars.DadStart = (Func <bool>)(() => { return vars.splitByXYZ(6.714f, 6.716f, 57.698f, 57.7f, 21.005f, 21.007f); });
+    vars.DadDead = (Func <bool>)(() => { return vars.splitByXYZ(-6.001f, -5.999f, -18.6f, -18.4f, 1.998f, 2.001f); });
+    vars.TheWarehouse = (Func <bool>)(() => { return vars.splitByXYZ(-73.352f, -71.233f, -28.5f, -26.868f, -1.001f, -0.818f); });
+    vars.TheZoo = (Func <bool>)(() => { return vars.splitByXYZ(-141.299f, -139.797f, -47.21f, -42.801f, -31.1f, -30.9f); });
+    vars.BirdCage = (Func <bool>)(() => { return vars.splitByXYZ(-211f, -208f, -23f, -21f, -9f, -8.8f); });
+    vars.CliffWaterfalls = (Func <bool>)(() => { return vars.splitByXYZ(-233.6f, -231.4f, 33.7f, 35f, -42.6f, -42.4f); });
+    vars.TheBathsZipless = (Func <bool>)(() => { return vars.splitByXYZ(-215.85f, -214.089f, 54.261f, 58.699f, -43.501f, -43.499f); });
+    vars.TheBaths = (Func <bool>)(() => { return vars.splitByXYZ(-211.427f, -211.425f, 56.602f, 56.604f, -43.501f, -43.499f); });
+    vars.SecondSword = (Func <bool>)(() => { return vars.splitByXYZ(-106.819f, -106.817f, 81.097f, 81.099f, -27.269f, -27.267f); });
+    vars.TheDaybreak = (Func <bool>)(() => { return vars.splitByXYZ(-76f, -70f, 192.4f, 197.6f, -56.6f, -54f); });
+    vars.TheMesshall = (Func <bool>)(() => { return vars.splitByXYZ(-183.267f, -183.265f, 234.685f, 234.687f, -37.528f, -37.526f); });
+    vars.DrawbridgeTower = (Func <bool>)(() => { return vars.splitByXYZ(-267f, -262f, 232f, 267f, -35.6f, -35.5f); });
+    vars.BrokenBridge = (Func <bool>)(() => { return vars.splitByXYZ(-265f, -257f, 159f, 167f, -13.6f, -13.4f); });
+    vars.TheCavesZipless = (Func <bool>)(() => { return vars.splitByXYZ(-303f, -297.5f, 112f, 113.5f, -56.1f, -55.9f); });
+    vars.TheCaves = (Func <bool>)(() => { return vars.splitByXYZ(-246.839f, -241.677f, 78.019f, 87.936f, -71.731f, -70.7f); });
+    vars.TheWaterfall = (Func <bool>)(() => { return vars.splitByXYZ(-242f, -240.5f, 79.5f, 83f, -121f, -118f); });
+    vars.TheUGReservoirZipless = (Func <bool>)(() => { return vars.splitByXYZ(-121f, -110f, -9f, -7f, -154.1f, -153.9f); });
+    vars.TheUGReservoir = (Func <bool>)(() => { return vars.splitByXYZ(-51.477f, -48.475f, 72.155f, 73.657f, -24.802f, -24.799f); });
+    vars.HallofLearning = (Func <bool>)(() => { return vars.splitByXYZ(73f, 79f, 161f, 163f, -24.1f, -23.9f); });
+    vars.TheObservatory = (Func <bool>)(() => { return vars.splitByXYZ(139.231f, 139.233f, 162.556f, 162.558f, -29.502f, -29.5f); });
+    vars.ObservatoryExit = (Func <bool>)(() => { return vars.splitByXYZ(137f, 141f, 164f, 164.67f, -29.5f, -29.2f); });
+    vars.HoLCourtyardsExit = (Func <bool>)(() => { return vars.splitByXYZ(72f, 77f, 90f, 95.7f, -27.1f, -26.9f); });
+    vars.TheAzadPrison = (Func <bool>)(() => { return vars.splitByXYZ(190f, 195f, -21f, -19f, -17.6f, -17.3f); });
+    vars.TortureChamberZipless = (Func <bool>)(() => { return vars.splitByXYZ(187.5f, 192.5f, -39f, -37.5f, -119.1f, -118.9f); });
+    vars.TortureChamber = (Func <bool>)(() => { return vars.splitByXYZ(189.999f, 190.001f, -43.278f, -43.276f, -119.001f, -118.999f); });
+    vars.TheElevator = (Func <bool>)(() => { return vars.splitByXYZ(74f, 75f, -46.751f, -43.252f, -34f, -33f); });
+    vars.TheDreamZipless = (Func <bool>)(() => { return vars.splitByXYZ(99f, 101f, -11f, -10f, -56f, -54f); });
+    vars.TheDream = (Func <bool>)(() => { return vars.splitByXYZ(95.8f, 96f, -25.1f, -24.9f, -74.9f, -74.7f); });
+    vars.TheTomb = (Func <bool>)(() => { return vars.splitByXYZ(100.643f, 100.645f, -11.543f, -11.541f, -67.588f, -67.586f); });
+    vars.TowerofDawn = (Func <bool>)(() => { return vars.splitByXYZ(35.5f, 35.7f, -50f, -39f, -32f, -30f); });
+    vars.SettingSun = (Func <bool>)(() => { return vars.splitByXYZ(60f, 61f, -58f, -57f, 30f, 32f); });
+    vars.HonorGlory = (Func <bool>)(() => { return vars.splitByXYZ(81f, 82f, -60.3f, -59.7f, 89f, 90f); });
+    vars.GrandRewind = (Func <bool>)(() => { return vars.splitByXYZ(660.376f, 660.378f, 190.980f, 190.983f, 0.432f, 0.434f); });
+    vars.SoTEnd = (Func <bool>)(() => { return (vars.splitByXYZ(658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f) && vars.CompletedSplits.Contains("AboveCredits")) || current.vizierHealth == 4f; });
+    vars.SoTLU = (Func <bool>)(() => { return vars.splitByXYZ(-492.608f, -492.606f, -248.833f, -248.831f, 0.219f, 0.221f); });
+
+    // Deprecated or Unused Splits
+    vars.TheCavesDeath = (Func <bool>)(() => { return vars.splitByXYZ(-171.193f, -171.191f, -52.07f, -52.068f, -119.863f, -119.861f); });
+
+    vars.CompletedSplits = new HashSet<string>();
+
+    vars.CheckSplit = (Func<string, bool>)(key => {
+        return (vars.CompletedSplits.Add(key) && settings[key]);
     });
 }
 
@@ -349,9 +140,8 @@ start
 
 onStart
 {
-    vars.aboveCredits = false;
-    vars.newFountain = false;
-    vars.startUp = true;
+    // Refresh all splits when we start the run, none are yet completed
+    vars.CompletedSplits.Clear();
 }
 
 reset
@@ -364,547 +154,13 @@ reset
 
 split
 {
-    switch(timer.Run.GetExtendedCategoryName()) {
-        case "Any% (Standard)":
-            switch (timer.CurrentSplitIndex) {
-                //The Treasure Vaults
-                case 0:
-                    return vars.GasStation();
-                //The Sands of Time
-                case 1:
-                    return vars.SandsUnleashed();
-                //The Sultan's Chamber (Death)
-                case 2:
-                    return vars.SultanChamber();
-                //Death of the Sand King
-                case 3:
-                    return vars.DadDead();
-                //The Baths (Death)
-                case 4:
-                    return vars.TheBaths();
-                //The Messhall (Death)
-                case 5:
-                    return vars.TheMesshall();
-                //The Caves
-                case 6:
-                    return vars.TheCaves();
-                //Exit Underground Reservoir
-                case 7:
-                    return vars.TheUGReservoir();
-                //The Observatory (Death)
-                case 8:
-                    return vars.TheObservatory();
-                //The Torture Chamber (Death)
-                case 9:
-                    return vars.TortureChamber();
-                //The Dream
-                case 10:
-                    return vars.TheDream();
-                //Honor and Glory
-                case 11:
-                    if (vars.HonorGlory()||vars.LastFightSkip())
-                        return true;
-                    break;
-                //The Grand Rewind
-                case 12:
-                    return vars.GrandRewind();
-                //The End
-                case 13:
-                    return vars.SoTEnd();
-            }
-            break;
-
-        case "Any% (Zipless)":
-            switch (timer.CurrentSplitIndex) {
-                //The Treasure Vaults
-                case 0:
-                    return vars.GasStation();
-                //The Sands of Time
-                case 1:
-                    return vars.SandsUnleashed();
-                //First Guest Room
-                case 2:
-                    return vars.FirstGuestRoom();
-                //The Sultan's Chamber
-                case 3:
-                    return vars.SultanChamberZipless();
-                //Exit Palace Defense
-                case 4:
-                    return vars.PalaceDefence();
-                //The Sand King
-                case 5:
-                    return vars.DadStart();
-                //Death of the Sand King
-                case 6:
-                    return vars.DadDead();
-                //The Warehouse
-                case 7:
-                    return vars.TheWarehouse();
-                //The Zoo
-                case 8:
-                    return vars.TheZoo();
-                //Atop a Bird Cage
-                case 9:
-                    return vars.BirdCage();
-                //Cliffs and Waterfall
-                case 10:
-                    return vars.CliffWaterfalls();
-                //The Baths
-                case 11:
-                    return vars.TheBathsZipless();
-                //Sword of the Mighty Warrior
-                case 12:
-                    return vars.SecondSword();
-                //Daybreak
-                case 13:
-                    return vars.TheDaybreak();
-                //Drawbridge Tower
-                case 14:
-                    return vars.DrawbridgeTower();
-                //A Broken Bridge
-                case 15:
-                    return vars.BrokenBridge();
-                //The Caves
-                case 16:
-                    return vars.TheCavesZipless();
-                //Waterfall
-                case 17:
-                    return vars.TheWaterfall();
-                //An Underground Reservoir
-                case 18:
-                    return vars.TheUGReservoirZipless();
-                //Hall of Learning
-                case 19:
-                    return vars.HallofLearning();
-                //Exit Observatory
-                case 20:
-                    return vars.ObservatoryExit();
-                //Exit Hall of Learning Courtyards
-                case 21:
-                    return vars.HoLCourtyardsExit();
-                //The Prison
-                case 22:
-                    return vars.TheAzadPrison();
-                //The Torture Chamber
-                case 23:
-                    return vars.TortureChamberZipless();
-                //The Elevator
-                case 24:
-                    return vars.TheElevator();
-                //The Dream
-                case 25:
-                    return vars.TheDreamZipless();
-                //The Tomb
-                case 26:
-                    return vars.TheTomb();
-                //The Tower of Dawn
-                case 27:
-                    return vars.TowerofDawn();
-                //The Setting Sun
-                case 28:
-                    return vars.SettingSun();
-                //Honor and Glory
-                case 29:
-                    return vars.HonorGlory();
-                //The Grand Rewind
-                case 30:
-                    return vars.GrandRewind();
-                //The End
-                case 31:
-                    return vars.SoTEnd();
-            }
-            break;
-
-        case "Any% (No Major Glitches)":
-            switch (timer.CurrentSplitIndex) {
-                //The Treasure Vaults
-                case 0:
-                    return vars.GasStation();
-                //The Sands of Time
-                case 1:
-                    return vars.SandsUnleashed();
-                //First Guest Room
-                case 2:
-                    return vars.FirstGuestRoom();
-                //The Sultan's Chamber
-                case 3:
-                    return vars.SultanChamberZipless();
-                //Exit Palace Defense
-                case 4:
-                    return vars.PalaceDefence();
-                //The Sand King
-                case 5:
-                    return vars.DadStart();
-                //Death of the Sand King
-                case 6:
-                    return vars.DadDead();
-                //The Warehouse
-                case 7:
-                    return vars.TheWarehouse();
-                //The Zoo
-                case 8:
-                    return vars.TheZoo();
-                //Atop a Bird Cage
-                case 9:
-                    return vars.BirdCage();
-                //Cliffs and Waterfall
-                case 10:
-                    return vars.CliffWaterfalls();
-                //The Baths
-                case 11:
-                    return vars.TheBathsZipless();
-                //Sword of the Mighty Warrior
-                case 12:
-                    return vars.SecondSword();
-                //Daybreak
-                case 13:
-                    return vars.TheDaybreak();
-                //Drawbridge Tower
-                case 14:
-                    return vars.DrawbridgeTower();
-                //A Broken Bridge
-                case 15:
-                    return vars.BrokenBridge();
-                //The Caves
-                case 16:
-                    return vars.TheCavesZipless();
-                //Waterfall
-                case 17:
-                    return vars.TheWaterfall();
-                //An Underground Reservoir
-                case 18:
-                    return vars.TheUGReservoirZipless();
-                //Hall of Learning
-                case 19:
-                    return vars.HallofLearning();
-                //Exit Observatory
-                case 20:
-                    return vars.ObservatoryExit();
-                //Exit Hall of Learning Courtyards
-                case 21:
-                    return vars.HoLCourtyardsExit();
-                //The Prison
-                case 22:
-                    return vars.TheAzadPrison();
-                //The Torture Chamber
-                case 23:
-                    return vars.TortureChamberZipless();
-                //The Elevator
-                case 24:
-                    return vars.TheElevator();
-                //The Dream
-                case 25:
-                    return vars.TheDreamZipless();
-                //The Tomb
-                case 26:
-                    return vars.TheTomb();
-                //The Tower of Dawn
-                case 27:
-                    return vars.TowerofDawn();
-                //The Setting Sun
-                case 28:
-                    return vars.SettingSun();
-                //Honor and Glory
-                case 29:
-                    return vars.HonorGlory();
-                //The Grand Rewind
-                case 30:
-                    return vars.GrandRewind();
-                //The End
-                case 31:
-                    return vars.SoTEnd();
-            }
-            break;
-
-        case "All Collectibles (Standard)":
-            switch (timer.CurrentSplitIndex) {
-                //The Treasure Vaults
-                case 0:
-                    return vars.GasStation();
-                //The Sands of Time
-                case 1:
-                    return vars.SandsUnleashed();
-                //Life Upgrade 1
-                case 2:
-                    return vars.SoTLU();
-                //Life Upgrade 2
-                case 3:
-                    return vars.SoTLU();
-                //Life Upgrade 3
-                case 4:
-                    return vars.SoTLU();
-                //The Baths (Death)
-                case 5:
-                    return vars.TheBaths();
-                //Life Upgrade 4
-                case 6:
-                    return vars.SoTLU();
-                //The Messhall (Death)
-                case 7:
-                    return vars.TheMesshall();
-                //Life Upgrade 5
-                case 8:
-                    return vars.SoTLU();
-                //The Caves (Death)
-                case 9:
-                    return vars.TheCaves();
-                //Life Upgrade 6
-                case 10:
-                    return vars.SoTLU();
-                //Life Upgrade 7
-                case 11:
-                    return vars.SoTLU();
-                //The Observatory (Death)
-                case 12:
-                    return vars.TheObservatory();
-                //Life Upgrade 8
-                case 13:
-                    return vars.SoTLU();
-                //Life Upgrade 9
-                case 14:
-                    return vars.SoTLU();
-                //The Dream
-                case 15:
-                    return vars.TheDream();
-                //Life Upgrade 10
-                case 16:
-                    return vars.SoTLU();
-                //Honor and Glory
-                case 17:
-                    if (vars.HonorGlory()||vars.LastFightSkip())
-                        return true;
-                    break;
-                //The Grand Rewind
-                case 18:
-                    return vars.GrandRewind();
-                //The End
-                case 19:
-                    return vars.SoTEnd();
-            }
-            break;
-
-        case "All Collectibles (Zipless)":
-            switch (timer.CurrentSplitIndex) {
-                //The Treasure Vaults
-                case 0:
-                    return vars.GasStation();
-                //The Sands of Time
-                case 1:
-                    return vars.SandsUnleashed();
-                //First Guest Room
-                case 2:
-                    return vars.FirstGuestRoom();
-                //Life Upgrade 1
-                case 3:
-                    return vars.SoTLU();
-                //Exit Palace Defense
-                case 4:
-                    return vars.PalaceDefence();
-                //Life Upgrade 2
-                case 5:
-                    return vars.SoTLU();
-                //Death of the Sand King
-                case 6:
-                    return vars.DadDead();
-                //Life Upgrade 3
-                case 7:
-                    return vars.SoTLU();
-                //The Zoo
-                case 8:
-                    return vars.TheZoo();
-                //Atop a Bird Cage
-                case 9:
-                    return vars.BirdCage();
-                //Cliffs and Waterfall
-                case 10:
-                    return vars.CliffWaterfalls();
-                //The Baths
-                case 11:
-                    return vars.TheBathsZipless();
-                //Life Upgrade 4
-                case 12:
-                    return vars.SoTLU();
-                //Daybreak
-                case 13:
-                    return vars.TheDaybreak();
-                //Drawbridge Tower
-                case 14:
-                    return vars.DrawbridgeTower();
-                //A Broken Bridge
-                case 15:
-                    return vars.BrokenBridge();
-                //Life Upgrade 5
-                case 16:
-                    return vars.SoTLU();
-                //Waterfall
-                case 17:
-                    return vars.TheWaterfall();
-                //An Underground Reservoir
-                case 18:
-                    return vars.TheUGReservoirZipless();
-                //Life Upgrade 6
-                case 19:
-                    return vars.SoTLU();
-                //Hall of Learning
-                case 20:
-                    return vars.HallofLearning();
-                //Life Upgrade 7
-                case 21:
-                    return vars.SoTLU();
-                //Exit Observatory
-                case 22:
-                    return vars.ObservatoryExit();
-                //Exit Hall of Learning Courtyards
-                case 23:
-                    return vars.HoLCourtyardsExit();
-                //The Prison
-                case 24:
-                    return vars.TheAzadPrison();
-                //Life Upgrade 8
-                case 25:
-                    return vars.SoTLU();
-                //Life Upgrade 9
-                case 26:
-                    return vars.SoTLU();
-                //The Dream
-                case 27:
-                    if (vars.TheDream)
-                        return true;
-                    break;
-                //The Tomb
-                case 28:
-                    return vars.TheTomb();
-                //Life Upgrade 10
-                case 29:
-                    return vars.SoTLU();
-                //The Tower of Dawn
-                case 30:
-                    return vars.TowerofDawn();
-                //The Setting Sun
-                case 31:
-                    return vars.SettingSun();
-                //Honor and Glory
-                case 32:
-                    return vars.HonorGlory();
-                //The Grand Rewind
-                case 33:
-                    return vars.GrandRewind();
-                //The End
-                case 34:
-                    return vars.SoTEnd();
-            }
-            break;
-
-        case "All Collectibles (No Major Glitches)":
-            switch (timer.CurrentSplitIndex) {
-                //The Treasure Vaults
-                case 0:
-                    return vars.GasStation();
-                //The Sands of Time
-                case 1:
-                    return vars.SandsUnleashed();
-                //First Guest Room
-                case 2:
-                    return vars.FirstGuestRoom();
-                //Life Upgrade 1
-                case 3:
-                    return vars.SoTLU();
-                //Exit Palace Defense
-                case 4:
-                    return vars.PalaceDefence();
-                //Life Upgrade 2
-                case 5:
-                    return vars.SoTLU();
-                //Death of the Sand King
-                case 6:
-                    return vars.DadDead();
-                //Life Upgrade 3
-                case 7:
-                    return vars.SoTLU();
-                //The Zoo
-                case 8:
-                    return vars.TheZoo();
-                //Atop a Bird Cage
-                case 9:
-                    return vars.BirdCage();
-                //Cliffs and Waterfall
-                case 10:
-                    return vars.CliffWaterfalls();
-                //The Baths
-                case 11:
-                    return vars.TheBathsZipless();
-                //Life Upgrade 4
-                case 12:
-                    return vars.SoTLU();
-                //Daybreak
-                case 13:
-                    return vars.TheDaybreak();
-                //Drawbridge Tower
-                case 14:
-                    return vars.DrawbridgeTower();
-                //A Broken Bridge
-                case 15:
-                    return vars.BrokenBridge();
-                //Life Upgrade 5
-                case 16:
-                    return vars.SoTLU();
-                //Waterfall
-                case 17:
-                    return vars.TheWaterfall();
-                //An Underground Reservoir
-                case 18:
-                    return vars.TheUGReservoirZipless();
-                //Life Upgrade 6
-                case 19:
-                    return vars.SoTLU();
-                //Hall of Learning
-                case 20:
-                    return vars.HallofLearning();
-                //Life Upgrade 7
-                case 21:
-                    return vars.SoTLU();
-                //Exit Observatory
-                case 22:
-                    return vars.ObservatoryExit();
-                //Exit Hall of Learning Courtyards
-                case 23:
-                    return vars.HoLCourtyardsExit();
-                //The Prison
-                case 24:
-                    return vars.TheAzadPrison();
-                //Life Upgrade 8
-                case 25:
-                    return vars.SoTLU();
-                //Life Upgrade 9
-                case 26:
-                    return vars.SoTLU();
-                //The Dream
-                case 27:
-                    if (vars.TheDream)
-                        return true;
-                    break;
-                //The Tomb
-                case 28:
-                    return vars.TheTomb();
-                //Life Upgrade 10
-                case 29:
-                    return vars.SoTLU();
-                //The Tower of Dawn
-                case 30:
-                    return vars.TowerofDawn();
-                //The Setting Sun
-                case 31:
-                    return vars.SettingSun();
-                //Honor and Glory
-                case 32:
-                    return vars.HonorGlory();
-                //The Grand Rewind
-                case 33:
-                    return vars.GrandRewind();
-                //The End
-                case 34:
-                    return vars.SoTEnd();
-            }
-            break;
+    if (vars.splitByXYZ(-477.88f, -477f, -298f, -297.1f, -0.5f, -0.4f)) vars.CompletedSplits.Remove("SoTLU");
+    if (vars.splitByXYZ(658.26f, 661.46f, 210.92f, 213.72f, 12.5f, 30f)) vars.CompletedSplits.Add("AboveCredits");
+    
+    foreach (var data in vars.splitsData) {
+        if (data.Value.Item4() && vars.CheckSplit(data.Key)) {
+            print(data.Key);
+            return true;
+        }
     }
 }
