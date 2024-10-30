@@ -94,6 +94,7 @@ state("POP")
 state("pop2")
 {
     // Prince of Persia: Warrior Within
+    int map               : 0x523594;
     short storyValue      : 0x523578;                             // Story counter/gate/value.
     short secondaryWeapon : 0x53F8F0, 0x4, 0x164, 0xC, 0x364;     // A value that changes reliably depending on which weapon you pick up.
     float xPos            : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x30; // The Prince's coords.
@@ -624,6 +625,10 @@ split
                 return vars.inPosFull(xMin, xMax, yMin, yMax, zMin, zMax) && current.storyValue == storyValue ? true : false;
             });
 
+            var splitCutsceneByMap = (Func<HashSet<int>, bool>)((mapIds) => {
+                return (mapIds.Contains(current.map) && vars.oldCutscene == 0 && current.cutscene == 1);
+            });
+
             // Initializing WW Splits:
             bool ActRoomRestored    = posAndStory(-192.5f, -189.5f, 109f, 111f, 471.9f, 472.1f, 19) ? true : false;
             bool ActRoomRuin        = posAndStory(-206f, -205.8f, 59.8f, 67.4f, 162.6f, 163.1f, 18) ? true : false;
@@ -632,6 +637,7 @@ split
             bool BreathOfFate       = posAndStory(-210.018f, -210.016f, 164.259f, 164.261f, 440.9f, 441.1f, 16) ? true : false;
             bool ChasingShadee      = posAndStory(43.3f, 43.4f, -75.7f, -75.6f, 370f, 370.1f, 7) ? true : false;
             bool Dahaka             = posAndStory(40.1f, 42.4f, -96.1f, -95.9f, 86f, 86.1f, 9) ? true : false;
+            bool DahakaBoss         = (splitCutsceneByMap(new HashSet<int> { 989966868 }) && current.yPos > 200);
             bool DamselInDistress   = posAndStory(115f, 132f, -114f, -80f, 357f, 361f, 8) && current.bossHealth == 0 ? true : false;
             bool DeathOfPrince      = posAndStory(-67f, -65.1f, -23.3f, -23.1f, 399.9f, 400f, 64) ? true : false;
             bool DeathOfSandWraith  = posAndStory(-50f, -39f, -13f, -5f, 388.9f, 389.8f, 33) ? true : false;
@@ -647,7 +653,7 @@ split
             bool LionSword          = posAndStory(-44.7f, -44.6f, -27.1f, -27f, 389f, 389.1f, 21) ? true : false;
             bool LU1                = posAndStory(52f, 52.8f, -188.7f, -188.6f, 381.9f, 382.1f, 2) ? true : false;
             bool LU2                = posAndStory(-112.1f, -112f, -66.1f, -65.2f, 360.9f, 361f, 59) ? true : false;
-            bool LU3                = posAndStory(-74.8f, -74.2f, -102.8f, -102.7f, 378.9f, 379f, 60) ? true : false;
+            bool LU3                = (splitCutsceneByMap(new HashSet<int> { 67144064, 67144084 }));
             bool LU4                = posAndStory(-161.2f, -161f, 170.3f, 171f, 471.9f, 472.1f, 63) ? true : false;
             bool LU5                = posAndStory(138.8f, 139f, 115.3f, 116.7f, 382.5f, 382.6f, 64) ? true : false;
             bool LU6                = posAndStory(76.1f, 76.2f, 64.1f, 64.9f, 461.4f, 461.6f, 64) ? true : false;
@@ -728,52 +734,52 @@ split
                     case 9: return LU8;                     // Life Upgrade 8
                     case 10: return LU9;                    // Life Upgrade 9
                     case 11: return WaterSword;            // The Water Sword
-                    case 12: vars.lastSplit(WWEnd); break;    // The End
+                    case 12: vars.lastSplit(DahakaBoss); break;    // The End
                 } break;
 
                 case "Sands Trilogy (Completionist, Zipless)":
                 switch (timer.CurrentSplitIndex - (short)vars.offset) {
                     case 0: return Boat;                         // The Boat
                     case 1: return RavenMan;                     // The Raven Man
-                    case 2: return LU1;                          // Life Upgrade 1
-                    case 3: return LU2;                          // Life Upgrade 2
-                    case 4: return LU3;                          // Life Upgrade 3
-                    case 5: return LU4;                          // Life Upgrade 4
+                    case 2: return LU9;                          // Life Upgrade 1
+                    case 3: return LU6;                          // Life Upgrade 2
+                    case 4: return LU5;                          // Life Upgrade 3
+                    case 5: return LU1;                          // Life Upgrade 4
                     case 6: return current.storyValue == 59;     // Mask of the Wraith (59)
-                    case 7: return LU5;                          // Life Upgrade 5
-                    case 8: return LU6;                          // Life Upgrade 6
+                    case 7: return LU2;                          // Life Upgrade 5
+                    case 8: return LU3;                          // Life Upgrade 6
                     case 9: return MechanicalTower;              // The Mechanical Tower
-                    case 10: return LU7;                         // Life Upgrade 7
+                    case 10: return LU4;                         // Life Upgrade 7
                     case 11: return LU8;                         // Life Upgrade 8
-                    case 12: return LU9;                         // Life Upgrade 9
+                    case 12: return LU7;                         // Life Upgrade 9
                     case 13: return WaterSword;                  // The Water Sword
-                    case 14: vars.lastSplit(WWEnd); break;         // The End
+                    case 14: vars.lastSplit(DahakaBoss); break;         // The End
                 } break;
 
                 case "Sands Trilogy (Completionist, No Major Glitches)":
                 switch (timer.CurrentSplitIndex - (short)vars.offset) {
                     case 0: return Boat;               // The Boat
                     case 1: return SpiderSword;        // The Spider Sword
-                    case 2: return LU1;                // Life Upgrade 1
+                    case 2: return LU8;                // Life Upgrade 1
                     case 3: return DamselInDistress;   // A Damsel in Distress
-                    case 4: return LU2;                // Life Upgrade 2
+                    case 4: return LU7;                // Life Upgrade 2
                     case 5: return Dahaka;             // The Dahaka
-                    case 6: return LU3;                // Life Upgrade 3
+                    case 6: return LU1;                // Life Upgrade 3
                     case 7: return SerpentSword;       // The Serpent Sword
                     case 8: return GardenHall;         // The Garden Hall
-                    case 9: return LU4;                // Life Upgrade 4
+                    case 9: return LU6;                // Life Upgrade 4
                     case 10: return LU5;               // Life Upgrade 5
-                    case 11: return LU6;               // Life Upgrade 6
+                    case 11: return LU9;               // Life Upgrade 6
                     case 12: return MechanicalTower;   // The Mechanical Tower
                     case 13: return BreathOfFate;      // Breath of Fate
                     case 14: return ActRoomRuin;       // Activation Room in Ruin
-                    case 15: return LU7;               // Life Upgrade 7
+                    case 15: return LU4;               // Life Upgrade 7
                     case 16: return DeathOfSandWraith; // The Death of a Sand Wraith
                     case 17: return DeathOfTheEmpress; // Death of the Empress
                     case 18: return ExitTomb;          // Exit the Tomb
                     case 19: return ScorpionSword;     // The Scorpion Sword
-                    case 20: return LU8;               // Life Upgrade 8
-                    case 21: return LU9;               // Life Upgrade 9
+                    case 20: return LU2;               // Life Upgrade 8
+                    case 21: return LU3;               // Life Upgrade 9
                     case 22: return WaterSword;        // The Water Sword
                     case 23: return MaskOfWraith;      // The Mask of the Wraith
                     case 24: return SandGriffin;       // The Sand Griffin
@@ -782,7 +788,7 @@ split
                     case 27: return LibraryRev;        // The Library Revisited
                     case 28: return LightSword;        // The Light Sword
                     case 29: return DeathOfPrince;     // The Death of a Prince
-                    case 30: vars.lastSplit(WWEnd); break; // The End
+                    case 30: vars.lastSplit(DahakaBoss); break; // The End
                 } break;
             }
             break;
