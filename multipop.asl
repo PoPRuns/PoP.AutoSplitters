@@ -47,6 +47,48 @@ state("POP3")
 
 startup
 {
+    // Method to add a Scriptable Auto Splitter component to the livesplit layout for a given game
+    vars.setASLComponent = (Action<int>)((gameId) => {
+        vars.removeASLComponent(gameId);
+        string scriptPath = "Components\\" + vars.gameScriptMapping[gameId].Item2;
+        var aslSettings = timer.Layout.Components.Where(x => x.GetType().Name == "ASLComponent").Select(x => x.GetType().GetField("_settings", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(x));
+        var aslSetting = aslSettings.FirstOrDefault(x => (x.GetType().GetProperty("ScriptPath").GetValue(x, null) as string) == scriptPath);
+
+        if (aslSetting == null) {
+            var aslComponentAssembly = Assembly.LoadFrom("Components\\LiveSplit.ScriptableAutoSplit.dll");
+            var aslComponent = Activator.CreateInstance(aslComponentAssembly.GetType("LiveSplit.UI.Components.ASLComponent"), timer);
+            timer.Layout.LayoutComponents.Add(new LiveSplit.UI.Components.LayoutComponent("LiveSplit.ScriptableAutoSplit.dll", aslComponent as LiveSplit.UI.Components.LogicComponent));
+            aslSetting = aslComponent.GetType().GetField("_settings", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(aslComponent);
+            aslSetting.GetType().GetProperty("ScriptPath").SetValue(aslSetting, scriptPath);
+            aslSetting.GetType().GetField("_basic_settings_state", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(aslSetting, new Dictionary<string, bool> {
+                    { "start", false },
+                    { "reset", false },
+                    { "split", true },
+                });
+            aslSetting.GetType().GetField("_custom_settings_state", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(aslSetting, vars.getGameSettings(gameId));
+        }
+    });
+
+    // Method to remove the Scriptable Auto Splitter component of a given game from the livesplit layout
+    vars.removeASLComponent = (Action<int>)((gameId) => {
+        string scriptPath = "Components\\" + vars.gameScriptMapping[gameId].Item2;
+        int indexToRemove = -1;
+        do {
+            indexToRemove = -1;
+            foreach (dynamic component in timer.Layout.Components) {
+                if (component.GetType().Name == "ASLComponent" && vars.getScriptPath(component) == scriptPath) {
+                    indexToRemove = timer.Layout.Components.ToList().IndexOf(component);
+                    component.Dispose();
+                }
+            }
+            if (indexToRemove != -1) {
+                timer.Layout.LayoutComponents.RemoveAt(indexToRemove);
+            }
+        } while (indexToRemove != -1);
+    });
+
     // Key - Game ID, Value - Tuple of (Game Name, Script File, Regex Pattern to match settings).
     vars.gameScriptMapping = new Dictionary<int, Tuple<string, string, string>> {
         { 4, Tuple.Create("Sands of Time", "pop_sot.asl", @"""(?<key>\w+)"",\s*Tuple\.Create\((?<isEnabled>true|false),\s*""(?<displayName>[^""]+)"",\s*""(?<description>[^""]+)"",") },
@@ -104,43 +146,6 @@ startup
     vars.getScriptPath = (Func<dynamic, string>)((component) => {
         var componentSetting = component.GetType().GetField("_settings", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(component);
         return componentSetting.GetType().GetProperty("ScriptPath").GetValue(componentSetting) as string;
-    });
-    
-    // Method to add a Scriptable Auto Splitter component to the livesplit layout for a given game
-    vars.setASLComponent = (Action<int>)((gameId) => {
-        string scriptPath = "Components\\" + vars.gameScriptMapping[gameId].Item2;
-        var aslSettings = timer.Layout.Components.Where(x => x.GetType().Name == "ASLComponent").Select(x => x.GetType().GetField("_settings", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(x));
-        var aslSetting = aslSettings.FirstOrDefault(x => (x.GetType().GetProperty("ScriptPath").GetValue(x, null) as string) == scriptPath);
-
-        if (aslSetting == null) {
-            var aslComponentAssembly = Assembly.LoadFrom("Components\\LiveSplit.ScriptableAutoSplit.dll");
-            var aslComponent = Activator.CreateInstance(aslComponentAssembly.GetType("LiveSplit.UI.Components.ASLComponent"), timer);
-            timer.Layout.LayoutComponents.Add(new LiveSplit.UI.Components.LayoutComponent("LiveSplit.ScriptableAutoSplit.dll", aslComponent as LiveSplit.UI.Components.LogicComponent));
-            aslSetting = aslComponent.GetType().GetField("_settings", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(aslComponent);
-            aslSetting.GetType().GetProperty("ScriptPath").SetValue(aslSetting, scriptPath);
-            aslSetting.GetType().GetField("_basic_settings_state", BindingFlags.Instance | BindingFlags.NonPublic)
-                .SetValue(aslSetting, new Dictionary<string, bool> {
-                    { "start", false },
-                    { "reset", false },
-                    { "split", true },
-                });
-            aslSetting.GetType().GetField("_custom_settings_state", BindingFlags.Instance | BindingFlags.NonPublic)
-                .SetValue(aslSetting, vars.getGameSettings(gameId));
-        }
-    });
-
-    // Method to remove the Scriptable Auto Splitter component of a given game from the livesplit layout
-    vars.removeASLComponent = (Action<int>)((gameId) => {
-        string scriptPath = "Components\\" + vars.gameScriptMapping[gameId].Item2;
-        int indexToRemove = -1;
-        foreach (dynamic component in timer.Layout.Components) {
-            if (component.GetType().Name == "ASLComponent" && vars.getScriptPath(component) == scriptPath) {
-                indexToRemove = timer.Layout.Components.ToList().IndexOf(component);
-            }
-        }
-        if (indexToRemove != -1) {
-            timer.Layout.LayoutComponents.RemoveAt(indexToRemove);
-        }
     });
 
     vars.removeAllASLComponents = (Action)(() => {
@@ -220,6 +225,7 @@ onStart
 onReset
 {
     vars.gameNotRunning = true;
+    vars.removeAllASLComponents();
 }
 
 update
@@ -265,7 +271,5 @@ exit
 
 shutdown
 {
-    if(((IDictionary<String, object>)vars).ContainsKey("removeAllASLComponents")) {
-        vars.removeAllASLComponents();
-    }
+    vars.removeAllASLComponents();
 }
