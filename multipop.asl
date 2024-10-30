@@ -101,7 +101,7 @@ state("pop2")
     float yPos            : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x34;
     float zPos            : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x38;
     short bossHealth      : 0x90C418, 0x18, 0x4, 0x48, 0x198;     // The address used for all bosses' health.
-    short startValue      : 0x96602C, 0x8, 0x28, 0xA8, 0x3E0;     // Some memory value that reliably changes when you gain control after a load.
+    int startValue        : 0x9665D0, 0x18, 0x4, 0x48, 0xE0;      // Some memory value that reliably changes when you gain control after a load.
 }
 
 state("POP3")
@@ -626,7 +626,7 @@ split
             });
 
             var splitCutsceneByMap = (Func<HashSet<int>, bool>)((mapIds) => {
-                return (mapIds.Contains(current.map) && vars.oldCutscene == 0 && current.cutscene == 1);
+                return (mapIds.Contains(current.map) && old.startValue == 0 && current.startValue == 1);
             });
 
             // Initializing WW Splits:

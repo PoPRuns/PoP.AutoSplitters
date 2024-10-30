@@ -80,6 +80,7 @@ init
     });
 
     // List of SoT Splits across categories
+    vars.FarahBalcony = (Func <bool>)(() => { return vars.splitByXYZ(-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f); });
     vars.GasStation = (Func <bool>)(() => { return vars.splitByXYZ(252f, 258f, 130.647f, 134f, 22.999f, 23.001f); });
     vars.SandsUnleashed = (Func <bool>)(() => { return vars.splitByXYZ(-6.177f, -6.175f, 62.905f, 62.907f, 7.604f, 7.606f); });
     vars.FirstGuestRoom = (Func <bool>)(() => { return vars.splitByXYZ(30.297f, 30.299f, 42.126f, 42.128f, 12.998f, 13f); });
@@ -119,7 +120,7 @@ init
     vars.SettingSun = (Func <bool>)(() => { return vars.splitByXYZ(60f, 61f, -58f, -57f, 30f, 32f); });
     vars.HonorGlory = (Func <bool>)(() => { return vars.splitByXYZ(81f, 82f, -60.3f, -59.7f, 89f, 90f); });
     vars.GrandRewind = (Func <bool>)(() => { return vars.splitByXYZ(660.376f, 660.378f, 190.980f, 190.983f, 0.432f, 0.434f); });
-    vars.SoTEnd = (Func <bool>)(() => { return (vars.splitByXYZ(658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f) && vars.CompletedSplits.Contains("AboveCredits")) || current.vizierHealth == 4f; });
+    vars.SoTEnd = (Func <bool>)(() => { return (vars.splitByXYZ(658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f) && vars.CompletedSplits.Contains("AboveCredits")) || current.vizierHealth == 4; });
     vars.SoTLU = (Func <bool>)(() => { return vars.splitByXYZ(-492.608f, -492.606f, -248.833f, -248.831f, 0.219f, 0.221f); });
 
     // Deprecated or Unused Splits
@@ -135,7 +136,7 @@ init
 start
 {
     // Detecting if the game has started on the balcony.
-    return (current.xPos >= -103.264 && current.yPos >= -4.8 && current.zPos >= 1.341 && current.xPos <= -103.262 && current.yPos <= -4.798 && current.zPos <= 1.343 && current.startValue == 1);
+    return (vars.FarahBalcony() && current.startValue == 1);
 }
 
 onStart
@@ -146,10 +147,7 @@ onStart
 
 reset
 {
-    if (old.resetValue == 1 && current.resetValue == 2) {
-        if (current.xPos >= -103.264 && current.yPos >= -4.8 && current.zPos >= 1.341 && current.xPos <= -103.262 && current.yPos <= -4.798 && current.zPos <= 1.343)
-            return true;
-    }
+    return (old.resetValue == 1 && current.resetValue == 2 && vars.FarahBalcony());
 }
 
 split

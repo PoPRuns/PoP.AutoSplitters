@@ -145,8 +145,7 @@ init
 start
 {
     // Detecting if the game has started on the ramparts.
-    if (current.xPos >= -404.9 && current.xPos <= -404.8 && current.yCam <= 0.1082 && current.yCam >= 0.1080 && current.xCam <= 0.832 && current.xCam >= 0.8318)
-        return true;
+    return (vars.inXRange(-404.9f, -404.8f) && current.xCam <= 0.832 && current.xCam >= 0.8318 && current.yCam <= 0.1082 && current.yCam >= 0.1080);
 }
 
 onStart
@@ -158,8 +157,7 @@ onStart
 reset
 {
     // Detecting if the game has started on the ramparts.
-    if (current.xPos >= -443 && current.xPos <= -442.9 && current.yCam == 0)
-        return true;
+    return (vars.inXRange(-443f, -442.9f) && current.yCam == 0);
 }
 
 split
