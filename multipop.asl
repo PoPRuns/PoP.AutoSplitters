@@ -1,1167 +1,616 @@
-// Game         : Multi-Prince of Persia-Runs
-// Original by  : Smathlax
-// Scripts by   : Samabam (PoP2, PoP3D, SoT, WW, T2T, 2008, TFS), WinterThunder (PoP 1 and 2), Karlgamer (PoP 1), ThePedMeister (PoP 1), Ynscription (SoT), SuicideMachine (TFS)
-// Tweaks by    : Ero, GMP
-// Updated      : 31 Aug 2021
-// IGT timing   : YES for appropriate games
-// Load Remover : YES for appropriate games
-
-// Note: DOSBox autosplitter breaks (doesn't find correct memory address) if you alter the dosbox.conf in a specific way.
-// Known ways to break the autosplitter:
-// 1. Alter the PATH system variable -> don't invoke SET PATH=xyz
-// 2. Setting gus=true (make sure gus is set to false)
-
-// Brief outline of how this script works:
-/* When you load the script, variables called "game" and "offset" (among several others) are initialized, it keeps track of which game is currently being run.
-   When you load a certain game, the start condition for that games is checked, this is done with the help of a global function called "game.ProcessName()".
-   And when the start condition is satisfied, the timer starts and the appropriate value for "game" is set.
-   Here is the list of process names (converted to lower case) and game values for each game:
-   ------------------------------------------------------------------------------------------------
-   Game Title                                   Process Name                Game Value
-   ------------------------------------------------------------------------------------------------
-   Prince of Persia (1989)                      dosbox                      1
-   Prince of Persia 2: Shadow and the Flame     dosbox                      2
-   Prince of Persia 3D                          pop3d                       3
-   Prince of Persia: Sands of Time              pop                         4
-   Prince of Persia: Warrior Within             pop2                        5
-   Prince of Persia: The Two Thrones            pop3                        6
-   Prince of Persia (2008)                      princeofpersia_launcher     7
-   Prince of Persia: The Forgotten Sands        prince of persia            8
-   Default (No game running)                    NA                          0
-   -------------------------------------------------------------------------------------------------
-   It is worth noting that the process name is initialised right when the game is loaded, but the game value is set only when the start condition is met.
-   After the timer starts, the splits conditions for the appropriate game is checked.
-   At the very last split of the game, the game variable is set to 0 and offset is incremented by the number of splits that occurred in that game.
-   Now the current split is one of the setup splits between two games and the timer is paused.
-   The script again checks for start conditions of each game.
-   When the start condition of a certain game is met,the approriate game value is set and the timer unpauses.
-   This time when checking for splits, the offset is subtracted from the split index such that it again starts from case 0.
-   This makes playing the games in any order possible as long as the total number of splits in all the games combined is equal to what the script expects to it be.
-   IGT scripts/load and crash removers of appropriate games will be loaded by again checking the game variable.
-
-   Known ways to break the script from a logical perspective:
-   * If a split fails and you dont skip it by the end of the game, the script breaks. (Potential solution - add backup skip split triggers)
-   * If the end split of a game fails, the script breaks (should especially look into T2T)
-*/
-
-//Defining the memory values of each game
-state("DOSBox")
-{
-    // Prince of Persia 1989
-    byte scene          : 0x193C370, 0x1A4BA; // shows level 1-14 changes as scenes end
-    byte level1         : 0x193C370, 0x1D0F4; // shows level 1-14 changes as door is entered
-    byte start1         : 0x193C370, 0x1D694; // the level you start the game at
-    byte endGame        : 0x193C370, 0x1D74A; // 0 before endgame, 255 at endgame cutscene
-    byte mins           : 0x193C370, 0x1E350; // Minutes
-    int frames          : 0x193C370, 0x1E354; // Frames
-    short secs          : 0x193C370, 0x1E356; // Frames in second part of time
-    byte sound          : 0x193C370, 0x2F233; // 0 if sound is on, 1 if sound is off
-
-    // Prince of Persia 2: The Shadow and the Flame
-    byte level2         : 0x193C370, 0x38796;
-    short frameCount    : 0x193C370, 0x387B0;
-    byte start2         : 0x193C370, 0x38FF2;
-    string300 directory : 0x17D91E8;
-
-    // Common
-    byte gameRunning    : 0x19175EA;
-}
-
-state("pop3d")
-{
-    // Prince of Persia 3D
-    float xPos3d  : 0x3EF854, 0x160, 0x2F8, 0x8, 0x18, 0x44;
-    float yPos3d  : 0x3EF854, 0x160, 0x2F8, 0x8, 0x18, 0x48;
-    float zPos3d  : 0x3EF854, 0x160, 0x2F8, 0x8, 0x18, 0x4C;
-    short eHealth : 0x3FBC84;
-    short health  : 0x4062E4, 0x130;
-    float xPos    : 0x4062E4, 0xD0, 0xC4, 0x18, 0x44;
-    float yPos    : 0x4062E4, 0xD0, 0xC4, 0x18, 0x48;
-    float zPos    : 0x4062E4, 0xD0, 0xC4, 0x18, 0x4C;
-}
-
 state("POP")
 {
-    // Prince of Persia: The Sands of Time
-    short resetValue   : 0x40E388, 0x4, 0x398;
-    short vizierHealth : 0x40E518, 0x6C, 0x18, 0x4, 0x44, 0x0; // The Vizier's health where 0 is unharmed and 4 is dead.
-    float xPos         : 0x699474, 0xC, 0x30; // Prince's position
-    float yPos         : 0x699474, 0xC, 0x34;
-    float zPos         : 0x699474, 0xC, 0x38;
-    short startValue   : 0x6BC980; // Some memory value that reliably changes when 'New Game' is pressed.
+    // Some memory value that reliably changes when 'New Game' is pressed.
+    int startValue      : 0x6BC980;
+
+    // Prince's position
+    float xPos          : 0x00699474, 0xC, 0x30;
+    float yPos          : 0x00699474, 0xC, 0x34;
+    float zPos          : 0x00699474, 0xC, 0x38;
+
+    // The Vizier's health where 0 is unharmed and 4 is dead.
+    int vizierHealth    : 0x0040E518, 0x6C, 0x18, 0x4, 0x44, 0x0;
+
+    int resetValue      : 0x0040E388, 0x4, 0x398;
 }
 
-state("pop2")
+state("POP2")
 {
-    // Prince of Persia: Warrior Within
-    int map               : 0x523594;
-    short storyValue      : 0x523578;                             // Story counter/gate/value.
-    short secondaryWeapon : 0x53F8F0, 0x4, 0x164, 0xC, 0x364;     // A value that changes reliably depending on which weapon you pick up.
-    float xPos            : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x30; // The Prince's coords.
-    float yPos            : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x34;
-    float zPos            : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x38;
-    short bossHealth      : 0x90C418, 0x18, 0x4, 0x48, 0x198;     // The address used for all bosses' health.
-    int startValue        : 0x9665D0, 0x18, 0x4, 0x48, 0xE0;      // Some memory value that reliably changes when you gain control after a load.
+    // This variable is 0 during gameplay, 1 in cutscenes, 2 when a cutscene ends
+    int cutscene        : 0x9665D0, 0x18, 0x4, 0x48, 0xE0;
+
+    // Story counter/gate/value
+    int storyValue      : 0x523578;
+
+    // A value that changes reliably depending on which weapon you pick up
+    int secondaryWeapon : 0x53F8F0, 0x4, 0x164, 0xC, 0x364;
+
+    // The address used for most bosses' health
+    int bossHealth      : 0x90C418, 0x18, 0x4, 0x48, 0x198;
+
+    // The Prince's coords
+    float xPos          : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x30;
+    float yPos          : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x34;
+    float zPos          : 0x90C414, 0x18, 0x0, 0x4, 0x20, 0x38;
+
+    // Currently loaded area id (changes with every load trigger)
+    int map             : 0x523594;
+
+    // State of the prince (11 is drinking)
+    int state           : 0x90C414, 0x18, 0x4, 0x48, 0x3F8;
 }
 
 state("POP3")
 {
-    // Prince of Persia: The Two Thrones
-    float xCam  : 0x928548;
-    float yCam  : 0x928554;
-    float xPos  : 0xA2A498, 0xC, 0x30; //The Prince's coords
-    float yPos  : 0xA2A498, 0xC, 0x34;
-    float zPos  : 0xA2A498, 0xC, 0x38;
+    // The Prince's coords
+    float xPos          : 0x00A2A498, 0xC, 0x30;
+    float yPos          : 0x00A2A498, 0xC, 0x34;
+    float zPos          : 0x00A2A498, 0xC, 0x38;
+
+    float xCam          : 0x928548;
+    float yCam          : 0x928554;
+
+    // A value that reliably changes with prince's actions (17 during cutscenes)
+    int princeAction    : 0x005EBD78, 0x30, 0x18, 0x4, 0x48, 0x7F0;
 }
 
-state("PrinceOfPersia_Launcher")
-{
-    // Prince of Persia 2008
-    float xPos      : 0xB30D08, 0x40;
-    float yPos      : 0xB30D08, 0x44;
-    float zPos      : 0xB30D08, 0x48;
-    short seedCount : 0xB37F64, 0xDC;
-    short combat    : 0xB37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
-}
-
-state("prince of persia")
-{
-    // Prince of Persia: The Forgotten Sands
-    short cpIcon    : 0x64D34, 0x0, 0x0, 0x24, 0x18, 0x50, 0x870;
-    short isMenu    : 0xDA2F70;
-    float xPos      : 0xDA4D20;
-    float yPos      : 0xDA4D24;
-    float zPos      : 0xDA4D28;
-    short gameState : 0xDA52EC, 0x18, 0xF8, 0x150;
-    bool isLoading  : 0xDA5724, 0x50;
-}
-
-//This runs exactly once when the script loads
 startup
 {
-    vars.aboveCredits = false;
-    vars.framesOnStart = 0;
+    vars.splitTypes = new Dictionary<string, string> {
+        { "pop_sot.asl", "Sands of Time splits" },
+        { "pop_ww.asl", "Warrior Within splits" },
+        { "pop_t2t.asl", "The Two Thrones splits" },
+    };
+    
+    vars.WWsplitTypes = new Dictionary<string, string> {
+        { "AnyGlitched", "Any% (Standard) and Any% (Zipless) splits" },
+        { "AnyNMG", "Any% (No Major Glitches) splits" },
+        { "TEStandard", "True Ending (Standard) splits" },
+        { "TEZipless", "True Ending (Zipless) splits" },
+        { "TENMG", "True Ending (No Major Glitches) splits" },
+    };
+
+    // Key - Setting ID, Value - Tuple of (Default setting, Description, Tooltip, Game ID and Trigger condition).
+    vars.splitsData = new Dictionary<string, Tuple<bool, string, string, string, int, Func<bool>>> {
+        // Sands of Time
+        {"GasStation", Tuple.Create(true, "Enter Treasure Vaults", "pop_sot.asl", "Split just before the first save prompt", 4, new Func<bool>(() => vars.GasStation()))},
+        {"SandsUnleashed", Tuple.Create(true, "Sands Unleashed", "pop_sot.asl", "Split on starting the first fight after the CGI cutscene", 4, new Func<bool>(() => vars.SandsUnleashed()))},
+        {"FirstGuestRoom", Tuple.Create(false, "First Guest Room", "pop_sot.asl", "Split on entering the first guest room", 4, new Func<bool>(() => vars.FirstGuestRoom()))},
+        {"SultanChamberZipless", Tuple.Create(false, "The Sultan's Chamber", "pop_sot.asl", "Split on entering the Sultan's chamber at the cutscene", 4, new Func<bool>(() => vars.SultanChamberZipless()))},
+        {"SultanChamber", Tuple.Create(false, "The Sultan's Chamber (death)", "pop_sot.asl", "Split at the death abuse in Sultan's chamber", 4, new Func<bool>(() => vars.SultanChamber()))},
+        {"PalaceDefence", Tuple.Create(false, "The Palace's Defence System", "pop_sot.asl", "Split on exiting the palace defense system", 4, new Func<bool>(() => vars.PalaceDefence()))},
+        {"DadStart", Tuple.Create(false, "The Sand King", "pop_sot.asl", "Split on starting the fight with the Sand King", 4, new Func<bool>(() => vars.DadStart()))},
+        {"DadDead", Tuple.Create(true, "Death of the Sand King", "pop_sot.asl", "Split at the end of the fight on loading the next area", 4, new Func<bool>(() => vars.DadDead()))},
+        {"TheWarehouse", Tuple.Create(false, "The Warehouse", "pop_sot.asl", "Split on hitting the button to let Farah enter Warehouse", 4, new Func<bool>(() => vars.TheWarehouse()))},
+        {"TheZoo", Tuple.Create(false, "The Sultan's Zoo", "pop_sot.asl", "Split on entering the zoo", 4, new Func<bool>(() => vars.TheZoo()))},
+        {"BirdCage", Tuple.Create(false, "Atop a Bird Cage", "pop_sot.asl", "Split at the 'Atop a bird cage' save vortex", 4, new Func<bool>(() => vars.BirdCage()))},
+        {"CliffWaterfalls", Tuple.Create(false, "Cliffs and Waterfall", "pop_sot.asl", "Split at the start of cliffs and waterfall", 4, new Func<bool>(() => vars.CliffWaterfalls()))},
+        {"TheBathsZipless", Tuple.Create(false, "The Baths", "pop_sot.asl", "Split at the end of cliffs and Waterfall", 4, new Func<bool>(() => vars.TheBathsZipless()))},
+        {"TheBaths", Tuple.Create(false, "The Baths (death)", "pop_sot.asl", "Split on death abuse at the start of baths", 4, new Func<bool>(() => vars.TheBaths()))},
+        {"SecondSword", Tuple.Create(false, "Second Sword", "pop_sot.asl", "Split on obtaining the second sword at baths", 4, new Func<bool>(() => vars.SecondSword()))},
+        {"TheDaybreak", Tuple.Create(false, "Daybreak", "pop_sot.asl", "Split at the start of daybreak", 4, new Func<bool>(() => vars.TheDaybreak()))},
+        {"TheMesshall", Tuple.Create(false, "Soldiers' Mess Hall (death)", "pop_sot.asl", "Split on death abuse in the mess hall", 4, new Func<bool>(() => vars.TheMesshall()))},
+        {"DrawbridgeTower", Tuple.Create(false, "Drawbridge Tower", "pop_sot.asl", "Split near the first lever at Drawbridge Tower", 4, new Func<bool>(() => vars.DrawbridgeTower()))},
+        {"BrokenBridge", Tuple.Create(false, "A Broken Bridge", "pop_sot.asl", "Split at the end of the collapsing bridge", 4, new Func<bool>(() => vars.BrokenBridge()))},
+        {"TheCavesZipless", Tuple.Create(false, "The Caves", "pop_sot.asl", "Split on entering the caves after the door", 4, new Func<bool>(() => vars.TheCavesZipless()))},
+        {"TheCaves", Tuple.Create(false, "The Caves (alternate)", "pop_sot.asl", "Split on the beam at the start of Waterfall", 4, new Func<bool>(() => vars.TheCaves()))},
+        {"TheWaterfall", Tuple.Create(false, "The Waterfall", "pop_sot.asl", "Split at the end of the descent in Waterfall", 4, new Func<bool>(() => vars.TheWaterfall()))},
+        {"TheUGReservoirZipless", Tuple.Create(false, "Enter Underground Reservoir", "pop_sot.asl", "Split on entering the underground reservoir", 4, new Func<bool>(() => vars.TheUGReservoirZipless()))},
+        {"TheUGReservoir", Tuple.Create(false, "Exit Underground Reservoir", "pop_sot.asl", "Split on exiting the underground reservoir", 4, new Func<bool>(() => vars.TheUGReservoir()))},
+        {"HallofLearning", Tuple.Create(false, "The Hall of Learning", "pop_sot.asl", "Split on entering the hall of learning", 4, new Func<bool>(() => vars.HallofLearning()))},
+        {"TheObservatory", Tuple.Create(false, "Observatory (death)", "pop_sot.asl", "Split on death abuse at the end of observatory", 4, new Func<bool>(() => vars.TheObservatory()))},
+        {"ObservatoryExit", Tuple.Create(false, "Exit Observatory", "pop_sot.asl", "Split on exiting the observatory", 4, new Func<bool>(() => vars.ObservatoryExit()))},
+        {"HoLCourtyardsExit", Tuple.Create(false, "Exit Hall of Learning Courtyards", "pop_sot.asl", "Split on exiting hall of learning courtyards", 4, new Func<bool>(() => vars.HoLCourtyardsExit()))},
+        {"TheAzadPrison", Tuple.Create(false, "The Azad Prison", "pop_sot.asl", "Split on entering the prison", 4, new Func<bool>(() => vars.TheAzadPrison()))},
+        {"TortureChamberZipless", Tuple.Create(false, "Torture Chamber", "pop_sot.asl", "Split on entering the torture chamber", 4, new Func<bool>(() => vars.TortureChamberZipless()))},
+        {"TortureChamber", Tuple.Create(false, "Torture Chamber (death)", "pop_sot.asl", "Split on death abuse at the start of torture chamber", 4, new Func<bool>(() => vars.TortureChamber()))},
+        {"TheElevator", Tuple.Create(false, "The Elevator", "pop_sot.asl", "Split on entering the elevator", 4, new Func<bool>(() => vars.TheElevator()))},
+        {"TheDreamZipless", Tuple.Create(false, "A Magic Cavern", "pop_sot.asl", "Split at the start of the long unskippable cutscene", 4, new Func<bool>(() => vars.TheDreamZipless()))},
+        {"TheDream", Tuple.Create(false, "A Magic Cavern (alternate)", "pop_sot.asl", "Split at the start of the 'infinite' stairs", 4, new Func<bool>(() => vars.TheDream()))},
+        {"TheTomb", Tuple.Create(false, "The Tomb", "pop_sot.asl", "Split at the start of the tomb", 4, new Func<bool>(() => vars.TheTomb()))},
+        {"TowerofDawn", Tuple.Create(false, "Tower of Dawn", "pop_sot.asl", "Split at the start of the ascent back up the Tower of Dawn", 4, new Func<bool>(() => vars.TowerofDawn()))},
+        {"SettingSun", Tuple.Create(false, "Setting Sun", "pop_sot.asl", "Split on the Ladder near the setting sun save", 4, new Func<bool>(() => vars.SettingSun()))},
+        {"HonorGlory", Tuple.Create(true, "Honor and Glory", "pop_sot.asl", "Split on starting the last fight with enemies", 4, new Func<bool>(() => vars.HonorGlory()))},
+        {"GrandRewind", Tuple.Create(true, "Grand Rewind", "pop_sot.asl", "Split on starting the Vizier fight", 4, new Func<bool>(() => vars.GrandRewind()))},
+        {"SoTEnd", Tuple.Create(true, "The End", "pop_sot.asl", "Split on defeating the Vizier or hitting the credits trigger", 4, new Func<bool>(() => vars.SoTEnd()))},
+        {"SoTLU", Tuple.Create(false, "Life Upgrades", "pop_sot.asl", "Split on obtaining each life upgrade", 4, new Func<bool>(() => vars.SoTLU()))},
+
+        // Warrior Within
+        {"Any0", Tuple.Create(true, "Boat", "AnyGlitched", "Split when the boat ending cutscene starts playing", 5, new Func<bool>(() => vars.boat()))},
+        {"Any1", Tuple.Create(true, "Raven man", "AnyGlitched", "Split on the cutscene where you're introduced to a raven master", 5, new Func<bool>(() => vars.ravenMan()))},
+        {"Any2", Tuple.Create(true, "Time portal", "AnyGlitched", "Split when you go through the first time portal", 5, new Func<bool>(() => vars.firstPortal()))},
+        {"Any3", Tuple.Create(true, "Foundy fountain", "AnyGlitched", "Split when you drink from the foundry fountain while having 58/59 storygate", 5, new Func<bool>(() => vars.foundryFountain()))},
+        {"Any4", Tuple.Create(true, "Scorpion sword", "AnyGlitched", "Split when you get the scorpion sword", 5, new Func<bool>(() => vars.scorpionSword()))},
+        {"Any5", Tuple.Create(false, "Light sword", "AnyGlitched", "Split when you pick up the light sword in mystic caves", 5, new Func<bool>(() => vars.banana()))},
+        {"Any6", Tuple.Create(true, "Mechanical tower (63)", "AnyGlitched", "Split when you acquire storygate 63", 5, new Func<bool>(() => vars.rng63()))},
+        {"Any7", Tuple.Create(true, "Second portal", "AnyGlitched", "Split when you go through the time portal in the throne room", 5, new Func<bool>(() => vars.lastPortal()))},
+        {"Any8", Tuple.Create(true, "Kaileena", "AnyGlitched", "Split when you kill Kaileena in sacred caves", 5, new Func<bool>(() => vars.kaileena()))},
+
+        {"TeStandard0", Tuple.Create(true, "Boat", "TEStandard", "Split when the boat ending cutscene starts playing", 5, new Func<bool>(() => vars.boat()))},
+        {"TeStandard1", Tuple.Create(true, "Raven man", "TEStandard", "Split on the cutscene where you're introduced to a raven master", 5, new Func<bool>(() => vars.ravenMan()))},
+        {"TeStandard2", Tuple.Create(true, "Time portal", "TEStandard", "Split when you go through the first time portal", 5, new Func<bool>(() => vars.firstPortal()))},
+        {"TeStandard3", Tuple.Create(true, "(1) fortress entrance LU", "TEStandard", "Split when you acquire the life upgrade in fortress entrance", 5, new Func<bool>(() => vars.LUFortress()))},
+        {"TeStandard4", Tuple.Create(true, "(2) Prison LU", "TEStandard", "Split when you acquire the life upgrade in prison", 5, new Func<bool>(() => vars.LUPrison()))},
+        {"TeStandard5", Tuple.Create(true, "(3) Library LU", "TEStandard", "Split when you acquire the life upgrade in library", 5, new Func<bool>(() => vars.LULibrary()))},
+        {"TeStandard6", Tuple.Create(true, "(4) Mechanical tower LU", "TEStandard", "Split when you acquire the life upgrade in mechanical tower", 5, new Func<bool>(() => vars.LUMechTower()))},
+        {"TeStandard7", Tuple.Create(true, "(5) Garden LU", "TEStandard", "Split when you acquire the life upgrade in garden", 5, new Func<bool>(() => vars.LUGarden()))},
+        {"TeStandard8", Tuple.Create(true, "(6) Waterworks LU", "TEStandard", "Split when you acquire the life upgrade in waterworks", 5, new Func<bool>(() => vars.LUWaterworks()))},
+        {"TeStandard9", Tuple.Create(true, "(7) Sacrificial altar LU", "TEStandard", "Split when you acquire the life upgrade in sacrificial altar", 5, new Func<bool>(() => vars.LUShahdee()))},
+        {"TeStandard10", Tuple.Create(true, "(8) Southern passage LU", "TEStandard", "Split when you acquire the life upgrade in southern passage", 5, new Func<bool>(() => vars.LU019()))},
+        {"TeStandard11", Tuple.Create(true, "(9) Central hall LU", "TEStandard", "Split when you acquire the life upgrade in central hall", 5, new Func<bool>(() => vars.LUCentralHall()))},
+        {"TeStandard12", Tuple.Create(true, "Water sword", "TEStandard", "Split when you get the water sword", 5, new Func<bool>(() => vars.WaterSword()))},
+        {"TeStandard13", Tuple.Create(true, "Dahaka", "TEStandard", "Split when you defeat Dahaka", 5, new Func<bool>(() => vars.Dahaka()))},
+
+        {"TeZipless0", Tuple.Create(true, "Boat", "TEZipless", "Split when the boat ending cutscene starts playing", 5, new Func<bool>(() => vars.boat()))},
+        {"TeZipless1", Tuple.Create(true, "Raven man", "TEZipless", "Split on the cutscene where you're introduced to a raven master", 5, new Func<bool>(() => vars.ravenMan()))},
+        {"TeZipless2", Tuple.Create(false, "Time portal", "TEZipless", "Split when you go through the first time portal", 5, new Func<bool>(() => vars.firstPortal()))},
+        {"TeZipless3", Tuple.Create(true, "(1) Central hall LU", "TEZipless", "Split when you acquire the life upgrade in central hall", 5, new Func<bool>(() => vars.LUCentralHall()))},
+        {"TeZipless4", Tuple.Create(true, "(2) Waterworks LU", "TEZipless", "Split when you acquire the life upgrade in waterworks", 5, new Func<bool>(() => vars.LUWaterworks()))},
+        {"TeZipless5", Tuple.Create(true, "(3) Garden LU", "TEZipless", "Split when you acquire the life upgrade in garden", 5, new Func<bool>(() => vars.LUGarden()))},
+        {"TeZipless6", Tuple.Create(true, "(4) Fortress entrance LU", "TEZipless", "Split when you acquire the life upgrade in fortress entrance", 5, new Func<bool>(() => vars.LUFortress()))},
+        {"TeZipless7", Tuple.Create(true, "Foundry (59)", "TEZipless", "Split when you acquire storygate 59", 5, new Func<bool>(() => vars.rng59()))},
+        {"TeZipless8", Tuple.Create(true, "(5) Prison LU", "TEZipless", "Split when you acquire the life upgrade in prison", 5, new Func<bool>(() => vars.LUPrison()))},
+        {"TeZipless9", Tuple.Create(true, "(6) Library LU", "TEZipless", "Split when you acquire the life upgrade in library", 5, new Func<bool>(() => vars.LULibrary()))},
+        {"TeZipless10", Tuple.Create(false, "Light sword", "TEZipless", "Split when you pick up the light sword in mystic caves", 5, new Func<bool>(() => vars.banana()))},
+        {"TeZipless11", Tuple.Create(true, "Mechanical tower (63)", "TEZipless", "Split when you acquire storygate 63", 5, new Func<bool>(() => vars.rng63()))},
+        {"TeZipless12", Tuple.Create(true, "(7) Mechanical tower LU", "TEZipless", "Split when you acquire the life upgrade in mechanical tower", 5, new Func<bool>(() => vars.LUMechTower()))},
+        {"TeZipless13", Tuple.Create(true, "(8) Southern passage LU", "TEZipless", "Split when you acquire the life upgrade in southern passage", 5, new Func<bool>(() => vars.LU019()))},
+        {"TeZipless14", Tuple.Create(true, "(9) Sacrificial altar LU", "TEZipless", "Split when you acquire the life upgrade in sacrificial altar", 5, new Func<bool>(() => vars.LUShahdee()))},
+        {"TeZipless15", Tuple.Create(true, "Water sword", "TEZipless", "Split when you get the water sword", 5, new Func<bool>(() => vars.WaterSword()))},
+        {"TeZipless16", Tuple.Create(true, "Dahaka", "TEZipless", "Split when you defeat Dahaka", 5, new Func<bool>(() => vars.Dahaka()))},
+
+        {"AnyNmg0", Tuple.Create(true, "Boat", "AnyNMG", "Split when the boat ending cutscene starts playing", 5, new Func<bool>(() => vars.boat()))},
+        {"AnyNmg1", Tuple.Create(true, "Spider sword", "AnyNMG", "Split on the cutscene where you get the spider sword", 5, new Func<bool>(() => vars.spiderSword()))},
+        {"AnyNmg2", Tuple.Create(false, "Raven man", "AnyNMG", "Split on the cutscene where you're introduced to a raven master", 5, new Func<bool>(() => vars.ravenMan()))},
+        {"AnyNmg3", Tuple.Create(false, "Time portal", "AnyNMG", "Split when you go through the first time portal", 5, new Func<bool>(() => vars.firstPortal()))},
+        {"AnyNmg4", Tuple.Create(true, "Soutern passage (chasing Shahdee)", "AnyNMG", "Split when you come to southern passage past", 5, new Func<bool>(() => vars.chasingShahdee()))},
+        {"AnyNmg5", Tuple.Create(true, "Shahdee (a damsel in distress)", "AnyNMG", "Split when you kill Shahdee", 5, new Func<bool>(() => vars.shahdee()))},
+        {"AnyNmg_spPortalEnter", Tuple.Create(false, "Enter Southern Passage Portal", "AnyNMG", "Split when you enter the portal in Southern Passage", 5, new Func<bool>(() => vars.spPortalEnter()))},
+        {"AnyNmg_spPortalExit", Tuple.Create(false, "Exit Southern Passage Portal", "AnyNMG", "Split when you exit the portal in Southern Passage", 5, new Func<bool>(() => vars.spPortalExit()))},
+        {"AnyNmg6", Tuple.Create(true, "The Dahaka", "AnyNMG", "Split on the cutscene before the first Dahaka chase (southern passage present)", 5, new Func<bool>(() => vars.princeStare()))},
+        {"AnyNmg7", Tuple.Create(true, "Serpent sword", "AnyNMG", "Split on the cutscene where you get the serpent sword (hourglass chamber)", 5, new Func<bool>(() => vars.serpentSword()))},
+        {"AnyNmg8", Tuple.Create(true, "Garden hall", "AnyNMG", "Split when you come to garden hall", 5, new Func<bool>(() => vars.gardenHall()))},
+        {"AnyNmg9", Tuple.Create(true, "Waterworks", "AnyNMG", "Split when you come to garden waterworks", 5, new Func<bool>(() => vars.waterworks()))},
+        {"AnyNmg10", Tuple.Create(true, "Lion sword", "AnyNMG", "Split on the cutscene where you get the lion sword (central hall)", 5, new Func<bool>(() => vars.lionSword()))},
+        {"AnyNmg11", Tuple.Create(true, "Mechanical tower", "AnyNMG", "Split when you clilmb up into the mechanical tower", 5, new Func<bool>(() => vars.mechTower()))},
+        {"AnyNmg12", Tuple.Create(false, "Mechanical tower v2 (elevator cutscene)", "AnyNMG", "Split on the cutscene where you jump down on the elevator at the start of mech tower", 5, new Func<bool>(() => vars.mechElevator()))},
+        {"AnyNmg_mpPortalEnter", Tuple.Create(false, "Enter Mechanical Pit Portal", "AnyNMG", "Split when you enter the portal in Mechanical Pit", 5, new Func<bool>(() => vars.mpPortalEnter()))},
+        {"AnyNmg13", Tuple.Create(true, "Mechanical Pit Portal", "AnyNMG", "Split when you go through the time portal in mechanical pit", 5, new Func<bool>(() => vars.mechPortal()))},
+        {"AnyNmg_mpPortalExit", Tuple.Create(false, "Exit Mechanical Pit Portal", "AnyNMG", "Split when you exit the portal in Mechanical Pit", 5, new Func<bool>(() => vars.mpPortalExit()))},
+        {"AnyNmg14", Tuple.Create(true, "Activation room in ruin", "AnyNMG", "Split when you come to the mech tower activation room in the present", 5, new Func<bool>(() => vars.activationRuin()))},
+        {"AnyNmg_arPortalEnter", Tuple.Create(false, "Enter Activation room Portal", "AnyNMG", "Split when you enter the portal in Activation room", 5, new Func<bool>(() => vars.arPortalEnter()))},
+        {"AnyNmg_arPortalExit", Tuple.Create(false, "Exit Activation room Portal", "AnyNMG", "Split when you exit the portal in Activation room", 5, new Func<bool>(() => vars.arPortalExit()))},
+        {"AnyNmg15", Tuple.Create(true, "Activation room restored", "AnyNMG", "Split when you come to the mech tower activation room in the past", 5, new Func<bool>(() => vars.activationRestore()))},
+        {"AnyNmg16", Tuple.Create(true, "The death of a sand wraith (central hall)", "AnyNMG", "Split in centrall hall next to the fountain after you've activated both towers", 5, new Func<bool>(() => vars.sandWraithDeathV1()))},
+        {"AnyNmg17", Tuple.Create(false, "The death of a sand wraith v2 (central hall)", "AnyNMG", "This is slightly different version of the previous split. It's located deeper into the corridor so you can't hit it early when jumping down", 5, new Func<bool>(() => vars.sandWraithDeathV2()))},
+        {"AnyNmg18", Tuple.Create(true, "Death of the empress", "AnyNMG", "Split when you kill Kaileena in the throne room (34->38)", 5, new Func<bool>(() => vars.kaileenaFirst()))},
+        {"AnyNmg19", Tuple.Create(true, "Exit the tomb", "AnyNMG", "Split when you leave the tomb", 5, new Func<bool>(() => vars.exitTomb()))},
+        {"AnyNmg_prPortalEnter", Tuple.Create(false, "Enter Prison Portal", "AnyNMG", "Split when you enter the portal in Prison", 5, new Func<bool>(() => vars.prPortalEnter()))},
+        {"AnyNmg_prPortalExit", Tuple.Create(false, "Exit Prison Portal", "AnyNMG", "Split when you exit the portal in Prison", 5, new Func<bool>(() => vars.prPortalExit()))},
+        {"AnyNmg20", Tuple.Create(true, "Scorpion sword", "AnyNMG", "Split when you get the scorpion sword", 5, new Func<bool>(() => vars.scorpionSword()))},
+        {"AnyNmg21", Tuple.Create(false, "Library", "AnyNMG", "Split on the library opening cutscene", 5, new Func<bool>(() => vars.libraryV1()))},
+        {"AnyNmg22", Tuple.Create(true, "Library v2", "AnyNMG", "Split when you move into the library (after the opening cutscene)", 5, new Func<bool>(() => vars.libraryV2()))},
+        {"AnyNmg23", Tuple.Create(true, "Hourglass revisited", "AnyNMG", "Split when you come back to the hourglass chamber after you've killed Kaileena", 5, new Func<bool>(() => vars.hourglassRevisit()))},
+        {"AnyNmg_trPortalEnter", Tuple.Create(false, "Enter Throne Room Portal", "AnyNMG", "Split when you enter the cutscene after breaking Throne Room wall", 5, new Func<bool>(() => vars.trPortalEnter()))},
+        {"AnyNmg_trPortalExit", Tuple.Create(false, "Exit Throne Room Portal", "AnyNMG", "Split when you exit the portal in Throne Room", 5, new Func<bool>(() => vars.trPortalExit()))},
+        {"AnyNmg24", Tuple.Create(true, "The mask of the wraith", "AnyNMG", "Split when you get to the mask", 5, new Func<bool>(() => vars.maskOn()))},
+        {"AnyNmg_scPortalEnter", Tuple.Create(false, "Enter Sacred Caves Portal", "AnyNMG", "Split when you enter the portal in Sacred Caves", 5, new Func<bool>(() => vars.scPortalEnter()))},
+        {"AnyNmg_scPortalExit", Tuple.Create(false, "Exit Sacred Caves Portal", "AnyNMG", "Split when you exit the portal in Sacred Caves", 5, new Func<bool>(() => vars.scPortalExit()))},
+        {"AnyNmg25", Tuple.Create(true, "Sand griffin", "AnyNMG", "Split when you kill the griffin", 5, new Func<bool>(() => vars.griffinV1()))},
+        {"AnyNmg26", Tuple.Create(false, "Sand griffin v2", "AnyNMG", "Split when you jump to the platform after you've killed the griffin", 5, new Func<bool>(() => vars.griffinV2()))},
+        {"AnyNmg_ugPortalEnter", Tuple.Create(false, "Enter Upper Garden Portal", "AnyNMG", "Split when you enter the portal in Upper Garden", 5, new Func<bool>(() => vars.ugPortalEnter()))},
+        {"AnyNmg_ugPortalExit", Tuple.Create(false, "Exit Upper Garden Portal", "AnyNMG", "Split when you exit the portal in Upper Garden", 5, new Func<bool>(() => vars.ugPortalExit()))},
+        {"AnyNmg27", Tuple.Create(true, "Mirrored fates", "AnyNMG", "Split on the sacrificial altar cutscene (sand wraith pov)", 5, new Func<bool>(() => vars.mirroredFates()))},
+        {"AnyNmg28", Tuple.Create(true, "A favor unknown", "AnyNMG", "Split on the cutscene where the sand wraith saves the prince by throwing an axe (sand wraith pov)", 5, new Func<bool>(() => vars.favorUnknown()))},
+        {"AnyNmg29", Tuple.Create(true, "Library revisited", "AnyNMG", "Split when you enter the library", 5, new Func<bool>(() => vars.libraryRevisit()))},
+        {"AnyNmg30", Tuple.Create(true, "Light sword", "AnyNMG", "Split when you pick up the light sword in mystic caves", 5, new Func<bool>(() => vars.banana()))},
+        {"AnyNmg31", Tuple.Create(true, "The death of a prince", "AnyNMG", "Split on the cutscene where you take the mask off", 5, new Func<bool>(() => vars.maskOff()))},
+        {"AnyNmg32", Tuple.Create(true, "Kaileena", "AnyNMG", "Split when you kill Kaileena in sacred caves", 5, new Func<bool>(() => vars.kaileena()))},
+
+        {"TeNmg0", Tuple.Create(true, "Boat", "TENMG", "Split when the boat ending cutscene starts playing", 5, new Func<bool>(() => vars.boat()))},
+        {"TeNmg1", Tuple.Create(true, "Spider sword", "TENMG", "Split on the cutscene where you get the spider sword", 5, new Func<bool>(() => vars.spiderSword()))},
+        {"TeNmg2", Tuple.Create(false, "Raven man", "TENMG", "Split on the cutscene where you're introduced to a raven master", 5, new Func<bool>(() => vars.ravenMan()))},
+        {"TeNmg3", Tuple.Create(false, "Time portal", "TENMG", "Split when you go through the first time portal", 5, new Func<bool>(() => vars.firstPortal()))},
+        {"TeNmg4", Tuple.Create(true, "Soutern passage (chasing Shahdee)", "TENMG", "Split when you come to southern passage past", 5, new Func<bool>(() => vars.chasingShahdee()))},
+        {"TeNmg5", Tuple.Create(true, "(1) Southern passage LU", "TENMG", "Split when you acquire the life upgrade in southern passage", 5, new Func<bool>(() => vars.LU019()))},
+        {"TeNmg6", Tuple.Create(true, "Shahdee (a damsel in distress)", "TENMG", "Split when you kill Shahdee", 5, new Func<bool>(() => vars.shahdee()))},
+        {"TeNmg7", Tuple.Create(true, "(2) Sacrificial alter LU", "TENMG", "Split when you acquire the life upgrade in sacrificial altar", 5, new Func<bool>(() => vars.LUShahdee()))},
+        {"TeNmg_spPortalEnter", Tuple.Create(false, "Enter Southern Passage Portal", "TENMG", "Split when you enter the portal in Southern Passage", 5, new Func<bool>(() => vars.spPortalEnter()))},
+        {"TeNmg_spPortalExit", Tuple.Create(false, "Exit Southern Passage Portal", "TENMG", "Split when you exit the portal in Southern Passage", 5, new Func<bool>(() => vars.spPortalExit()))},
+        {"TeNmg8", Tuple.Create(true, "The Dahaka", "TENMG", "Split on the cutscene before the first Dahaka chase (southern passage present)", 5, new Func<bool>(() => vars.princeStare()))},
+        {"TeNmg9", Tuple.Create(true, "(3) Fortress entrance LU", "TENMG", "Split when you acquire the life upgrade in fortress entrance", 5, new Func<bool>(() => vars.LUFortress()))},
+        {"TeNmg10", Tuple.Create(true, "Serpent sword", "TENMG", "Split on the cutscene where you get the serpent sword (hourglass chamber)", 5, new Func<bool>(() => vars.serpentSword()))},
+        {"TeNmg11", Tuple.Create(true, "Garden hall", "TENMG", "Split when you come to garden hall", 5, new Func<bool>(() => vars.gardenHall()))},
+        {"TeNmg12", Tuple.Create(false, "Waterworks", "TENMG", "Split when you come to garden waterworks", 5, new Func<bool>(() => vars.waterworks()))},
+        {"TeNmg13", Tuple.Create(true, "(4) Waterworks LU", "TENMG", "Split when you acquire the life upgrade in waterworks", 5, new Func<bool>(() => vars.LUWaterworks()))},
+        {"TeNmg15", Tuple.Create(true, "(5) Garden LU", "TENMG", "Split when you acquire the life upgrade in garden", 5, new Func<bool>(() => vars.LUGarden()))},
+        {"TeNmg16", Tuple.Create(true, "(6) Central hall LU", "TENMG", "Split when you acquire the life upgrade in central hall", 5, new Func<bool>(() => vars.LUCentralHall()))},
+        {"TeNmg17", Tuple.Create(false, "Lion sword", "TENMG", "Split on the cutscene where you get the lion sword (central hall)", 5, new Func<bool>(() => vars.lionSword()))},
+        {"TeNmg18", Tuple.Create(true, "Mechanical tower", "TENMG", "Split when you clilmb up into the mechanical tower", 5, new Func<bool>(() => vars.mechTower()))},
+        {"TeNmg19", Tuple.Create(false, "Mechanical tower v2 (elevator cutscene)", "TENMG", "Split on the cutscene where you jump down on the elevator at the start of mech tower", 5, new Func<bool>(() => vars.mechElevator()))},
+        {"TeNmg_mpPortalEnter", Tuple.Create(false, "Enter Mechanical Pit Portal", "TENMG", "Split when you enter the portal in Mechanical Pit", 5, new Func<bool>(() => vars.mpPortalEnter()))},
+        {"TeNmg20", Tuple.Create(true, "Mechanical Pit Portal", "TENMG", "Split when you go through the time portal in mechanical pit", 5, new Func<bool>(() => vars.mechPortal()))},
+        {"TeNmg_mpPortalExit", Tuple.Create(false, "Exit Mechanical Pit Portal", "TENMG", "Split when you exit the portal in Mechanical Pit", 5, new Func<bool>(() => vars.mpPortalExit()))},
+        {"TeNmg21", Tuple.Create(true, "Activation room in ruin", "TENMG", "Split when you come to the mech tower activation room in the present", 5, new Func<bool>(() => vars.activationRuin()))},
+        {"TeNmg_arPortalEnter", Tuple.Create(false, "Enter Activation room Portal", "TENMG", "Split when you enter the portal in Activation room", 5, new Func<bool>(() => vars.arPortalEnter()))},
+        {"TeNmg_arPortalExit", Tuple.Create(false, "Exit Activation room Portal", "TENMG", "Split when you exit the portal in Activation room", 5, new Func<bool>(() => vars.arPortalExit()))},
+        {"TeNmg22", Tuple.Create(false, "Activation room restored", "TENMG", "Split when you come to the mech tower activation room in the past", 5, new Func<bool>(() => vars.activationRestore()))},
+        {"TeNmg23", Tuple.Create(true, "(7) Mechanical tower LU", "TENMG", "Split when you acquire the life upgrade in mechanical tower", 5, new Func<bool>(() => vars.LUMechTower()))},
+        {"TeNmg24", Tuple.Create(true, "The death of a sand wraith (central hall)", "TENMG", "Split in centrall hall next to the fountain after you've activated both towers", 5, new Func<bool>(() => vars.sandWraithDeathV1()))},
+        {"TeNmg25", Tuple.Create(false, "The death of a sand wraith v2 (central hall)", "TENMG", "This is slightly different version of the previous split. It's located deeper into the corridor so you can't hit it early when jumping down", 5, new Func<bool>(() => vars.sandWraithDeathV2()))},
+        {"TeNmg26", Tuple.Create(true, "Death of the empress", "TENMG", "Split when you kill Kaileena in the throne room (34->38)", 5, new Func<bool>(() => vars.kaileenaFirst()))},
+        {"TeNmg27", Tuple.Create(true, "Exit the tomb", "TENMG", "Split when you leave the tomb", 5, new Func<bool>(() => vars.exitTomb()))},
+        {"TeNmg_prPortalEnter", Tuple.Create(false, "Enter Prison Portal", "TENMG", "Split when you enter the portal in Prison", 5, new Func<bool>(() => vars.prPortalEnter()))},
+        {"TeNmg_prPortalExit", Tuple.Create(false, "Exit Prison Portal", "TENMG", "Split when you exit the portal in Prison", 5, new Func<bool>(() => vars.prPortalExit()))},
+        {"TeNmg28", Tuple.Create(true, "Scorpion sword", "TENMG", "Split when you get the scorpion sword", 5, new Func<bool>(() => vars.scorpionSword()))},
+        {"TeNmg29", Tuple.Create(true, "(8) Prison LU", "TENMG", "Split when you acquire the life upgrade in prison", 5, new Func<bool>(() => vars.LUPrison()))},
+        {"TeNmg30", Tuple.Create(false, "Library", "TENMG", "Split on the library opening cutscene", 5, new Func<bool>(() => vars.libraryV1()))},
+        {"TeNmg31", Tuple.Create(false, "Library v2", "TENMG", "Split when you move into the library (after the opening cutscene)", 5, new Func<bool>(() => vars.libraryV2()))},
+        {"TeNmg32", Tuple.Create(true, "(9) Library LU", "TENMG", "Split when you acquire the life upgrade in library", 5, new Func<bool>(() => vars.LULibrary()))},
+        {"TeNmg33", Tuple.Create(false, "Hourglass revisited", "TENMG", "Split when you come back to the hourglass chamber after you've killed Kaileena", 5, new Func<bool>(() => vars.hourglassRevisit()))},
+        {"TeNmg34", Tuple.Create(true, "Water sword", "TENMG", "Split when you get the water sword", 5, new Func<bool>(() => vars.WaterSword()))},
+        {"TeNmg_trPortalEnter", Tuple.Create(false, "Enter Throne Room Portal", "TENMG", "Split when you enter the cutscene after breaking Throne Room wall", 5, new Func<bool>(() => vars.trPortalEnter()))},
+        {"TeNmg_trPortalExit", Tuple.Create(false, "Exit Throne Room Portal", "TENMG", "Split when you exit the portal in Throne Room", 5, new Func<bool>(() => vars.trPortalExit()))},
+        {"TeNmg35", Tuple.Create(true, "The mask of the wraith", "TENMG", "Split when you get to the mask", 5, new Func<bool>(() => vars.maskOn()))},
+        {"TeNmg_scPortalEnter", Tuple.Create(false, "Enter Sacred Caves Portal", "TENMG", "Split when you enter the portal in Sacred Caves", 5, new Func<bool>(() => vars.scPortalEnter()))},
+        {"TeNmg_scPortalExit", Tuple.Create(false, "Exit Sacred Caves Portal", "TENMG", "Split when you exit the portal in Sacred Caves", 5, new Func<bool>(() => vars.scPortalExit()))},
+        {"TeNmg36", Tuple.Create(true, "Sand griffin", "TENMG", "Split when you kill the griffin", 5, new Func<bool>(() => vars.griffinV1()))},
+        {"TeNmg37", Tuple.Create(false, "Sand griffin v2", "TENMG", "Split when you jump to the platform after you've killed the griffin", 5, new Func<bool>(() => vars.griffinV2()))},
+        {"TeNmg_ugPortalEnter", Tuple.Create(false, "Enter Upper Garden Portal", "TENMG", "Split when you enter the portal in Upper Garden", 5, new Func<bool>(() => vars.ugPortalEnter()))},
+        {"TeNmg_ugPortalExit", Tuple.Create(false, "Exit Upper Garden Portal", "TENMG", "Split when you exit the portal in Upper Garden", 5, new Func<bool>(() => vars.ugPortalExit()))},
+        {"TeNmg38", Tuple.Create(true, "Mirrored fates", "TENMG", "Split on the sacrificial altar cutscene (sand wraith pov)", 5, new Func<bool>(() => vars.mirroredFates()))},
+        {"TeNmg39", Tuple.Create(true, "A favor unknown", "TENMG", "Split on the cutscene where the sand wraith saves the prince by throwing an axe (sand wraith pov)", 5, new Func<bool>(() => vars.favorUnknown()))},
+        {"TeNmg40", Tuple.Create(true, "Library revisited", "TENMG", "Split when you enter the library", 5, new Func<bool>(() => vars.libraryRevisit()))},
+        {"TeNmg41", Tuple.Create(true, "Light sword", "TENMG", "Split when you pick up the light sword in mystic caves", 5, new Func<bool>(() => vars.banana()))},
+        {"TeNmg42", Tuple.Create(true, "The death of a prince", "TENMG", "Split on the cutscene where you take the mask off", 5, new Func<bool>(() => vars.maskOff()))},
+        {"TeNmg43", Tuple.Create(true, "Dahaka", "TENMG", "Split when you defeat Dahaka", 5, new Func<bool>(() => vars.Dahaka()))},
+
+        // The Two Thrones
+        {"TheRamparts", Tuple.Create(true, "The Ramparts", "pop_t2t.asl", "Split after the harbor district save fountain", 6, new Func<bool>(() => vars.TheRamparts()))},
+        {"HarborDistrict", Tuple.Create(true, "The Harbor District", "pop_t2t.asl", "Split after first palace save fountain", 6, new Func<bool>(() => vars.HarborDistrict()))},
+        {"ThePalace", Tuple.Create(true, "The Palace", "pop_t2t.asl", "Split at the end of throne room", 6, new Func<bool>(() => vars.ThePalace()))},
+        {"TrappedHallway", Tuple.Create(false, "The Trapped Hallway", "pop_t2t.asl", "Split at end of trapped hallway at the cutscene", 6, new Func<bool>(() => vars.TrappedHallway()))},
+        {"TheSewers", Tuple.Create(false, "The Sewers", "pop_t2t.asl", "Split on finishing the sewers dark prince section", 6, new Func<bool>(() => vars.TheSewers()))},
+        {"TheSewerz", Tuple.Create(false, "The Sewers (alternate)", "pop_t2t.asl", "Split just before the tunnels save fountain", 6, new Func<bool>(() => vars.TheSewerz()))},
+        {"TheFortress", Tuple.Create(false, "The Fortress", "pop_t2t.asl", "Split just before entering the first Chariot", 6, new Func<bool>(() => vars.TheFortress()))},
+        {"Chariot1", Tuple.Create(false, "Chariot 1", "pop_t2t.asl", "Split on finishing the first chariot", 6, new Func<bool>(() => vars.Chariot1()))},
+        {"LowerCity", Tuple.Create(false, "The Lower City", "pop_t2t.asl", "Split after the lower city dark prince section", 6, new Func<bool>(() => vars.LowerCity()))},
+        {"LowerCityRooftops", Tuple.Create(false, "The Lower City Rooftops", "pop_t2t.asl", "Split after killing Klompa", 6, new Func<bool>(() => vars.LowerCityRooftops()))},
+        {"ArenaDeload", Tuple.Create(false, "Arena Deload", "pop_t2t.asl", "Split at the black crushers in the arena dark prince section", 6, new Func<bool>(() => vars.ArenaDeload()))},
+        {"TheBalconies", Tuple.Create(false, "The Balconies", "pop_t2t.asl", "Split on exiting the room with the slomo gate", 6, new Func<bool>(() => vars.TheBalconies()))},
+        {"DarkAlley", Tuple.Create(false, "The Dark Alley", "pop_t2t.asl", "Split on entering the cutscene at start of temple rooftops", 6, new Func<bool>(() => vars.DarkAlley()))},
+        {"TheTempleRooftops", Tuple.Create(true, "The Temple Rooftops", "pop_t2t.asl", "Split on entering the door into temple", 6, new Func<bool>(() => vars.TheTempleRooftops()))},
+        {"TheTemple", Tuple.Create(false, "The Temple", "pop_t2t.asl", "Split on finishing the temple dark prince section", 6, new Func<bool>(() => vars.TheTemple()))},
+        {"TheMarketplace", Tuple.Create(true, "The Marketplace", "pop_t2t.asl", "Split at save fountain before cutscene drop", 6, new Func<bool>(() => vars.TheMarketplace()))},
+        {"MarketDistrict", Tuple.Create(false, "The Market District", "pop_t2t.asl", "Split at the save fountain after the long cutscene", 6, new Func<bool>(() => vars.MarketDistrict()))},
+        {"TheBrothel", Tuple.Create(false, "The Brothel", "pop_t2t.asl", "Split on finishing the brothel dark prince section", 6, new Func<bool>(() => vars.TheBrothel()))},
+        {"ThePlaza", Tuple.Create(true, "The Plaza", "pop_t2t.asl", "Split at the door after Mahasti fight", 6, new Func<bool>(() => vars.ThePlaza()))},
+        {"TheUpperCity", Tuple.Create(false, "The Upper City", "pop_t2t.asl", "Split just before the skippable Farah cutscene", 6, new Func<bool>(() => vars.TheUpperCity()))},
+        {"CityGarderns", Tuple.Create(false, "The City Garderns", "pop_t2t.asl", "Split just before the Stone Guardian encounter", 6, new Func<bool>(() => vars.CityGarderns()))},
+        {"ThePromenade", Tuple.Create(false, "The Promenade", "pop_t2t.asl", "Split on entering the royal workshop", 6, new Func<bool>(() => vars.ThePromenade()))},
+        {"RoyalWorkshop", Tuple.Create(true, "Royal Workshop", "pop_t2t.asl", "Split on entering the king's road", 6, new Func<bool>(() => vars.RoyalWorkshop()))},
+        {"KingsRoad", Tuple.Create(false, "The King's Road", "pop_t2t.asl", "Split on defeating the twins", 6, new Func<bool>(() => vars.KingsRoad()))},
+        {"KingzRoad", Tuple.Create(false, "The King's Road (alternate)", "pop_t2t.asl", "Split on the transition to palace entrance after twins fight", 6, new Func<bool>(() => vars.KingzRoad()))},
+        {"PalaceEntrance", Tuple.Create(false, "The Palace Entrance", "pop_t2t.asl", "Split on entering the elevator cutscene", 6, new Func<bool>(() => vars.PalaceEntrance()))},
+        {"HangingGardens", Tuple.Create(false, "The Hanging Gardens", "pop_t2t.asl", "Split at the swing pole before the last sand gate", 6, new Func<bool>(() => vars.HangingGardens()))},
+        {"HangingGardenz", Tuple.Create(false, "The Hanging Gardens (alternate)", "pop_t2t.asl", "Split at the structure's mind save fountain", 6, new Func<bool>(() => vars.HangingGardenz()))},
+        {"StructuresMind", Tuple.Create(false, "The Structure's Mind", "pop_t2t.asl", "Split at the cutscene after the puzzle", 6, new Func<bool>(() => vars.StructuresMind()))},
+        {"StructurezMind", Tuple.Create(false, "The Structure's Mind (alternate)", "pop_t2t.asl", "Split after the transition to Well of Ancestors", 6, new Func<bool>(() => vars.StructurezMind()))},
+        {"BottomofWell", Tuple.Create(false, "Bottom of the Well", "pop_t2t.asl", "Split after the death abuse at the bottom of the well", 6, new Func<bool>(() => vars.BottomofWell()))},
+        {"WellofAncestors", Tuple.Create(false, "The Well of Ancestors", "pop_t2t.asl", "Split on finishing the well dark prince section", 6, new Func<bool>(() => vars.WellofAncestors()))},
+        {"TheLabyrinth", Tuple.Create(false, "The Labyrinth", "pop_t2t.asl", "Split on entering the underground cave after breakable wall", 6, new Func<bool>(() => vars.TheLabyrinth()))},
+        {"CaveDeath", Tuple.Create(false, "Underground Cave Death", "pop_t2t.asl", "Split on the death abuse at the end of underground cave (for zipping categories)", 6, new Func<bool>(() => vars.CaveDeath()))},
+        {"UndergroundCave", Tuple.Create(false, "The Underground Cave", "pop_t2t.asl", "Split on entering the kitchen", 6, new Func<bool>(() => vars.UndergroundCave()))},
+        {"LowerTower", Tuple.Create(false, "The Lower Tower", "pop_t2t.asl", "Split on entering the trap corridor after lower tower", 6, new Func<bool>(() => vars.LowerTower()))},
+        {"MiddleTower", Tuple.Create(false, "The Middle Tower", "pop_t2t.asl", "Split on entering the trap corridor after middle tower", 6, new Func<bool>(() => vars.MiddleTower()))},
+        {"UpperTower", Tuple.Create(true, "The Upper Tower", "pop_t2t.asl", "Split at the upper tower save fountain", 6, new Func<bool>(() => vars.UpperTower()))},
+        {"TheTerrace", Tuple.Create(true, "The Terrace", "pop_t2t.asl", "Split on entering the mental realm", 6, new Func<bool>(() => vars.TheTerrace()))},
+        {"MentalRealm", Tuple.Create(true, "The Mental Realm", "pop_t2t.asl", "Split on finishing the game", 6, new Func<bool>(() => vars.MentalRealm()))},
+
+        {"T2TLU1", Tuple.Create(false, "Life Upgrade 1", "pop_t2t.asl", "Split after obtaining the first life upgrade in Tunnels", 6, new Func<bool>(() => vars.T2TLU1()))},
+        {"T2TLU2", Tuple.Create(false, "Life Upgrade 2", "pop_t2t.asl", "Split after obtaining the second life upgrade in Lower City Rooftops", 6, new Func<bool>(() => vars.T2TLU2()))},
+        {"T2TLU3", Tuple.Create(false, "Life Upgrade 3", "pop_t2t.asl", "Split after obtaining the third life upgrade in Temple", 6, new Func<bool>(() => vars.T2TLU3()))},
+        {"T2TLU4", Tuple.Create(false, "Life Upgrade 4", "pop_t2t.asl", "Split after obtaining the fourth life upgrade in Tunnels", 6, new Func<bool>(() => vars.T2TLU4()))},
+        {"T2TLU5", Tuple.Create(false, "Life Upgrade 5", "pop_t2t.asl", "Split after obtaining the fifth life upgrade in Canal", 6, new Func<bool>(() => vars.T2TLU5()))},
+        {"T2TLU6", Tuple.Create(false, "Life Upgrade 6", "pop_t2t.asl", "Split after obtaining the sixth life upgrade in Middle Tower", 6, new Func<bool>(() => vars.T2TLU6()))},
+    };
+
+    foreach (var splitType in vars.splitTypes) {
+        settings.Add(splitType.Key, true, splitType.Value);
+    }
+
+    foreach (var splitType in vars.WWsplitTypes) {
+        settings.Add(splitType.Key, false, splitType.Value, "pop_ww.asl");
+    }
+
+    foreach (var data in vars.splitsData) {
+        settings.Add(data.Key, data.Value.Item1, data.Value.Item2, data.Value.Item3);
+        settings.SetToolTip(data.Key, data.Value.Item4);
+    }
+
     vars.game = 0;
-    vars.newFountain = false;
-    vars.offset = 0;
-    vars.framesOnStart = 0;
-    vars.restartDelta = 0;
-    vars.timerDelta = TimeSpan.FromSeconds(0);
-    vars.startUp = true;
-    vars.timerModel = new TimerModel {CurrentState = timer};
-    vars.game1complete = false;
-    vars.game2complete = false;
-    vars.game3complete = false;
-    vars.game4complete = false;
-    vars.game5complete = false;
-    vars.game6complete = false;
-    vars.game7complete = false;
-    vars.game8complete = false;
-    vars.RestartDelta = 0;
+    vars.noGameRunning = false;
+    vars.CompletedSplits = new HashSet<string>();
+    vars.CompletedGames = new HashSet<int>();
 }
 
-//This runs exactly once every time a game is loaded/restarted
 init
 {
-    //Initializing approriate functions, refreshRate, etc. when a process is loaded:
+    vars.inXRange = (Func<float, float, bool>)((xMin, xMax) => { return current.xPos >= xMin && current.xPos <= xMax; });
+    vars.inYRange = (Func<float, float, bool>)((yMin, yMax) => { return current.yPos >= yMin && current.yPos <= yMax; });
+    vars.inZRange = (Func<float, float, bool>)((zMin, zMax) => { return current.zPos >= zMin && current.zPos <= zMax; });
+    vars.splitByXYZ = (Func<float, float, float, float, float, float, bool>)((xMin, xMax, yMin, yMax, zMin, zMax) => {
+        return
+            vars.inXRange(xMin, xMax) &&
+            vars.inYRange(yMin, yMax) &&
+            vars.inZRange(zMin, zMax);
+    });
+
+    vars.splitCutsceneByMap = (Func<HashSet<int>, bool>)((mapIds) => {
+        return (mapIds.Contains(current.map) && vars.oldCutscene == 0 && current.cutscene == 1);
+    });
+
+    vars.splitBossByMap = (Func<HashSet<int>, bool>)((mapIds) => {
+        return (vars.splitCutsceneByMap(mapIds) && current.bossHealth == 0);
+    });
+
+    vars.splitFountainByStory = (Func<HashSet<int>, bool>)((storyGates) => {
+        return (storyGates.Contains(current.storyValue) && vars.oldState != 11 && current.state == 11);
+    });
+
+    vars.splitByMapSecondary = (Func<HashSet<int>, int, bool>)((mapIds, secondaryId) => {
+        return (mapIds.Contains(current.map) && vars.oldSecondary != secondaryId && current.secondaryWeapon == secondaryId);
+    });
+
+    vars.splitByStoryGate = (Func<int, bool>)((storyId) => {
+        return (vars.oldStory != storyId && current.storyValue == storyId);
+    });
+
+    // List of SoT Splits
+    vars.FarahBalcony = (Func <bool>)(() => { return vars.splitByXYZ(-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f); });
+    vars.GasStation = (Func <bool>)(() => { return vars.splitByXYZ(252f, 258f, 130.647f, 134f, 22.999f, 23.001f); });
+    vars.SandsUnleashed = (Func <bool>)(() => { return vars.splitByXYZ(-6.177f, -6.175f, 62.905f, 62.907f, 7.604f, 7.606f); });
+    vars.FirstGuestRoom = (Func <bool>)(() => { return vars.splitByXYZ(30.297f, 30.299f, 42.126f, 42.128f, 12.998f, 13f); });
+    vars.SultanChamberZipless = (Func <bool>)(() => { return vars.splitByXYZ(98.445f, 98.447f, 39.567f, 39.57f, -8.96f, -8.958f); });
+    vars.SultanChamber = (Func <bool>)(() => { return vars.splitByXYZ(134.137f, 134.139f, 54.990f, 54.992f, -32.791f, -32.789f); });
+    vars.PalaceDefence = (Func <bool>)(() => { return vars.splitByXYZ(4.547f, 8.851f, 40.494f, 47.519f, -39.001f, -38.999f); });
+    vars.DadStart = (Func <bool>)(() => { return vars.splitByXYZ(6.714f, 6.716f, 57.698f, 57.7f, 21.005f, 21.007f); });
+    vars.DadDead = (Func <bool>)(() => { return vars.splitByXYZ(-6.001f, -5.999f, -18.6f, -18.4f, 1.998f, 2.001f); });
+    vars.TheWarehouse = (Func <bool>)(() => { return vars.splitByXYZ(-73.352f, -71.233f, -28.5f, -26.868f, -1.001f, -0.818f); });
+    vars.TheZoo = (Func <bool>)(() => { return vars.splitByXYZ(-141.299f, -139.797f, -47.21f, -42.801f, -31.1f, -30.9f); });
+    vars.BirdCage = (Func <bool>)(() => { return vars.splitByXYZ(-211f, -208f, -23f, -21f, -9f, -8.8f); });
+    vars.CliffWaterfalls = (Func <bool>)(() => { return vars.splitByXYZ(-233.6f, -231.4f, 33.7f, 35f, -42.6f, -42.4f); });
+    vars.TheBathsZipless = (Func <bool>)(() => { return vars.splitByXYZ(-215.85f, -214.089f, 54.261f, 58.699f, -43.501f, -43.499f); });
+    vars.TheBaths = (Func <bool>)(() => { return vars.splitByXYZ(-211.427f, -211.425f, 56.602f, 56.604f, -43.501f, -43.499f); });
+    vars.SecondSword = (Func <bool>)(() => { return vars.splitByXYZ(-106.819f, -106.817f, 81.097f, 81.099f, -27.269f, -27.267f); });
+    vars.TheDaybreak = (Func <bool>)(() => { return vars.splitByXYZ(-76f, -70f, 192.4f, 197.6f, -56.6f, -54f); });
+    vars.TheMesshall = (Func <bool>)(() => { return vars.splitByXYZ(-183.267f, -183.265f, 234.685f, 234.687f, -37.528f, -37.526f); });
+    vars.DrawbridgeTower = (Func <bool>)(() => { return vars.splitByXYZ(-267f, -262f, 232f, 267f, -35.6f, -35.5f); });
+    vars.BrokenBridge = (Func <bool>)(() => { return vars.splitByXYZ(-265f, -257f, 159f, 167f, -13.6f, -13.4f); });
+    vars.TheCavesZipless = (Func <bool>)(() => { return vars.splitByXYZ(-303f, -297.5f, 112f, 113.5f, -56.1f, -55.9f); });
+    vars.TheCaves = (Func <bool>)(() => { return vars.splitByXYZ(-246.839f, -241.677f, 78.019f, 87.936f, -71.731f, -70.7f); });
+    vars.TheWaterfall = (Func <bool>)(() => { return vars.splitByXYZ(-242f, -240.5f, 79.5f, 83f, -121f, -118f); });
+    vars.TheUGReservoirZipless = (Func <bool>)(() => { return vars.splitByXYZ(-121f, -110f, -9f, -7f, -154.1f, -153.9f); });
+    vars.TheUGReservoir = (Func <bool>)(() => { return vars.splitByXYZ(-51.477f, -48.475f, 72.155f, 73.657f, -24.802f, -24.799f); });
+    vars.HallofLearning = (Func <bool>)(() => { return vars.splitByXYZ(73f, 79f, 161f, 163f, -24.1f, -23.9f); });
+    vars.TheObservatory = (Func <bool>)(() => { return vars.splitByXYZ(139.231f, 139.233f, 162.556f, 162.558f, -29.502f, -29.5f); });
+    vars.ObservatoryExit = (Func <bool>)(() => { return vars.splitByXYZ(137f, 141f, 164f, 164.67f, -29.5f, -29.2f); });
+    vars.HoLCourtyardsExit = (Func <bool>)(() => { return vars.splitByXYZ(72f, 77f, 90f, 95.7f, -27.1f, -26.9f); });
+    vars.TheAzadPrison = (Func <bool>)(() => { return vars.splitByXYZ(190f, 195f, -21f, -19f, -17.6f, -17.3f); });
+    vars.TortureChamberZipless = (Func <bool>)(() => { return vars.splitByXYZ(187.5f, 192.5f, -39f, -37.5f, -119.1f, -118.9f); });
+    vars.TortureChamber = (Func <bool>)(() => { return vars.splitByXYZ(189.999f, 190.001f, -43.278f, -43.276f, -119.001f, -118.999f); });
+    vars.TheElevator = (Func <bool>)(() => { return vars.splitByXYZ(74f, 75f, -46.751f, -43.252f, -34f, -33f); });
+    vars.TheDreamZipless = (Func <bool>)(() => { return vars.splitByXYZ(99f, 101f, -11f, -10f, -56f, -54f); });
+    vars.TheDream = (Func <bool>)(() => { return vars.splitByXYZ(95.8f, 96f, -25.1f, -24.9f, -74.9f, -74.7f); });
+    vars.TheTomb = (Func <bool>)(() => { return vars.splitByXYZ(100.643f, 100.645f, -11.543f, -11.541f, -67.588f, -67.586f); });
+    vars.TowerofDawn = (Func <bool>)(() => { return vars.splitByXYZ(35.5f, 35.7f, -50f, -39f, -32f, -30f); });
+    vars.SettingSun = (Func <bool>)(() => { return vars.splitByXYZ(60f, 61f, -58f, -57f, 30f, 32f); });
+    vars.HonorGlory = (Func <bool>)(() => { return vars.splitByXYZ(81f, 82f, -60.3f, -59.7f, 89f, 90f); });
+    vars.GrandRewind = (Func <bool>)(() => { return vars.splitByXYZ(660.376f, 660.378f, 190.980f, 190.983f, 0.432f, 0.434f); });
+    vars.SoTEnd = (Func <bool>)(() => { return (vars.splitByXYZ(658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f) && vars.CompletedSplits.Contains("AboveCredits")) || current.vizierHealth == 4; });
+    vars.SoTLU = (Func <bool>)(() => { return vars.splitByXYZ(-492.608f, -492.606f, -248.833f, -248.831f, 0.219f, 0.221f); });
+
+    // List of WW Splits
+    vars.boat = (Func<bool>)(() => { return (vars.splitBossByMap(new HashSet<int> { 67109218 })); });
+    vars.ravenMan = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 135462572 })); });
+    vars.firstPortal = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 285231807 })); });
+    vars.foundryFountain = (Func<bool>)(() => { return (vars.splitFountainByStory(new HashSet<int> { 58, 59 })); });
+    vars.scorpionSword = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 135483948, 135483950, 135505359, 135516393, 16809649 }) && current.xPos < -164); });
+    vars.banana = (Func<bool>)(() => { return (vars.splitByMapSecondary(new HashSet<int> { 587202754, 587203393 }, 50)); });
+    vars.rng63 = (Func<bool>)(() => { return (vars.splitByStoryGate(63)); });
+    vars.lastPortal = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { -1509855113, 285233488 })); });
+    vars.kaileena = (Func<bool>)(() => { return (vars.splitBossByMap(new HashSet<int> { 989966866 })); });
+
+    vars.LUFortress = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 135501679 })); });
+    vars.LUPrison = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 135483948, 135516393, 16809649 }) && current.xPos > -120); });
+    vars.LULibrary = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 67144064, 67144084 })); });
+    vars.LUMechTower = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 67145445 })); });
+    vars.LUGarden = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 1006690753, 1006690755 })); });
+    vars.LUWaterworks = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 687877046, 687877489 }) && current.xPos > 70); });
+    vars.LUShahdee = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 285225347, 1006717295 })); });
+    vars.LU019 = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 989860398, 1006711848 })); });
+    vars.LUCentralHall = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 67144144 })); });
+    vars.WaterSword = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 1006704427, 1006704429 }) && vars.oldX > -98); });
+    vars.Dahaka = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 989966868 }) && current.yPos > 200); });
+
+    vars.rng59 = (Func<bool>)(() => { return (vars.splitByStoryGate(59)); });
+
+    vars.spiderSword = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 135462576 })); });
+    vars.chasingShahdee = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 989860400 })); });
+    vars.shahdee = (Func<bool>)(() => { return (vars.splitBossByMap(new HashSet<int> { 1006801609 })); });
+    vars.spPortalEnter = (Func<bool>)(() => { return (vars.splitByXYZ(95.5f, 97.5f, -107f, -106f, 413.8f, 414.2f)); });
+    vars.spPortalExit = (Func<bool>)(() => { return (vars.splitByXYZ(95.5f, 97.5f, -107f, -106f, 113.8f, 114.2f)); });
+    vars.princeStare = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 989884886 })); });
+    vars.serpentSword = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 1006704429 }) && current.storyValue == 13); });
+    vars.gardenHall = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 135495097, 135495099 })); });
+    vars.waterworks = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 687877048 })); });
+    vars.lionSword = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 67112526 }) && current.storyValue == 21); });
+    vars.mechTower = (Func<bool>)(() => { return (current.map == 687876481 && vars.oldZ < 410 && current.zPos >= 410); });
+    vars.mechElevator = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 687876652 })); });
+    vars.mpPortalEnter = (Func<bool>)(() => { return (vars.splitByXYZ(-211f, -209f, 139f, 141f, 440.8f, 441.2f)); });
+    vars.mechPortal = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 285235400 })); });
+    vars.mpPortalExit = (Func<bool>)(() => { return (vars.splitByXYZ(-211f, -209f, 139f, 141f, 140.8f, 141.2f)); });
+    vars.activationRuin = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 67145437 })); });
+    vars.arPortalEnter = (Func<bool>)(() => { return (vars.splitByXYZ(-172f, -170f, 188f, 189f, 181.8f, 182.2f)); });
+    vars.arPortalExit = (Func<bool>)(() => { return (vars.splitByXYZ(-172f, -170f, 188f, 189f, 481.8f, 482.2f)); });
+    vars.activationRestore = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 67145455 })); });
+    vars.sandWraithDeathV1 = (Func<bool>)(() => { return (current.map == 67112526 && vars.oldY < -13 && current.yPos >= -13 && current.zPos < 391 && current.storyValue == 33); });
+    vars.sandWraithDeathV2 = (Func<bool>)(() => { return (current.map == 67112526 && vars.oldY < -8 && current.yPos >= -8 && current.storyValue == 33); });
+    vars.kaileenaFirst = (Func<bool>)(() => { return (vars.splitByStoryGate(38)); });
+    vars.exitTomb = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 135464247 }) && current.zPos > 33); });
+    vars.prPortalEnter = (Func<bool>)(() => { return (vars.splitByXYZ(-71f, -69f, -117f, -115f, 19.8f, 20.2f)); });
+    vars.prPortalExit = (Func<bool>)(() => { return (vars.splitByXYZ(-71f, -69f, -117f, -115f, 319.8f, 320.2f)); });
+    vars.libraryV1 = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 67116821, 67116816 })); });
+    vars.libraryV2 = (Func<bool>)(() => { return (current.map == 67116821 && vars.oldX < -112 && current.xPos >= -112 && current.storyValue == 42); });
+    vars.hourglassRevisit = (Func<bool>)(() => { return (vars.oldMap == 1006704427 && current.map == 1006704429 && current.storyValue == 45); });
+    vars.trPortalEnter = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { -1509855113, 1006704431 })); });
+    vars.trPortalExit = (Func<bool>)(() => { return (vars.splitByXYZ(-53.5f, -51.5f, 113f, 114f, 117.8f, 118.2f)); });
+    vars.maskOn = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 285231214 })); });
+    vars.scPortalEnter = (Func<bool>)(() => { return (vars.splitByXYZ(-72f, -70f, 273f, 274f, 132.8f, 133.2f)); });
+    vars.scPortalExit = (Func<bool>)(() => { return (vars.splitByXYZ(-72f, -70f, 273f, 274f, 432.8f, 433.2f)); });
+    vars.griffinV1 = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 285231574 }) && current.yPos < 195); });
+    vars.griffinV2 = (Func<bool>)(() => { return (current.map == 285231574 && vars.oldY > 166.5 && current.yPos <= 166.5); });
+    vars.ugPortalEnter = (Func<bool>)(() => { return (vars.splitByXYZ(78f, 80f, 107f, 108f, 412.3f, 412.7f)); });
+    vars.ugPortalExit = (Func<bool>)(() => { return (vars.splitByXYZ(78f, 80f, 107f, 108f, 112.3f, 112.7f)); });
+    vars.mirroredFates = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 1006801611 })); });
+    vars.favorUnknown = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 135501700 })); });
+    vars.libraryRevisit = (Func<bool>)(() => { return (current.map == 67116821 && vars.oldX < -112 && current.xPos >= -112 && current.storyValue == 60); });
+    vars.maskOff = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 67112526 }) && current.storyValue == 64); });
+
+    // List of T2T Splits
+    vars.TheRamparts = (Func <bool>)(() => { return vars.splitByXYZ(-271f, -265f, 187f, 188f, 74f, 75f); });
+    vars.HarborDistrict = (Func <bool>)(() => { return vars.splitByXYZ(-93f, -88f, 236.2f, 238f, 83f, 88f); });
+    vars.ThePalace = (Func <bool>)(() => { return vars.splitByXYZ(-35.5f, -35.4f, 232.3f, 232.4f, 146.9f, 147f); });
+    vars.TrappedHallway = (Func <bool>)(() => { return vars.splitByXYZ(-52.1f, -52.0f, 135.8f, 135.9f, 75.8f, 76f); });
+    vars.TheSewerz = (Func <bool>)(() => { return vars.splitByXYZ(-100f, -96f, -83f, -79f, 19.9f, 20f); });
+    vars.TheSewers = (Func <bool>)(() => { return vars.splitByXYZ(-89.0f, -88.0f, -15.2f, -14.7f, 4.9f, 5.1f); });
+    vars.TheFortress = (Func <bool>)(() => { return vars.splitByXYZ(-71.4f, -71.3f, 9.6f, 9.7f, 44f, 44.1f); });
+    vars.Chariot1 = (Func <bool>)(() => { return vars.splitByXYZ(-443.37f, -443.36f, 355.80f, 355.81f, 57.71f, 57.72f); });
+    vars.LowerCity = (Func <bool>)(() => { return vars.splitByXYZ(-319f, -316.5f, 317f, 332.6f, 95.1f, 98f); });
+    vars.LowerCityRooftops = (Func <bool>)(() => { return vars.splitByXYZ(-261.5f, -261f, 318f, 319.5f, 46f, 48f); });
+    vars.ArenaDeload = (Func <bool>)(() => { return vars.splitByXYZ(-256.1f, -251.9f, 358f, 361.5f, 53.9f, 63.3f); });
+    vars.TheBalconies = (Func <bool>)(() => { return vars.splitByXYZ(-194f, -190f, 328f, 329.7f, 32.6f, 33.6f); });
+    vars.DarkAlley = (Func <bool>)(() => { return vars.splitByXYZ(-114f, -110f, 328f, 338f, 55f, 59f); });
+    vars.TheTempleRooftops = (Func <bool>)(() => { return vars.splitByXYZ(-122.6f, -117.7f, 421.6f, 423f, 107f, 108.1f); });
+    vars.TheTemple = (Func <bool>)(() => { return vars.splitByXYZ(-212.2f, -211.9f, 419.0f, 419.8f, 81f, 82f); });
+    vars.TheMarketplace= (Func <bool>)(() => { return vars.splitByXYZ(-213f, -207f, 484f, 490f, 101f, 103f); });
+    vars.MarketDistrict = (Func <bool>)(() => { return vars.splitByXYZ(-185.5f, -175.5f, 524f, 530f, 90f, 92f); });
+    vars.TheBrothel = (Func <bool>)(() => { return vars.splitByXYZ(-152.3f, -152.0f, 549.8f, 549.9f, 91.8f, 92f); });
+    vars.ThePlaza = (Func <bool>)(() => { return vars.splitByXYZ(-104f, -100f, 548f, 553f, 105.5f, 106.1f); });
+    vars.TheUpperCity = (Func <bool>)(() => { return vars.splitByXYZ(-124.5f, -122.5f, 500f, 505f, 97f, 99f); });
+    vars.CityGarderns = (Func <bool>)(() => { return vars.splitByXYZ(-63.5f, -63.4f, 389.7f, 389.8f, 85.2f, 85.3f); });
+    vars.ThePromenade = (Func <bool>)(() => { return vars.splitByXYZ(-3f, -1f, 515f, 519f, 72f, 75f); });
+    vars.RoyalWorkshop = (Func <bool>)(() => { return vars.splitByXYZ(58f, 62f, 470f, 480f, 79f, 81f); });
+    vars.KingsRoad = (Func <bool>)(() => { return vars.splitByXYZ(91.9289f, 91.9290f, 230.0479f, 230.0480f, 70.9877f, 70.9879f); });
+    vars.KingzRoad = (Func <bool>)(() => { return vars.splitByXYZ(53f, 70f, 240f, 250f, 70f, 73f); });
+    vars.PalaceEntrance = (Func <bool>)(() => { return vars.splitByXYZ(30.8f, 30.9f, 271.2f, 271.3f, 126f, 126.1f); });
+    vars.HangingGardens = (Func <bool>)(() => { return vars.splitByXYZ(26f, 28f, 211f, 213f, 191f, 193f); });
+    vars.HangingGardenz = (Func <bool>)(() => { return vars.splitByXYZ(5.2f, 5.4f, 213.5f, 215.6f, 194.9f, 196.2f); });
+    vars.StructuresMind = (Func <bool>)(() => { return vars.splitByXYZ(-34f, -27f, 240f, 250f, 178f, 180f); });
+    vars.StructurezMind = (Func <bool>)(() => { return vars.splitByXYZ(5f, 12f, 243f, 265f, 104f, 104.1f); });
+    vars.BottomofWell = (Func <bool>)(() => { return vars.splitByXYZ(-21.35f, -21.34f, 252.67f, 252.68f, 20.95f, 20.96f); });
+    vars.WellofAncestors = (Func <bool>)(() => { return vars.splitByXYZ(-12.6f, -12.5f, 241.2f, 241.3f, 0.9f, 1f); });
+    vars.CaveDeath = (Func <bool>)(() => { return vars.splitByXYZ(5.99f, 6.00f, 306.96f, 306.97f, 42f, 42.01f); });
+    vars.TheLabyrinth = (Func <bool>)(() => { return vars.splitByXYZ(-25.5f, -23f, 325f, 338f, 35.9f, 37.5f); });
+    vars.UndergroundCave = (Func <bool>)(() => { return vars.splitByXYZ(-11f, -9f, 327f, 334f, 73f, 74f); });
+    vars.LowerTower = (Func <bool>)(() => { return vars.splitByXYZ(-5f, -3f, 316f, 317.5f, 139.9f, 140.1f); });
+    vars.MiddleTower = (Func <bool>)(() => { return vars.splitByXYZ(-18f, -12f, 303f, 305f, 184.8f, 185.1f); });
+    vars.UpperTower = (Func <bool>)(() => { return vars.splitByXYZ(-8f, -7f, 296f, 298f, 226.9f, 227f); });
+    vars.TheTerrace = (Func <bool>)(() => { return vars.splitByXYZ(-7.2f, -6.9f, 245.6f, 245.9f, 677f, 679f); });
+    vars.MentalRealm = (Func <bool>)(() => { return vars.splitByXYZ(189f, 194f, 318f, 330f, 540f, 560f) && current.princeAction == 17; });
+    vars.T2TLU1 = (Func <bool>)(() => { return vars.splitByXYZ(-14.9972f, -14.9970f, -112.8152f, -112.8150f, 20.0732f, 20.0734f); });
+    vars.T2TLU2 = (Func <bool>)(() => { return vars.splitByXYZ(-302.0919f, -302.0917f, 370.8710f, 370.8712f, 52.858f, 52.8582f); });
+    vars.T2TLU3 = (Func <bool>)(() => { return vars.splitByXYZ(-187.3369f, -187.3367f, -455.9863f, 455.9865f, 78.0330f, 78.0332f); });
+    vars.T2TLU4 = (Func <bool>)(() => { return vars.splitByXYZ(-55.0147f, -55.0145f, 395.7608f, 395.761f, 72.0774f, 72.0776f); });
+    vars.T2TLU5 = (Func <bool>)(() => { return vars.splitByXYZ(-30.1223f, -30.1221f, 281.8893f, 281.8895f, 104.0796f, 104.0798f); });
+    vars.T2TLU6 = (Func <bool>)(() => { return vars.splitByXYZ(-23.9663f, -23.9661f, 253.9438f, 253.944f, 183.0634f, 183.0636f); });
+
+    vars.CheckSplit = (Func<string, bool>)(key => {
+        return (vars.CompletedSplits.Add(key) && settings[key]);
+    });
+
     switch(game.ProcessName.ToLower()) {
-        case "dosbox":
-            vars.restartDelta = 0;
-            break;
-
-        case "pop3d":
-        case "pop": case "pop2": case "pop3": case "princeofpersia_launcher": case "prince of persia":
-            vars.gameRunning = true;
-            game.Exited += (s, e) => vars.gameRunning = false;
-
-            //this action will split and set the current game to null at the end of every game:
-            vars.lastSplit = (Action <bool>)((splitName) => { if (splitName) {vars.timerModel.Split(); vars.game = 0; }});
-
-            //this function will take 2 float values as input and check if X co-ordinate is within those values:
-            vars.inXRange = (Func <float, float, bool>)((xMin, xMax) => { return current.xPos >= xMin && current.xPos <= xMax ? true : false; });
-
-            //this function will take 2 float values as input and check if Y co-ordinate is within those values:
-            vars.inYRange = (Func <float, float, bool>)((yMin, yMax) => { return current.yPos >= yMin && current.yPos <= yMax ? true : false; });
-
-            //this function will take 2 float values as input and check if Z co-ordinate is within those values:
-            vars.inZRange = (Func <float, float, bool>)((zMin, zMax) => { return current.zPos >= zMin && current.zPos <= zMax ? true : false; });
-
-            //this function will take 6 float values as input and check if X,Y and Z co-ordinates are within those values:
-            vars.inPosFull = (Func <float, float, float, float, float, float, bool>)((xMin, xMax, yMin, yMax, zMin, zMax) => { return vars.inXRange(xMin, xMax) && vars.inYRange(yMin, yMax) && vars.inZRange(zMin, zMax) ? true : false; });
-
-            //this function will take 3 float values for x,y and z of target split location and 1 integer for half-size of range as input and check if X,Y and Z co-ordinates within the range of the target:
-            vars.inPosWithRange = (Func <float, float, float, int, bool>)((xTarg, yTarg, zTarg, range) => {
-                return
-                    current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
-                    current.yPos >= yTarg - range && current.yPos <= yTarg + range &&
-                    current.zPos >= zTarg - range && current.zPos <= zTarg + range ? true : false;
-            });
-
-            // PoP 2008 - This function checks if x,y,z co-ordinates are in a certain range and if a seed has just been picked:
-            vars.splitSeed = (Func <float, float, float, bool>)((xTarg, yTarg, zTarg) => { return vars.inPosWithRange(xTarg, yTarg, zTarg, 3) && vars.seedGet ? true : false; });
-
-            // PoP 2008 - This function checks if x,y,z co-ordinates are in a certain range and if a combat has just ended:
-            vars.splitBoss = (Func <float, float, float, bool>)((xTarg, yTarg, zTarg) => { return vars.inPosWithRange(xTarg, yTarg, zTarg, 3) && vars.kill ? true : false; });
-
-            //TFS: This function checks if x,y,z co-ordinates are in a certain range and if a checkpoint has just been acquired:
-            vars.splitCP = (Func <float, float, float, bool>)((xTarg, yTarg, zTarg) => { return vars.inPosWithRange(xTarg, yTarg, zTarg, 10) && vars.cpGet ? true : false; });
-
-            //TFS: This function checks if x,y,z co-ordinates are within range of 1 unit from the target split location:
-            vars.splitXYZ = (Func <float, float, float, bool>)((xTarg, yTarg, zTarg) => { return vars.inPosWithRange(xTarg, yTarg, zTarg, 1) ? true : false; });
-
-            break;
-
+        case "pop": vars.game = 4; break;
+        case "pop2": vars.game = 5; break;
+        case "pop3": vars.game = 6; break;
     }
 }
 
-//This runs indefinitely until the timer starts
+update
+{
+    bool justStarted = false;
+    bool justEnded = false;
+
+    switch((short)vars.game) {
+        case 4:
+            if (vars.splitByXYZ(-477.88f, -477f, -298f, -297.1f, -0.5f, -0.4f)) vars.CompletedSplits.Remove("SoTLU");
+            if (vars.splitByXYZ(658.26f, 661.46f, 210.92f, 213.72f, 12.5f, 30f)) vars.CompletedSplits.Add("AboveCredits");
+
+            justStarted = vars.FarahBalcony() && current.startValue == 1;
+            justEnded = vars.SoTEnd();
+
+            break;
+
+        case 5:
+            // This is a work-around for the "old" state not working as expected in the init block
+            vars.oldCutscene = old.cutscene;
+            vars.oldState = old.state;
+            vars.oldSecondary = old.secondaryWeapon;
+            vars.oldStory = old.storyValue;
+            vars.oldMap = old.map;
+            vars.oldX = old.xPos;
+            vars.oldY = old.yPos;
+            vars.oldZ = old.zPos;
+
+            justStarted = current.map == 1292342859 && old.cutscene == 1 && current.cutscene == 2;
+            justEnded = vars.kaileena() || vars.Dahaka();
+
+            break;
+
+        case 6:
+            justStarted = vars.inXRange(-404.9f, -404.8f) && current.xCam <= 0.832 && current.xCam >= 0.8318 && current.yCam <= 0.1082 && current.yCam >= 0.1080;
+            justEnded = vars.MentalRealm();
+
+            break;
+    }
+
+    if (justStarted && !vars.CompletedGames.Contains(vars.game)) {
+        vars.noGameRunning = false;
+    }
+
+    if (justEnded) {
+        vars.CompletedGames.Add(vars.game);
+        vars.noGameRunning = true;
+    }
+}
+
 start
 {
-    //checking for process name (after converting it to lower case):
-    //this is done mainly to ensure the script doesnt encounter any undefined variables
-    switch(game.ProcessName.ToLower()) {
-        case "dosbox":
-            if (current.start1 == 1 && current.level1 == 1 && current.mins == 60 && current.frames >= 47120384) {
-                vars.game = 1;
-                vars.game1complete = true;
-                return true;
-            }
-
-            if (old.start2 == 238 && current.start2 != 238 && current.level2 == 1) {
-                vars.framesOnStart = current.frameCount;
-                vars.game = 2;
-                vars.game2complete = true;
-                return true;
-            } break;
-
-        case "pop3d":
-            if (vars.inXRange(20.554f, 20.556f) && vars.inZRange(1.448f, 1.45f)) {
-                vars.game = 3;
-                vars.game3complete = true;
-                return true;
-            } break;
-
-        case "pop":
-            if (vars.inPosFull(-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f) && current.startValue == 1) {
-                vars.aboveCredits = false;
-                vars.newFountain = false;
-                vars.game = 4;
-                vars.game4complete = true;
-                return true;
-            } break;
-
-        case "pop2":
-            if (vars.inXRange(-997.6757f, -997.6755f) && old.startValue == 1 && current.startValue == 2) {
-                vars.game = 5;
-                vars.game5complete = true;
-                return true;
-            } break;
-
-        case "pop3":
-            if (vars.inXRange(-409.9f, -404.8f) && current.xCam >= 0.8318 && current.xCam <= 0.832 && current.yCam >= 0.1080 && current.yCam <= 0.1082) {
-                vars.game = 6;
-                vars.game6complete = true;
-                return true;
-            } break;
-
-        case "princeofpersia_launcher":
-            if (old.yPos != -351 && current.yPos == -351) {
-                vars.game = 7;
-                vars.game7complete = true;
-                return true;
-            } break;
-
-        case "prince of persia":
-            if (vars.inXRange(268.929f, 268.93f) && current.gameState == 4) {
-                vars.game = 8;
-                vars.game8complete = true;
-                return true;
-            } break;
+    switch((short)vars.game) {
+        case 0: return false;
+        case 4: return vars.FarahBalcony() && current.startValue == 1;
+        case 5: return current.map == 1292342859 && old.cutscene == 1 && current.cutscene == 2;
+        case 6: return vars.inXRange(-404.9f, -404.8f) && current.xCam <= 0.832 && current.xCam >= 0.8318 && current.yCam <= 0.1082 && current.yCam >= 0.1080;
     }
 }
 
-//These run indefinitely after the timer starts:
+onStart
+{
+    // Refresh all splits when we start the run, none are yet completed
+    vars.CompletedSplits.Clear();
+}
 
 isLoading
 {
-    //checking which game is active and giving their approriate load/crash remover/IGT scipts:
-    switch ((short)vars.game) {
-
-        // Prince of Persia 1989, Prince of Persia 2: The Shadow and the Flame (IGT):
-        case 1:
-        case 2: return true;
-
-        // Prince of Persia 3D (Load and crash Remover):
-        case 3: return (current.xPos3d == 0 && current.yPos3d == 0 && current.zPos3d == 0) || !vars.gameRunning;
-
-        // Prince of Persia: The Forgotten Sands (Load and crash Remover)
-        case 8: return current.isMenu == 0 || current.isLoading || !vars.gameRunning;
-
-        // The state between last split of one game and start of next game:
-        case 0: return true;
-
-        // Games without a load remover (SoT, WW, T2T, 2k8):
-        default: return false;
-    }
-}
-
-gameTime
-{
-    //checking which game is active and giving their IGT scripts:
-    switch ((short)vars.game) {
-
-        // Prince of Persia 1989:
-        case 1:
-            int adjustedFramesLeft = current.mins - 1 < 0 ? 0 : (current.mins - 1) * 720 + current.secs;
-            return (TimeSpan.FromSeconds((60*720 - adjustedFramesLeft) / 12.0) + vars.timerDelta);
-
-        // Prince of Persia 2: The Shadow and the Flame:
-        case 2:
-            return ((current.gameRunning == 0)?(TimeSpan.FromSeconds((vars.restartDelta - vars.framesOnStart) / 12.0) + vars.timerDelta):(TimeSpan.FromSeconds((current.frameCount - vars.framesOnStart + vars.restartDelta) / 12.0) + vars.timerDelta));
-    }
+    return vars.noGameRunning;
 }
 
 split
 {
-    switch ((short)vars.game) {
-
-        //This is for the setup splits between 2 games and also updates offsets, and sets the appropriate active game:
-        case 0:
-            switch(game.ProcessName.ToLower()) {
-                case "dosbox":
-                    if (current.start1 == 1 && current.level1 == 1 && current.mins == 60 && current.frames >= 47120384 && !vars.game1complete) {
-                        vars.timerDelta = timer.Run[timer.CurrentSplitIndex - 1].SplitTime.GameTime;
-                        vars.game = 1;
-                        vars.game1complete = true;
-                        return true;
-                    }
-
-                    if (old.start2 == 238 && current.start2 != 238 && current.level2 == 1 && !vars.game2complete) {
-                        vars.framesOnStart = current.frameCount;
-                        vars.timerDelta = timer.Run[timer.CurrentSplitIndex - 1].SplitTime.GameTime;
-                        vars.game = 2;
-                        vars.game2complete = true;
-                        return true;
-                    } break;
-
-                case "pop3d":
-                    if (vars.inXRange(20.554f, 20.556f) && vars.inZRange(1.448f, 1.45f) && !vars.game3complete) {
-                        vars.offset = timer.CurrentSplitIndex+1;
-                        vars.game = 3;
-                        vars.game3complete = true;
-                        return true;
-                    } break;
-
-                case "pop":
-                    if (vars.inPosFull(-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f) && current.startValue == 1 && !vars.game4complete) {
-                        vars.offset = timer.CurrentSplitIndex+1;
-                        vars.aboveCredits = false;
-                        vars.newFountain = false;
-                        vars.game = 4;
-                        vars.game4complete = true;
-                        return true;
-                    } break;
-
-                case "pop2":
-                    if (vars.inXRange(-997.6757f, -997.6755f) && old.startValue == 1 && current.startValue == 2 && !vars.game5complete) {
-                        vars.offset = timer.CurrentSplitIndex+1;
-                        vars.game = 5;
-                        vars.game5complete = true;
-                        return true;
-                    } break;
-
-                case "pop3":
-                    if (vars.inXRange(-409.9f, -404.8f) && current.xCam >= 0.8318 && current.xCam <= 0.832 && current.yCam >= 0.1080 && current.yCam <= 0.1082 && !vars.game1complete) {
-                        vars.offset = timer.CurrentSplitIndex+1;
-                        vars.game = 6;
-                        vars.game6complete = true;
-                        return true;
-                    } break;
-
-                case "princeofpersia_launcher":
-                    if (old.yPos != -351 && current.yPos == -351 && !vars.game7complete) {
-                        vars.offset = timer.CurrentSplitIndex+1;
-                        vars.game = 7;
-                        vars.game7complete = true;
-                        return true;
-                    } break;
-
-                case "prince of persia":
-                    if (vars.inXRange(268.929f, 268.93f) && current.gameState == 4 && !vars.game8complete) {
-                        vars.offset = timer.CurrentSplitIndex+1;
-                        vars.game = 8;
-                        vars.game8complete = true;
-                        return true;
-                    } break;
-            }
-            break;
-
-        // Prince of Persia (1989):-
-        case 1:
-            if (old.level1 == current.level1 - 1 && current.gameRunning != 0 && current.level1 != 1)
-                return true;
-            if (current.level1 == 14 && current.endGame == 255 && current.gameRunning != 0) {
-                vars.game = 0;
-                return true;
-            }
-            break;
-
-        // Prince of Persia 2: The Shadow and the Flame:-
-        case 2:
-            if (old.gameRunning != 0 && current.gameRunning == 0) {
-                vars.restartDelta += current.frameCount;
-            }
-            if (old.level2 == current.level2 - 1 && current.level2 > 1 && current.level2 != 15 && current.gameRunning != 0)
-                return true;
-            if (current.level2 == 15 && old.level2 == 14) {
-                vars.game = 0;
-                return true;
-            }
-            break;
-
-        // Prince of Persia 3D:-
-        case 3:
-            // Initializing PoP3D splits:
-            bool Cistern         = old.xPos == 0 && vars.inXRange(216.904f, 216.906f) ? true : false;
-            bool Cliffs          = old.yPos == 0 && vars.inYRange(-2.36f, -2.34) ? true : false;
-            bool DirigibleFinale = old.yPos == 0 && current.yPos == 61 ? true : false;
-            bool Dungeon         = old.yPos == 0 && current.yPos == -2 ? true : false;
-            bool End3D           = current.xPos == 0 && current.yPos == 0 && current.zPos == 0 && current.eHealth == 0 ? true : false;
-            bool FloatingRuins   = old.yPos == 0 && current.yPos == -85 ? true : false;
-            bool IvoryTower      = old.xPos == 0 && vars.inXRange(13.485f, 13.487f) ? true : false;
-            bool LowerDirigible1 = old.yPos == 0 && current.yPos == 99 ? true : false;
-            bool LowerDirigible2 = vars.inZRange(-77.77f, -77.75f) && old.zPos == 0 ? true : false;
-            bool Palace1         = old.xPos == 0 && current.xPos == -7 ? true : false;
-            bool Palace2         = old.yPos == 0 && current.yPos == -23 ? true : false;
-            bool Palace3         = current.xPos == 0 && current.yPos == 0 && current.zPos == 0 && old.health == 0 && current.health != 0 ? true : false;
-            bool Rooftops        = old.xPos == 0 && current.xPos == -42 ? true : false;
-            bool StreetsDocks    = old.yPos == 0 && current.yPos == -20 ? true : false;
-            bool UpperDirigible  = old.yPos == 0 && current.yPos == 103 ? true : false;
-            bool SunTemple3D     = old.yPos == 0 && vars.inYRange(-19.966f, -19.964) ? true : false;
-            bool MoonTemple      = old.yPos == 0 && vars.inYRange(-27.4f, -27.38) ? true : false;
-
-            // Checking qualifications to complete each split:
-            switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                case 0: return Dungeon;          // Dungeon
-                case 1: return IvoryTower;       // Ivory Tower
-                case 2: return Cistern;          // Cistern
-                case 3: return Palace1;          // Palace 1
-                case 4: return Palace2;          // Palace 2
-                case 5: return Palace3;          // Palace 3
-                case 6: return Rooftops;         // Rooftops
-                case 7: return StreetsDocks;     // Streets and Docks
-                case 8: return LowerDirigible1;  // Lower Dirigible 1
-                case 9: return LowerDirigible2;  // Lower Dirigible 2
-                case 10: return UpperDirigible;  // Upper Dirigible
-                case 11: return DirigibleFinale; // Dirigible Finale
-                case 12: return FloatingRuins;   // Floating Ruins
-                case 13: return Cliffs;          // Cliffs
-                case 14: return SunTemple3D;     // Sun Temple
-                case 15: return MoonTemple;      // Moon Temple
-                case 16: vars.lastSplit(End3D); break; // Finale
-            }
-            break;
-
-        // Prince of Persia: Sands of Time:-
-        case 4: // Initializing SoT splits.
-            bool AzadPrison            = vars.inPosFull(190f, 195f, -21f, -19f, -17.6f, -17.3f);
-            bool Baths                 = vars.inPosFull(-211.427f, -211.425f, 56.602f, 56.604f, -43.501f, -43.499f);
-            bool BathsZipless          = vars.inPosFull(-215.85f, -214.089f, 54.261f, 58.699f, -43.501f, -43.499f);
-            bool BirdCage              = vars.inPosFull(-211f, -208f, -23f, -21f, -9f, -8.8f);
-            bool BrokenBridge          = vars.inPosFull(-265f, -257f, 159f, 167f, -13.6f, -13.4f);
-            bool Caves                 = vars.inPosFull(-246.839f, -241.677f, 78.019f, 87.936f, -71.731f, -70.7f);
-            bool CavesAC               = vars.inPosFull(-171.193f, -171.191f, -52.07f, -52.068f, -119.863f, -119.861f);
-            bool CavesZipless          = vars.inPosFull(-303f, -297.5f, 112f, 113.5f, -56.1f, -55.9f);
-            bool CliffWaterfalls       = vars.inPosFull(-233.6f, -231.4f, 33.7f, 35f, -42.6f, -42.4f);
-            bool DadDead               = vars.inPosFull(-6.001f, -5.999f, -18.6f, -18.4f, 1.998f, 2.001f);
-            bool DadStart              = vars.inPosFull(6.714f, 6.716f, 57.698f, 57.7f, 21.005f, 21.007f);
-            bool Daybreak              = vars.inPosFull(-76f, -70f, 192.4f, 197.6f, -56.6f, -54f);
-            bool DrawbridgeTower       = vars.inPosFull(-267f, -262f, 232f, 267f, -35.6f, -35.5f);
-            bool Dream                 = vars.inPosFull(95.8f, 96f, -25.1f, -24.9f, -74.9f, -74.7f);
-            bool DreamZipless          = vars.inPosFull(99f, 101f, -11f, -10f, -56f, -54f);
-            bool Elevator              = vars.inPosFull(74f, 74.171f, -46.751f, -43.252f, -33.501f, -33.499f);
-            bool FirstGuestRoom        = vars.inPosFull(30.297f, 30.299f, 42.126f, 42.128f, 12.998f, 13f);
-            bool GasStation            = vars.inPosFull(252f, 258f, 130.647f, 134f, 22.999f, 23.001f);
-            bool GrandRewind           = vars.inPosFull(660.376f, 660.378f, 190.980f, 190.983f, 0.432f, 0.434f);
-            bool HallOfLearning        = vars.inPosFull(73f, 79f, 161f, 163f, -24.1f, -23.9f);
-            bool HoLCourtyardsExit     = vars.inPosFull(72f, 77f, 90f, 95.7f, -27.1f, -26.9f);
-            bool HonorGlory            = vars.inPosFull(81f, 82f, -60.3f, -59.7f, 89f, 90f);
-            bool LastFightSkip         = vars.inPosFull(66f, 69f, -39f, -36f, 90f, 92f);
-            bool Messhall              = vars.inPosFull(-183.267f, -183.265f, 234.685f, 234.687f, -37.528f, -37.526f);
-            bool ObservatorySoT        = vars.inPosFull(139.231f, 139.233f, 162.556f, 162.558f, -29.502f, -29.5f);
-            bool ObservatoryExit       = vars.inPosFull(137f, 141f, 164f, 164.67f, -29.5f, -29.2f);
-            bool PalaceDefence         = vars.inPosFull(4.547f, 8.851f, 40.494f, 47.519f, -39.001f, -38.999f);
-            bool SandsUnleashed        = vars.inPosFull(-6.177f, -6.175f, 62.905f, 62.907f, 7.604f, 7.606f);
-            bool SecondSword           = vars.inPosFull(-106.819f, -106.817f, 81.097f, 81.099f, -27.269f, -27.267f);
-            bool SettingSun            = vars.inPosFull(60f, 61f, -58f, -57f, 30f, 32f);
-            bool SoTLU                 = vars.inPosFull(-492.608f, -492.606f, -248.833f, -248.831f, 0.219f, 0.221f) && vars.newFountain;
-            bool SoTEnd                = vars.inPosFull(658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f) || current.vizierHealth == 4;
-            bool SultanChamber         = vars.inPosFull(134.137f, 134.139f, 54.990f, 54.992f, -32.791f, -32.789f);
-            bool SultanChamberZipless  = vars.inPosFull(98.445f, 98.447f, 39.567f, 39.57f, -8.96f, -8.958f);
-            bool TheWarehouse          = vars.inPosFull(-73.352f, -71.233f, -28.5f, -26.868f, -1.001f, -0.818f);
-            bool TheZoo                = vars.inPosFull(-141.299f, -139.797f, -47.21f, -42.801f, -31.1f, -30.9f);
-            bool Tomb                  = vars.inPosFull(100.643f, 100.645f, -11.543f, -11.541f, -67.588f, -67.586f);
-            bool TortureChamber        = vars.inPosFull(189.999f, 190.001f, -43.278f, -43.276f, -119.001f, -118.999f);
-            bool TortureChamberZipless = vars.inPosFull(187.5f, 192.5f, -39f, -37.5f, -119.1f, -118.9f);
-            bool TowerofDawn           = vars.inPosFull(35.5f, 35.7f, -50f, -39f, -32f, -30f);
-            bool UGReservoir           = vars.inPosFull(-51.477f, -48.475f, 72.155f, 73.657f, -24.802f, -24.799f);
-            bool UGReservoirZipless    = vars.inPosFull(-121f, -110f, -9f, -7f, -154.1f, -153.9f);
-            bool Waterfall             = vars.inPosFull(-242f, -240.5f, 79.5f, 83f, -121f, -118f);
-
-            if (vars.inPosFull(-477.88f, -477f, -298f, -297.1f, -0.5f, -0.4f)) vars.newFountain = true;
-            if (SoTLU) vars.newFountain = false;
-
-            // Checking category and qualifications to complete each split:
-            switch(timer.Run.GetExtendedCategoryName()) {
-                case "Anthology": case "Sands Trilogy (Any%, Standard)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return GasStation;                   //The Treasure Vaults
-                    case 1:    return SandsUnleashed;               //The Sands of Time
-                    case 2:    return SultanChamber;                //The Sultan's Chamber (Death)
-                    case 3:    return DadDead;                      //Death of the Sand King
-                    case 4:    return Baths;                        //The Baths (Death)
-                    case 5:    return Messhall;                     //The Messhall (Death)
-                    case 6:    return Caves;                        //The Caves
-                    case 7:    return UGReservoir;                  //Exit Underground Reservoir
-                    case 8: return ObservatorySoT;               //The Observatory (Death)
-                    case 9:    return TortureChamber;               //The Torture Chamber (Death)
-                    case 10: return Dream;                       //The Dream
-                    case 11: return HonorGlory || LastFightSkip; //Honor and Glory
-                    case 12: return GrandRewind;                 //The Grand Rewind
-                    case 13: vars.lastSplit(SoTEnd); break;  //The End
-                } break;
-
-                case "Sands Trilogy (Any%, Zipless)":
-                case "Sands Trilogy (Any%, No Major Glitches)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return GasStation;             // The Treasure Vaults
-                    case 1: return SandsUnleashed;         // The Sands of Time
-                    case 2: return FirstGuestRoom;         // First Guest Room
-                    case 3: return SultanChamberZipless;   // The Sultan's Chamber
-                    case 4: return PalaceDefence;          // Exit Palace Defense
-                    case 5: return DadStart;               // The Sand King
-                    case 6: return DadDead;                // Death of the Sand King
-                    case 7: return TheWarehouse;           // The Warehouse
-                    case 8:    return TheZoo;                 // The Zoo
-                    case 9: return BirdCage;               // Atop a Bird Cage
-                    case 10: return CliffWaterfalls;       // Cliffs and Waterfall
-                    case 11: return BathsZipless;          // The Baths
-                    case 12: return SecondSword;           // Sword of the Mighty Warrior
-                    case 13: return Daybreak;              // Daybreak
-                    case 14: return DrawbridgeTower;       // Drawbridge Tower
-                    case 15: return BrokenBridge;          // A Broken Bridge
-                    case 16: return CavesZipless;          // The Caves
-                    case 17: return Waterfall;             // Waterfall
-                    case 18: return UGReservoirZipless;    // An Underground Reservoir
-                    case 19: return HallOfLearning;        // Hall of Learning
-                    case 20: return ObservatoryExit;       // Exit Observatory
-                    case 21: return HoLCourtyardsExit;     // Exit Hall of Learning Courtyards
-                    case 22: return AzadPrison;            // The Prison
-                    case 23: return TortureChamberZipless; // The Torture Chamber
-                    case 24: return Elevator;              // The Elevator
-                    case 25: return DreamZipless;          // The Dream
-                    case 26: return Tomb;                  // The Tomb
-                    case 27: return TowerofDawn;           // The Tower of Dawn
-                    case 28: return SettingSun;            // The Setting Sun
-                    case 29: return HonorGlory;            // Honor and Glory
-                    case 30: return GrandRewind;           // The Grand Rewind
-                    case 31: vars.lastSplit(SoTEnd); break; //The End
-                } break;
-
-                case "Sands Trilogy (Completionist, Standard)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return GasStation;                   // The Treasure Vaults
-                    case 1: return SandsUnleashed;               // The Sands of Time
-                    case 5: return Baths;                        // The Baths (Death)
-                    case 7: return Messhall;                     // The Messhall (Death)
-                    case 9: return Caves;                        // The Caves (Death)
-                    case 12: return ObservatorySoT;              // The Observatory (Death)
-                    case 15: return Dream;                       // The Dream
-                    case 2: case 3: case 4: case 6: case 8: case 10: case 11: case 13: case 14:
-                    case 16: return SoTLU;                       // Life Upgrades 1-10
-                    case 17: return HonorGlory || LastFightSkip; // Honor and Glory
-                    case 18: return GrandRewind;                 // The Grand Rewind
-                    case 19: vars.lastSplit(SoTEnd); break;  //The End
-                } break;
-
-                case "Sands Trilogy (Completionist, Zipless)":
-                case "Sands Trilogy (Completionist, No Major Glitches)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return GasStation;                 // The Treasure Vaults
-                    case 1: return SandsUnleashed;             // The Sands of Time
-                    case 2: return FirstGuestRoom;             // First Guest Room
-                    case 4: return PalaceDefence;              // Exit Palace Defense
-                    case 6: return DadDead;                    // Death of the Sand King
-                    case 8:    return TheZoo;                     // The Zoo
-                    case 9: return BirdCage;                   // Atop a Bird Cage
-                    case 10: return CliffWaterfalls;           // Cliffs and Waterfall
-                    case 11: return BathsZipless;              // The Baths
-                    case 13: return Daybreak;                  // Daybreak
-                    case 14: return DrawbridgeTower;           // Drawbridge Tower
-                    case 15: return BrokenBridge;              // A Broken Bridge
-                    case 17: return Waterfall;                 // Waterfall
-                    case 18: return UGReservoirZipless;        // An Underground Reservoir
-                    case 20: return HallOfLearning;            // Hall of Learning
-                    case 22: return ObservatoryExit;           // Exit Observatory
-                    case 23: return HoLCourtyardsExit;         // Exit Hall of Learning Courtyards
-                    case 24: return AzadPrison;                // The Prison
-                    case 27: return Dream;                     // The Dream
-                    case 28: return Tomb;                      // The Tomb
-                    case 3: case 5: case 7: case 12: case 16: case 19: case 21: case 25: case 26:
-                    case 29: return SoTLU;                     // Life Upgrades 1-10
-                    case 30: return TowerofDawn;               // The Tower of Dawn
-                    case 31: return SettingSun;                // The Setting Sun
-                    case 32: return HonorGlory;                // Honor and Glory
-                    case 33: return GrandRewind;               // The Grand Rewind
-                    case 34: vars.lastSplit(SoTEnd); break; //The End
-                } break;
-            }
-            break;
-
-        // Prince of Persia: Warrior Within:-
-        case 5:
-            //This function checks if x,y,z co-ordinates are in a certain range and if the story value is appropriate
-            var posAndStory = (Func <float, float, float, float, float, float, int, bool>)((xMin, xMax, yMin, yMax, zMin, zMax, storyValue) => {
-                return vars.inPosFull(xMin, xMax, yMin, yMax, zMin, zMax) && current.storyValue == storyValue ? true : false;
-            });
-
-            var splitCutsceneByMap = (Func<HashSet<int>, bool>)((mapIds) => {
-                return (mapIds.Contains(current.map) && old.startValue == 0 && current.startValue == 1);
-            });
-
-            // Initializing WW Splits:
-            bool ActRoomRestored    = posAndStory(-192.5f, -189.5f, 109f, 111f, 471.9f, 472.1f, 19) ? true : false;
-            bool ActRoomRuin        = posAndStory(-206f, -205.8f, 59.8f, 67.4f, 162.6f, 163.1f, 18) ? true : false;
-            bool BackToTheFuture    = posAndStory(-52.7f, -52.6f, 137.2f, 137.3f, 418f, 419f, 66) ? true : false;
-            bool Boat               = posAndStory(-1003f, -995f, -1028f, -1016f, 14f, 15f, 0) && current.bossHealth == 0 ? true : false;
-            bool BreathOfFate       = posAndStory(-210.018f, -210.016f, 164.259f, 164.261f, 440.9f, 441.1f, 16) ? true : false;
-            bool ChasingShadee      = posAndStory(43.3f, 43.4f, -75.7f, -75.6f, 370f, 370.1f, 7) ? true : false;
-            bool Dahaka             = posAndStory(40.1f, 42.4f, -96.1f, -95.9f, 86f, 86.1f, 9) ? true : false;
-            bool DahakaBoss         = (splitCutsceneByMap(new HashSet<int> { 989966868 }) && current.yPos > 200);
-            bool DamselInDistress   = posAndStory(115f, 132f, -114f, -80f, 357f, 361f, 8) && current.bossHealth == 0 ? true : false;
-            bool DeathOfPrince      = posAndStory(-67f, -65.1f, -23.3f, -23.1f, 399.9f, 400f, 64) ? true : false;
-            bool DeathOfSandWraith  = posAndStory(-50f, -39f, -13f, -5f, 388.9f, 389.8f, 33) ? true : false;
-            bool DeathOfTheEmpress  = posAndStory(-74f, -31f, 53.5f, 104f, 414f, 422f, 38) && current.bossHealth == 0 ? true : false;
-            bool EndGame            = old.storyValue != 63 && current.storyValue == 63 ? true : false;
-            bool ExitTomb           = posAndStory(-100f, -97.5f, -190f, -187f, 33f, 33.2f, 39) ? true : false;
-            bool FavorUnknown       = posAndStory(41.1f, 41.2f, -180.1f, -180f, 368.9f, 369.1f, 57) ? true : false;
-            bool GardenHall         = posAndStory(66.9f, 67.1f, 11.4f, 11.6f, 400f, 400.2f, 22) ? true : false;
-            bool HourglassRev       = posAndStory(-108.3f, -106f, 40f, 45f, 407.3f, 407.5f, 45) ? true : false;
-            bool Library            = posAndStory(-112f, -111f, -144f, -137f, 384.9f, 389f, 42) ? true : false;
-            bool LibraryRev         = posAndStory(-112f, -111f, -144f, -137f, 384.9f, 389f, 60) ? true : false;
-            bool LightSword         = current.secondaryWeapon == 50 && current.storyValue == 61 ? true : false;
-            bool LionSword          = posAndStory(-44.7f, -44.6f, -27.1f, -27f, 389f, 389.1f, 21) ? true : false;
-            bool LU1                = posAndStory(52f, 52.8f, -188.7f, -188.6f, 381.9f, 382.1f, 2) ? true : false;
-            bool LU2                = posAndStory(-112.1f, -112f, -66.1f, -65.2f, 360.9f, 361f, 59) ? true : false;
-            bool LU3                = (splitCutsceneByMap(new HashSet<int> { 67144064, 67144084 }));
-            bool LU4                = posAndStory(-161.2f, -161f, 170.3f, 171f, 471.9f, 472.1f, 63) ? true : false;
-            bool LU5                = posAndStory(138.8f, 139f, 115.3f, 116.7f, 382.5f, 382.6f, 64) ? true : false;
-            bool LU6                = posAndStory(76.1f, 76.2f, 64.1f, 64.9f, 461.4f, 461.6f, 64) ? true : false;
-            bool LU7                = posAndStory(190.2f, 190.4f, -131.9f, -131.8f, 353.9f, 354.1f, 64) ? true : false;
-            bool LU8                = posAndStory(162.2f, 162.7f, -37.5f, -37.3f, 392.9f, 393.1f, 64) ? true : false;
-            bool LU9                = posAndStory(-114.7f, -114.1f, -47.2f, -47f, 368.9f, 369.1f, 64) ? true : false;
-            bool MaskOfWraith       = posAndStory(-20.5f, -20.4f, 236.8f, 267f, 133f, 133.1f, 46) ? true : false;
-            bool MechanicalTower    = posAndStory(-167f, -162f, -47.5f, -46f, 409.6363f, 412f, 15) ? true : false;
-            bool MirroredFates      = posAndStory(136.7f, 136.9f, -110.6f, -110.4f, 377.9f, 378f, 55) ? true : false;
-            bool RavenMan           = posAndStory(-5.359f, -4.913f, -161.539f, -161.500f, 66.5f, 67.5f, 2) ? true : false;
-            bool SandGriffin        = posAndStory(-23f, -15f, 163f, 166.5f, 429f, 431f, 48) ? true : false;
-            bool ScorpionSword      = posAndStory(-170.1f, -170f, -127.3f, -127.2f, 335.5f, 336.5f, 59) ? true : false;
-            bool SerpentSword       = posAndStory(-96.5f, -96.4f, 41.3f, 41.4f, 407.4f, 407.5f, 13) ? true : false;
-            bool SpiderSword        = posAndStory(-46.3f, -46f, -139.7f, -138f, 67f, 68f, 2) ? true : false;
-            bool TimePortal         = posAndStory(122.8f, 122.9f, -156.1f, -156f, 368.5f, 369.5f, 2) ? true : false;
-            bool WaterSword         = posAndStory(-96.643f, -96.641f, 43.059f, 43.061f, 407.4f, 407.5f, 66) ? true : false;
-            bool WaterworksRestored = posAndStory(23f, 29f, 41f, 43f, 441f, 450f, 22) ? true : false;
-            bool WWEnd              = vars.inPosFull(-35f, -5f, 170f, 205f, 128.9f, 129.1f) && current.storyValue >= 66 && current.bossHealth == 0 ? true : false;
-
-            // Checking category and qualifications to complete each split:
-            switch(timer.Run.GetExtendedCategoryName()) {
-                case "Anthology":
-                case "Sands Trilogy (Any%, Standard)":
-                case "Sands Trilogy (Any%, Zipless)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return Boat;                                                              // The Boat
-                    case 1: return RavenMan;                                                          // The Raven Man
-                    case 2: return TimePortal;                                                        // The Time Portal
-                    case 3: return current.storyValue == 59;                                          // Mask of the Wraith (59)
-                    case 4: return ScorpionSword;                                                     // The Scorpion Sword
-                    case 5: return EndGame || LightSword;                           // Storygate 63 or The Light Sword
-                    case 6: return BackToTheFuture;                                                   // Back to the Future
-                    case 7: vars.lastSplit(WWEnd); break;                                         // The End
-                } break;
-
-                case "Sands Trilogy (Any%, No Major Glitches)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return Boat;                        // The Boat
-                    case 1: return SpiderSword;                 // The Spider Sword
-                    case 2: return ChasingShadee;               // Chasing Shadee
-                    case 3: return DamselInDistress;            // A Damsel in Distress
-                    case 4: return Dahaka;                      // The Dahaka
-                    case 5: return SerpentSword;                // The Serpent Sword
-                    case 6: return GardenHall;                  // The Garden Hall
-                    case 7: return WaterworksRestored;          // The Waterworks Restored
-                    case 8: return LionSword;                   // The Lion Sword
-                    case 9: return MechanicalTower;             // The Mechanical Tower
-                    case 10: return BreathOfFate;               // Breath of Fate
-                    case 11: return ActRoomRuin;                // Activation Room in Ruin
-                    case 12: return ActRoomRestored;            // Activation Room Restored
-                    case 13: return DeathOfSandWraith;          // The Death of a Sand Wraith
-                    case 14: return DeathOfTheEmpress;          // Death of the Empress
-                    case 15: return ExitTomb;                   // Exit the Tomb
-                    case 16: return ScorpionSword;              // The Scorpion Sword
-                    case 17: return Library;                    // The Library
-                    case 18: return HourglassRev;               // The Hourglass Revisited
-                    case 19: return MaskOfWraith;               // The Mask of the Wraith
-                    case 20: return SandGriffin;                // The Sand Griffin
-                    case 21: return MirroredFates;              // Mirrored Fates
-                    case 22: return FavorUnknown;               // A Favor Unknown
-                    case 23: return LibraryRev;                 // The Library Revisited
-                    case 24: return LightSword;                 // The Light Sword
-                    case 25: return DeathOfPrince;              // The Death of a Prince
-                    case 26: vars.lastSplit(WWEnd); break;        // The End
-                } break;
-
-                case "Sands Trilogy (Completionist, Standard)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return Boat;                    // The Boat
-                    case 1: return RavenMan;                // The Raven Man
-                    case 2: return LU1;                     // Life Upgrade 1
-                    case 3: return LU2;                     // Life Upgrade 2
-                    case 4: return LU3;                     // Life Upgrade 3
-                    case 5: return LU4;                    // Life Upgrade 4
-                    case 6: return LU5;                    // Life Upgrade 5
-                    case 7: return LU6;                     // Life Upgrade 6
-                    case 8: return LU7;                     // Life Upgrade 7
-                    case 9: return LU8;                     // Life Upgrade 8
-                    case 10: return LU9;                    // Life Upgrade 9
-                    case 11: return WaterSword;            // The Water Sword
-                    case 12: vars.lastSplit(DahakaBoss); break;    // The End
-                } break;
-
-                case "Sands Trilogy (Completionist, Zipless)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return Boat;                         // The Boat
-                    case 1: return RavenMan;                     // The Raven Man
-                    case 2: return LU9;                          // Life Upgrade 1
-                    case 3: return LU6;                          // Life Upgrade 2
-                    case 4: return LU5;                          // Life Upgrade 3
-                    case 5: return LU1;                          // Life Upgrade 4
-                    case 6: return current.storyValue == 59;     // Mask of the Wraith (59)
-                    case 7: return LU2;                          // Life Upgrade 5
-                    case 8: return LU3;                          // Life Upgrade 6
-                    case 9: return MechanicalTower;              // The Mechanical Tower
-                    case 10: return LU4;                         // Life Upgrade 7
-                    case 11: return LU8;                         // Life Upgrade 8
-                    case 12: return LU7;                         // Life Upgrade 9
-                    case 13: return WaterSword;                  // The Water Sword
-                    case 14: vars.lastSplit(DahakaBoss); break;         // The End
-                } break;
-
-                case "Sands Trilogy (Completionist, No Major Glitches)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return Boat;               // The Boat
-                    case 1: return SpiderSword;        // The Spider Sword
-                    case 2: return LU8;                // Life Upgrade 1
-                    case 3: return DamselInDistress;   // A Damsel in Distress
-                    case 4: return LU7;                // Life Upgrade 2
-                    case 5: return Dahaka;             // The Dahaka
-                    case 6: return LU1;                // Life Upgrade 3
-                    case 7: return SerpentSword;       // The Serpent Sword
-                    case 8: return GardenHall;         // The Garden Hall
-                    case 9: return LU6;                // Life Upgrade 4
-                    case 10: return LU5;               // Life Upgrade 5
-                    case 11: return LU9;               // Life Upgrade 6
-                    case 12: return MechanicalTower;   // The Mechanical Tower
-                    case 13: return BreathOfFate;      // Breath of Fate
-                    case 14: return ActRoomRuin;       // Activation Room in Ruin
-                    case 15: return LU4;               // Life Upgrade 7
-                    case 16: return DeathOfSandWraith; // The Death of a Sand Wraith
-                    case 17: return DeathOfTheEmpress; // Death of the Empress
-                    case 18: return ExitTomb;          // Exit the Tomb
-                    case 19: return ScorpionSword;     // The Scorpion Sword
-                    case 20: return LU2;               // Life Upgrade 8
-                    case 21: return LU3;               // Life Upgrade 9
-                    case 22: return WaterSword;        // The Water Sword
-                    case 23: return MaskOfWraith;      // The Mask of the Wraith
-                    case 24: return SandGriffin;       // The Sand Griffin
-                    case 25: return MirroredFates;     // Mirrored Fates
-                    case 26: return FavorUnknown;      // A Favor Unknown
-                    case 27: return LibraryRev;        // The Library Revisited
-                    case 28: return LightSword;        // The Light Sword
-                    case 29: return DeathOfPrince;     // The Death of a Prince
-                    case 30: vars.lastSplit(DahakaBoss); break; // The End
-                } break;
-            }
-            break;
-
-        //Prince of Persia: The Two Thrones:-
-        case 6:
-            // Initializing T2T Splits:
-            bool ArenaDeload        = vars.inPosFull(-256.1f, -251.9f, 358f, 361.5f, 53.9f, 63.3f) ? true : false;
-            bool Balconies            = vars.inPosFull(-194f, -190f, 328f, 329.7f, 32.6f, 33.6f) ? true : false;
-            bool BottomofWell        = vars.inPosFull(-21.35f, -21.34f, 252.67f, 252.68f, 20.95f, 20.96f) ? true : false;
-            bool Brothel            = vars.inPosFull(-152.3f, -152.0f, 549.8f, 549.9f, 91.8f, 92f) ? true : false;
-            bool CaveDeath            = vars.inPosFull(5.99f, 6.00f, 306.96f, 306.97f, 42f, 42.01f) ? true : false;
-            bool Chariot1            = vars.inPosFull(-443.37f, -443.36f, 355.80f, 355.81f, 57.71f, 57.72f) ? true : false;
-            bool CityGardens        = vars.inPosFull(-63.5f, -63.4f, 389.7f, 389.8f, 85.2f, 85.3f) ? true : false;
-            bool DarkAlley            = vars.inPosFull(-114f, -110f, 328f, 338f, 55f, 59f) ? true : false;
-            bool Fortress            = vars.inPosFull(-71.4f, -71.3f, 9.6f, 9.7f, 44f, 44.1f) ? true : false;
-            bool HangingGardens        = vars.inPosFull(26f, 28f, 211f, 213f, 191f, 193f) ? true : false;
-            bool HangingGardenz        = vars.inPosFull(5.2f, 5.4f, 213.5f, 215.6f, 194.9f, 196.2f) ? true : false;
-            bool HarbourDistrict        = vars.inPosFull(-93f, -88f, 236.2f, 238f, 83f, 88f) ? true : false;
-            bool KingsRoad            = vars.inPosFull(53f, 70f, 240f, 250f, 70f, 73f) ? true : false;
-            bool KingsRoadZipless        = vars.inPosFull(91.9289f, 91.9290f, 230.0479f, 230.0480f, 70.9877f, 70.9879f) ? true : false;
-            bool Labyrinth            = vars.inPosFull(-25.5f, -23f, 325f, 338f, 35.9f, 37.5f) ? true : false;
-            bool LCRooftopZips        = vars.inPosFull(-246f, -241.5f, 373.5f, 383.6f, 66f, 69f) ? true : false;
-            bool LowerCity            = vars.inPosFull(-319f, -316.5f, 317f, 332.6f, 95.1f, 98f) ? true : false;
-            bool LowerCityRooftops        = vars.inPosFull(-261.5f, -261f, 318f, 319.5f, 46f, 48f) ? true : false;
-            bool LowerTower            = vars.inPosFull(-5f, -3f, 316f, 317.5f, 139.9f, 140.1f) ? true : false;
-            bool MarketDistrict        = vars.inPosFull(-185.5f, -175.5f, 524f, 530f, 90f, 92f) ? true : false;
-            bool Marketplace        = vars.inPosFull(-213f, -207f, 484f, 490f, 101f, 103f) ? true : false;
-            bool MentalRealm        = vars.inPosFull(189f, 193f, 319.135f, 320f, 542f, 543f) ? true : false;
-            bool MiddleTower        = vars.inPosFull(-18f, -12f, 303f, 305f, 184.8f, 185.1f) ? true : false;
-            bool Palace            = vars.inPosFull(-35.5f, -35.4f, 232.3f, 232.4f, 146.9f, 147f) ? true : false;
-            bool PalaceEntrance        = vars.inPosFull(30.8f, 30.9f, 271.2f, 271.3f, 126f, 126.1f) ? true : false;
-            bool Plaza            = vars.inPosFull(-104f, -100f, 548f, 553f, 105.5f, 106.1f) ? true : false;
-            bool Ramparts            = vars.inPosFull(-271f, -265f, 187f, 188f, 74f, 75f) ? true : false;
-            bool RoyalWorkshop        = vars.inPosFull(58f, 62f, 470f, 480f, 79f, 81f) ? true : false;
-            bool SewersT2T            = vars.inPosFull(-100f, -96f, -83f, -79f, 19.9f, 20f) ? true : false;
-            bool SewersZipless        = vars.inPosFull(-89.0f, -88.0f, -15.2f, -14.7f, 4.9f, 5.1f) ? true : false;
-            bool StructuresMind             = vars.inPosFull(5f, 12f, 243f, 265f, 104f, 104.1f) ? true : false;
-            bool StructuresMindZipless      = vars.inPosFull(-34f, -27f, 240f, 250f, 178f, 180f) ? true : false;
-            bool T2TLU1                     = vars.inPosFull(-14.9972f, -14.9970f, -112.8152f, -112.8150f, 20.0732f, 20.0734f) ? true : false;
-            bool T2TLU2                     = vars.inPosFull(-302.0919f, -302.0917f, 370.8710f, 370.8712f, 52.858f, 52.8582f) ? true : false;
-            bool T2TLU3                     = vars.inPosFull(-187.3369f, -187.3367f, -455.9863f, 455.9865f, 78.0330f, 78.0332f) ? true : false;
-            bool T2TLU4                     = vars.inPosFull(-55.0147f, -55.0145f, 395.7608f, 395.761f, 72.0774f, 72.0776f) ? true : false;
-            bool T2TLU5                     = vars.inPosFull(-30.1223f, -30.1221f, 281.8893f, 281.8895f, 104.0796f, 104.0798f) ? true : false;
-            bool T2TLU6                     = vars.inPosFull(-23.9663f, -23.9661f, 253.9438f, 253.944f, 183.0634f, 183.0636f) ? true : false;
-            bool Temple                     = vars.inPosFull(-212.2f, -211.9f, 419.0f, 419.8f, 81f, 82f) ? true : false;
-            bool TempleRooftops             = vars.inPosFull(-122.6f, -117.7f, 421.6f, 423f, 107f, 108.1f) ? true : false;
-            bool Terrace                    = vars.inPosFull(-7.2f, -6.9f, 245.6f, 245.9f, 677f, 679f) ? true : false;
-            bool ThePromenade               = vars.inPosFull(-3f, -1f, 515f, 519f, 72f, 75f) ? true : false;
-            bool TrappedHallway             = vars.inPosFull(-52.1f, -52.0f, 135.8f, 135.9f, 75.8f, 76f) ? true : false;
-            bool UndergroundCave            = vars.inPosFull(-11f, -9f, 327f, 334f, 73f, 74f) ? true : false;
-            bool UndergroundCaveZipless     = vars.inPosFull(27f, 29f, 316.5f, 318f, 99.9f, 100.1f) ? true : false;
-            bool UpperCity                  = vars.inPosFull(-124.5f, -122.5f, 500f, 505f, 97f, 99f) ? true : false;
-            bool UpperTower                 = vars.inPosFull(-8f, -7f, 296f, 298f, 226.9f, 227f) ? true : false;
-            bool WellOfAncestors            = vars.inPosFull(-12.6f, -12.5f, 241.2f, 241.3f, 0.9f, 1f) ? true : false;
-            bool WellOfAncestorsZipless     = vars.inPosFull(-28f, -26.5f, 250f, 255f, 20.9f, 30f) ? true : false;
-
-            // Checking category and qualifications to complete each split:
-            switch (timer.Run.GetExtendedCategoryName()) {
-                case "Anthology": case "Sands Trilogy (Any%, Standard)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return Ramparts;        // The Ramparts
-                    case 1: return HarbourDistrict; // The Harbor District
-                    case 2: return Palace;          // The Palace
-                    case 3: return SewersT2T;       // Exit Sewers
-                    case 4: return Chariot1;    // Finish Chariot 1
-                    case 5: return ArenaDeload;       // Arena Deload
-                    case 6: return TempleRooftops;  // Exit Temple Rooftops
-                    case 7: return Marketplace;     // Exit Marketplace
-                    case 8: return Plaza;           // Exit Plaza
-                    case 9: return CityGardens;     // Exit City Gardens
-                    case 10: return RoyalWorkshop;  // Exit Royal Workshop
-                    case 11: return KingsRoad;      // The King's Road
-                    case 12: return BottomofWell;     // Well Death
-                    case 13: return CaveDeath;      // Cave Death
-                    case 14: return UpperTower;     // The Towers
-                    case 15: return Terrace;        // The Terrace
-                    case 16: vars.lastSplit(MentalRealm); break; // The Mental Realm
-                } break;
-
-                case "Sands Trilogy (Any%, Zipless)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return Ramparts;                // The Ramparts
-                    case 1: return HarbourDistrict;         // The Harbor District
-                    case 2: return Palace;                  // The Palace
-                    case 3: return TrappedHallway;          // The Trapped Hallway
-                    case 4: return SewersZipless;           // The Sewers
-                    case 5: return Fortress;                // The Fortress
-                    case 6: return LowerCity;               // The Lower City
-                    case 7: return LowerCityRooftops;       // The Lower City Rooftops
-                    case 8: return Balconies;               // The Balconies
-                    case 9: return DarkAlley;               // The Dark Alley
-                    case 10: return TempleRooftops;         // The Temple Rooftops
-                    case 11: return Marketplace;            // Exit Marketplace
-                    case 12: return MarketDistrict;         // The Market District
-                    case 13: return Plaza;                  // Exit Plaza
-                    case 14: return UpperCity;              // The Upper City
-                    case 15: return CityGardens;            // The City Gardens
-                    case 16: return RoyalWorkshop;          // The Royal Workshop
-                    case 17: return KingsRoadZipless;       // The King's Road
-                    case 18: return PalaceEntrance;         // The Palace Entrance
-                    case 19: return HangingGardenz;         // The Hanging Gardens
-                    case 20: return WellOfAncestorsZipless; // The Structure's Mind
-                    case 21: return WellOfAncestors;        // The Well of Ancestors
-                    case 22: return Labyrinth;              // The Labyrinth
-                    case 23: return LowerTower;             // The Lower Tower
-                    case 24: return UpperTower;             // The Middle and Upper Towers
-                    case 25: return Terrace;                // The Death of the Vizier
-                    case 26: vars.lastSplit(MentalRealm); break; // The Mental Realm
-                } break;
-
-                case "Sands Trilogy (Any%, No Major Glitches)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return Ramparts;               // The Ramparts
-                    case 1: return HarbourDistrict;        // The Harbor District
-                    case 2: return Palace;                 // The Palace
-                    case 3: return TrappedHallway;         // The Trapped Hallway
-                    case 4: return SewersZipless;          // The Sewers
-                    case 5: return Fortress;               // The Fortress
-                    case 6: return LowerCity;              // The Lower City
-                    case 7: return LowerCityRooftops;      // The Lower City Rooftops
-                    case 8: return Balconies;              // The Balconies
-                    case 9: return DarkAlley;              // The Dark Alley
-                    case 10: return TempleRooftops;        // The Temple Rooftops
-                    case 11: return Temple;                // The Temple
-                    case 12: return Marketplace;           // The Marketplace
-                    case 13: return MarketDistrict;        // The Market District
-                    case 14: return Brothel;               // The Brothel
-                    case 15: return Plaza;                 // Exit Plaza
-                    case 16: return UpperCity;             // The Upper City
-                    case 17: return CityGardens;           // The City Gardens
-                    case 18: return ThePromenade;          // The Promenade
-                    case 19: return RoyalWorkshop;         // The Royal Workshop
-                    case 20: return KingsRoadZipless;      // The King's Road
-                    case 21: return PalaceEntrance;        // The Palace Entrance
-                    case 22: return HangingGardens;        // The Hanging Gardens
-                    case 23: return StructuresMindZipless; // The Structure's Mind
-                    case 24: return WellOfAncestors;       // The Well of Ancestors
-                    case 25: return Labyrinth;             // The Labyrinth
-                    case 26: return UndergroundCave;       // The Underground Cave
-                    case 27: return LowerTower;            // The Lower Tower
-                    case 28: return MiddleTower;           // The Middle Tower
-                    case 29: return UpperTower;            // The Upper Tower
-                    case 30: return Terrace;               // The Death of the Vizier
-                    case 31: vars.lastSplit(MentalRealm); break; // The Mental Realm
-                } break;
-
-                case "Sands Trilogy (Completionist, Standard)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return Ramparts;        // The Ramparts
-                    case 1: return HarbourDistrict; // The Harbor District
-                    case 2: return Palace;          // The Palace
-                    case 3: return T2TLU1;          // Life Upgrade 1
-                    case 4: return LowerCity;       // Exit Lower City
-                    case 5: return T2TLU2;          // Life Upgrade 2
-                    case 6: return LCRooftopZips;   // The Arena
-                    case 7: return TempleRooftops;  // The Temple Rooftops Exit
-                    case 8: return T2TLU3;          // Life Upgrade 3
-                    case 9: return Marketplace;     // The Marketplace
-                    case 10: return Plaza;          // Exit Plaza
-                    case 11: return T2TLU4;         // Life Upgrade 4
-                    case 12: return RoyalWorkshop;  // The Royal Workshop
-                    case 13: return KingsRoad;      // The King's Road
-                    case 14: return T2TLU5;         // Life Upgrade 5
-                    case 15: return BottomofWell;   // Well Death
-                    case 16: return Labyrinth;      // Exit Labyrinth
-                    case 17: return T2TLU6;         // Life Upgrade 6
-                    case 18: return UpperTower;     // The Upper Tower
-                    case 19: return Terrace;        // The Death of the Vizier
-                    case 20: vars.lastSplit(MentalRealm); break; // The Mental Realm
-                } break;
-
-                case "Sands Trilogy (Completionist, Zipless)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return Ramparts;                // The Ramparts
-                    case 1: return HarbourDistrict;         // The Harbor District
-                    case 2: return Palace;                  // The Palace
-                    case 3: return TrappedHallway;          // The Trapped Hallway
-                    case 4: return T2TLU1;                  // Life Upgrade 1
-                    case 5: return Fortress;                // The Fortress
-                    case 6: return LowerCity;               // The Lower City
-                    case 7: return T2TLU2;                  // Life Upgrade 2
-                    case 8: return LowerCityRooftops;       // The Arena
-                    case 9: return Balconies;               // The Balconies
-                    case 10: return DarkAlley;              // The Dark Alley
-                    case 11: return TempleRooftops;         // The Temple Rooftops
-                    case 12: return T2TLU3;                 // Life Upgrade 3
-                    case 13: return Marketplace;            // The Marketplace
-                    case 14: return MarketDistrict;         // The Market District
-                    case 15: return Plaza;                  // Exit Plaza
-                    case 16: return UpperCity;              // The Upper City
-                    case 17: return T2TLU4;                 // Life Upgrade 4
-                    case 18: return RoyalWorkshop;          // The Royal Workshop
-                    case 19: return KingsRoadZipless;       // The King's Road
-                    case 20: return T2TLU5;                 // Life Upgrade 5
-                    case 21: return HangingGardenz;         // The Hanging Gardens
-                    case 22: return WellOfAncestorsZipless; // The Structure's Mind
-                    case 23: return WellOfAncestors;        // The Well of Ancestors
-                    case 24: return Labyrinth;              // The Labyrinth
-                    case 25: return LowerTower;             // The Lower Tower
-                    case 26: return T2TLU6;                 // Life Upgrade 6
-                    case 27: return UpperTower;             // The Upper Tower
-                    case 28: return Terrace;                // The Death of the Vizier
-                    case 29: vars.lastSplit(MentalRealm); break; // The Mental Realm
-                } break;
-
-                case "Sands Trilogy (Completionist, No Major Glitches)":
-                switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                    case 0: return Ramparts;               // The Ramparts
-                    case 1: return HarbourDistrict;        // The Harbor District
-                    case 2: return Palace;                 // The Palace
-                    case 3: return TrappedHallway;         // The Trapped Hallway
-                    case 4: return T2TLU1;                 // Life Upgrade 1
-                    case 5: return Fortress;               // The Fortress
-                    case 6: return LowerCity;              // The Lower City
-                    case 7: return T2TLU2;                 // Life Upgrade 2
-                    case 8: return LowerCityRooftops;      // The Arena
-                    case 9: return Balconies;              // The Balconies
-                    case 10: return DarkAlley;             // The Dark Alley
-                    case 11: return TempleRooftops;        // The Temple Rooftops
-                    case 12: return T2TLU3;                // Life Upgrade 3
-                    case 13: return Marketplace;           // The Marketplace
-                    case 14: return MarketDistrict;        // The Market District
-                    case 15: return Brothel;               // The Brothel
-                    case 16: return Plaza;                 // The Plaza
-                    case 17: return UpperCity;             // The Upper City
-                    case 18: return T2TLU4;                // Life Upgrade 4
-                    case 19: return ThePromenade;          // The Promenade
-                    case 20: return RoyalWorkshop;         // The Royal Workshop
-                    case 21: return KingsRoadZipless;      // The King's Road
-                    case 22: return T2TLU5;                // Life Upgrade 5
-                    case 23: return HangingGardens;        // The Hanging Gardens
-                    case 24: return StructuresMindZipless; // The Structure's Mind
-                    case 25: return WellOfAncestors;       // The Well of Ancestors
-                    case 26: return Labyrinth;             // The Labyrinth
-                    case 27: return UndergroundCave;       // The Underground Cave
-                    case 28: return LowerTower;            // The Lower Tower
-                    case 29: return T2TLU6;                // Life Upgrade 6
-                    case 30: return UpperTower;            // The Upper Tower
-                    case 31: return Terrace;               // The Death of the Vizier
-                    case 32: vars.lastSplit(MentalRealm); break; // The Mental Realm
-                } break;
-            }
-            break;
-
-        //Prince of Persia (2008):
-        case 7:
-            //Unmarking flags from previous cycle:
-            vars.kill = false;
-            vars.seedGet = false;
-
-            //Checking and setting flags if conditions are met:
-            if (old.combat == 2 && current.combat == 0) vars.kill = true;
-            if (current.seedCount == old.seedCount + 1) vars.seedGet = true;
-
-            // Initializing 2k8 Splits:
-            bool Alchemist        = vars.splitBoss(-296.593f, 697.233f, 296.199f) ? true : false;
-            bool BluePlate        = current.zPos >= 32.4 && old.zPos <= 0 ? true : false;
-            bool Canyon           = vars.inXRange(-208f, -200f) && vars.inYRange(-38f, -27.5f) && current.zPos >= -511 ? true : false;
-            bool Cauldron         = vars.splitSeed(107.123f, 183.394f, -5.628f) ? true : false;
-            bool Cavern           = vars.splitSeed(251.741f, 65.773f, -13.616f) ? true : false;
-            bool CityGate         = vars.splitSeed(547.488f, 45.41f, -27.107f) ? true : false;
-            bool Concubine        = vars.splitBoss(352.792f, 801.051f, 150.260f) ? true : false;
-            bool ConstructionYard = vars.splitSeed(-151.121f, 303.514f, 27.95f) ? true : false;
-            bool CoronationHall   = vars.splitSeed(264.497f, 589.336f, 38.67f) ? true : false;
-            bool CoronationHallH  = vars.splitBoss(340f, 582.5f, 32.5f) ? true : false;
-            bool DoubleJump       = vars.inPosFull(6.12f, 6.19f, -233.49f, -225.18f, -33.01f, -32.5f) ? true : false;
-            bool FirstFightSkip   = current.yPos >= -331 && vars.inZRange(-31f, -28f) ? true : false;
-            bool HeavensStair     = vars.splitSeed(-85.968f, 573.338f, 30.558f) ? true : false;
-            bool HeavensStairH    = vars.splitBoss(-291f, 651.5f, 99.2f) ? true : false;
-            bool Hunter           = vars.splitBoss(-929.415f, 320.888f, -89.038f) ? true : false;
-            bool King             = vars.splitBoss(5f, -365f, -32f) ? true : false;
-            bool KingsGate        = vars.splitSeed(-538.834f, -67.159f, 12.732f) ? true : false;
-            bool MachineryGround  = vars.splitSeed(-361.121f, 480.114f, 12.928f) ? true : false;
-            bool MarshGrounds     = vars.splitSeed(-806.671f, 112.803f, 21.645f) ? true : false;
-            bool MartyrsTower     = vars.splitSeed(-564.202f, 207.312f, 22f) ? true : false;
-            bool MTtoMG           = vars.splitSeed(-454.824f, 398.571f, 27.028f) ? true : false;
-            bool QueensTower      = vars.splitSeed(637.262f, 27.224f, -28.603f) ? true : false;
-            bool Reservoir08      = vars.splitSeed(-150.082f, 406.606f, 34.673f) ? true : false;
-            bool Resurrection     = vars.inXRange(5.562f, 5.566f) && vars.inYRange(-222.745f, -222.517f) && current.zPos >= -33.1 ? true : false;
-            bool SpireOfDreams    = vars.splitSeed(-28.088f, 544.298f, 34.942f) ? true : false;
-            bool SunTemple08      = vars.splitSeed(-670.471f, -56.147f, 16.46f) ? true : false;
-            bool TempleArrive     = vars.inXRange(-0.5f, 12f) && current.yPos <= -234.5 && current.zPos >= -37 ? true : false;
-            bool TheGod           = vars.inXRange(7.129f, 7.131f) && vars.inYRange(-401.502f, -401.5f) && current.zPos >= -31.4  ? true : false;
-            bool TowerOfOrmazd    = vars.splitSeed(609.907f, 61.905f, -35.001f) ? true : false;
-            bool Warrior          = vars.splitBoss(1070.478f, 279.147f, -29.571f) ? true : false;
-            bool Windmills        = vars.splitSeed(-597.945f, 209.241f, 23.339f) ? true : false;
-            bool YellowPlate      = vars.inXRange(6.6f, 6.8f) && vars.inYRange(-171.8f, -171.6f) && current.zPos == -49 ? true : false;
-
-            // Checking qualifications to complete each split:
-            switch (timer.CurrentSplitIndex - (short)vars.offset) {
-                case 0: return FirstFightSkip;    // First Fight Skip
-                case 1: return Canyon;            // The Canyon
-                case 2: return KingsGate;         // King's Gate
-                case 3: return SunTemple08;       // Sun Temple
-                case 4: return MarshGrounds;      // Marshalling Grounds
-                case 5: return Windmills;         // Windmills
-                case 6: return MartyrsTower;      // Martyrs' Tower
-                case 7: return MTtoMG;            // MT -> MG
-                case 8: return MachineryGround;   // Machinery Ground
-                case 9: return HeavensStair;      // Heaven's Stair
-                case 10: return SpireOfDreams;    // Spire of Dreams
-                case 11: return Reservoir08;      // Reservoir
-                case 12: return ConstructionYard; // Construction Yard
-                case 13: return Cauldron;         // Cauldron
-                case 14: return Cavern;           // Cavern
-                case 15: return CityGate;         // City Gate
-                case 16: return TowerOfOrmazd;    // Tower of Ormazd
-                case 17: return QueensTower;      // Queen's Tower
-                case 18: return TempleArrive;     // The Temple (Arrive)
-                case 19: return DoubleJump;       // Double Jump
-                case 20: return YellowPlate;      // Wings of Ormazd
-                case 21: return Warrior;          // The Warrior
-                case 22: return CoronationHallH;  // Heal Coronation Hall
-                case 23: return CoronationHall;   // Coronation Hall
-                case 24: return HeavensStairH;    // Heal Heaven's Stair
-                case 25: return Alchemist;        // The Alchemist
-                case 26: return Hunter;           // The Hunter
-                case 27: return BluePlate;        // Hand of Ormazd
-                case 28: return Concubine;        // The Concubine
-                case 29: return King;             // The King
-                case 30: return TheGod;           // The God
-                case 31: vars.lastSplit(Resurrection); break; // Resurrection
-            }
-            break;
-
-        //Prince of Persia: The Forgotten Sands
-        case 8:
-            //Unmarking checkpoint flag from the previous cycle:
-            vars.cpGet = false;
-
-            //Checking and setting checkpoint flag:
-            if (current.cpIcon >= 1) vars.cpGet = true;
-
-            // Initializing TFS Splits:
-            bool Climb            = vars.splitCP(912, 256, -56) ? true : false;
-            bool CourtyardTFS     = vars.splitCP(-434, -533, -127) ? true : false;
-            bool TFSEnd           = vars.splitXYZ(821, -257, -51) ? true : false;
-            bool Gardens          = vars.splitCP(240, -227, -114) ? true : false;
-            bool Malik            = vars.splitCP(-37, 231, -148) ? true : false;
-            bool ObservatoryTFS   = vars.splitCP(-510, 460, 104) ? true : false;
-            bool Possession       = vars.splitXYZ(89, -477, -83) && vars.cpGet ? true : false;
-            bool PowerOfKnowledge = vars.splitCP(548, -217, 4) ? true : false;
-            bool PowerOfLight     = vars.splitCP(540, -219, 6) ? true : false;
-            bool PowerOfRazia     = vars.splitCP(430, 268, -99) ? true : false;
-            bool PowerOfTime      = vars.splitCP(597, -217, -2) ? true : false;
-            bool PowerOfWater     = vars.splitCP(519, -227, 6) ? true : false;
-            bool Ratash           = vars.splitCP(-406, 403, 64) ? true : false;
-            bool ReservoirTFS     = vars.splitCP(644, 385, -63) ? true : false;
-            bool SewersTFS        = vars.splitCP(-228, 245, 20) ? true : false;
-            bool Storm            = vars.splitCP(948, -284, 86) ? true : false;
-            bool Works            = vars.splitCP(-513, -408, -167) ? true : false;
-
-            // Checking qualifications to complete each split:
-            switch (timer.CurrentSplitIndex) {
-                case 0: return Malik;             // Malik
-                case 1: return PowerOfTime;       // The Power of Time
-                case 2: return Works;             // The Works
-                case 3: return CourtyardTFS;      // The Courtyard
-                case 4: return PowerOfWater;      // The Power of Water
-                case 5: return SewersTFS;         // The Sewers
-                case 6: return Ratash;            // Ratash
-                case 7: return ObservatoryTFS;    // The Observatory
-                case 8: return PowerOfLight;      // The Power of Light
-                case 9: return Gardens;           // The Gardens
-                case 10: return Possession;       // Possession
-                case 11: return PowerOfKnowledge; // The Power of Knowledge
-                case 12: return ReservoirTFS;     // The Reservoir
-                case 13: return PowerOfRazia;     // The Power of Razia
-                case 14: return Climb;            // The Climb
-                case 15: return Storm;            // The Storm
-                case 16: vars.lastSplit(TFSEnd); break; // The End
-            }
-            break;
+    foreach (var data in vars.splitsData) {
+        if (vars.game == data.Value.Item5 && data.Value.Item6() && vars.CheckSplit(data.Key)) {
+            print(data.Key);
+            return true;
+        }
     }
 }
