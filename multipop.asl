@@ -61,7 +61,7 @@ startup
         { "pop_ww.asl", "Warrior Within splits" },
         { "pop_t2t.asl", "The Two Thrones splits" },
     };
-    
+
     vars.WWsplitTypes = new Dictionary<string, string> {
         { "AnyGlitched", "Any% (Standard) and Any% (Zipless) splits" },
         { "AnyNMG", "Any% (No Major Glitches) splits" },
@@ -314,6 +314,8 @@ startup
         {"T2TLU5", Tuple.Create(false, "Life Upgrade 5", "pop_t2t.asl", "Split after obtaining the fifth life upgrade in Canal", 6, new Func<bool>(() => vars.T2TLU5()))},
         {"T2TLU6", Tuple.Create(false, "Life Upgrade 6", "pop_t2t.asl", "Split after obtaining the sixth life upgrade in Middle Tower", 6, new Func<bool>(() => vars.T2TLU6()))},
     };
+
+    settings.Add("setupSplits", true, "Split at the start of each game to record setup time");
 
     foreach (var splitType in vars.splitTypes) {
         settings.Add(splitType.Key, true, splitType.Value);
@@ -574,8 +576,12 @@ update
             break;
     }
 
-    if (justStarted && !vars.CompletedGames.Contains(vars.game)) {
+    if (justStarted && !vars.CompletedGames.Contains(vars.game) && vars.noGameRunning) {
         vars.noGameRunning = false;
+
+        if (settings["setupSplits"]) {
+            vars.timerModel.Split();
+        }
     }
 
     if (justEnded) {
