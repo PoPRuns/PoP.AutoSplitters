@@ -236,6 +236,19 @@ startup
             timer.Layout.LayoutComponents.RemoveAt(indexToRemove);
         }
     });
+
+    vars.CompletedSplits = new HashSet<string>();
+
+    if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
+        DialogResult mbox = MessageBox.Show(timer.Form,
+        "This game uses only real time as the timing method.\nWould you like to switch to Real Time?",
+        "LiveSplit | Prince of Persia: Warrior Within",
+        MessageBoxButtons.YesNo);
+
+        if (mbox == DialogResult.Yes) {
+            timer.CurrentTimingMethod = TimingMethod.RealTime;
+        }
+    }
 }
 
 init
@@ -359,8 +372,6 @@ init
     vars.favorUnknown = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 135501700 })); });
     vars.libraryRevisit = (Func<bool>)(() => { return (current.map == 67116821 && vars.oldX < -112 && current.xPos >= -112 && current.storyValue == 60); });
     vars.maskOff = (Func<bool>)(() => { return (vars.splitCutsceneByMap(new HashSet<int> { 67112526 }) && current.storyValue == 64); });
-
-    vars.CompletedSplits = new HashSet<string>();
 
     vars.CheckSplit = (Func<string, bool>)(key => {
         return (vars.CompletedSplits.Add(key) && settings[key]);

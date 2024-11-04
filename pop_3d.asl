@@ -10,6 +10,20 @@ state("pop3d")
     float zPos  : 0x003EF854, 0x160, 0x2F8, 0x8, 0x18, 0x4C;
 }
 
+startup
+{
+    if (timer.CurrentTimingMethod != TimingMethod.GameTime) {
+        DialogResult mbox = MessageBox.Show(timer.Form,
+        "Removing load/crash times requires switching to Game Time.\nWould you like to do so?",
+        "LiveSplit | Prince of Persia 3D",
+        MessageBoxButtons.YesNo);
+
+        if (mbox == DialogResult.Yes) {
+            timer.CurrentTimingMethod = TimingMethod.GameTime;
+        }
+    }
+}
+
 init
 {
     vars.gameRunning = true;

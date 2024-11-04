@@ -65,6 +65,19 @@ startup
         settings.Add(data.Key, data.Value.Item1, data.Value.Item2);
         settings.SetToolTip(data.Key, data.Value.Item3);
     }
+
+    vars.CompletedSplits = new HashSet<string>();
+
+    if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
+        DialogResult mbox = MessageBox.Show(timer.Form,
+        "This game uses only real time as the timing method.\nWould you like to switch to Real Time?",
+        "LiveSplit | Prince of Persia: The Sands of Time",
+        MessageBoxButtons.YesNo);
+
+        if (mbox == DialogResult.Yes) {
+            timer.CurrentTimingMethod = TimingMethod.RealTime;
+        }
+    }
 }
 
 init
@@ -125,8 +138,6 @@ init
 
     // Deprecated or Unused Splits
     vars.TheCavesDeath = (Func <bool>)(() => { return vars.splitByXYZ(-171.193f, -171.191f, -52.07f, -52.068f, -119.863f, -119.861f); });
-
-    vars.CompletedSplits = new HashSet<string>();
 
     vars.CheckSplit = (Func<string, bool>)(key => {
         return (vars.CompletedSplits.Add(key) && settings[key]);

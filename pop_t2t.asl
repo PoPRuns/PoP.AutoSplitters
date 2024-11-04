@@ -68,6 +68,19 @@ startup
         settings.Add(data.Key, data.Value.Item1, data.Value.Item2);
         settings.SetToolTip(data.Key, data.Value.Item3);
     }
+
+    vars.CompletedSplits = new HashSet<string>();
+
+    if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
+        DialogResult mbox = MessageBox.Show(timer.Form,
+        "This game uses only real time as the timing method.\nWould you like to switch to Real Time?",
+        "LiveSplit | Prince of Persia: The Two Thrones",
+        MessageBoxButtons.YesNo);
+
+        if (mbox == DialogResult.Yes) {
+            timer.CurrentTimingMethod = TimingMethod.RealTime;
+        }
+    }
 }
 
 init
@@ -134,8 +147,6 @@ init
     vars.LCRooftopZips = (Func <bool>)(() => { return vars.splitByXYZ(-246f, -241.5f, 373.5f, 383.6f, 66f, 69f); });
     vars.WellofZipless = (Func <bool>)(() => { return vars.splitByXYZ(-28f, -26.5f, 250f, 255f, 20.9f, 30f); });
     vars.UndergroundCaveZipnt = (Func <bool>)(() => { return vars.splitByXYZ(27f, 29f, 316.5f, 318f, 99.9f, 100.1f); });
-
-    vars.CompletedSplits = new HashSet<string>();
 
     vars.CheckSplit = (Func<string, bool>)(key => {
         return (vars.CompletedSplits.Add(key) && settings[key]);

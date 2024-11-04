@@ -41,6 +41,20 @@ start
     return (old.Menu == 180 && current.Menu == 0);
 }
 
+startup
+{
+    if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
+        DialogResult mbox = MessageBox.Show(timer.Form,
+        "This game uses only real time as the timing method.\nWould you like to switch to Real Time?",
+        "LiveSplit | Prince of Persia (SNES)",
+        MessageBoxButtons.YesNo);
+
+        if (mbox == DialogResult.Yes) {
+            timer.CurrentTimingMethod = TimingMethod.RealTime;
+        }
+    }
+}
+
 split
 {
     if(current.Level == 20 && old.Jaffar != 0 && current.Jaffar == 0){

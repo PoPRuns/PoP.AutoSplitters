@@ -59,6 +59,17 @@ startup
         4 - Last Level
     */
     vars.levelType = 0;
+
+    if (timer.CurrentTimingMethod != TimingMethod.GameTime) {
+        DialogResult mbox = MessageBox.Show(timer.Form,
+        "This game uses an in-game timer as the primary timing method.\nWould you like to switch to Game Time?",
+        "LiveSplit | Prince of Persia: The Fallen King",
+        MessageBoxButtons.YesNo);
+
+        if (mbox == DialogResult.Yes) {
+            timer.CurrentTimingMethod = TimingMethod.GameTime;
+        }
+    }
 }
 
 start

@@ -27,7 +27,16 @@ startup
     vars.IGTOffset = 0;
     vars.isDivineTrialsMode = false;
 
-    vars.Helper.AlertLoadless();
+    if (timer.CurrentTimingMethod != TimingMethod.GameTime) {
+        DialogResult mbox = MessageBox.Show(timer.Form,
+        "This game uses an in-game timer as the primary timing method.\nWould you like to switch to Game Time?",
+        "LiveSplit | Prince of Persia: The Lost Crown",
+        MessageBoxButtons.YesNo);
+
+        if (mbox == DialogResult.Yes) {
+            timer.CurrentTimingMethod = TimingMethod.GameTime;
+        }
+    }
 }
 
 init

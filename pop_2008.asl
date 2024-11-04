@@ -348,6 +348,19 @@ startup
         settings.Add(data.Key, true, data.Value.Item1, data.Value.Item2);
         settings.SetToolTip(data.Key, data.Value.Item3);
     }
+
+    vars.CompletedSplits = new HashSet<string>();
+
+    if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
+        DialogResult mbox = MessageBox.Show(timer.Form,
+        "This game uses only real time as the timing method.\nWould you like to switch to Real Time?",
+        "LiveSplit | Prince of Persia (2008)",
+        MessageBoxButtons.YesNo);
+
+        if (mbox == DialogResult.Yes) {
+            timer.CurrentTimingMethod = TimingMethod.RealTime;
+        }
+    }
 }
 
 
@@ -401,8 +414,6 @@ init
             vars.inPosWithRange(xTarg, yTarg, zTarg, 30) &&
             vars.dadKill ? true : false;
     });
-
-    vars.CompletedSplits = new HashSet<string>();
 
     // This function will check if settings are enabled for a triggered split and adds it to completed splits
     vars.CheckSplit = (Func<string, bool>)(key => {

@@ -3,6 +3,20 @@ state("demul") {
     string20 map    : "D3DCOMPILER_47.dll", 0x37E279, -2703631;
 }
 
+startup
+{
+    if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
+        DialogResult mbox = MessageBox.Show(timer.Form,
+        "This game uses only real time as the timing method.\nWould you like to switch to Real Time?",
+        "LiveSplit | Prince of Persia: Arabian Nights",
+        MessageBoxButtons.YesNo);
+
+        if (mbox == DialogResult.Yes) {
+            timer.CurrentTimingMethod = TimingMethod.RealTime;
+        }
+    }
+}
+
 start
 {
     timer.Run.Offset = TimeSpan.FromSeconds(0);

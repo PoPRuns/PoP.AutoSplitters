@@ -23,6 +23,20 @@ state("AppleWin")
     byte Reset3     : "AppleWin.exe", 0x1F5498, 0xC1CB;        // ^^
 }
 
+startup
+{
+    if (timer.CurrentTimingMethod != TimingMethod.GameTime) {
+        DialogResult mbox = MessageBox.Show(timer.Form,
+        "This game uses an in-game timer as the primary timing method.\nWould you like to switch to Game Time?",
+        "LiveSplit | Prince of Persia (Apple II)",
+        MessageBoxButtons.YesNo);
+
+        if (mbox == DialogResult.Yes) {
+            timer.CurrentTimingMethod = TimingMethod.GameTime;
+        }
+    }
+}
+
 start
 {
     return(current.Level == 1 && current.Ticks == 0);

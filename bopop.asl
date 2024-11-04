@@ -10,6 +10,17 @@ startup
     vars.framesPassed = 0;
     refreshRate = 120;
     vars.PlatformFrameRate = 59.82609828808082;
+
+    if (timer.CurrentTimingMethod != TimingMethod.GameTime) {
+        DialogResult mbox = MessageBox.Show(timer.Form,
+        "This game uses an in-game timer as the primary timing method.\nWould you like to switch to Game Time?",
+        "LiveSplit | Battles of Prince of Persia",
+        MessageBoxButtons.YesNo);
+
+        if (mbox == DialogResult.Yes) {
+            timer.CurrentTimingMethod = TimingMethod.GameTime;
+        }
+    }
 }
 
 start

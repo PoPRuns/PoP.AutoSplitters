@@ -334,6 +334,17 @@ startup
     vars.noGameRunning = false;
     vars.CompletedSplits = new HashSet<string>();
     vars.CompletedGames = new HashSet<int>();
+
+    if (timer.CurrentTimingMethod != TimingMethod.GameTime) {
+        DialogResult mbox = MessageBox.Show(timer.Form,
+        "Removing setup time between games requires switching to Game Time.\nWould you like to do so?",
+        "LiveSplit | Multi-Prince of Persia-Runs",
+        MessageBoxButtons.YesNo);
+
+        if (mbox == DialogResult.Yes) {
+            timer.CurrentTimingMethod = TimingMethod.GameTime;
+        }
+    }
 }
 
 init

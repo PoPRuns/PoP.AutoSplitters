@@ -118,6 +118,19 @@ startup
         settings.Add(data.Key, true, data.Value.Item1);
         settings.SetToolTip(data.Key, data.Value.Item2);
     }
+
+    vars.CompletedSplits = new HashSet<string>();
+
+    if (timer.CurrentTimingMethod != TimingMethod.GameTime) {
+        DialogResult mbox = MessageBox.Show(timer.Form,
+        "Removing load/crash times requires switching to Game Time.\nWould you like to do so?",
+        "LiveSplit | Prince of Persia: The Forgotten Sands",
+        MessageBoxButtons.YesNo);
+
+        if (mbox == DialogResult.Yes) {
+            timer.CurrentTimingMethod = TimingMethod.GameTime;
+        }
+    }
 }
 
 init
@@ -137,8 +150,6 @@ init
     vars.SplitTFScp = (Func <int, int, int, int, bool>)((xTarg, yTarg, zTarg, range) => {
         return vars.SplitTFSpos(xTarg, yTarg, zTarg, range) && vars.cpGet;
     });
-
-    vars.CompletedSplits = new HashSet<string>();
 
     // This function will check if settings are enabled for a triggered split and adds it to completed splits
     vars.CheckSplit = (Func<string, bool>)(key => {
