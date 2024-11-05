@@ -549,7 +549,28 @@ init
     }
 }
 
-update
+start
+{
+    switch((short)vars.game) {
+        case 0: return false;
+        case 4: return vars.FarahBalcony() && current.startValue == 1;
+        case 5: return current.map == 1292342859 && old.cutscene == 1 && current.cutscene == 2;
+        case 6: return vars.inXRange(-404.9f, -404.8f) && current.xCam <= 0.832 && current.xCam >= 0.8318 && current.yCam <= 0.1082 && current.yCam >= 0.1080;
+    }
+}
+
+onStart
+{
+    // Refresh all splits when we start the run, none are yet completed
+    vars.CompletedSplits.Clear();
+}
+
+isLoading
+{
+    return vars.noGameRunning;
+}
+
+split
 {
     bool justStarted = false;
     bool justEnded = false;
@@ -591,7 +612,7 @@ update
         vars.noGameRunning = false;
 
         if (settings["setupSplits"]) {
-            vars.timerModel.Split();
+            return true;
         }
     }
 
@@ -599,31 +620,7 @@ update
         vars.CompletedGames.Add(vars.game);
         vars.noGameRunning = true;
     }
-}
 
-start
-{
-    switch((short)vars.game) {
-        case 0: return false;
-        case 4: return vars.FarahBalcony() && current.startValue == 1;
-        case 5: return current.map == 1292342859 && old.cutscene == 1 && current.cutscene == 2;
-        case 6: return vars.inXRange(-404.9f, -404.8f) && current.xCam <= 0.832 && current.xCam >= 0.8318 && current.yCam <= 0.1082 && current.yCam >= 0.1080;
-    }
-}
-
-onStart
-{
-    // Refresh all splits when we start the run, none are yet completed
-    vars.CompletedSplits.Clear();
-}
-
-isLoading
-{
-    return vars.noGameRunning;
-}
-
-split
-{
     foreach (var data in vars.splitsData) {
         if (vars.game == data.Value.Item5 && data.Value.Item6() && vars.CheckSplit(data.Key)) {
             print(data.Key);
