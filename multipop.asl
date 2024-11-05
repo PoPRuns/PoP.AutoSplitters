@@ -8,10 +8,10 @@ state("POP")
     float yPos          : 0x00699474, 0xC, 0x34;
     float zPos          : 0x00699474, 0xC, 0x38;
 
+    float xCam          : 0x006DA1B0, 0xC, 0x30;
+
     // The Vizier's health where 0 is unharmed and 4 is dead.
     int vizierHealth    : 0x0040E518, 0x6C, 0x18, 0x4, 0x44, 0x0;
-
-    int resetValue      : 0x0040E388, 0x4, 0x398;
 }
 
 state("POP2")
@@ -553,7 +553,7 @@ start
 {
     switch((short)vars.game) {
         case 0: return false;
-        case 4: return vars.FarahBalcony() && current.startValue == 1;
+        case 4: return vars.FarahBalcony() && current.startValue == 1 && current.xCam <= -92.8;
         case 5: return current.map == 1292342859 && old.cutscene == 1 && current.cutscene == 2;
         case 6: return vars.inXRange(-404.9f, -404.8f) && current.xCam <= 0.832 && current.xCam >= 0.8318 && current.yCam <= 0.1082 && current.yCam >= 0.1080;
     }
@@ -563,6 +563,7 @@ onStart
 {
     // Refresh all splits when we start the run, none are yet completed
     vars.CompletedSplits.Clear();
+    vars.noGameRunning = false;
 }
 
 isLoading
@@ -580,7 +581,7 @@ split
             if (vars.splitByXYZ(-477.88f, -477f, -298f, -297.1f, -0.5f, -0.4f)) vars.CompletedSplits.Remove("SoTLU");
             if (vars.splitByXYZ(658.26f, 661.46f, 210.92f, 213.72f, 12.5f, 30f)) vars.CompletedSplits.Add("AboveCredits");
 
-            justStarted = vars.FarahBalcony() && current.startValue == 1;
+            justStarted = vars.FarahBalcony() && current.startValue == 1 && current.xCam <= -92.8;
             justEnded = vars.SoTEnd();
 
             break;

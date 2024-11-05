@@ -8,10 +8,10 @@ state("POP")
     float yPos          : 0x00699474, 0xC, 0x34;
     float zPos          : 0x00699474, 0xC, 0x38;
 
+    float xCam          : 0x006DA1B0, 0xC, 0x30;
+
     // The Vizier's health where 0 is unharmed and 4 is dead.
     int vizierHealth    : 0x0040E518, 0x6C, 0x18, 0x4, 0x44, 0x0;
-
-    int resetValue      : 0x0040E388, 0x4, 0x398;
 }
 
 startup
@@ -147,7 +147,7 @@ init
 start
 {
     // Detecting if the game has started on the balcony.
-    return (vars.FarahBalcony() && current.startValue == 1);
+    return vars.FarahBalcony() && current.startValue == 1 && current.xCam <= -92.8;
 }
 
 onStart
@@ -158,7 +158,7 @@ onStart
 
 reset
 {
-    return (old.resetValue == 1 && current.resetValue == 2 && vars.FarahBalcony());
+    return vars.FarahBalcony() && current.xCam <= -92 && current.xCam > -92.8;
 }
 
 split
