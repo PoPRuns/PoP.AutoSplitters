@@ -36,6 +36,7 @@
         <Setting Id="boss__7413__HYR_SOM_22_CorruptedTwinSargon" Label="Alternate Sargons (Hyrcanian Forest)" State="false" />
         <Setting Id="boss__7413__END_PIT_15_CorruptedSargon" Label="Alternate Sargon (Pit of Eternal Sand)" State="false" />
         <Setting Id="dlc_bosses" Label="Mask of Darkness DLC" State="true">
+            <Setting Id="boss__20886__RAD_LOV_01" Label="Undead Black Belt" State="false" />
             <Setting Id="boss__21064__RAD_OUT_01_BOSS_RADJEN" Label="Radjen" State="true" />
             <Setting Id="boss__21063__" Label="Artaban" State="false" />
         </Setting>
@@ -58,12 +59,18 @@
     <Setting Id="quest" Label="Split on story progression" State="true">
         <Setting Id="inlevel_OLD_01" Label="Enter Mount Qaf" State="false" ToolTip="Splits on entering Mount Qaf after Battlefield and Thomyris Palace" />
         <Setting Id="inlevel_DEP_12" Label="Enter the Depths (Alkara Encounter)" State="false" ToolTip="Splits on entering the depths room where Alkara steals the eye" />
-        <Setting Id="inlevel_PIT_01" Label="Enter Pit of Eternal Sands" State="false" ToolTip="Splits on entering Pit of Eternal Sands for the first time"/>
-        <Setting Id="level_action__CIT_UPP_15_Puzzle_Constellation__140" Label="Complete the clockwork puzzle in Night Temple" State="false" ToolTip="Splits on shooting the celestial arrow after the puzzle"/>
+        <Setting Id="inlevel_SAC02_18" Label="Enter room before the Clairvoyance puzzles" State="false" ToolTip="Splits on entering the room before the 4 puzzles required to unlock Clairvoyance" />
+        <Setting Id="inlevel_PIT_01" Label="Enter Pit of Eternal Sands" State="false" ToolTip="Splits on entering Pit of Eternal Sands for the first time" />
+        <Setting Id="level_action__CIT_UPP_15_Puzzle_Constellation__140" Label="Complete the clockwork puzzle in Night Temple" State="false" ToolTip="Splits on shooting the celestial arrow after the puzzle" />
+        <Setting Id="inlevel_TOW_12" Label="Enter Tower of Silence gong door room" State="false" ToolTip="Splits on entering room with the door that required the three gongs to unlock in Tower of Silence" />
+        <Setting Id="inlevel_TOW_19" Label="Enter room before the Darius boss fight" State="false" ToolTip="Splits on entering room before Darius (either via the gong door or via Upper City)" />
+        <Setting Id="inlevel_CRO_01" Label="Enter Crossroad of Times" State="false" ToolTip="Splits on entering Crossroad of Times for the first time" />
         <Setting Id="dlc_locations" Label="Mask of Darkness DLC" State="false">
-            <Setting Id="inlevel_INT_03" Label="Enter Radjen's Mind Palace" State="false" ToolTip="Splits on entering the main area of the DLC"/>
-            <Setting Id="inlevel_KAL_08" Label="End of Left Path in Radjen's Mind Palace" State="false" ToolTip="Splits on finishing left path in the DLC for the first time"/>
-            <Setting Id="inlevel_ASS_08" Label="End of Right Path in Radjen's Mind Palace" State="false" ToolTip="Splits on finishing right path in the DLC for the first time"/>
+            <Setting Id="inlevel_INT_03" Label="Enter Radjen's Mind Palace" State="false" ToolTip="Splits on entering the main area of the DLC" />
+            <Setting Id="inlevel_KAL_08" Label="End of Left Path in Radjen's Mind Palace" State="false" ToolTip="Splits on finishing left path in the DLC for the first time" />
+            <Setting Id="inlevel_ASS_08" Label="End of Right Path in Radjen's Mind Palace" State="false" ToolTip="Splits on finishing right path in the DLC for the first time" />
+            <Setting Id="inlevel_LOV_02" Label="Middle of Central Path in Radjen's Mind Palace" State="false" ToolTip="Splits on room with the Wak Wak Tree in the middle path" />
+            <Setting Id="inlevel_LOV_05" Label="End of Central Path in Radjen's Mind Palace" State="false" ToolTip="Splits on room just before the Radjen boss fight" />
         </Setting>
     </Setting>
 </Settings>
