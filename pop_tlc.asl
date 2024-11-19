@@ -288,7 +288,7 @@ split
         if (settings["quest"]) {
             if (old.shortLevel != current.shortLevel && vars.CheckSplit("inlevel_" + current.shortLevel)) return true;
 
-            if (vars.CheckSplit("level_action__" + current.level + "__" + current.playerAction)) return true;
+            if (current.level == old.level && vars.CheckSplit("level_action__" + current.level + "__" + current.playerAction)) return true;
         }
 
         if (settings["boss"]) {
