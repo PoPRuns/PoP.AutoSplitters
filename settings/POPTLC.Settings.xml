@@ -30,7 +30,7 @@
         <Setting Id="player_action__192" Label="Vahram 3 (END SPLIT)" State="true" ToolTip="Last input for most categories" />
 
         <Setting Id="boss__3454__CIT_DEP_11_UndeadErlik" Label="Undead Erlik" State="false" />
-        <Setting Id="boss__7548__CIT_DEP02_03_nolight2_sphincterhall" Label="Giant Crab" State="false" />
+        <Setting Id="boss__7548__CIT_DEP02_05_crabboss" Label="Giant Crab" State="false" />
         <Setting Id="boss__7056__CIT_LOW_22_Radjen" Label="Ardashir" State="false" />
         <Setting Id="boss__7413__SAC_SAC_19_CorruptedSargon" Label="Alternate Sargon (Sacred Archives)" State="false" />
         <Setting Id="boss__7413__HYR_SOM_22_CorruptedTwinSargon" Label="Alternate Sargons (Hyrcanian Forest)" State="false" />

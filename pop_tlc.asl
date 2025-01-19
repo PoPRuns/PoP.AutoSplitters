@@ -25,6 +25,7 @@ startup
     vars.CompletedSplits = new HashSet<string>();
     vars.IGTValue = 0;
     vars.IGTOffset = 0;
+    vars.isNormalMode = false;
     vars.isDivineTrialsMode = false;
 
     if (timer.CurrentTimingMethod != TimingMethod.GameTime) {
@@ -226,6 +227,7 @@ onReset
 {
     vars.IGTValue = 0;
     vars.IGTOffset = 0;
+    vars.isNormalMode = false;
 }
 
 start
@@ -234,6 +236,7 @@ start
     // Start in either base game or DLC starting scene
     if ((current.activeScene == vars.NORMAL_START_SCENE && old.activeScene == vars.NORMAL_START_SCENE) ||
         (current.activeScene == vars.DLC_START_SCENE && old.activeScene != vars.DLC_START_SCENE)) {
+        vars.isNormalMode = (current.activeScene == vars.NORMAL_START_SCENE);
         vars.IGTOffset = -current.speedrunTimer;
         return true;
     };
@@ -263,7 +266,7 @@ gameTime
         if (vars.IGTValue > current.speedrunTimer) {
             vars.IGTOffset += (vars.IGTValue - current.speedrunTimer);
         }
-        if ((current.activeScene == vars.NORMAL_START_SCENE || current.activeScene == vars.DLC_START_SCENE) && current.inputMode == 3) {
+        if ((current.activeScene == vars.NORMAL_START_SCENE || (current.activeScene == vars.DLC_START_SCENE && !vars.isNormalMode)) && current.inputMode == 3) {
             vars.IGTOffset = -current.speedrunTimer;
         }
         vars.IGTValue = current.speedrunTimer;
