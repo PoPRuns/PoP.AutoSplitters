@@ -24,9 +24,9 @@ startup
 
     vars.CompletedSplits = new HashSet<string>();
     vars.IGTValue = 0;
-    vars.IGTOffset = 0;
-    vars.isNormalMode = false;
-    vars.isDivineTrialsMode = false;
+
+    // 0: Not running, 1: Full game, 2: DLC, 3: Divine Trials IL
+    vars.mode = 0;
 
     if (timer.CurrentTimingMethod != TimingMethod.GameTime) {
         DialogResult mbox = MessageBox.Show(timer.Form,
@@ -226,33 +226,32 @@ onStart
 onReset
 {
     vars.IGTValue = 0;
-    vars.IGTOffset = 0;
-    vars.isNormalMode = false;
+    vars.mode = 0;
 }
 
 start
 {
     if (old.activeScene == "UIManager") return false;
-    // Start in either base game or DLC starting scene
-    if ((current.activeScene == vars.NORMAL_START_SCENE && old.activeScene == vars.NORMAL_START_SCENE) ||
-        (current.activeScene == vars.DLC_START_SCENE && old.activeScene != vars.DLC_START_SCENE)) {
-        vars.isNormalMode = (current.activeScene == vars.NORMAL_START_SCENE);
-        vars.IGTOffset = -current.speedrunTimer;
-        return true;
-    };
 
-    if (current.challengeType == 6 && old.challengeState == 2 && current.challengeState == 4 && current.speedrunTimer > 0) {
-        vars.IGTOffset = -current.speedrunTimer;
-        vars.isDivineTrialsMode = true;
+    if (current.activeScene == vars.NORMAL_START_SCENE && old.activeScene == vars.NORMAL_START_SCENE) {
+        vars.mode = 1;
+    }
+    else if (current.activeScene == vars.DLC_START_SCENE && old.activeScene != vars.DLC_START_SCENE) {
+        vars.mode = 2;
+    }
+    else if (current.challengeType == 6 && old.challengeState == 2 && current.challengeState == 4 && current.speedrunTimer > 0) {
+        vars.mode = 3;
+    }
+
+    if (vars.mode > 0) {
+        vars.IGTValue = 0;
         return true;
     }
 }
 
 reset {
-    if (vars.isDivineTrialsMode && current.challengeState != 4 && current.challengeState != 8) {
-        vars.isDivineTrialsMode = false;
-        return true;
-    }
+    // Auto-reset only for Divine Trials
+    return (vars.mode == 3 && current.challengeState != 4 && current.challengeState != 8);
 }
 
 isLoading
@@ -262,21 +261,21 @@ isLoading
 
 gameTime
 {
-    if (current.speedrunTimer > 0) {
-        if (vars.IGTValue > current.speedrunTimer) {
-            vars.IGTOffset += (vars.IGTValue - current.speedrunTimer);
-        }
-        if ((current.activeScene == vars.NORMAL_START_SCENE || (current.activeScene == vars.DLC_START_SCENE && !vars.isNormalMode)) && current.inputMode == 3) {
-            vars.IGTOffset = -current.speedrunTimer;
-        }
-        vars.IGTValue = current.speedrunTimer;
+    if (old.speedrunTimer > 0 && current.speedrunTimer > old.speedrunTimer) {
+        vars.IGTValue += (current.speedrunTimer - old.speedrunTimer);
     }
-    return TimeSpan.FromSeconds(vars.IGTValue + vars.IGTOffset);
+
+    // IGT doesn't start until cutscene is playing in the opening scene of the respective categories
+    if ((current.activeScene == vars.NORMAL_START_SCENE || (current.activeScene == vars.DLC_START_SCENE && vars.mode == 2)) && current.inputMode == 3) {
+        vars.IGTValue = 0;
+    }
+
+    return TimeSpan.FromSeconds(vars.IGTValue);
 }
 
 split
 {
-    if (!vars.isDivineTrialsMode) {
+    if (vars.mode != 3) {
         if (settings["abilites"]) {
             for (int index = 0; index < current.unlockableAbilities.Count; index++) {
                 if (vars.CheckIfAbilityUnlocked(current.unlockableAbilities[index]) && vars.CheckSplit("ability__" + index)) {
@@ -306,8 +305,9 @@ split
         }
     }
 
-    if (vars.isDivineTrialsMode && current.challengeState == 8) {
-        vars.isDivineTrialsMode = false;
+    // Divine Trials
+    if (vars.mode == 3 && current.challengeState == 8) {
+        vars.mode = 0;
         return true;
     }
 }
