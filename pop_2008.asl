@@ -24,10 +24,11 @@ state("Prince of Persia", "Unknown") {}
 
 startup
 {
-    vars.splitTypes = new Dictionary<string, string> {
-        {"specialEvents", "Split on scripted game events"},
-        {"combatEvents", "Split on defeating bosses in specific levels"},
-        {"anyStandard", "Splits specific to the Any% (Standard) route"},
+    vars.splitTypes = new Dictionary<string, Tuple<string, bool>> {
+        {"specialEvents", Tuple.Create("Split on scripted game events", true)},
+        {"combatEvents", Tuple.Create("Split on defeating bosses in specific levels", true)},
+        {"anyStandard", Tuple.Create("Splits specific to the Any% (Standard) route", true)},
+        {"anyLegacy", Tuple.Create("Legacy splits specific to the Any% (NDJE) route", false)},
     };
 
     // Key - Setting ID, Value - Tuple of (Description, Split type, Tooltip and Trigger condition).
@@ -49,6 +50,30 @@ startup
             "specialEvents",
             "",
             new Func<bool>(() => vars.CompletedSplits.Contains("PreDad1") && vars.oldYPos < -238f && vars.inPosWithRange(6f, -233.5f, -33f, 2))
+        )},
+        {"RedPlate", Tuple.Create(
+            "Step of Ormazd",
+            "specialEvents",
+            "Splits on entering the Red plate realm",
+            new Func<bool>(() => vars.inPosWithRange(-55f, -447f, -180f, 2))
+        )},
+        {"BluePlate", Tuple.Create(
+            "Hand of Ormazd",
+            "specialEvents",
+            "Splits on entering the Blue plate realm",
+            new Func<bool>(() => vars.inPosWithRange(45f, -456f, -180f, 2))
+        )},
+        {"YellowPlate", Tuple.Create(
+            "Wings of Ormazd",
+            "specialEvents",
+            "Splits on entering the Yellow plate realm",
+            new Func<bool>(() => vars.inPosWithRange(-156f, -413f, -180f, 2))
+        )},
+        {"GreenPlate", Tuple.Create(
+            "Breath of Ormazd",
+            "specialEvents",
+            "Splits on entering the Green plate realm",
+            new Func<bool>(() => vars.inPosWithRange(150f, -444f, -182f, 2))
         )},
         {"TheGod", Tuple.Create(
             "Defeat Ahriman",
@@ -218,6 +243,12 @@ startup
             "Splits on defeating the Mourning King before Ahriman encounter",
             new Func<bool>(() => vars.CompletedSplits.Contains("Warrior") && vars.splitBoss(5f, -365f, -32f))
         )},
+        {"ThirdFight", Tuple.Create(
+            "Third Fight",
+            "anyStandard",
+            "Splits at the start of third fight cutscene",
+            new Func<bool>(() => vars.inPosWithRange(-193f, -143.6f, -32f, 2))
+        )},
         {"BarrierSkip", Tuple.Create(
             "Barrier Skip",
             "anyStandard",
@@ -252,19 +283,13 @@ startup
             "Martyrs Tower",
             "anyStandard",
             "",
-            new Func<bool>(() => vars.splitSeed(-564.202f, 207.312f, 22f))
-        )},
-        {"MTtoMG", Tuple.Create(
-            "MT -> MG",
-            "anyStandard",
-            "",
-            new Func<bool>(() => vars.splitSeed(-454.824f, 398.571f, 27.028f))
+            new Func<bool>(() => vars.splitSeed(-548f, 230f, 26f))
         )},
         {"MachineryGround", Tuple.Create(
             "Machinery Ground",
             "anyStandard",
             "",
-            new Func<bool>(() => vars.splitSeed(-361.121f, 480.114f, 12.928f))
+            new Func<bool>(() => vars.splitSeed(-370f, 468f, 17f))
         )},
         {"HeavensStair", Tuple.Create(
             "Heavens Stair",
@@ -274,6 +299,18 @@ startup
         )},
         {"SpireOfDreams", Tuple.Create(
             "Spire of Dreams",
+            "anyStandard",
+            "",
+            new Func<bool>(() => vars.splitSeed(266f, 602f, 36f))
+        )},
+        {"CoronationHall", Tuple.Create(
+            "Coronation Hall",
+            "anyStandard",
+            "",
+            new Func<bool>(() => vars.splitSeed(399f, 535f, 39f))
+        )},
+        {"RoyalSpire1", Tuple.Create(
+            "Royal Spire 1",
             "anyStandard",
             "",
             new Func<bool>(() => vars.splitSeed(-88.5f, 538.5f, 44.5f))
@@ -308,17 +345,47 @@ startup
             "",
             new Func<bool>(() => vars.splitSeed(547.488f, 45.41f, -27.107f))
         )},
-        {"TowerOfOrmazd", Tuple.Create(
-            "Tower of Ormazd",
+        {"TowerOfAhriman", Tuple.Create(
+            "Tower of Ahriman",
             "anyStandard",
             "",
-            new Func<bool>(() => vars.splitSeed(609.907f, 61.905f, -35.001f))
+            new Func<bool>(() => vars.splitSeed(667f, -14f, -30f))
         )},
         {"QueensTower", Tuple.Create(
             "Queen's Tower",
             "anyStandard",
             "",
-            new Func<bool>(() => vars.splitSeed(637.262f, 27.224f, -28.603f))
+            new Func<bool>(() => vars.splitSeed(842f, -16f, -40f))
+        )},
+        {"CityOfLight", Tuple.Create(
+            "City of Light",
+            "anyStandard",
+            "Splits on defeating Warrior in City of Light",
+            new Func<bool>(() => vars.splitSeed(735f, 166f, -35f))
+        )},
+        {"TowerOfOrmazd", Tuple.Create(
+            "Tower of Ormazd",
+            "anyStandard",
+            "",
+            new Func<bool>(() => vars.splitSeed(655f, 227f, -37f))
+        )},
+        {"RoyalSpire2", Tuple.Create(
+            "Royal Spire 2",
+            "anyStandard",
+            "",
+            new Func<bool>(() => vars.splitSeed(407f, 399f, 34f))
+        )},
+        {"RoyalGardens", Tuple.Create(
+            "Royal Gardens",
+            "anyStandard",
+            "",
+            new Func<bool>(() => vars.splitSeed(152f, 244f, 9f))
+        )},
+        {"Cavern2", Tuple.Create(
+            "Cavern 2",
+            "anyStandard",
+            "",
+            new Func<bool>(() => vars.splitSeed(79f, 182f, -8f))
         )},
         {"DoubleJump", Tuple.Create(
             "Double Jump",
@@ -326,22 +393,52 @@ startup
             "Splits on dying after getting double jump",
             new Func<bool>(() => vars.CompletedSplits.Contains("PreDad1") && vars.inXRange(0f, 10f) && vars.inYRange(-253f, -243f) && vars.currentZPos() < -43)
         )},
-        {"CoronationHall", Tuple.Create(
+        {"MartyrsTowerNDJE", Tuple.Create(
+            "Martyrs Tower",
+            "anyLegacy",
+            "",
+            new Func<bool>(() => vars.splitSeed(-564.202f, 207.312f, 22f))
+        )},
+        {"MTtoMG", Tuple.Create(
+            "MT -> MG",
+            "anyLegacy",
+            "",
+            new Func<bool>(() => vars.splitSeed(-454.824f, 398.571f, 27.028f))
+        )},
+        {"MachineryGroundNDJE", Tuple.Create(
+            "Machinery Ground",
+            "anyLegacy",
+            "",
+            new Func<bool>(() => vars.splitSeed(-361.121f, 480.114f, 12.928f))
+        )},
+        {"TowerOfOrmazdNDJE", Tuple.Create(
+            "Tower of Ormazd",
+            "anyLegacy",
+            "",
+            new Func<bool>(() => vars.splitSeed(609.907f, 61.905f, -35.001f))
+        )},
+        {"QueensTowerNDJE", Tuple.Create(
+            "Queen's Tower",
+            "anyLegacy",
+            "",
+            new Func<bool>(() => vars.splitSeed(637.262f, 27.224f, -28.603f))
+        )},
+        {"CoronationHallNDJE", Tuple.Create(
             "Coronation Hall",
-            "anyStandard",
+            "anyLegacy",
             "",
             new Func<bool>(() => vars.splitSeed(340f, 590f, 19f))
         )},
         {"Seed540", Tuple.Create(
             "540 Seeds",
-            "anyStandard",
+            "anyLegacy",
             "Splits on getting the final seed at Heaven's Stair",
             new Func<bool>(() => vars.splitSeed(-280f, 696f, 87f))
         )},
     };
 
     foreach (var splitType in vars.splitTypes) {
-        settings.Add(splitType.Key, true, splitType.Value);
+        settings.Add(splitType.Key, splitType.Value.Item2, splitType.Value.Item1);
     }
 
     foreach (var data in vars.splitsData) {
