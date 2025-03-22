@@ -385,7 +385,7 @@ startup
             "Cavern 2",
             "anyStandard",
             "",
-            new Func<bool>(() => vars.splitSeed(79f, 182f, -8f))
+            new Func<bool>(() => vars.splitSeed(80f, 182f, -8f))
         )},
         {"DoubleJump", Tuple.Create(
             "Double Jump",
