@@ -307,7 +307,7 @@ startup
             "Coronation Hall",
             "anyStandard",
             "",
-            new Func<bool>(() => vars.splitSeed(399f, 535f, 39f))
+            new Func<bool>(() => vars.splitSeed(399f, 535f, 39.5f))
         )},
         {"RoyalSpire1", Tuple.Create(
             "Royal Spire 1",
