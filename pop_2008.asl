@@ -28,7 +28,7 @@ startup
         {"specialEvents", Tuple.Create("Split on scripted game events", true)},
         {"combatEvents", Tuple.Create("Split on defeating bosses in specific levels", true)},
         {"anyStandard", Tuple.Create("Splits specific to the Any% (Standard) route", true)},
-        {"anyLegacy", Tuple.Create("Legacy splits specific to the Any% (NDJE) route", false)},
+        {"anyLegacy", Tuple.Create("Legacy splits that are outdated for Any%", false)},
     };
 
     // Key - Setting ID, Value - Tuple of (Description, Split type, Tooltip and Trigger condition).
@@ -243,17 +243,11 @@ startup
             "Splits on defeating the Mourning King before Ahriman encounter",
             new Func<bool>(() => vars.CompletedSplits.Contains("Warrior") && vars.splitBoss(5f, -365f, -32f))
         )},
-        {"ThirdFight", Tuple.Create(
-            "Third Fight",
-            "anyStandard",
-            "Splits at the start of third fight cutscene",
-            new Func<bool>(() => vars.inPosWithRange(-193f, -143.6f, -32f, 2))
-        )},
-        {"BarrierSkip", Tuple.Create(
+        {"NeoBarrierSkip", Tuple.Create(
             "Barrier Skip",
             "anyStandard",
-            "Splits after barrier skip",
-            new Func<bool>(() => vars.inXRange(-208f, -200f) && vars.inYRange(-38f, -27.5f) && vars.currentZPos() >= -511)
+            "Splits right after getting out of elika-walk at King's Gate",
+            new Func<bool>(() => vars.inPosWithRange(-331.5f, -4.5f, -9.9f, 1))
         )},
         {"KingsGate", Tuple.Create(
             "Kings Gate",
@@ -392,6 +386,18 @@ startup
             "anyStandard",
             "Splits on dying after getting double jump",
             new Func<bool>(() => vars.CompletedSplits.Contains("PreDad1") && vars.inXRange(0f, 10f) && vars.inYRange(-253f, -243f) && vars.currentZPos() < -43)
+        )},
+        {"ThirdFight", Tuple.Create(
+            "Third Fight",
+            "anyLegacy",
+            "Splits at the start of third fight cutscene",
+            new Func<bool>(() => vars.inPosWithRange(-193f, -143.6f, -32f, 2))
+        )},
+        {"BarrierSkip", Tuple.Create(
+            "Barrier Skip",
+            "anyLegacy",
+            "Splits after barrier skip",
+            new Func<bool>(() => vars.inXRange(-208f, -200f) && vars.inYRange(-38f, -27.5f) && vars.currentZPos() >= -511)
         )},
         {"MartyrsTowerNDJE", Tuple.Create(
             "Martyrs Tower",
