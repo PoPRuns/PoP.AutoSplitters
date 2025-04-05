@@ -87,6 +87,12 @@ startup
             "Splits on finishing the game",
             new Func<bool>(() => vars.inXRange(5.562f, 5.566f) && vars.inYRange(-222.745f, -222.517f) && vars.currentZPos() >= -33.1)
         )},
+        {"Dad1", Tuple.Create(
+            "Dad Fight 1",
+            "combatEvents",
+            "Splits on finishing the Dad 1 fight",
+            new Func<bool>(() => vars.oldXPos < 5.7f && vars.inPosWithRange(11.3f, -392.9f, -40f, 1))
+        )},
         {"Dad2", Tuple.Create(
             "Dad Fight 2",
             "combatEvents",
@@ -238,7 +244,7 @@ startup
             new Func<bool>(() => vars.splitBoss(1070.478f, 279.147f, -29.571f))
         )},
         {"King", Tuple.Create(
-            "The King",
+            "Dad Fight 4",
             "combatEvents",
             "Splits on defeating the Mourning King before Ahriman encounter",
             new Func<bool>(() => vars.CompletedSplits.Contains("Warrior") && vars.splitBoss(5f, -365f, -32f))
@@ -484,6 +490,7 @@ init
         }
     }
 
+    vars.oldXPos = 0;
     vars.oldYPos = 0;
     vars.currentZPos = (Func<float>)(() => current.zPos);
 
@@ -559,5 +566,6 @@ split
         }
     }
 
+    vars.oldXPos = old.xPos;
     vars.oldYPos = old.yPos;
 }
