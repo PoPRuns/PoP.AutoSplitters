@@ -569,7 +569,7 @@ init
                 !vars.inPosWithRangeCurrent(args.Item1, args.Item2, args.Item3, args.Item4);
         });
 
-        // Checks if spawned in Canyon after new game[]
+        // Checks if spawned in Canyon after new game
         vars.resetNew = (Func<IDictionary<string, object>, bool>)((_old) => {
             return
                 !vars.inPosWithRangeOld(args.Item1, args.Item2, args.Item3, args.Item4, _old) &&
