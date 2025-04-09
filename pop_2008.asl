@@ -261,11 +261,11 @@ startup
             "",
             new Func<bool>(() => vars.splitSeed(-538.834f, -67.159f, 12.732f))
         )},
-        {"SunTemple08", Tuple.Create(
+        {"SunTemple", Tuple.Create(
             "Sun Temple",
             "anyStandard",
             "",
-            new Func<bool>(() => vars.splitSeed(-664f, -58f, 12f))
+            new Func<bool>(() => vars.inPosWithRange(-673.8f, -53.9f, 16.3f, 1))
         )},
         {"MarshGrounds", Tuple.Create(
             "Marshalling Grounds",
@@ -404,6 +404,12 @@ startup
             "anyLegacy",
             "Splits after barrier skip",
             new Func<bool>(() => vars.inXRange(-208f, -200f) && vars.inYRange(-38f, -27.5f) && vars.currentZPos() >= -511)
+        )},
+        {"SunTempleNDJE", Tuple.Create(
+            "Sun Temple",
+            "anyLegacy",
+            "",
+            new Func<bool>(() => vars.splitSeed(-664f, -58f, 12f))
         )},
         {"MartyrsTowerNDJE", Tuple.Create(
             "Martyrs Tower",
