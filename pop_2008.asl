@@ -506,7 +506,7 @@ init
         return
             vars.inXRange(xTarg - range, xTarg + range, xPos) &&
             vars.inYRange(yTarg - range, yTarg + range, yPos) &&
-            vars.inZRange(zTarg - range, zTarg + range, zPos) ? true : false;
+            vars.inZRange(zTarg - range, zTarg + range, zPos);
     });
 
     vars.inXRangeCurrent = (Func<float, float, bool>)((xMin, xMax) => { return vars.inXRange(xMin, xMax, current.xPos); });
@@ -527,21 +527,21 @@ init
     vars.splitSeed = (Func<float, float, float, bool>)((xTarg, yTarg, zTarg) => {
         return
             vars.inPosWithRangeCurrent(xTarg, yTarg, zTarg, 3) &&
-            vars.seedGet ? true : false;
+            vars.seedGet;
     });
 
     // Checks if x,y,z co-ordinates are in a certain range and if a combat has just ended
     vars.splitBoss = (Func<float, float, float, bool>)((xTarg, yTarg, zTarg) => {
         return
             vars.inPosWithRangeCurrent(xTarg, yTarg, zTarg, 30) &&
-            vars.kill ? true : false;
+            vars.kill;
     });
 
     // Having this check because desert dad fight doesn't have combat value set for some reason
     vars.splitDad = (Func<float, float, float, bool>)((xTarg, yTarg, zTarg) => {
         return
             vars.inPosWithRangeCurrent(xTarg, yTarg, zTarg, 30) &&
-            vars.dadKill ? true : false;
+            vars.dadKill;
     });
 
     // This function will check if settings are enabled for a triggered split and adds it to completed splits
@@ -551,12 +551,12 @@ init
 
     // Checks if spawned in Canyon after loading and then moved from that position
     vars.startLoad = (Func<IDictionary<string, object>, bool>)((_old) => {
-        return (float?)_old["xPos"] == -465f && (float?)_old["yPos"] == -351f && (current.xPos != -465f || current.yPos != -351f) ? true : false;
+        return (float?)_old["xPos"] == -465f && (float?)_old["yPos"] == -351f && (current.xPos != -465f || current.yPos != -351f);
     });
 
     // Checks if spawned in Canyon after loading
     vars.resetLoad = (Func<IDictionary<string, object>, bool>)((_old) => {
-        return ((float?)_old["xPos"] != -465f || (float?)_old["yPos"] != -351f) && current.xPos == -465f && current.yPos == -351f ? true : false;
+        return ((float?)_old["xPos"] != -465f || (float?)_old["yPos"] != -351f) && current.xPos == -465f && current.yPos == -351f;
     });
 
     {
