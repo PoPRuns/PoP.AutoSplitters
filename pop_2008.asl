@@ -6,7 +6,6 @@ state("PrinceOfPersia_Launcher", "Digital")
     float zPos          : 0x00B30D08, 0x48;
     int combat          : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
     int enemyHP         : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8, 0x250;
-    byte deathStorage   : 0x00B30D08, 0x74, 0x104, 0x48, 0x1C, 0x50, 0xC, 0x1768;
 }
 
 state("Prince of Persia", "DRM Free")
@@ -17,7 +16,6 @@ state("Prince of Persia", "DRM Free")
     float zPos          : 0x00B30D08, 0x48;
     int combat          : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
     int enemyHP         : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8, 0x250;
-    byte deathStorage   : 0x00B30D08, 0x74, 0x104, 0x48, 0x1C, 0x50, 0xC, 0x1768;
 }
 
 state("Prince of Persia", "Unknown") {}
@@ -37,61 +35,61 @@ startup
             "Collapsing Bridge",
             "specialEvents",
             "",
-            new Func<bool>(() => vars.inPosWithRange(-310.25f, -241f, -30f, 2))
+            new Func<bool>(() => vars.inPosWithRangeCurrent(-310.25f, -241f, -30f, 2))
         )},
         {"PreDad1", Tuple.Create(
             "Tree of Life",
             "specialEvents",
             "Reach the tree of life inside the temple for the first time",
-            new Func<bool>(() => vars.inPosWithRange(4f, -388.6f, -40f, 2))
+            new Func<bool>(() => vars.inPosWithRangeCurrent(4f, -388.6f, -40f, 2))
         )},
         {"ThiccCutscene", Tuple.Create(
             "Thicc Cutscene",
             "specialEvents",
             "",
-            new Func<bool>(() => vars.CompletedSplits.Contains("PreDad1") && vars.oldYPos < -238f && vars.inPosWithRange(6f, -233.5f, -33f, 2))
+            new Func<bool>(() => vars.CompletedSplits.Contains("PreDad1") && vars.oldYPos < -238f && vars.inPosWithRangeCurrent(6f, -233.5f, -33f, 2))
         )},
         {"RedPlate", Tuple.Create(
             "Step of Ormazd",
             "specialEvents",
             "Splits on entering the Red plate realm",
-            new Func<bool>(() => vars.inPosWithRange(-55f, -447f, -180f, 2))
+            new Func<bool>(() => vars.inPosWithRangeCurrent(-55f, -447f, -180f, 2))
         )},
         {"BluePlate", Tuple.Create(
             "Hand of Ormazd",
             "specialEvents",
             "Splits on entering the Blue plate realm",
-            new Func<bool>(() => vars.inPosWithRange(45f, -456f, -180f, 2))
+            new Func<bool>(() => vars.inPosWithRangeCurrent(45f, -456f, -180f, 2))
         )},
         {"YellowPlate", Tuple.Create(
             "Wings of Ormazd",
             "specialEvents",
             "Splits on entering the Yellow plate realm",
-            new Func<bool>(() => vars.inPosWithRange(-156f, -413f, -180f, 2))
+            new Func<bool>(() => vars.inPosWithRangeCurrent(-156f, -413f, -180f, 2))
         )},
         {"GreenPlate", Tuple.Create(
             "Breath of Ormazd",
             "specialEvents",
             "Splits on entering the Green plate realm",
-            new Func<bool>(() => vars.inPosWithRange(150f, -444f, -182f, 2))
+            new Func<bool>(() => vars.inPosWithRangeCurrent(150f, -444f, -182f, 2))
         )},
         {"TheGod", Tuple.Create(
             "Defeat Ahriman",
             "specialEvents",
             "Splits on defeating Ahriman in the Temple",
-            new Func<bool>(() => vars.inXRange(7.129f, 7.131f) && vars.inYRange(-401.502f, -401.5f) && vars.currentZPos() >= -31.4)
+            new Func<bool>(() => vars.inXRangeCurrent(7.129f, 7.131f) && vars.inYRangeCurrent(-401.502f, -401.5f) && vars.currentZPos() >= -31.4)
         )},
         {"Resurrection", Tuple.Create(
             "Resurrection",
             "specialEvents",
             "Splits on finishing the game",
-            new Func<bool>(() => vars.inXRange(5.562f, 5.566f) && vars.inYRange(-222.745f, -222.517f) && vars.currentZPos() >= -33.1)
+            new Func<bool>(() => vars.inXRangeCurrent(5.562f, 5.566f) && vars.inYRangeCurrent(-222.745f, -222.517f) && vars.currentZPos() >= -33.1)
         )},
         {"Dad1", Tuple.Create(
             "Dad Fight 1",
             "combatEvents",
             "Splits on finishing the Dad 1 fight",
-            new Func<bool>(() => vars.oldXPos < 5.7f && vars.inPosWithRange(11.3f, -392.9f, -40f, 1))
+            new Func<bool>(() => vars.oldXPos < 5.7f && vars.inPosWithRangeCurrent(11.3f, -392.9f, -40f, 1))
         )},
         {"Dad2", Tuple.Create(
             "Dad Fight 2",
@@ -253,7 +251,7 @@ startup
             "Barrier Skip",
             "anyStandard",
             "Splits right after getting out of elika-walk at King's Gate",
-            new Func<bool>(() => vars.inPosWithRange(-331.5f, -4.5f, -9.9f, 1))
+            new Func<bool>(() => vars.inPosWithRangeCurrent(-331.5f, -4.5f, -9.9f, 1))
         )},
         {"KingsGate", Tuple.Create(
             "Kings Gate",
@@ -265,7 +263,7 @@ startup
             "Sun Temple",
             "anyStandard",
             "",
-            new Func<bool>(() => vars.inPosWithRange(-673.8f, -53.9f, 16.3f, 1))
+            new Func<bool>(() => vars.inPosWithRangeCurrent(-673.8f, -53.9f, 16.3f, 1))
         )},
         {"MarshGrounds", Tuple.Create(
             "Marshalling Grounds",
@@ -391,19 +389,19 @@ startup
             "Double Jump",
             "anyStandard",
             "Splits on dying after getting double jump",
-            new Func<bool>(() => vars.CompletedSplits.Contains("PreDad1") && vars.inXRange(0f, 10f) && vars.inYRange(-253f, -243f) && vars.currentZPos() < -43)
+            new Func<bool>(() => vars.CompletedSplits.Contains("PreDad1") && vars.inXRangeCurrent(0f, 10f) && vars.inYRangeCurrent(-253f, -243f) && vars.currentZPos() < -43)
         )},
         {"ThirdFight", Tuple.Create(
             "Third Fight",
             "anyLegacy",
             "Splits at the start of third fight cutscene",
-            new Func<bool>(() => vars.inPosWithRange(-193f, -143.6f, -32f, 2))
+            new Func<bool>(() => vars.inPosWithRangeCurrent(-193f, -143.6f, -32f, 2))
         )},
         {"BarrierSkip", Tuple.Create(
             "Barrier Skip",
             "anyLegacy",
             "Splits after barrier skip",
-            new Func<bool>(() => vars.inXRange(-208f, -200f) && vars.inYRange(-38f, -27.5f) && vars.currentZPos() >= -511)
+            new Func<bool>(() => vars.inXRangeCurrent(-208f, -200f) && vars.inYRangeCurrent(-38f, -27.5f) && vars.currentZPos() >= -511)
         )},
         {"SunTempleNDJE", Tuple.Create(
             "Sun Temple",
@@ -500,34 +498,48 @@ init
     vars.oldYPos = 0;
     vars.currentZPos = (Func<float>)(() => current.zPos);
 
-    vars.inXRange = (Func<float, float, bool>)((xMin, xMax) => { return current.xPos >= xMin && current.xPos <= xMax; });
-    vars.inYRange = (Func<float, float, bool>)((yMin, yMax) => { return current.yPos >= yMin && current.yPos <= yMax; });
-    vars.inZRange = (Func<float, float, bool>)((zMin, zMax) => { return current.zPos >= zMin && current.zPos <= zMax; });
-    vars.inPosWithRange = (Func<float, float, float, int, bool>)((xTarg, yTarg, zTarg, range) => {
+    vars.inXRange = (Func<float, float, float?, bool>)((xMin, xMax, xPos) => { return xPos != null && xPos >= xMin && xPos <= xMax; });
+    vars.inYRange = (Func<float, float, float?, bool>)((yMin, yMax, yPos) => { return yPos != null && yPos >= yMin && yPos <= yMax; });
+    vars.inZRange = (Func<float, float, float?, bool>)((zMin, zMax, zPos) => { return zPos != null && zPos >= zMin && zPos <= zMax; });
+    vars.inPosWithRange = (Func<float, float, float, float, float?, float?, float?, bool>)((xTarg, yTarg, zTarg, range, xPos, yPos, zPos) => {
         return
-            vars.inXRange(xTarg - range, xTarg + range) &&
-            vars.inYRange(yTarg - range, yTarg + range) &&
-            vars.inZRange(zTarg - range, zTarg + range) ? true : false;
+            vars.inXRange(xTarg - range, xTarg + range, xPos) &&
+            vars.inYRange(yTarg - range, yTarg + range, yPos) &&
+            vars.inZRange(zTarg - range, zTarg + range, zPos) ? true : false;
+    });
+
+    vars.inXRangeCurrent = (Func<float, float, bool>)((xMin, xMax) => { return vars.inXRange(xMin, xMax, current.xPos); });
+    vars.inYRangeCurrent = (Func<float, float, bool>)((yMin, yMax) => { return vars.inYRange(yMin, yMax, current.yPos); });
+    vars.inZRangeCurrent = (Func<float, float, bool>)((zMin, zMax) => { return vars.inZRange(zMin, zMax, current.zPos); });
+    vars.inPosWithRangeCurrent = (Func<float, float, float, float, bool>)((xTarg, yTarg, zTarg, range) => {
+        return vars.inPosWithRange(xTarg, yTarg, zTarg, range, current.xPos, current.yPos, current.zPos);
+    });
+
+    vars.inXRangeOld = (Func<float, float, IDictionary<string, object>, bool>)((xMin, xMax, _old) => { return vars.inXRange(xMin, xMax, (float?)_old["xPos"]); });
+    vars.inYRangeOld = (Func<float, float, IDictionary<string, object>, bool>)((yMin, yMax, _old) => { return vars.inYRange(yMin, yMax, (float?)_old["yPos"]); });
+    vars.inZRangeOld = (Func<float, float, IDictionary<string, object>, bool>)((zMin, zMax, _old) => { return vars.inZRange(zMin, zMax, (float?)_old["zPos"]); });
+    vars.inPosWithRangeOld = (Func<float, float, float, float, IDictionary<string, object>, bool>)((xTarg, yTarg, zTarg, range, _old) => {
+        return vars.inPosWithRange(xTarg, yTarg, zTarg, range, (float?)_old["xPos"], (float?)_old["yPos"], (float?)_old["zPos"]);
     });
 
     // Checks if x,y,z co-ordinates are in a certain range and if a seed has just been picked
     vars.splitSeed = (Func<float, float, float, bool>)((xTarg, yTarg, zTarg) => {
         return
-            vars.inPosWithRange(xTarg, yTarg, zTarg, 3) &&
+            vars.inPosWithRangeCurrent(xTarg, yTarg, zTarg, 3) &&
             vars.seedGet ? true : false;
     });
 
     // Checks if x,y,z co-ordinates are in a certain range and if a combat has just ended
     vars.splitBoss = (Func<float, float, float, bool>)((xTarg, yTarg, zTarg) => {
         return
-            vars.inPosWithRange(xTarg, yTarg, zTarg, 30) &&
+            vars.inPosWithRangeCurrent(xTarg, yTarg, zTarg, 30) &&
             vars.kill ? true : false;
     });
 
     // Having this check because desert dad fight doesn't have combat value set for some reason
     vars.splitDad = (Func<float, float, float, bool>)((xTarg, yTarg, zTarg) => {
         return
-            vars.inPosWithRange(xTarg, yTarg, zTarg, 30) &&
+            vars.inPosWithRangeCurrent(xTarg, yTarg, zTarg, 30) &&
             vars.dadKill ? true : false;
     });
 
@@ -535,20 +547,46 @@ init
     vars.CheckSplit = (Func<string, bool>)(key => {
         return (vars.CompletedSplits.Add(key) && settings[key]);
     });
+
+    // Checks if spawned in Canyon after loading and then moved from that position
+    vars.startLoad = (Func<IDictionary<string, object>, bool>)((_old) => {
+        return (float?)_old["xPos"] == -465f && (float?)_old["yPos"] == -351f && (current.xPos != -465f || current.yPos != -351f) ? true : false;
+    });
+
+    // Checks if spawned in Canyon after loading
+    vars.resetLoad = (Func<IDictionary<string, object>, bool>)((_old) => {
+        return ((float?)_old["xPos"] != -465f || (float?)_old["yPos"] != -351f) && current.xPos == -465f && current.yPos == -351f ? true : false;
+    });
+
+    {
+        Tuple<float, float, float, float> args = Tuple.Create(-462.302f, -348.223f, -23.956f, 0.003f);
+
+        // Checks if spawned in Canyon after new game and then moved from that position
+        vars.startNew = (Func<IDictionary<string, object>, bool>)((_old) => {
+            return
+                vars.inPosWithRangeOld(args.Item1, args.Item2, args.Item3, args.Item4, _old) &&
+                !vars.inPosWithRangeCurrent(args.Item1, args.Item2, args.Item3, args.Item4);
+        });
+
+        // Checks if spawned in Canyon after new game[]
+        vars.resetNew = (Func<IDictionary<string, object>, bool>)((_old) => {
+            return
+                !vars.inPosWithRangeOld(args.Item1, args.Item2, args.Item3, args.Item4, _old) &&
+                vars.inPosWithRangeCurrent(args.Item1, args.Item2, args.Item3, args.Item4);
+        });
+    }
 }
 
 
 reset
 {
-    // When the Prince's x coordinate is set after loading into the Canyon, reset.
-    return old.xPos != -465 && current.xPos == -465 && old.deathStorage == 0 && current.deathStorage == 1;
+    return vars.resetLoad(old) || vars.resetNew(old);
 }
 
 
 start
 {
-    // When the Prince's y coordinate is set after loading into the Canyon, start.
-    return old.xPos == -465 && old.yPos == -351 && (current.xPos != -465 || current.yPos != -351);
+    return vars.startLoad(old) || vars.startNew(old);
 }
 
 
