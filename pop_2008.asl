@@ -476,7 +476,8 @@ startup
     }
 }
 
-
+// fetching the old value from this block simply yields the current value due to a bug with ASL
+// this is why any time we use the old value in this block, we pass it on directly from another block
 init
 {
     refreshRate = 120;
