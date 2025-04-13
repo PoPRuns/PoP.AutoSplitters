@@ -35,7 +35,7 @@ startup
             "Collapsing Bridge",
             "specialEvents",
             "",
-            new Func<bool>(() => vars.inPosWithRangeCurrent(-310.25f, -241f, -30f, 2))
+            new Func<bool>(() => vars.inPosWithRangeCurrent(-310.25f, -241.0f, -30.2f, 0.2f))
         )},
         {"PreDad1", Tuple.Create(
             "Tree of Life",
