@@ -313,7 +313,7 @@ startup
             "",
             new Func<bool>(() => vars.splitSeed(-88.5f, 538.5f, 44.5f))
         )},
-        {"Reservoir08", Tuple.Create(
+        {"Reservoir", Tuple.Create(
             "Reservoir",
             "anyStandard",
             "",
