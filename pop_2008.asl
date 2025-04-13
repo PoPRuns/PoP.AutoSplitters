@@ -526,7 +526,7 @@ init
     // Checks if x,y,z co-ordinates are in a certain range and if a seed has just been picked
     vars.splitSeed = (Func<float, float, float, bool>)((xTarg, yTarg, zTarg) => {
         return
-            vars.inPosWithRangeCurrent(xTarg, yTarg, zTarg, 3) &&
+            vars.inPosWithRangeCurrent(xTarg, yTarg, zTarg, 5) &&
             vars.seedGet;
     });
 
