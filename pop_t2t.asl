@@ -156,7 +156,10 @@ init
 start
 {
     // Detecting if the game has started on the ramparts.
-    return (vars.inXRange(-404.9f, -404.8f) && current.xCam <= 0.832 && current.xCam >= 0.8318 && current.yCam <= 0.1082 && current.yCam >= 0.1080);
+    bool cutsceneStart = (vars.inXRange(-404.9f, -404.8f) && current.xCam <= 0.832 && current.xCam >= 0.8318 && current.yCam <= 0.1082 && current.yCam >= 0.1080);
+    bool saveStart = (current.xPos == -408.2559509f && current.yPos == 116.8504791f && old.xPos == -35.63637543f && old.yPos == -42.57809067f);
+
+    return (cutsceneStart || saveStart);
 }
 
 onStart
