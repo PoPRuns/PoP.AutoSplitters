@@ -9,6 +9,7 @@ state("POP3")
     float yCam  : 0x928554;
 
     int princeAction   : 0x005EBD78, 0x30, 0x18, 0x4, 0x48, 0x7F0;
+    int saveLoad       : 0x603880;
 }
 
 startup
@@ -157,7 +158,7 @@ start
 {
     // Detecting if the game has started on the ramparts.
     bool cutsceneStart = (vars.inXRange(-404.9f, -404.8f) && current.xCam <= 0.832 && current.xCam >= 0.8318 && current.yCam <= 0.1082 && current.yCam >= 0.1080);
-    bool saveStart = (current.xPos == -408.2559509f && current.yPos == 116.8504791f && old.xPos == -35.63637543f && old.yPos == -42.57809067f);
+    bool saveStart = (current.xPos == -408.2559509f && current.yPos == 116.8504791f && old.saveLoad == 0 && current.saveLoad == 1);
 
     return (cutsceneStart || saveStart);
 }
