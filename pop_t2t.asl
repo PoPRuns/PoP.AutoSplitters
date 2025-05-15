@@ -16,9 +16,9 @@ startup
 {
     // Key - Setting ID, Value - Tuple of (Default setting, Description, Tooltip and Trigger condition).
     vars.splitsData = new Dictionary<string, Tuple<bool, string, string, Func<bool>>> {
-        { "TheRamparts",        Tuple.Create(true,  "The Ramparts",                     "Split after the harbor district save fountain",                                    new Func<bool>(() => vars.TheRamparts()         )) },
-        { "HarborDistrict",     Tuple.Create(true,  "The Harbor District",              "Split after first palace save fountain",                                           new Func<bool>(() => vars.HarborDistrict()      )) },
-        { "ThePalace",          Tuple.Create(true,  "The Palace",                       "Split at the end of throne room",                                                  new Func<bool>(() => vars.ThePalace()           )) },
+        { "TheRamparts",        Tuple.Create(false, "The Ramparts",                     "Split after the harbor district save fountain",                                    new Func<bool>(() => vars.TheRamparts()         )) },
+        { "HarborDistrict",     Tuple.Create(false, "The Harbor District",              "Split after first palace save fountain",                                           new Func<bool>(() => vars.HarborDistrict()      )) },
+        { "ThePalace",          Tuple.Create(false, "The Palace",                       "Split at the end of throne room",                                                  new Func<bool>(() => vars.ThePalace()           )) },
         { "TrappedHallway",     Tuple.Create(false, "The Trapped Hallway",              "Split at end of trapped hallway at the cutscene",                                  new Func<bool>(() => vars.TrappedHallway()      )) },
         { "TheSewers",          Tuple.Create(false, "The Sewers",                       "Split on finishing the sewers dark prince section",                                new Func<bool>(() => vars.TheSewers()           )) },
         { "TheSewerz",          Tuple.Create(false, "The Sewers (alternate)",           "Split just before the tunnels save fountain",                                      new Func<bool>(() => vars.TheSewerz()           )) },
@@ -29,16 +29,17 @@ startup
         { "ArenaDeload",        Tuple.Create(false, "Arena Deload",                     "Split at the black crushers in the arena dark prince section",                     new Func<bool>(() => vars.ArenaDeload()         )) },
         { "TheBalconies",       Tuple.Create(false, "The Balconies",                    "Split on exiting the room with the slomo gate",                                    new Func<bool>(() => vars.TheBalconies()        )) },
         { "DarkAlley",          Tuple.Create(false, "The Dark Alley",                   "Split on entering the cutscene at start of temple rooftops",                       new Func<bool>(() => vars.DarkAlley()           )) },
-        { "TheTempleRooftops",  Tuple.Create(true,  "The Temple Rooftops",              "Split on entering the door into temple",                                           new Func<bool>(() => vars.TheTempleRooftops()   )) },
+        { "TheTempleRooftops",  Tuple.Create(false, "The Temple Rooftops",              "Split on entering the door into temple",                                           new Func<bool>(() => vars.TheTempleRooftops()   )) },
         { "TheTemple",          Tuple.Create(false, "The Temple",                       "Split on finishing the temple dark prince section",                                new Func<bool>(() => vars.TheTemple()           )) },
-        { "TheMarketplace",     Tuple.Create(true,  "The Marketplace",                  "Split at save fountain before cutscene drop",                                      new Func<bool>(() => vars.TheMarketplace()      )) },
+        { "TheTempleZipless",   Tuple.Create(false, "The Temple (alternate)",           "Split on finishing the temple dark prince section",                                new Func<bool>(() => vars.TheTempleZipless()    )) },
+        { "TheMarketplace",     Tuple.Create(false, "The Marketplace",                  "Split at save fountain before cutscene drop",                                      new Func<bool>(() => vars.TheMarketplace()      )) },
         { "MarketDistrict",     Tuple.Create(false, "The Market District",              "Split at the save fountain after the long cutscene",                               new Func<bool>(() => vars.MarketDistrict()      )) },
         { "TheBrothel",         Tuple.Create(false, "The Brothel",                      "Split on finishing the brothel dark prince section",                               new Func<bool>(() => vars.TheBrothel()          )) },
-        { "ThePlaza",           Tuple.Create(true,  "The Plaza",                        "Split at the door after Mahasti fight",                                            new Func<bool>(() => vars.ThePlaza()            )) },
+        { "ThePlaza",           Tuple.Create(false, "The Plaza",                        "Split at the door after Mahasti fight",                                            new Func<bool>(() => vars.ThePlaza()            )) },
         { "TheUpperCity",       Tuple.Create(false, "The Upper City",                   "Split just before the skippable Farah cutscene",                                   new Func<bool>(() => vars.TheUpperCity()        )) },
         { "CityGarderns",       Tuple.Create(false, "The City Garderns",                "Split just before the Stone Guardian encounter",                                   new Func<bool>(() => vars.CityGarderns()        )) },
         { "ThePromenade",       Tuple.Create(false, "The Promenade",                    "Split on entering the royal workshop",                                             new Func<bool>(() => vars.ThePromenade()        )) },
-        { "RoyalWorkshop",      Tuple.Create(true,  "Royal Workshop",                   "Split on entering the king's road",                                                new Func<bool>(() => vars.RoyalWorkshop()       )) },
+        { "RoyalWorkshop",      Tuple.Create(false, "Royal Workshop",                   "Split on entering the king's road",                                                new Func<bool>(() => vars.RoyalWorkshop()       )) },
         { "KingsRoad",          Tuple.Create(false, "The King's Road",                  "Split on defeating the twins",                                                     new Func<bool>(() => vars.KingsRoad()           )) },
         { "KingzRoad",          Tuple.Create(false, "The King's Road (alternate)",      "Split on the transition to palace entrance after twins fight",                     new Func<bool>(() => vars.KingzRoad()           )) },
         { "PalaceEntrance",     Tuple.Create(false, "The Palace Entrance",              "Split on entering the elevator cutscene",                                          new Func<bool>(() => vars.PalaceEntrance()      )) },
@@ -53,9 +54,9 @@ startup
         { "UndergroundCave",    Tuple.Create(false, "The Underground Cave",             "Split on entering the kitchen",                                                    new Func<bool>(() => vars.UndergroundCave()     )) },
         { "LowerTower",         Tuple.Create(false, "The Lower Tower",                  "Split on entering the trap corridor after lower tower",                            new Func<bool>(() => vars.LowerTower()          )) },
         { "MiddleTower",        Tuple.Create(false, "The Middle Tower",                 "Split on entering the trap corridor after middle tower",                           new Func<bool>(() => vars.MiddleTower()         )) },
-        { "UpperTower",         Tuple.Create(true,  "The Upper Tower",                  "Split at the upper tower save fountain",                                           new Func<bool>(() => vars.UpperTower()          )) },
-        { "TheTerrace",         Tuple.Create(true,  "The Terrace",                      "Split on entering the mental realm",                                               new Func<bool>(() => vars.TheTerrace()          )) },
-        { "MentalRealm",        Tuple.Create(true,  "The Mental Realm",                 "Split on finishing the game",                                                      new Func<bool>(() => vars.MentalRealm()         )) },
+        { "UpperTower",         Tuple.Create(false, "The Upper Tower",                  "Split at the upper tower save fountain",                                           new Func<bool>(() => vars.UpperTower()          )) },
+        { "TheTerrace",         Tuple.Create(false, "The Terrace",                      "Split on entering the mental realm",                                               new Func<bool>(() => vars.TheTerrace()          )) },
+        { "MentalRealm",        Tuple.Create(false, "The Mental Realm",                 "Split on finishing the game",                                                      new Func<bool>(() => vars.MentalRealm()         )) },
 
         { "T2TLU1",             Tuple.Create(false, "Life Upgrade 1",                   "Split after obtaining the first life upgrade in Tunnels",                          new Func<bool>(() => vars.T2TLU1()              )) },
         { "T2TLU2",             Tuple.Create(false, "Life Upgrade 2",                   "Split after obtaining the second life upgrade in Lower City Rooftops",             new Func<bool>(() => vars.T2TLU2()              )) },
@@ -112,6 +113,7 @@ init
     vars.DarkAlley              = (Func <bool>)(() => { return vars.splitByXYZ(-114f, -110f, 328f, 338f, 55f, 59f); });
     vars.TheTempleRooftops      = (Func <bool>)(() => { return vars.splitByXYZ(-122.6f, -117.7f, 421.6f, 423f, 107f, 108.1f); });
     vars.TheTemple              = (Func <bool>)(() => { return vars.splitByXYZ(-212.2f, -211.9f, 419.0f, 419.8f, 81f, 82f); });
+    vars.TheTempleZipless       = (Func <bool>)(() => { return vars.splitByXYZ(-126f, -125f, 424f, 426f, 100f, 100.1f); });
     vars.TheMarketplace         = (Func <bool>)(() => { return vars.splitByXYZ(-213f, -207f, 484f, 490f, 101f, 103f); });
     vars.MarketDistrict         = (Func <bool>)(() => { return vars.splitByXYZ(-185.5f, -175.5f, 524f, 530f, 90f, 92f); });
     vars.TheBrothel             = (Func <bool>)(() => { return vars.splitByXYZ(-152.3f, -152.0f, 549.8f, 549.9f, 91.8f, 92f); });
