@@ -107,7 +107,7 @@ startup
             "The Sun Temple",
             "combatEvents",
             "Splits on defeating Hunter in The Sun Temple",
-            new Func<bool>(() => vars.splitBoss(-566.5f, -44f, 34f))
+            new Func<bool>(() => vars.splitBoss(-554.5f, -54f, 34f))
         )},
         {"MarshallingGroundH", Tuple.Create(
             "Marshalling Ground",
@@ -150,6 +150,12 @@ startup
             "combatEvents",
             "Splits on defeating Alchemist in Machinery Ground",
             new Func<bool>(() => vars.splitBoss(-400f, 457f, 18f))
+        )},
+        {"MachineryGroundH2", Tuple.Create(
+            "Machinery Ground (Alternate)",
+            "combatEvents",
+            "Splits on healing the fertile ground in Machinery Ground",
+            new Func<bool>(() => vars.inPosExactCurrent(-393.2969971f, 517.6463623f, 56.27552414f))
         )},
         {"ReservoirH", Tuple.Create(
             "Reservoir",
@@ -514,6 +520,12 @@ init
     vars.inZRangeCurrent = (Func<float, float, bool>)((zMin, zMax) => { return vars.inZRange(zMin, zMax, current.zPos); });
     vars.inPosWithRangeCurrent = (Func<float, float, float, float, bool>)((xTarg, yTarg, zTarg, range) => {
         return vars.inPosWithRange(xTarg, yTarg, zTarg, range, current.xPos, current.yPos, current.zPos);
+    });
+    vars.inPosExactCurrent = (Func<float, float, float, bool>)((xTarg, yTarg, zTarg) => {
+        return
+            current.xPos == xTarg &&
+            current.yPos == yTarg &&
+            current.zPos == zTarg;
     });
 
     vars.inXRangeOld = (Func<float, float, IDictionary<string, object>, bool>)((xMin, xMax, _old) => { return vars.inXRange(xMin, xMax, (float?)_old["xPos"]); });
