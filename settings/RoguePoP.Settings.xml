@@ -1,10 +1,5 @@
 <Settings>
-    <Setting Id="oasis" Label="Settings for runs that start in the Oasis" State="true">
-        <Setting Id="oasis_start" Label="Automatic Start" State="true" />
-        <Setting Id="oasis_split" Label="Split on finishing each biome" State="true" />
-    </Setting>
-
-    <Setting Id="fresh_file" Label="Settings for fresh file runs" State="true">
-        <Setting Id="fresh_file_start" Label="Automatic Start" State="true" />
-    </Setting>
+    <Setting Id="oasis_start" Label="Automatic start for runs that begin from Oasis" State="true" />
+    <Setting Id="fresh_file_start" Label="Automatic start for runs that begin from a fresh file" State="true" />
+    <Setting Id="biome_split" Label="Split on finishing each biome" State="true" />
 </Settings>

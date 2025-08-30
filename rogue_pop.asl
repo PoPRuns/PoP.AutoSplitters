@@ -116,11 +116,10 @@ gameTime
 
 split
 {
-    bool oasis_split = 
-        settings["oasis_split"] &&
-        !vars.is_fresh_file_mode &&
+    bool biome_split = 
+        settings["biome_split"] &&
         vars.checkNotInitialScenes(current.activeScene) &&
         current.activeScene != old.activeScene;
 
-    return oasis_split;
+    return biome_split;
 }
