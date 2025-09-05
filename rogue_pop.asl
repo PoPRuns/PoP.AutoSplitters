@@ -14,6 +14,7 @@ startup
     vars.FINALBOSS_SCENE = "Nogai";
     vars.PLAYTIMESERVICE_INDEX = 23;
     vars.FINALBOSS_FLAG_INDEX = new int[]{1, 52};
+    vars.APPSEED_INDEX = new int[]{0, 0};
 
     vars.initialScenes = new HashSet<string> { "Bootstrap", "GCManagerService", "Start", "HUBScene" };
     vars.checkNotInitialScenes = (Func<string, bool>)(scene => 
@@ -49,40 +50,55 @@ init
         var VLS = mono["Assembly-CSharp", "VariableListSaver"];
         var GVL = mono["Assembly-CSharp", "GameVariableList"];
         var VB = mono["MotherBase.ToolKit", "VarBool"];
+        var VI = mono["MotherBase.ToolKit", "VarInt"];
 
         vars.getVarName = (Func<IntPtr, string>)(ptr => {
             string varName = vars.Helper.ReadString(ptr + VPPTS["name"]);
             return varName;
         });
 
-        vars.Helper["runPlaytime"] = RSL.Make<float>(
-            "_instance",
-            RSL["variables"],
-            itemsOffset,
-            arrayStartOffset + vars.PLAYTIMESERVICE_INDEX*ptrSize,
-            VPPTS["_value"],
-            PS["runPlaytime"]
-        );
+        var getPSFloatField = (Func<string, dynamic>)(field => {
+            return RSL.Make<float>(
+                "_instance",
+                RSL["variables"],
+                itemsOffset,
+                arrayStartOffset + vars.PLAYTIMESERVICE_INDEX*ptrSize,
+                VPPTS["_value"],
+                PS[field]
+            );
+        });
 
-        vars.Helper["totalRunsPlaytime"] = RSL.Make<float>(
-            "_instance",
-            RSL["variables"],
-            itemsOffset,
-            arrayStartOffset + vars.PLAYTIMESERVICE_INDEX*ptrSize,
-            VPPTS["_value"],
-            PS["totalRunsPlaytime"]
-        );
+        var getVLSBoolField = (Func<int[], dynamic>)(variableIndex => {
+            return VLS.Make<bool>(
+                "_instance",
+                VLS["listToSave"],
+                itemsOffset,
+                arrayStartOffset + variableIndex[0] * ptrSize,
+                GVL["variables"],
+                itemsOffset,
+                arrayStartOffset + variableIndex[1] * ptrSize,
+                VB["_value"]
+            );
+        });
 
-        vars.Helper["finalBossKilled"] = VLS.Make<bool>(
-            "_instance",
-            VLS["listToSave"],
-            itemsOffset,
-            arrayStartOffset + vars.FINALBOSS_FLAG_INDEX[0]*ptrSize,
-            GVL["variables"],
-            itemsOffset,
-            arrayStartOffset + vars.FINALBOSS_FLAG_INDEX[1]*ptrSize,
-            VB["_value"]
-        );
+        var getVLSIntField = (Func<int[], dynamic>)(variableIndex => {
+            return VLS.Make<int>(
+                "_instance",
+                VLS["listToSave"],
+                itemsOffset,
+                arrayStartOffset + variableIndex[0] * ptrSize,
+                GVL["variables"],
+                itemsOffset,
+                arrayStartOffset + variableIndex[1] * ptrSize,
+                VI["_value"]
+            );
+        });
+
+        vars.Helper["runPlaytime"] = getPSFloatField("runPlaytime");
+        vars.Helper["totalRunsPlaytime"] = getPSFloatField("totalRunsPlaytime");
+
+        vars.Helper["finalBossKilled"] = getVLSBoolField(vars.FINALBOSS_FLAG_INDEX);
+        vars.Helper["appSeed"] = getVLSIntField(vars.APPSEED_INDEX);
 
         return true;
     });
@@ -94,6 +110,7 @@ init
 update
 {
     current.activeScene = vars.Helper.Scenes.Active.Name ?? current.activeScene;
+    timer.Run.Metadata.SetCustomVariable("seed", current.appSeed.ToString());
 }
 
 start
