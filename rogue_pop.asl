@@ -11,7 +11,9 @@ startup
     // Constants
     vars.FRESH_FILE_START_SCENE = "TutoScene";
     vars.OASIS_SCENE = "HUBScene";
+    vars.FINALBOSS_SCENE = "Nogai";
     vars.PLAYTIMESERVICE_INDEX = 23;
+    vars.FINALBOSS_FLAG_INDEX = new int[]{1, 52};
 
     vars.initialScenes = new HashSet<string> { "Bootstrap", "GCManagerService", "Start", "HUBScene" };
     vars.checkNotInitialScenes = (Func<string, bool>)(scene => 
@@ -36,30 +38,51 @@ startup
 
 init
 {
+    int ptrSize = 0x8;
+    int itemsOffset = 2 * ptrSize;
+    int arrayStartOffset = 4 * ptrSize;
+
     vars.Helper.TryLoad = (Func<dynamic, bool>)(mono => {
         var RSL = mono["Assembly-CSharp", "RuntimeServiceLocator"];
         var VPPTS = mono["Assembly-CSharp", "VarPlayPlaytimeService"];
         var PS = mono["Assembly-CSharp", "PlaytimeService"];
-
-        vars.Helper["rslVarList"] = RSL.MakeList<IntPtr>(
-            "_instance",
-            RSL["variables"]
-        );
+        var VLS = mono["Assembly-CSharp", "VariableListSaver"];
+        var GVL = mono["Assembly-CSharp", "GameVariableList"];
+        var VB = mono["MotherBase.ToolKit", "VarBool"];
 
         vars.getVarName = (Func<IntPtr, string>)(ptr => {
             string varName = vars.Helper.ReadString(ptr + VPPTS["name"]);
             return varName;
         });
 
-        vars.getVarPtr = (Func<IntPtr, IntPtr>)(ptr => {
-            IntPtr varPtr = vars.Helper.Read<IntPtr>(ptr + VPPTS["_value"]);
-            return varPtr;
-        });
+        vars.Helper["runPlaytime"] = RSL.Make<float>(
+            "_instance",
+            RSL["variables"],
+            itemsOffset,
+            arrayStartOffset + vars.PLAYTIMESERVICE_INDEX*ptrSize,
+            VPPTS["_value"],
+            PS["runPlaytime"]
+        );
 
-        vars.getPSFloatField = (Func<IntPtr, string, float>)((ptr, field) => {
-            float runPlaytime = vars.Helper.Read<float>(ptr + PS[field]);
-            return runPlaytime;
-        });
+        vars.Helper["totalRunsPlaytime"] = RSL.Make<float>(
+            "_instance",
+            RSL["variables"],
+            itemsOffset,
+            arrayStartOffset + vars.PLAYTIMESERVICE_INDEX*ptrSize,
+            VPPTS["_value"],
+            PS["totalRunsPlaytime"]
+        );
+
+        vars.Helper["finalBossKilled"] = VLS.Make<bool>(
+            "_instance",
+            VLS["listToSave"],
+            itemsOffset,
+            arrayStartOffset + vars.FINALBOSS_FLAG_INDEX[0]*ptrSize,
+            GVL["variables"],
+            itemsOffset,
+            arrayStartOffset + vars.FINALBOSS_FLAG_INDEX[1]*ptrSize,
+            VB["_value"]
+        );
 
         return true;
     });
@@ -71,9 +94,6 @@ init
 update
 {
     current.activeScene = vars.Helper.Scenes.Active.Name ?? current.activeScene;
-    IntPtr psPtr = vars.getVarPtr(current.rslVarList[vars.PLAYTIMESERVICE_INDEX]);
-    current.runPlaytime = vars.getPSFloatField(psPtr, "runPlaytime");
-    current.totalRunsPlaytime = vars.getPSFloatField(psPtr, "totalRunsPlaytime");
 }
 
 start
@@ -121,5 +141,10 @@ split
         vars.checkNotInitialScenes(current.activeScene) &&
         current.activeScene != old.activeScene;
 
-    return biome_split;
+    bool final_split = 
+        settings["final_split"] &&
+        current.activeScene == vars.FINALBOSS_SCENE &&
+        !old.finalBossKilled && current.finalBossKilled;
+
+    return biome_split || final_split;
 }
