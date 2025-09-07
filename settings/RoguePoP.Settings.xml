@@ -2,5 +2,8 @@
     <Setting Id="oasis_start" Label="Automatic start for runs that begin from Oasis" State="true" />
     <Setting Id="fresh_file_start" Label="Automatic start for runs that begin from a fresh file" State="true" />
     <Setting Id="biome_split" Label="Split on finishing each biome" State="true" />
-    <Setting Id="final_split" Label="Split on defeating the final boss" State="true" />
+    <Setting Id="boss" Label="Split on beating boss" State="true">
+        <Setting Id="nogai_one" Label="Nogai, the Indomitable" State="true" />
+        <Setting Id="final_split" Label="Nogai, the Broken" State="true" />
+    </Setting>
 </Settings>
