@@ -18,7 +18,7 @@ startup
     vars.FINALBOSS_FLAG_INDEX = new int[]{1, 52};
     vars.APPSEED_INDEX = new int[]{0, 0};
 
-    vars.initialScenes = new HashSet<string> { "", "Bootstrap", "GCManagerService", "Start", "HUBScene" };
+    vars.initialScenes = new HashSet<string> { "", "Bootstrap", "BootLoader", "GCManagerService", "Start", "HUBScene" };
     vars.checkNotInitialScenes = (Func<string, bool>)(scene => 
         !vars.initialScenes.Contains(scene)
     );
