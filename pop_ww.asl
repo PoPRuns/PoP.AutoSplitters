@@ -201,42 +201,6 @@ startup
         settings.SetToolTip(data.Key, data.Value.Item4);
     }
 
-    settings.Add("storyViewer", false, "Enable viewing the story gate memory value");
-
-    settings.Add("tracker", false, "Enable tracker for Completionist Categories");
-    settings.Add("chests", false, "Artwork Chests", "tracker");
-    settings.Add("weapons", false, "Weapons", "tracker");
-
-    vars.SetTextComponent = (Action<string, string>)((id, text) =>
-    {
-        var textSettings = timer.Layout.Components.Where(x => x.GetType().Name == "TextComponent").Select(x => x.GetType().GetProperty("Settings").GetValue(x, null));
-        var textSetting = textSettings.FirstOrDefault(x => (x.GetType().GetProperty("Text1").GetValue(x, null) as string) == id);
-        if (textSetting == null)
-        {
-        var textComponentAssembly = Assembly.LoadFrom("Components\\LiveSplit.Text.dll");
-        var textComponent = Activator.CreateInstance(textComponentAssembly.GetType("LiveSplit.UI.Components.TextComponent"), timer);
-        timer.Layout.LayoutComponents.Add(new LiveSplit.UI.Components.LayoutComponent("LiveSplit.Text.dll", textComponent as LiveSplit.UI.Components.IComponent));
-
-        textSetting = textComponent.GetType().GetProperty("Settings", BindingFlags.Instance | BindingFlags.Public).GetValue(textComponent, null);
-        textSetting.GetType().GetProperty("Text1").SetValue(textSetting, id);
-        }
-
-        if (textSetting != null)
-        textSetting.GetType().GetProperty("Text2").SetValue(textSetting, text);
-    });
-
-    vars.RemoveTextComponent = (Action<string>)((id) => {
-        int indexToRemove = -1;
-        foreach (dynamic component in timer.Layout.Components) {
-            if (component.GetType().Name == "TextComponent" && System.Text.RegularExpressions.Regex.IsMatch(component.Settings.Text1, id)) {
-                indexToRemove = timer.Layout.Components.ToList().IndexOf(component);
-            }
-        }
-        if (indexToRemove != -1) {
-            timer.Layout.LayoutComponents.RemoveAt(indexToRemove);
-        }
-    });
-
     vars.CompletedSplits = new HashSet<string>();
 
     if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
@@ -294,16 +258,10 @@ init
             vars.inZRange(zMin, zMax);
     });
 
-    vars.setTrackerTextComponent = (Action<ulong, ulong, string>)((bits, expectedBits, description) => {
+    vars.getTrackerText = (Func<ulong, ulong, string>)((bits, expectedBits) => {
         int count = vars.countBits(bits & expectedBits);
         int maxCount = vars.countBits(expectedBits);
-        vars.SetTextComponent(description, count.ToString() + " / " + maxCount.ToString());
-    });
-
-    vars.removeTrackerTextComponents = (Action<List<string>>)((componentsToRemove) => {
-        foreach (string component in componentsToRemove) {
-            vars.RemoveTextComponent(component);
-        }
+        return (count.ToString() + " / " + maxCount.ToString());
     });
 
     // List of Splits
@@ -396,11 +354,6 @@ reset
     return (old.map == 234881388 && current.map == 1292342859);
 }
 
-exit
-{
-    vars.removeTrackerTextComponents(new List<string> { "Story Gate", "Chests", "Main Weapons", "Swords", "Axes", "Maces", "Daggers", "Secret Weapons" });
-}
-
 update
 {
     // This is a work-around for the "old" state not working as expected in the init block
@@ -416,27 +369,14 @@ update
 
     List<string> componentsToRemove = new List<string>();
 
-    if (settings["storyViewer"]) {
-        vars.SetTextComponent("Story Gate", current.storyValue.ToString());
-    }
-    else componentsToRemove.Add("Story Gate");
-
-    if (settings["chests"]) {
-        vars.setTrackerTextComponent(current.chestBits, 0x0003FFFFFFFFFFFF, "Chests");
-    }
-    else componentsToRemove.Add("Chests");
-
-    if (settings["weapons"]) {
-        vars.setTrackerTextComponent(current.weaponBits, 0x37C0000000000000, "Main Weapons");
-        vars.setTrackerTextComponent(current.weaponBits, 0x0005FFFF00000000, "Swords");
-        vars.setTrackerTextComponent(current.weaponBits, 0x0002000000003FFE, "Axes");
-        vars.setTrackerTextComponent(current.weaponBits, 0x000000000FF00000, "Maces");
-        vars.setTrackerTextComponent(current.weaponBits, 0x00000000000FC000, "Daggers");
-        vars.setTrackerTextComponent(current.weaponBits, 0x00080000F0000000, "Secret Weapons");
-    }
-    else componentsToRemove.AddRange(new List<string> { "Main Weapons", "Swords", "Axes", "Maces", "Daggers", "Secret Weapons" });
-
-    vars.removeTrackerTextComponents(componentsToRemove);
+    timer.Run.Metadata.SetCustomVariable("storyGate", current.storyValue.ToString());
+    timer.Run.Metadata.SetCustomVariable("chests", vars.getTrackerText(current.chestBits, 0x0003FFFFFFFFFFFF));
+    timer.Run.Metadata.SetCustomVariable("mainWeapons", vars.getTrackerText(current.weaponBits, 0x37C0000000000000));
+    timer.Run.Metadata.SetCustomVariable("swords", vars.getTrackerText(current.weaponBits, 0x0005FFFF00000000));
+    timer.Run.Metadata.SetCustomVariable("axes", vars.getTrackerText(current.weaponBits, 0x0002000000003FFE));
+    timer.Run.Metadata.SetCustomVariable("maces", vars.getTrackerText(current.weaponBits, 0x000000000FF00000));
+    timer.Run.Metadata.SetCustomVariable("daggers", vars.getTrackerText(current.weaponBits, 0x00000000000FC000));
+    timer.Run.Metadata.SetCustomVariable("secretWeapons", vars.getTrackerText(current.weaponBits, 0x00080000F0000000));
 }
 
 split

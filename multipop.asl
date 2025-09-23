@@ -549,6 +549,13 @@ init
     }
 }
 
+update
+{
+    if (game.ProcessName.ToLower() == "pop2") {
+        timer.Run.Metadata.SetCustomVariable("storyGate", current.storyValue.ToString());
+    }
+}
+
 start
 {
     switch((short)vars.game) {
