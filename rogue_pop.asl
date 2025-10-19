@@ -28,7 +28,6 @@ startup
     vars.is_fresh_file_mode = false;
     vars.just_created_file = false;
     vars.just_exited_oasis = false;
-    vars.just_entered_oasis = false;
 
     if (timer.CurrentTimingMethod != TimingMethod.GameTime) {
         DialogResult mbox = MessageBox.Show(timer.Form,
@@ -122,7 +121,6 @@ update
 onReset
 {
     vars.IGTValue = null;
-	vars.just_entered_oasis = false;
 }
 
 start
@@ -151,22 +149,20 @@ start
 
 reset
 {
-	if (vars.is_fresh_file_mode) {
-		return false;
-	} else {
-		vars.just_entered_oasis =
-			old.activeScene != vars.OASIS_SCENE &&
-			current.activeScene == vars.OASIS_SCENE;
-	
-		return vars.just_entered_oasis;
-	}
+    if (vars.is_fresh_file_mode) {
+        return false;
+    } else {
+        return
+            settings["oasis_reset"] &&
+            old.activeScene != vars.OASIS_SCENE &&
+            current.activeScene == vars.OASIS_SCENE;
+    }
 }
 
 onStart
 {
     vars.just_exited_oasis = false;
     vars.just_created_file = false;
-    vars.just_entered_oasis = false;
 }
 
 isLoading

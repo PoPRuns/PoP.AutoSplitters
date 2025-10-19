@@ -6,4 +6,5 @@
         <Setting Id="nogai_one" Label="Nogai, the Indomitable" State="true" />
         <Setting Id="final_split" Label="Nogai, the Broken" State="true" />
     </Setting>
+    <Setting Id="oasis_reset" Label="Automatic reset for runs that begin from Oasis" State="true" />
 </Settings>
