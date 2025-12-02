@@ -24,10 +24,11 @@ startup
     }
 }
 
-init
+exit
 {
-    vars.gameRunning = true;
-    game.Exited += (s, e) => vars.gameRunning = false;
+    // we do not need to unpause the IGT timer because the next time the game is running, the isLoading block will run and then it will be handled there
+    // however if we didn't have an isLoading block, then we would need to explicitly unpause in the init block
+    timer.IsGameTimePaused = true;
 }
 
 reset
@@ -46,7 +47,7 @@ start
 
 isLoading
 {
-    return (current.xPos == 0 && current.yPos == 0 && current.zPos == 0) || !vars.gameRunning;
+    return current.xPos == 0 && current.yPos == 0 && current.zPos == 0;
 }
 
 split
