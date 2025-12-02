@@ -135,9 +135,6 @@ startup
 
 init
 {
-    vars.gameRunning = true;
-    game.Exited += (s, e) => vars.gameRunning = false;
-
     // This is a split which triggers when the prince is within a certain range of coords
     vars.SplitTFSpos = (Func <int, int, int, int, bool>)((xTarg, yTarg, zTarg, range) => {
         return
@@ -157,9 +154,16 @@ init
     });
 }
 
+exit
+{
+    // we do not need to unpause the IGT timer because the next time the game is running, the isLoading block will run and then it will be handled there
+    // however if we didn't have an isLoading block, then we would need to explicitly unpause in the init block
+    timer.IsGameTimePaused = true;
+}
+
 isLoading
 {
-    return (current.isMenu == 0 || current.isLoading || !vars.gameRunning);
+    return (current.isMenu == 0 || current.isLoading);
 }
 
 reset
