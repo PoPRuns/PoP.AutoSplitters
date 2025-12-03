@@ -35,19 +35,11 @@ startup
             timer.CurrentTimingMethod = TimingMethod.GameTime;
         }
     }
-
-    vars.CurrentProcess = null;
-}
-
-update
-{
-    vars.OldProcess = vars.CurrentProcess;
-    vars.CurrentProcess = game;
 }
 
 start
 {
-    return(current.Level == 1 && current.Ticks == 0);
+    return (current.Level == 1 && current.Ticks == 0);
 }
 
 gameTime
@@ -64,7 +56,7 @@ gameTime
 
 reset
 {
-    return (current.Reset1 == 0 && current.Reset2 == 0 && current.Reset3 == 0) || vars.OldProcess != vars.CurrentProcess;
+    return (current.Reset1 == 0 && current.Reset2 == 0 && current.Reset3 == 0);
 }
 
 split
