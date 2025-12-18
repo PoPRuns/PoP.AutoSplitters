@@ -96,41 +96,48 @@ init
             vars.inYRange(yMin, yMax) &&
             vars.inZRange(zMin, zMax);
     });
+    vars.splitByCutscene = (Func <int, int, int, int, bool>)((xTarg, yTarg, zTarg, range) => {
+        return
+            vars.inXRange(xTarg - range, xTarg + range) &&
+            vars.inYRange(yTarg - range, yTarg + range) &&
+            vars.inZRange(zTarg - range, zTarg + range) &&
+            vars.cutsceneStarted;
+    });
 
     // List of T2T Splits across categories
     vars.TheRamparts            = (Func <bool>)(() => { return vars.splitByXYZ(-271f, -265f, 187f, 188f, 74f, 75f);                                 });
     vars.HarborDistrict         = (Func <bool>)(() => { return vars.splitByXYZ(-93f, -88f, 236.2f, 238f, 83f, 88f);                                 });
-    vars.ThePalace              = (Func <bool>)(() => { return vars.splitByXYZ(-35.5f, -35.4f, 232.3f, 232.4f, 146.9f, 147f);                       });
-    vars.TrappedHallway         = (Func <bool>)(() => { return vars.splitByXYZ(-52.1f, -52.0f, 135.8f, 135.9f, 75.8f, 76f);                         });
+    vars.ThePalace              = (Func <bool>)(() => { return vars.splitByCutscene(-35, 232, 147, 10);                                             });
+    vars.TrappedHallway         = (Func <bool>)(() => { return vars.splitByCutscene(-52, 134, 76, 10);                                              });
     vars.TheSewerz              = (Func <bool>)(() => { return vars.splitByXYZ(-100f, -96f, -83f, -79f, 19.9f, 20f);                                });
-    vars.TheSewers              = (Func <bool>)(() => { return vars.splitByXYZ(-89.0f, -88.0f, -15.2f, -14.7f, 4.9f, 5.1f);                         });
-    vars.TheFortress            = (Func <bool>)(() => { return vars.splitByXYZ(-71.4f, -71.3f, 9.6f, 9.7f, 44f, 44.1f);                             });
+    vars.TheSewers              = (Func <bool>)(() => { return vars.splitByCutscene(-89, -15, 5, 10);                                               });
+    vars.TheFortress            = (Func <bool>)(() => { return vars.splitByCutscene(-71, 10, 44, 10);                                               });
     vars.Chariot1               = (Func <bool>)(() => { return vars.splitByXYZ(-443.37f, -443.36f, 355.80f, 355.81f, 57.71f, 57.72f);               });
-    vars.LowerCity              = (Func <bool>)(() => { return vars.splitByXYZ(-319f, -316.5f, 317f, 332.6f, 95.1f, 98f);                           });
+    vars.LowerCity              = (Func <bool>)(() => { return vars.splitByCutscene(-318, 330, 96, 10);                                             });
     vars.LowerCityRooftops      = (Func <bool>)(() => { return vars.splitByXYZ(-261.5f, -261f, 318f, 319.5f, 46f, 48f);                             });
     vars.ArenaDeload            = (Func <bool>)(() => { return vars.splitByXYZ(-256.1f, -251.9f, 358f, 361.5f, 53.9f, 63.3f);                       });
     vars.TheBalconies           = (Func <bool>)(() => { return vars.splitByXYZ(-194f, -190f, 328f, 329.7f, 32.6f, 33.6f);                           });
     vars.DarkAlley              = (Func <bool>)(() => { return vars.splitByXYZ(-114f, -110f, 328f, 338f, 55f, 59f);                                 });
     vars.TheTempleRooftops      = (Func <bool>)(() => { return vars.splitByXYZ(-122.6f, -117.7f, 421.6f, 423f, 107f, 108.1f);                       });
     vars.TheTempleRooftopz      = (Func <bool>)(() => { return vars.splitByXYZ(-126f, -125f, 424f, 426f, 100f, 100.1f);                             });
-    vars.TheTemple              = (Func <bool>)(() => { return vars.splitByXYZ(-212.2f, -211.9f, 419.0f, 419.8f, 81f, 82f);                         });
+    vars.TheTemple              = (Func <bool>)(() => { return vars.splitByXYZ(-213f, -210f, 419.0f, 421f, 80.5f, 82.5f);                           });
     vars.TheMarketplace         = (Func <bool>)(() => { return vars.splitByXYZ(-213f, -207f, 484f, 490f, 101f, 103f);                               });
     vars.MarketDistrict         = (Func <bool>)(() => { return vars.splitByXYZ(-185.5f, -175.5f, 524f, 530f, 90f, 92f);                             });
     vars.TheBrothel             = (Func <bool>)(() => { return vars.splitByXYZ(-152.3f, -152.0f, 549.8f, 549.9f, 91.8f, 92f);                       });
     vars.ThePlaza               = (Func <bool>)(() => { return vars.splitByXYZ(-104f, -100f, 548f, 553f, 105.5f, 106.1f);                           });
     vars.TheUpperCity           = (Func <bool>)(() => { return vars.splitByXYZ(-124.5f, -122.5f, 500f, 505f, 97f, 99f);                             });
-    vars.CityGarderns           = (Func <bool>)(() => { return vars.splitByXYZ(-63.5f, -63.4f, 389.7f, 389.8f, 85.2f, 85.3f);                       });
+    vars.CityGarderns           = (Func <bool>)(() => { return vars.splitByCutscene(-63, 390, 85, 10);                                              });
     vars.ThePromenade           = (Func <bool>)(() => { return vars.splitByXYZ(-3f, -1f, 515f, 519f, 72f, 75f);                                     });
     vars.RoyalWorkshop          = (Func <bool>)(() => { return vars.splitByXYZ(58f, 62f, 470f, 480f, 79f, 81f);                                     });
     vars.KingsRoad              = (Func <bool>)(() => { return vars.splitByXYZ(91.9289f, 91.9290f, 230.0479f, 230.0480f, 70.9877f, 70.9879f);       });
     vars.KingzRoad              = (Func <bool>)(() => { return vars.splitByXYZ(53f, 70f, 240f, 250f, 70f, 73f);                                     });
-    vars.PalaceEntrance         = (Func <bool>)(() => { return vars.splitByXYZ(30.8f, 30.9f, 271.2f, 271.3f, 126f, 126.1f);                         });
+    vars.PalaceEntrance         = (Func <bool>)(() => { return vars.splitByCutscene(31, 271, 126, 10);                                              });
     vars.HangingGardens         = (Func <bool>)(() => { return vars.splitByXYZ(26f, 28f, 211f, 213f, 191f, 193f);                                   });
     vars.HangingGardenz         = (Func <bool>)(() => { return vars.splitByXYZ(5.2f, 5.4f, 213.5f, 215.6f, 194.9f, 196.2f);                         });
-    vars.StructuresMind         = (Func <bool>)(() => { return vars.splitByXYZ(-34f, -27f, 240f, 250f, 178f, 180f);                                 });
+    vars.StructuresMind         = (Func <bool>)(() => { return vars.splitByCutscene(-30, 245, 179, 10);                                             });
     vars.StructurezMind         = (Func <bool>)(() => { return vars.splitByXYZ(5f, 12f, 243f, 265f, 104f, 104.1f);                                  });
     vars.BottomofWell           = (Func <bool>)(() => { return vars.splitByXYZ(-21.35f, -21.34f, 252.67f, 252.68f, 20.95f, 20.96f);                 });
-    vars.WellofAncestors        = (Func <bool>)(() => { return vars.splitByXYZ(-12.6f, -12.5f, 241.2f, 241.3f, 0.9f, 1f);                           });
+    vars.WellofAncestors        = (Func <bool>)(() => { return vars.splitByCutscene(-13, 241, 1, 10);                                               });
     vars.CaveDeath              = (Func <bool>)(() => { return vars.splitByXYZ(5.99f, 6.00f, 306.96f, 306.97f, 42f, 42.01f);                        });
     vars.TheLabyrinth           = (Func <bool>)(() => { return vars.splitByXYZ(-25.5f, -23f, 325f, 338f, 35.9f, 37.5f);                             });
     vars.UndergroundCave        = (Func <bool>)(() => { return vars.splitByXYZ(-11f, -9f, 327f, 334f, 73f, 74f);                                    });
@@ -179,6 +186,8 @@ reset
 
 split
 {
+    vars.cutsceneStarted = (old.princeAction != 17 && current.princeAction == 17);
+
     foreach (var data in vars.splitsData) {
         if (data.Value.Item4() && vars.CheckSplit(data.Key)) {
             print(data.Key);
