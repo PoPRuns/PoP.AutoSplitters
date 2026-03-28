@@ -41,9 +41,13 @@ startup
         { "TheCaves",               Tuple.Create(false, "The Caves (alternate)",            "Split on the beam at the start of Waterfall",                  new Func<bool>(() => vars.TheCaves()                )) },
         { "TheWaterfall",           Tuple.Create(false, "The Waterfall",                    "Split at the end of the descent in Waterfall",                 new Func<bool>(() => vars.TheWaterfall()            )) },
         { "TheUGReservoirZipless",  Tuple.Create(false, "Enter Underground Reservoir",      "Split on entering the underground reservoir",                  new Func<bool>(() => vars.TheUGReservoirZipless()   )) },
-        { "TheUGReservoir",         Tuple.Create(false, "Exit Underground Reservoir",       "Split on exiting the underground reservoir",                   new Func<bool>(() => vars.TheUGReservoir()          )) },
+        { "OutOfTheWell",           Tuple.Create(false, "Out Of The Well",                  "Split when exiting the well",                                  new Func<bool>(() => vars.OutOfTheWell()            )) },
+        { "TheUGReservoir",         Tuple.Create(false, "Exit Underground Reservoir",       "Split after the well, when passing through the archway",       new Func<bool>(() => vars.TheUGReservoir()          )) },
+        { "TheSultanHarem",         Tuple.Create(false, "The Sultan's Harem",               "Split on the sultan's harem",                                   new Func<bool>(() => vars.TheSultanHarem()         )) },
+        { "WhatDidYouCallMe",       Tuple.Create(false, "What Did You Call Me",             "Split on The Sultan's Harem battle beginning",                 new Func<bool>(() => vars.WhatDidYouCallMe()        )) },
         { "HallofLearning",         Tuple.Create(false, "The Hall of Learning",             "Split on entering the hall of learning",                       new Func<bool>(() => vars.HallofLearning()          )) },
         { "TheObservatory",         Tuple.Create(false, "Observatory (death)",              "Split on death abuse at the end of observatory",               new Func<bool>(() => vars.TheObservatory()          )) },
+        { "ObservatoryEnter",       Tuple.Create(false, "Enter Observatory",                "Split on enter the observatory",                               new Func<bool>(() => vars.ObservatoryEnter()        )) },
         { "ObservatoryExit",        Tuple.Create(false, "Exit Observatory",                 "Split on exiting the observatory",                             new Func<bool>(() => vars.ObservatoryExit()         )) },
         { "HoLCourtyardsExit",      Tuple.Create(false, "Exit Hall of Learning Courtyards", "Split on exiting hall of learning courtyards",                 new Func<bool>(() => vars.HoLCourtyardsExit()       )) },
         { "TheAzadPrison",          Tuple.Create(false, "The Azad Prison",                  "Split on entering the prison",                                 new Func<bool>(() => vars.TheAzadPrison()           )) },
@@ -117,9 +121,13 @@ init
     vars.TheCaves               = (Func <bool>)(() => { return vars.splitByXYZ(-246.839f, -241.677f, 78.019f, 87.936f, -71.731f, -70.7f);       });
     vars.TheWaterfall           = (Func <bool>)(() => { return vars.splitByXYZ(-242f, -240.5f, 79.5f, 83f, -121f, -118f);                       });
     vars.TheUGReservoirZipless  = (Func <bool>)(() => { return vars.splitByXYZ(-121f, -110f, -9f, -7f, -154.1f, -153.9f);                       });
+    vars.OutOfTheWell           = (Func <bool>)(() => { return vars.splitByXYZ(-62.93f, -62.61f, 58.10f, 58.12f, -26.18f, -24.09f);             });
     vars.TheUGReservoir         = (Func <bool>)(() => { return vars.splitByXYZ(-51.477f, -48.475f, 72.155f, 73.657f, -24.802f, -24.799f);       });
+    vars.TheSultanHarem         = (Func <bool>)(() => { return vars.splitByXYZ(-9.3f, -6.604f, 148.46f, 151.7f, -24f, -23.8f);                  });
+    vars.WhatDidYouCallMe       = (Func <bool>)(() => { return vars.splitByXYZ(35.90f, 38f, 134.01f, 137f, -23.99f, -23.8f);                    });
     vars.HallofLearning         = (Func <bool>)(() => { return vars.splitByXYZ(73f, 79f, 161f, 163f, -24.1f, -23.9f);                           });
     vars.TheObservatory         = (Func <bool>)(() => { return vars.splitByXYZ(139.231f, 139.233f, 162.556f, 162.558f, -29.502f, -29.5f);       });
+    vars.ObservatoryEnter       = (Func <bool>)(() => { return vars.splitByXYZ(86.778f, 88.996f, 183.5f, 186.2f, -23.5f, -23.5f);               });
     vars.ObservatoryExit        = (Func <bool>)(() => { return vars.splitByXYZ(137f, 141f, 164f, 164.67f, -29.5f, -29.2f);                      });
     vars.HoLCourtyardsExit      = (Func <bool>)(() => { return vars.splitByXYZ(72f, 77f, 90f, 95.7f, -27.1f, -26.9f);                           });
     vars.TheAzadPrison          = (Func <bool>)(() => { return vars.splitByXYZ(190f, 195f, -21f, -19f, -17.6f, -17.3f);                         });
