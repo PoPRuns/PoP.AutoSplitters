@@ -26,6 +26,15 @@ state("POP2")
     // Gallery trackers
     ulong chestBits     : 0x8D2EA8;
     ulong weaponBits    : 0x8D2EB0;
+
+    // Unscaled ticks, but goes back with rewind
+    long physicsTicks   : 0x5409A0;
+
+    // Slows down during slomo, but runs perfectly while rewinding
+    long scaledTicks    : 0x540990;
+
+    // Multiplier used by the game to convert ticks to seconds
+    float tickMul       : 0x4BDF1C;
 }
 
 startup
@@ -230,15 +239,16 @@ startup
     }
 
     vars.CompletedSplits = new HashSet<string>();
+    vars.IGTValue = 0;
 
-    if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
+    if (timer.CurrentTimingMethod != TimingMethod.GameTime) {
         DialogResult mbox = MessageBox.Show(timer.Form,
-        "This game uses only real time as the timing method.\nWould you like to switch to Real Time?",
+        "This game uses an in-game timer as the primary timing method.\nWould you like to switch to Game Time?",
         "LiveSplit | Prince of Persia: Warrior Within",
         MessageBoxButtons.YesNo);
 
         if (mbox == DialogResult.Yes) {
-            timer.CurrentTimingMethod = TimingMethod.RealTime;
+            timer.CurrentTimingMethod = TimingMethod.GameTime;
         }
     }
 }
@@ -388,6 +398,7 @@ onStart
 {
     // Refresh all splits when we start the run, none are yet completed
     vars.CompletedSplits.Clear();
+    vars.IGTValue = 0;
 }
 
 reset
@@ -429,4 +440,24 @@ split
             return true;
         }
     }
+}
+
+isLoading
+{
+    return true;
+}
+
+gameTime
+{
+    long tickDelta = current.physicsTicks - old.physicsTicks;
+
+    // While rewinding, the scaled tick delta is used so that time doesn't run backwards
+    if (tickDelta < 0) tickDelta = current.scaledTicks - old.scaledTicks;
+
+    double deltaSeconds = (double)(tickDelta * current.tickMul);
+    if (deltaSeconds > 0) {
+        vars.IGTValue += deltaSeconds;
+    }
+
+    return TimeSpan.FromSeconds(vars.IGTValue);
 }
