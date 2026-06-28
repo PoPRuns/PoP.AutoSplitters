@@ -39,6 +39,7 @@ state("POP2")
 
 startup
 {
+    refreshRate = 120;
     vars.splitTypes = new Dictionary<string, string> {
         { "AnyGlitched", "Any% (Standard) and Any% (Zipless) splits" },
         { "AnyNMG", "Any% (No Major Glitches) splits" },
@@ -420,7 +421,9 @@ update
     vars.oldY = old.yPos;
     vars.oldZ = old.zPos;
 
-    List<string> componentsToRemove = new List<string>();
+    double gameSeconds = timer.CurrentTime.GameTime.HasValue ? timer.CurrentTime.GameTime.Value.TotalSeconds : 0.0;
+    double realSeconds = timer.CurrentTime.RealTime.HasValue ? timer.CurrentTime.RealTime.Value.TotalSeconds : 0.0;
+    double ratio = (gameSeconds / realSeconds) * 100;
 
     timer.Run.Metadata.SetCustomVariable("storyGate", current.storyValue.ToString());
     timer.Run.Metadata.SetCustomVariable("chests", vars.getTrackerText(current.chestBits, 0x0003FFFFFFFFFFFF));
@@ -430,6 +433,7 @@ update
     timer.Run.Metadata.SetCustomVariable("maces", vars.getTrackerText(current.weaponBits, 0x000000000FF00000));
     timer.Run.Metadata.SetCustomVariable("daggers", vars.getTrackerText(current.weaponBits, 0x00000000000FC000));
     timer.Run.Metadata.SetCustomVariable("secretWeapons", vars.getTrackerText(current.weaponBits, 0x00080000F0000000));
+    timer.Run.Metadata.SetCustomVariable("igtRatio", double.IsNaN(ratio) ? "-" : ratio.ToString("F1") + "%");
 }
 
 split
