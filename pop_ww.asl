@@ -458,10 +458,7 @@ gameTime
     // While rewinding, the scaled tick delta is used so that time doesn't run backwards
     if (tickDelta < 0) tickDelta = current.scaledTicks - old.scaledTicks;
 
-    double deltaSeconds = (double)(tickDelta * current.tickMul);
-    if (deltaSeconds > 0) {
-        vars.IGTValue += deltaSeconds;
-    }
+    if (tickDelta > 0) vars.IGTValue += tickDelta;
 
-    return TimeSpan.FromSeconds(vars.IGTValue);
+    return TimeSpan.FromSeconds(vars.IGTValue * current.tickMul);
 }
