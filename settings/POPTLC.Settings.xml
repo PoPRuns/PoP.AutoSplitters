@@ -1,40 +1,35 @@
 <Settings>
     <Setting Id="boss" Label="Split on beating boss" State="true">
         <!-- boss_name localisation id__boss room -->
-        <Setting Id="boss__7415__KIN_BAT_08_Boss" Label="General Uvishka" State="false" />
-        <Setting Id="boss__14269__KIN_THO_03" Label="Sword Master" State="false" />
-        <Setting Id="boss__2922__CIT_LOW_13" Label="Undead Prisoner" State="false" />
-        <Setting Id="boss__2925__HYR_AUT_05_ErlikArena" Label="Erlik" State="false" />
-        <Setting Id="boss__7416__CIT_LOW_06_BOSS" Label="Jahandar" State="false" />
-        <!-- you don't actually kill this one -->
-        <!-- <Setting Id="boss__7414__UPP_04" Label="Vahram 1" State="false" /> -->
-        <Setting Id="boss__7413__CIT_DEP_09_CorruptedSargon" Label="Alternate Sargon (The Depths)" State="false" />
-        <Setting Id="boss__2927__HYR_SOM_14_ForestQueen" Label="Kiana" State="false" />
-        <Setting Id="boss__7417__END_PIT_20_AzdahaArena" Label="Azhdaha" State="false" />
-
-        <Setting Id="orod" Label="Orod" State="false">
+        <Setting Id="main_bosses" Label="Main Story Bosses" State="true">
+            <Setting Id="boss__7415__KIN_BAT_08_Boss" Label="General Uvishka" State="false" />
+            <Setting Id="boss__14269__KIN_THO_03" Label="Sword Master" State="false" />
+            <Setting Id="boss__2922__CIT_LOW_13" Label="Undead Prisoner" State="false" />
+            <Setting Id="boss__7416__CIT_LOW_06_BOSS" Label="Jahandar" State="false" />
+            <Setting Id="boss__7413__CIT_DEP_09_CorruptedSargon" Label="Alternate Sargon (The Depths)" State="false" />
+            <Setting Id="boss__2927__HYR_SOM_14_ForestQueen" Label="Kiana" State="false" />
+            <Setting Id="boss__7417__END_PIT_20_AzdahaArena" Label="Azhdaha" State="false" />
             <!-- EPlayerAction 193 is QTEIntroVariationBoss_ORO -->
-            <Setting Id="player_action__193" Label="Split on the Quick-Time Event (QTE)" State="true" />
-            <Setting Id="boss__7419__VAL_RAG_13_Orod" Label="Split on the cutscene after the QTE" State="false" />
-        </Setting>
-
-        <Setting Id="menolias" Label="Menolias" State="false">
+            <Setting Id="player_action__193" Label="Orod" State="false" ToolTip="Splits on the Quick-Time Event (QTE)" />
             <!-- EPlayerAction 191 is QTEIntroVariationBoss_MNL -->
-            <Setting Id="player_action__191" Label="Split on the Quick-Time Event (QTE)" State="true" />
-            <Setting Id="boss__7420__CIT_UPP_06_Menolias_Arena" Label="Split on the cutscene after the QTE" State="false" />
+            <Setting Id="player_action__191" Label="Menolias" State="false" ToolTip="Splits on the Quick-Time Event (QTE)" />
+            <Setting Id="boss__7418__NEC_TOW_04_DARIUS" Label="King Darius" State="false" />
+            <!-- EPlayerAction 192 is QTEIntroVariationBoss_VGD, the last input. -->
+            <Setting Id="player_action__192" Label="Vahram 3 (END SPLIT)" State="true" ToolTip="Last input for most categories" />
         </Setting>
 
-        <Setting Id="boss__7418__NEC_TOW_04_DARIUS" Label="King Darius" State="false" />
+        <Setting Id="side_bosses" Label="Side Bosses &amp; Mini-Bosses" State="true">
+            <Setting Id="boss__2925__HYR_AUT_05_ErlikArena" Label="Erlik" State="false" />
+            <Setting Id="boss__3454__CIT_DEP_11_UndeadErlik" Label="Undead Erlik" State="false" />
+            <Setting Id="boss__7548__CIT_DEP02_05_crabboss" Label="Giant Crab" State="false" />
+            <Setting Id="boss__7056__CIT_LOW_22_Radjen" Label="Ardashir" State="false" />
+            <Setting Id="alt_sargons" Label="Alternate Sargons" State="true">
+                <Setting Id="boss__7413__SAC_SAC_19_CorruptedSargon" Label="Sacred Archives" State="false" />
+                <Setting Id="boss__7413__HYR_SOM_22_CorruptedTwinSargon" Label="Hyrcanian Forest" State="false" />
+                <Setting Id="boss__7413__END_PIT_15_CorruptedSargon" Label="Pit of Eternal Sand" State="false" />
+            </Setting>
+        </Setting>
 
-        <!-- EPlayerAction 192 is QTEIntroVariationBoss_VGD, the last input. -->
-        <Setting Id="player_action__192" Label="Vahram 3 (END SPLIT)" State="true" ToolTip="Last input for most categories" />
-
-        <Setting Id="boss__3454__CIT_DEP_11_UndeadErlik" Label="Undead Erlik" State="false" />
-        <Setting Id="boss__7548__CIT_DEP02_05_crabboss" Label="Giant Crab" State="false" />
-        <Setting Id="boss__7056__CIT_LOW_22_Radjen" Label="Ardashir" State="false" />
-        <Setting Id="boss__7413__SAC_SAC_19_CorruptedSargon" Label="Alternate Sargon (Sacred Archives)" State="false" />
-        <Setting Id="boss__7413__HYR_SOM_22_CorruptedTwinSargon" Label="Alternate Sargons (Hyrcanian Forest)" State="false" />
-        <Setting Id="boss__7413__END_PIT_15_CorruptedSargon" Label="Alternate Sargon (Pit of Eternal Sand)" State="false" />
         <Setting Id="dlc_bosses" Label="Mask of Darkness DLC" State="true">
             <Setting Id="boss__20886__RAD_LOV_01" Label="Undead Black Belt" State="false" />
             <Setting Id="boss__21064__RAD_OUT_01_BOSS_RADJEN" Label="Radjen" State="true" />
@@ -43,17 +38,180 @@
     </Setting>
 
     <Setting Id="abilites" Label="Split on obtaining abilities" State="true">
-        <Setting Id="ability__7" Label="Verethragna's Smite" State="false" />
-        <Setting Id="ability__14" Label="Bow of Menolias" State="false" />
-        <Setting Id="ability__15" Label="Chakram of Menolias" State="false" />
-        <Setting Id="ability__1" Label="Rush of the Simurgh (Dash)" State="false" />
-        <Setting Id="ability__8" Label="Wind of Sistan" State="false" />
-        <Setting Id="ability__16" Label="Shadow of the Simurgh" State="false" />
-        <Setting Id="clairvoyance" Label="Clairvoyance" State="false" />
-        <Setting Id="ability__17" Label="Dimensional Claw" State="false" />
-        <Setting Id="ability__0" Label="Gravity Wings (Double Jump)" State="false" />
-        <Setting Id="ability__18" Label="Chakram Shadow of the Simurgh" State="false" />
-        <Setting Id="ability__19" Label="Fabric of Time" State="false" />
+        <Setting Id="time_powers" Label="Time Powers" State="true">
+            <Setting Id="ability__1" Label="Rush of the Simurgh (Dash)" State="false" />
+            <Setting Id="ability__16" Label="Shadow of the Simurgh" State="false" />
+            <Setting Id="clairvoyance" Label="Clairvoyance" State="false" />
+            <Setting Id="ability__17" Label="Dimensional Claw" State="false" />
+            <Setting Id="ability__0" Label="Gravity Wings (Double Jump)" State="false" />
+            <Setting Id="ability__19" Label="Fabric of Time" State="false" />
+        </Setting>
+
+        <Setting Id="weapons_tools" Label="Weapons &amp; Tools" State="true">
+            <Setting Id="ability__14" Label="Bow of Menolias" State="false" />
+            <Setting Id="ability__15" Label="Chakram of Menolias" State="false" />
+            <Setting Id="ability__18" Label="Chakram Shadow of the Simurgh" State="false" />
+        </Setting>
+
+        <Setting Id="athra_surges" Label="Athra Surges" State="true">
+            <Setting Id="ability__7" Label="Verethragna's Smite" State="false" />
+            <Setting Id="ability__8" Label="Wind of Sistan" State="false" />
+        </Setting>
+    </Setting>
+
+    <Setting Id="collectibles" Label="Split on collectibles and quests" State="true">
+        <Setting Id="upgrades_currencies" Label="Upgrades &amp; Currencies" State="true">
+            <Setting Id="4" Label="Soma Flower Petals" State="false" ToolTip="Splits whenever a Soma Flower Petal is collected" />
+            <Setting Id="5" Label="Azure Damascus Ingots" State="false" ToolTip="Splits whenever an Azure Damascus Ingot is collected" />
+            <Setting Id="6" Label="Xerxes Coins" State="false" ToolTip="Splits whenever a Xerxes Coin is collected" />
+            <Setting Id="70" Label="Memory Shard Bundles" State="false" ToolTip="Splits whenever a Memory Shard bundle is collected" />
+            <Setting Id="amulet_holder" Label="Amulet Holders" State="false" ToolTip="Splits whenever an Amulet Holder is acquired" />
+        </Setting>
+
+        <Setting Id="quests_loot" Label="Quests &amp; Spawning Loot" State="true">
+            <Setting Id="loot__200" Label="Holy Scholarship Key (Jailor's Key)" State="false" />
+            <Setting Id="202" Label="Spirited-Sand Jars" State="false" ToolTip="Splits whenever a Spirited-Sand Jar is collected" />
+            <Setting Id="lost_warriors" Label="The Lost Warriors (Insignias of Persepolis)" State="true">
+                <Setting Id="loot__205" Label="Insignia of Persepolis 1 (Kianoush)" State="false" />
+                <Setting Id="loot__206" Label="Insignia of Persepolis 2 (Bijan)" State="false" />
+                <Setting Id="loot__207" Label="Insignia of Persepolis 3 (Reza)" State="false" />
+                <Setting Id="loot__208" Label="Insignia of Persepolis 4 (Kaveh)" State="false" />
+                <Setting Id="loot__209" Label="Insignia of Persepolis 5 (Morteza)" State="false" />
+                <Setting Id="loot__210" Label="Insignia of Persepolis 6 (Masoud)" State="false" />
+                <Setting Id="loot__211" Label="Insignia of Persepolis 7 (Khosrow)" State="false" />
+                <Setting Id="loot__212" Label="Insignia of Persepolis 8 (Shapur)" State="false" />
+            </Setting>
+            <Setting Id="divine_trials" Label="Divine Trials Completion" State="false" ToolTip="Splits when completing each Divine Trial during a run" />
+        </Setting>
+
+        <Setting Id="amulets" Label="Amulets" State="true">
+            <Setting Id="amulet__1" Label="White Peacock" State="false" />
+            <Setting Id="amulet__2" Label="Blazing Kestrel" State="false" />
+            <Setting Id="amulet__3" Label="Shockwave" State="false" />
+            <Setting Id="amulet__4" Label="Blessing" State="false" />
+            <Setting Id="amulet__5" Label="Will of Rostam" State="false" />
+            <Setting Id="amulet__6" Label="Indomitable Spirit" State="false" />
+            <Setting Id="amulet__7" Label="Hardiness" State="false" />
+            <Setting Id="amulet__9" Label="Four Royal Stars" State="false" />
+            <Setting Id="amulet__11" Label="Arash's Arrowhead" State="false" />
+            <Setting Id="amulet__13" Label="Dragon King" State="false" />
+            <Setting Id="amulet__15" Label="Ayyar Amulet" State="false" />
+            <Setting Id="amulet__16" Label="Wolf-Bride" State="false" />
+            <Setting Id="amulet__17" Label="Rukhsana's Gift" State="false" />
+            <Setting Id="amulet__18" Label="Starving Heart" State="false" />
+            <Setting Id="amulet__19" Label="Verethrangna's Wrath" State="false" />
+            <Setting Id="amulet__21" Label="Divine Spear" State="false" />
+            <Setting Id="amulet__23" Label="Gleaming Lion" State="false" />
+            <Setting Id="amulet__24" Label="Arslân's Glory" State="false" />
+            <Setting Id="amulet__26" Label="Evil-Eye Amulet" State="false" />
+            <Setting Id="amulet__27" Label="Mount Damavand" State="false" />
+            <Setting Id="amulet__28" Label="Turning Wind" State="false" />
+            <Setting Id="amulet__29" Label="Ard's Fortune" State="false" />
+            <Setting Id="amulet__30" Label="Ecbatana Seal" State="false" />
+            <Setting Id="amulet__31" Label="Horned Viper" State="false" />
+            <Setting Id="amulet__32" Label="Holy Fire" State="false" />
+            <Setting Id="amulet__33" Label="King Jamshid" State="false" />
+            <Setting Id="amulet__34" Label="Zurvan's Voice" State="false" />
+            <Setting Id="amulet__35" Label="Elusive Water" State="false" />
+            <Setting Id="amulet__37" Label="Blade Dancer" State="false" />
+            <Setting Id="amulet__38" Label="Shield of Mithra" State="false" />
+            <Setting Id="amulet__39" Label="Eye of Destiny" State="false" />
+            <Setting Id="amulet__41" Label="Chakram Tempest" State="false" />
+            <Setting Id="amulet__43" Label="Void Blade" State="false" />
+            <Setting Id="amulet__45" Label="Agony Amulet" State="false" />
+            <Setting Id="amulet__47" Label="Thunder Charm" State="false" />
+            <Setting Id="amulet__48" Label="Frost Charm" State="false" />
+            <Setting Id="divine_trials_amulets" Label="Divine Trials" State="true">
+                <Setting Id="amulet__51" Label="Flaming Whirlwind" State="false" />
+                <Setting Id="amulet__50" Label="Point of Honor" State="false" />
+                <Setting Id="amulet__54" Label="Arash's Quiver" State="false" />
+                <Setting Id="amulet__52" Label="Frozen Truth" State="false" />
+            </Setting>
+            <Setting Id="dlc_amulets" Label="Mask of Darkness DLC" State="true">
+                <Setting Id="amulet__53" Label="Seal of Fate" State="false" />
+                <Setting Id="amulet__49" Label="Vengeance Reservoir" State="false" />
+                <Setting Id="amulet__55" Label="Vampiric Chakram" State="false" />
+            </Setting>
+        </Setting>
+
+        <Setting Id="lore_items" Label="Lore Items" State="true">
+            <Setting Id="1001" Label="Clay Tablet" State="false" />
+            <Setting Id="1040" Label="Clay Cylinder" State="false" />
+            <Setting Id="1005" Label="Crudely Carved Statue" State="false" />
+            <Setting Id="1006" Label="Statuette of God Vayu" State="false" />
+            <Setting Id="1007" Label="Gilded Bracelet" State="false" />
+            <Setting Id="1009" Label="Child&apos;s Toy" State="false" />
+            <Setting Id="1010" Label="Tarnished Coin" State="false" />
+            <Setting Id="1011" Label="Tiara" State="false" />
+            <Setting Id="1012" Label="The Commoner and The King" State="false" />
+            <Setting Id="1013" Label="Persian Children&apos;s Playtime Verse" State="false" />
+            <Setting Id="1014" Label="Proclamation Treaty" State="false" />
+            <Setting Id="1015" Label="Sacred Object" State="false" />
+            <Setting Id="1017" Label="Artisan Tools - Carpet Weavers" State="false" />
+            <Setting Id="1018" Label="Architectural Drawings" State="false" />
+            <Setting Id="1019" Label="Rusted Hook" State="false" />
+            <Setting Id="1021" Label="Mirror" State="false" />
+            <Setting Id="1024" Label="Tusk of Erlik" State="false" />
+            <Setting Id="1025" Label="Enormous Tooth of Azhdaha" State="false" />
+            <Setting Id="1026" Label="Broken Chains" State="false" />
+            <Setting Id="1029" Label="Astronomical Mechanism" State="false" />
+            <Setting Id="1030" Label="Mathematical Formula Calculator" State="false" />
+            <Setting Id="1031" Label="Official Scroll: Royal Decree" State="false" />
+            <Setting Id="1033" Label="The Comb of a Princess" State="false" />
+            <Setting Id="1035" Label="Memory Fragment - Aura of Loss" State="false" />
+            <Setting Id="1036" Label="Cursed Object" State="false" />
+            <Setting Id="1037" Label="Object Found in Azhdaha&apos;s Lair" State="false" />
+            <Setting Id="1038" Label="Dropped Locket" State="false" />
+            <Setting Id="1039" Label="Note Pinned to a Battered Talisman" State="false" />
+            <Setting Id="1004" Label="Message Written with Trembling Hand" State="false" />
+            <Setting Id="1042" Label="The Lion and The Viper" State="false" />
+            <Setting Id="1046" Label="Note Pinned to a Rock Shaped Like an Eye" State="false" />
+            <Setting Id="1047" Label="Ardashir&apos;s Mission Orders" State="false" />
+            <Setting Id="1048" Label="Scroll - Blessed by the Simurgh" State="false" />
+            <Setting Id="1049" Label="Nursery Rhyme on a Toy" State="false" />
+            <Setting Id="1050" Label="LAST DAY AT WORK" State="false" />
+            <Setting Id="1051" Label="MISSIVE 1" State="false" />
+            <Setting Id="1052" Label="MISSIVE 2" State="false" />
+            <Setting Id="1053" Label="MISSIVE 3" State="false" />
+            <Setting Id="1054" Label="MISSIVE 4" State="false" />
+            <Setting Id="1055" Label="Letter from the King Darius to Captain Iris Kaloxilos" State="false" />
+            <Setting Id="1056" Label="Pirate Sea Shanty" State="false" />
+            <Setting Id="1057" Label="The Crowning of a Divine King" State="false" />
+            <Setting Id="1058" Label="The Embrace of Athra" State="false" />
+            <Setting Id="1059" Label="THE FALL OF THE HYRCANIAN TRIBE" State="false" />
+            <Setting Id="1060" Label="The Frozen Tomb" State="false" />
+            <Setting Id="1061" Label="The Hunter and the Man-Eater" State="false" />
+            <Setting Id="1062" Label="The Legend of the Snake, The Bird, and The Sands" State="false" />
+            <Setting Id="1063" Label="Botany Logs of Cyrus LOG 1" State="false" />
+            <Setting Id="1065" Label="Botany Logs of Cyrus LOG 2" State="false" />
+            <Setting Id="1066" Label="The Third Son" State="false" />
+            <Setting Id="1068" Label="Alchemist Diary Entry 1" State="false" />
+            <Setting Id="1070" Label="Alchemist Diary Entry 2" State="false" />
+            <Setting Id="1071" Label="Alchemist Diary Entry 3" State="false" />
+            <Setting Id="1074" Label="The Architect and the King" State="false" />
+            <Setting Id="1075" Label="The Path of the Hero" State="false" />
+            <Setting Id="1079" Label="Legend from the Pit" State="false" />
+            <Setting Id="1080" Label="Instructions from our Master" State="false" />
+            <Setting Id="dlc_memory_fragments" Label="Mask of Darkness DLC" State="true">
+                <Setting Id="2401" Label="Memory Fragment 1" State="false" />
+                <Setting Id="2402" Label="Memory Fragment 2" State="false" />
+                <Setting Id="2403" Label="Memory Fragment 3" State="false" />
+                <Setting Id="2404" Label="Memory Fragment 4" State="false" />
+                <Setting Id="2405" Label="Memory Fragment 5" State="false" />
+                <Setting Id="2406" Label="Memory Fragment 6" State="false" />
+                <Setting Id="2407" Label="Memory Fragment 7" State="false" />
+                <Setting Id="2408" Label="Memory Fragment 8" State="false" />
+                <Setting Id="2409" Label="Memory Fragment 9" State="false" />
+                <Setting Id="2410" Label="Memory Fragment 10" State="false" />
+            </Setting>
+        </Setting>
+        <Setting Id="skins" Label="Skins" State="true">
+            <Setting Id="701" Label="Crimson" State="false" ToolTip="Old Royal Road, Chest in the tower-like structure" />
+            <Setting Id="702" Label="Coral" State="false" ToolTip="Sunken Harbor, Chest in the long room with spike traps" />
+            <Setting Id="703" Label="Radiant" State="false" ToolTip="Lower City, Chest near the first Wak-Wak Tree" />
+            <Setting Id="704" Label="Rosy" State="false" ToolTip="Hyrcanian Forest, Chest in the rightmost location" />
+            <Setting Id="705" Label="Lilac" State="false" ToolTip="Lower City, Trap room near the elevator" />
+        </Setting>
     </Setting>
 
     <Setting Id="quest" Label="Split on story progression" State="true">
