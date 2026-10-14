@@ -12,6 +12,10 @@ state("POP")
 
     // The Vizier's health where 0 is unharmed and 4 is dead.
     int vizierHealth    : 0x0040E518, 0x6C, 0x18, 0x4, 0x44, 0x0;
+
+    // Sand Capacity
+    int maxSands        : 0x006DB8F4, 0x0;
+    int sandPieces      : 0x006DB89C, 0x0;
 }
 
 startup
@@ -71,6 +75,7 @@ startup
     }
 
     vars.CompletedSplits = new HashSet<string>();
+    vars.prevSandClouds = -1;
 
     if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
         DialogResult mbox = MessageBox.Show(timer.Form,
@@ -150,6 +155,18 @@ init
     vars.CheckSplit = (Func<string, bool>)(key => {
         return (vars.CompletedSplits.Add(key) && settings[key]);
     });
+}
+
+update
+{
+    int sandClouds = (current.maxSands - 4) * 8 + current.sandPieces;
+    sandClouds = sandClouds > 0 ? sandClouds : 0;
+
+    if (sandClouds != vars.prevSandClouds)
+    {
+        vars.prevSandClouds = sandClouds;
+        timer.Run.Metadata.SetCustomVariable("sandClouds", sandClouds.ToString() + " / 48");
+    }
 }
 
 start
