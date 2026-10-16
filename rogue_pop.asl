@@ -72,7 +72,6 @@ startup
     vars.is_fresh_file_mode = false;
     vars.just_created_file = false;
     vars.just_exited_oasis = false;
-    vars.lastLevelScene = "";
     vars.ready = false;
     vars.gaBase = IntPtr.Zero;
     vars.upBase = IntPtr.Zero;
@@ -223,7 +222,6 @@ init
     vars.nogaiFlagIndex = 51;
     vars.finalBossFlagIndex = 52;
     vars.indicesResolved = false;
-    vars.lastLevelScene = "";
 }
 
 exit
@@ -236,7 +234,6 @@ exit
     vars.vlsRva = 0;
     vars.gameVersion = "";
     vars.indicesResolved = false;
-    vars.lastLevelScene = "";
 }
 
 shutdown
@@ -360,8 +357,10 @@ update
                 if (activeSceneObj != IntPtr.Zero) {
                     string path = vars.ReadScenePath(activeSceneObj + 0x10);
                     string name = vars.GetSceneName(path);
-                    if (!string.IsNullOrEmpty(name)) {
+                    if (!string.IsNullOrEmpty(name) && name != "Boot") {
                         current.activeScene = name;
+                    } else if (old.activeScene != null) {
+                        current.activeScene = old.activeScene;
                     }
                 }
             }
@@ -480,13 +479,6 @@ update
         // LiveSplit custom metadata variable
         timer.Run.Metadata.SetCustomVariable("seed", current.appSeed.ToString());
 
-        // Track last gameplay level scene
-        if (!vars.checkNotInitialScenes(current.activeScene) && current.activeScene != "Boot") {
-            vars.lastLevelScene = "";
-        } else if (vars.checkNotInitialScenes(current.activeScene) && string.IsNullOrEmpty(vars.lastLevelScene)) {
-            vars.lastLevelScene = current.activeScene;
-        }
-
         if (current.activeScene != old.activeScene) {
             vars.Log("Scene: " + (old.activeScene ?? "null") + " -> " + (current.activeScene ?? "null"));
         }
@@ -502,7 +494,6 @@ onReset
     vars.is_fresh_file_mode = false;
     vars.just_created_file = false;
     vars.just_exited_oasis = false;
-    vars.lastLevelScene = "";
 }
 
 start
@@ -545,7 +536,6 @@ onStart
 {
     vars.just_exited_oasis = false;
     vars.just_created_file = false;
-    vars.lastLevelScene = vars.is_fresh_file_mode ? vars.FRESH_FILE_START_SCENE : "";
 
     double startSeconds = vars.is_fresh_file_mode ? current.totalRunsPlaytime : current.runPlaytime;
     vars.IGTTicks = (long)Math.Round(startSeconds * 10000000.0);
@@ -588,10 +578,17 @@ split
     if (settings["biome_split"]) {
         // Regular biome and boss arena scene transitions
         if (vars.checkNotInitialScenes(current.activeScene) &&
-            vars.checkNotInitialScenes(vars.lastLevelScene) &&
-            current.activeScene != vars.lastLevelScene)
+            vars.checkNotInitialScenes(old.activeScene) &&
+            current.activeScene != old.activeScene)
         {
-            vars.lastLevelScene = current.activeScene;
+            return true;
+        }
+
+        // Fresh File Mode (Story Journey): Split when exiting Oasis into a successive run
+        if (vars.is_fresh_file_mode &&
+            vars.checkNotInitialScenes(current.activeScene) &&
+            old.activeScene == vars.OASIS_SCENE)
+        {
             return true;
         }
     }
