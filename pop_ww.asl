@@ -425,6 +425,12 @@ update
     double realSeconds = timer.CurrentTime.RealTime.HasValue ? timer.CurrentTime.RealTime.Value.TotalSeconds : 0.0;
     double ratio = (gameSeconds / realSeconds) * 100;
 
+    int cCount = vars.countBits(current.chestBits & 0x0003FFFFFFFFFFFFUL);
+    int wCount = vars.countBits(current.weaponBits & 0x37CFFFFFFFFFFFFEUL);
+    int totalCount = cCount + wCount;
+    string collectiblesStr = totalCount + "/108 - C:" + cCount + ", W:" + wCount;
+
+    timer.Run.Metadata.SetCustomVariable("collectibles", collectiblesStr);
     timer.Run.Metadata.SetCustomVariable("storyGate", current.storyValue.ToString());
     timer.Run.Metadata.SetCustomVariable("chests", vars.getTrackerText(current.chestBits, 0x0003FFFFFFFFFFFF));
     timer.Run.Metadata.SetCustomVariable("mainWeapons", vars.getTrackerText(current.weaponBits, 0x37C0000000000000));
