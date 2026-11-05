@@ -57,8 +57,6 @@ startup
     print("pop_2008.asl " + DateTime.Now.ToString());
 }
 
-// fetching the old value from this block simply yields the current value due to a bug with ASL
-// this is why any time we use the old value in this block, we pass it on directly from another block
 init
 {
     refreshRate = 120;
@@ -75,10 +73,38 @@ init
             default: version = "Unknown"; break;
         }
     }
+    
+    // when LiveSplit hooks to a game process, it creates one "current" object and the "current" variable always points to the same object for the lifetime of the process hook
+    // however when LiveSplit initially hooks to a game process, the "old" variable also points to the same object as the "current" variable
+    // then LiveSplit creates a new "old" object every cycle
+    // so with each cycle, LiveSplit dismisses the old "old" object and creates a new one, copying all data from the "current" object,
+    //      and then reads new data from the game process and copies it into the existing "current" object, overwriting the previous data
+    // note that if we write any functions that use the "old" and "current" variables in the init block,
+    //      those functions will treat the "old" and "current" variables as the same since they both pointed to the same object at the time the function was defined
+    // (this is a "feature" of the ASL variables specifically; in standard C#, functions use the updated values at the time the function is called; cf. closure)
+    // likewise any functions defined in the startup block will not be able to read the "old" and "current" values at the time of the function call at all,
+    //      since those variables point to nothing (that is, old=null and current=null) at the time of startup
+    // but if we explicitly write the new "old" and "current" objects into vars.old and vars.current as they are updated,
+    //      then we can safely define functions in both the startup and the init blocks, and they will safely read the updated "old" and "current" objects,
+    //      as they are at the time of the function call
+    // this is because the "old" and "current" objects are placed behind the "vars" variable,
+    //      and the "vars" variable always points to the same "vars" object for the lifetime of the script
+    // the "current" and "old" objects are of type System.ExpandoObject which is a reference type, so here we are merely passing a reference to the object,
+    //      not copying the actual contents of the object
+    vars.old = old;
+    vars.current = current;
 }
 
 onStart { }
-update { }
+
+// note that the update block - along with every other block except startup and shutdown - does not run when LiveSplit is not hooked to any game process
+update
+{
+    // we avoid explicitly assigning vars.current = current in the update block since it is not needed,
+    // and just in case this allows the compiler to perform some optimisations when accessing the vars.current variable
+    vars.old = old;
+}
+
 start { }
 reset { }
 split { }
