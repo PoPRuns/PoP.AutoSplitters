@@ -397,7 +397,7 @@ startup
     AddSetting(true,  "RoyalGardens",        new List<string> {"RoyalGardens"},        "Royal Gardens",                                null,                                                             "anyStandard");
     AddSetting(true,  "Cavern2",             new List<string> {"Cavern2"},             "Cavern II",                                    null,                                                             "anyStandard");
 
-    AddSetting(true,  "DoubleJump",          new List<string> {"DoubleJump"},          "Double Jump",                                  "Splits on dying after getting double jump",                      "miscEvents");
+    AddSetting(false, "DoubleJump",          new List<string> {"DoubleJump"},          "Double Jump",                                  "Splits on dying after getting double jump",                      "miscEvents");
 
     AddSetting(true,  "ThirdFight",          new List<string> {"ThirdFight"},          "Third Fight",                                  "Splits at the start of third fight cutscene",                    "anyLegacy");
     AddSetting(true,  "BarrierSkip",         new List<string> {"BarrierSkip"},         "Barrier Skip",                                 "Splits after barrier skip",                                      "anyLegacy");
