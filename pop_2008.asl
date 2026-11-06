@@ -41,6 +41,15 @@ state("Prince of Persia", "Unknown") {}
 // the downside is that removing duplicates is much slower as it requires an extra hashset allocation and copying items between collections
 // but this removal of duplicates is only done upon startup, so we sacrifice some startup performance in order to gain runtime performance
 
+// since the startup block contains all the functions, any reference types defined in this block will not get automatically garbage collected once the block finishes executing
+//      because of closures
+// so if we allocate any large collections that are no longer needed at runtime,
+//      in order to save memory we need to manually de-reference them so that they can get garbage collected
+// e.g. if we have a large collection that is no longer needed at runtime:
+// var tempCollection = new List<string>();
+// then once we're done using it we should de-reference it, i.e.:
+// tempCollection = null;
+// for any leftover empty/small collections, we don't need to bother
 startup
 {
     // ==========================================================================================================================
@@ -210,6 +219,9 @@ startup
     const int ResetEvent = 1;
     const int SplitEvent = 2;
     const int MiscEvent = 3;
+    Action action;
+    Action<float, float, float, float> actionRange;
+    Action<float, float, float, float, float, float> actionBounds;
     var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>>>();
     Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>> AddEvent = (eventType, slug, settingSlugs, xyzBounds, condition)
         => events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, xyzBounds, condition));
@@ -267,11 +279,83 @@ startup
         InPosWithRangeCurrent(xTarg, yTarg, zTarg, DadRange) &&
         (vars.old.enemyHP > 0 && vars.current.enemyHP == 0);
     
-    // ==========================================================================================================================
-    // ================================================== STARTUP INSTRUCTIONS ==================================================
-    // ==========================================================================================================================
+    // ===================================================================================================================
+    // ================================================== CONFIGURATION ==================================================
+    // ===================================================================================================================
 
-    
+    // ================================================== settings ==================================================
+
+    // ================================================== events ==================================================
+
+    // ====================================================================================================================
+    // ================================================== STARTUP SCRIPT ==================================================
+    // ====================================================================================================================
+
+    // ================================================== apply settings ==================================================
+
+    // add each setting that references an event to that event's settings list
+    // and clear each setting's events list
+    //      so that in the end only the events have references to their respective settings and not the other way around
+    foreach (var setting in mySettings.Values)
+    {
+        foreach (string eventSlug in setting.Item3)
+        {
+            var @event = events[eventSlug];
+            @event.Item3.Add(setting.Item2);
+        }
+        setting.Item3.Clear();
+        setting.Item3.TrimExcess();
+    }
+
+    // remove duplicate settings from each event's settings list
+    var settingSlugsCopy = new HashSet<string>();
+    foreach (var @event in events.Values)
+    {
+        foreach (string settingSlug in @event.Item3)
+            settingSlugsCopy.Add(settingSlug);
+        @event.Item3.Clear();
+        @event.Item3.AddRange(settingSlugsCopy);
+        settingSlugsCopy.Clear();
+    }
+
+    // add each setting to the LiveSplit settings variable,
+    // reiterating through the mySettings map to ensure that parents get added before children, which LiveSplit requires
+    // we stop iterating once all settings are added, or once an iteration yields no change in the addedSettings hashset
+    var addedSettings = new HashSet<string>();
+    int prevCount;
+    do
+    {
+        prevCount = addedSettings.Count;
+        foreach (var setting in mySettings.Values)
+        {
+            if (addedSettings.Contains(setting.Item2))
+                continue;
+            if (setting.Item6 == null || addedSettings.Contains(setting.Item6))
+            {
+                addedSettings.Add(setting.Item2);
+                settings.Add(setting.Item2, setting.Item1, setting.Item4, setting.Item6);
+                settings.SetToolTip(setting.Item2, setting.Item5);
+            }
+        }
+    } while (addedSettings.Count < mySettings.Count && prevCount < addedSettings.Count);
+    if (addedSettings.Count < mySettings.Count)
+    {
+        print("Error (ASL): the following settings could not be added because they do not have a valid parent:");
+        var builder = new StringBuilder();
+        foreach (string settingSlug in mySettings.Keys.Except(addedSettings))
+            builder.Append("\t" + settingSlug + "\r\n");
+        print(builder.ToString());
+        throw new Exception("Internal exception (ASL): not all settings have a valid parent");
+    }
+
+    // de-reference unneeded collections to allow for garbage collection
+    settingSlugsCopy = null;
+    addedSettings = null;
+    mySettings = null;
+
+    // ================================================== fill XyzEventHashMap and OtherEvents ==================================================
+
+    // ================================================== print info ==================================================
 
     if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
         DialogResult mbox = MessageBox.Show(timer.Form,
