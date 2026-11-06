@@ -122,7 +122,7 @@ startup
         if (coord == null)
             return int.MaxValue;
         int bucket = (int)Math.Floor((float)coord / BucketSize);
-        return bucket.GetHashCode();
+        return bucket;
     };
 
     // fast hashing algorithm with wide dispersion where the same inputs ordered differently yield different results
@@ -154,6 +154,48 @@ startup
 
     // one-time hash code computations
 
+    // find all buckets containing coordinates within the given cuboid, and return their hash codes
+    // note that if BucketSize is significantly smaller than the lengths of this cuboid,
+    // then the size of the returned array will be very large, since it grows cubically
+    // so to avoid having to store extremely large arrays in memory, BucketSize should not be smaller than the largest expected cuboid length...
+    //      ... by more than an order of magnitude or so
+    // on the other hand, if BucketSize is so large that many cuboids are found in the same bucket, this will drastically slow down performance...
+    //      ... since the script will have to compare against each cuboid in that bucket on each cycle (e.g. 120 times per second)
+    // so for each game an appropriate bucket size should be chosen to get the best mix of saving memory and increasing performance
+    Func<float, float, float, float, float, float, int[]> GetHashCodesForBounds = (xMin, xMax, yMin, yMax, zMin, zMax) =>
+    {
+        int minXBucket = (int)Math.Floor(xMin / BucketSize);
+        int maxXBucket = (int)Math.Floor(xMax / BucketSize);
+        int xBucketCount = maxXBucket - minXBucket + 1;
+        int minYBucket = (int)Math.Floor(yMin / BucketSize);
+        int maxYBucket = (int)Math.Floor(yMax / BucketSize);
+        int yBucketCount = maxYBucket - minYBucket + 1;
+        int minZBucket = (int)Math.Floor(zMin / BucketSize);
+        int maxZBucket = (int)Math.Floor(zMax / BucketSize);
+        int zBucketCount = maxZBucket - minZBucket + 1;
+        int bucketCount = xBucketCount * yBucketCount * zBucketCount;
+        int[] hashCodes = new int[bucketCount];
+        int index = 0;
+        for (int x = 0; x < xBucketCount; x++)
+        {
+            for (int y = 0; y < yBucketCount; y++)
+            {
+                for (int z = 0; z < zBucketCount; z++)
+                {
+                    int xHashCode = minXBucket + x;
+                    int yHashCode = minYBucket + y;
+                    int zHashCode = minZBucket + z;
+                    int hashCode = CombineHashCodes(xHashCode, yHashCode, zHashCode);
+                    hashCodes[index] = hashCode;
+                    index++;
+                }
+            }
+        }
+        return hashCodes;
+    };
+
+    Func<float, float, float, float, ValueTuple<float, float, float, float, float, float>> GetBounds = (x, y, z, range)
+        => ValueTuple.Create(x - range, x + range, y - range, y + range, z - range, z + range);
 
     if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
         DialogResult mbox = MessageBox.Show(timer.Form,
