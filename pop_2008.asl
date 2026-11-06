@@ -18,7 +18,7 @@ state("Prince of Persia", "DRM Free")
     int enemyHP         : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8, 0x250;
 }
 
-state("Prince of Persia", "Unknown") {}
+state("Prince of Persia", "Unknown") { }
 
 // Data structures:
 // Setting: bool Default, string Slug, List<string> EventSlugs, string Description, string? ToolTip, string? ParentSlug
@@ -311,6 +311,9 @@ startup
     // likewise if we try to tie an event to a setting which is not defined, an exception will be thrown
     // But, WARNING: if we forget to tie an event with a setting,
     //      the script will work normally, the setting will do nothing, and the event will always succeed regardless of the setting
+    // to avoid forgetting to tie settings with events, when we make a change, we should open DebugView and observe the printed events detected upon startup
+    //      and review what settings are tied to each event
+    //      and likewise observe if there are any settings with no events or events with no settings that are erroneous
 
     // ================================================== settings ==================================================
 
@@ -391,8 +394,12 @@ startup
 
     // print detected settings and events
     var infoBuilder = new StringBuilder();
+    var eventsWithNoSettings = new HashSet<string>();
+    var settingsWithEvents = new HashSet<string>();
 
-    infoBuilder.Append("\r\nSettings detected:\r\n");
+    infoBuilder.Append("\r\n");
+
+    infoBuilder.Append("Settings detected:\r\n");
     infoBuilder.Append("{Setting} : {Parent}\r\n");
     foreach (var setting in mySettings.Values)
         infoBuilder.Append("\t" + setting.Item2 + " : " + (setting.Item6 ?? "{null}" + "\r\n"));
@@ -401,21 +408,37 @@ startup
     infoBuilder.Append("Events detected:\r\n");
     infoBuilder.Append("{EventType} {Event} {HasXyzBounds} => {[..Settings]}\r\n");
     foreach (var @event in events.Values)
+    {
+        if (@event.Item3.Count == 0)
+            eventsWithNoSettings.Add(@event.Item2);
+        foreach (string settingSlug in @event.Item3)
+            settingsWithEvents.Add(settingSlug);
         infoBuilder.Append("\t" + GetEventString(@event.Item1) + " " + @event.Item2 + " " + (@event.Item4 != null).ToString() + " => [" + string.Join(", ", @event.Item3) + "]\r\n");
-    infoBuilder.Append("Total events: " + events.Count.ToString() + "\r\n");
+    }
+    infoBuilder.Append("Total events: " + events.Count.ToString() + "\r\n\r\n");
+
+    infoBuilder.Append("Settings with no events: (total=" + (mySettings.Count - settingsWithEvents.Count).ToString() + ")\r\n");
+    foreach (string settingSlug in mySettings.Keys.Except(settingsWithEvents))
+        infoBuilder.Append("\t" + settingSlug + "\r\n");
+    infoBuilder.Append("\r\n");
+    
+    infoBuilder.Append("Events with no settings: (total=" + eventsWithNoSettings.Count.ToString() + ")\r\n");
+    foreach (string eventSlug in eventsWithNoSettings)
+        infoBuilder.Append("\t" + eventSlug + "\r\n");
+    infoBuilder.Append("\r\n");
 
     print(infoBuilder.ToString());
 
     // switch to real time prompt
-    if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
+    if (timer.CurrentTimingMethod != TimingMethod.RealTime)
+    {
         DialogResult mbox = MessageBox.Show(timer.Form,
         "This game uses only real time as the timing method.\nWould you like to switch to Real Time?",
         "LiveSplit | Prince of Persia (2008)",
         MessageBoxButtons.YesNo);
 
-        if (mbox == DialogResult.Yes) {
+        if (mbox == DialogResult.Yes)
             timer.CurrentTimingMethod = TimingMethod.RealTime;
-        }
     }
 
     // ================================================== cleanup ==================================================
@@ -425,6 +448,8 @@ startup
     mySettings = null;
     events = null;
     infoBuilder = null;
+    eventsWithNoSettings = null;
+    settingsWithEvents = null;
 
     // =====================================================================================================================
     // ================================================== RUNTIME ACTIONS ==================================================
@@ -488,17 +513,21 @@ startup
 init
 {
     refreshRate = 120;
-    if (game.ProcessName == "PrinceOfPersia_Launcher") {
+    if (game.ProcessName == "PrinceOfPersia_Launcher")
+    {
         version = "Digital";
-    } else {
+    }
+    else
+    {
         string MD5Hash;
         using (var md5 = System.Security.Cryptography.MD5.Create())
             using (var s = File.Open(modules.First().FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 MD5Hash = md5.ComputeHash(s).Select(x => x.ToString("X2")).Aggregate((a, b) => a + b);
 
-        switch (MD5Hash) {
-            case "445CC13490EC170E1C281E9357FF3E52": version = "DRM Free"; break;
-            default: version = "Unknown"; break;
+        switch (MD5Hash)
+        {
+        case "445CC13490EC170E1C281E9357FF3E52": version = "DRM Free"; break;
+        default: version = "Unknown"; break;
         }
     }
     
