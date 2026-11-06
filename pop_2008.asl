@@ -418,6 +418,7 @@ startup
     (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetLoad",          new List<string> {}, BoundsR(x,y,z,range),       () => (Old.XPos != x || Old.YPos != y) && (Current.XPos == x && Current.YPos == y))) (-465f, -351f, -24f, 5f);
     (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartNew",           new List<string> {}, BoundsR(x,y,z,5f),          () => InPosWithRangeOld(x, y, z, range) && !InPosWithRangeCurrent(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
     (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetNew",           new List<string> {}, BoundsR(x,y,z,range),       () => !InPosWithRangeOld(x, y, z, range) && InPosWithRangeCurrent(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
+
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CollapsingBridge",   new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-310.25f, -241.0f, -30.2f, 0.2f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "PreDad1",            new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (4f, -388.6f, -40f, 2f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ThiccCutscene",      new List<string> {}, BoundsR(x,y,z,range),       () => CompletedEvents.Contains("PreDad1") && Old.YPos < -238f && InPosWithRangeCurrent(x, y, z, range))) (6f, -233.5f, -33f, 2f);
@@ -455,7 +456,29 @@ startup
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CityOfLightH",       new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (804f, 113f, -42.5f, BossRange);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Warrior",            new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (1070.478f, 279.147f, -29.571f, BossRange);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "King",               new List<string> {}, BoundsR(x,y,z,range),       () => CompletedEvents.Contains("Warrior") && BossKill(x, y, z))) (5f, -365f, -32f, BossRange);
-
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "NeoBarrierSkip",     new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-331.5f, -4.5f, -9.9f, 1f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "KingsGate",          new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (-538.834f, -67.159f, 12.732f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "SunTemple",          new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-673.8f, -53.9f, 16.3f, 1f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "MarshGrounds",       new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (-806.671f, 112.803f, 21.645f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Windmills",          new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (-597.945f, 209.241f, 23.339f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "MartyrsTower",       new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (-548f, 230f, 26f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "MachineryGround",    new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (-370f, 468f, 17f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "HeavensStair",       new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (-85.968f, 573.338f, 30.558f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "SpireOfDreams",      new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (266f, 602f, 36f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CoronationHall",     new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (399f, 535f, 39.5f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "RoyalSpire1",        new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (-88.5f, 538.5f, 44.5f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Reservoir",          new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (-150.082f, 406.606f, 34.673f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ConstructionYard",   new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (-166f, 293f, 20.5f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Cauldron",           new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (-12f, 135f, -15f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Cavern",             new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (251.741f, 65.773f, -13.616f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CityGate",           new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (547.488f, 45.41f, -27.107f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "TowerOfAhriman",     new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (667f, -14f, -30f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "QueensTower",        new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (842f, -16f, -40f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CityOfLight",        new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (735f, 166f, -35f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "TowerOfOrmazd",      new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (655f, 227f, -37f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "RoyalSpire2",        new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (407f, 399f, 34f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "RoyalGardens",       new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (152f, 244f, 9f, SeedRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Cavern2",            new List<string> {}, BoundsR(x,y,z,range),       () => SeedGet(x, y, z))) (80f, 182f, -8f, SeedRange);
 
     // ====================================================================================================================
     // ================================================== STARTUP SCRIPT ==================================================
