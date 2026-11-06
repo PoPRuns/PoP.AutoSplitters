@@ -408,6 +408,18 @@ startup
     Action<float, float, float, float> actionRange;
     Action<float, float, float, float, float, float> actionBounds;
 
+    //                                                                                                 XyzBounds:
+    //                                                                            SettingSlugs:         (float,float,float,
+    //                                   EventType:int        Slug:string          List<string>         float,float,float)?       Condition:Func<bool>
+    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartLoad",        new List<string> {}, GetBounds(x, y, z, range), () => (Old.XPos == x && Old.YPos == y) && (Current.XPos != x || Current.YPos != y)))                     (-465f, -351f, -24f, 5f);
+    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetLoad",        new List<string> {}, GetBounds(x, y, z, range), () => (Old.XPos != x || Old.YPos != y) && (Current.XPos == x && Current.YPos == y)))                     (-465f, -351f, -24f, 5f);
+    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartNew",         new List<string> {}, GetBounds(x, y, z, 5f),    () => InPosWithRangeOld(x, y, z, range) && !InPosWithRangeCurrent(x, y, z, range)))                      (-462.302f, -348.223f, -23.956f, 0.003f);
+    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetNew",         new List<string> {}, GetBounds(x, y, z, range), () => !InPosWithRangeOld(x, y, z, range) && InPosWithRangeCurrent(x, y, z, range)))                      (-462.302f, -348.223f, -23.956f, 0.003f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CollapsingBridge", new List<string> {}, GetBounds(x, y, z, range), () => InPosWithRangeCurrent(x, y, z, range)))                                                            (-310.25f, -241.0f, -30.2f, 0.2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "PreDad1",          new List<string> {}, GetBounds(x, y, z, range), () => InPosWithRangeCurrent(x, y, z, range)))                                                            (4f, -388.6f, -40f, 2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ThiccCutscene",    new List<string> {}, GetBounds(x, y, z, range), () => CompletedEvents.Contains("PreDad1") && Old.YPos < -238f && InPosWithRangeCurrent(x, y, z, range))) (6f, -233.5f, -33f, 2f);
+
+
     // ====================================================================================================================
     // ================================================== STARTUP SCRIPT ==================================================
     // ====================================================================================================================
