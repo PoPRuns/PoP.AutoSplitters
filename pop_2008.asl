@@ -101,7 +101,7 @@ startup
     Func<float, float, float, float, float?, float?, float?, bool> InPosWithRange = (xTarg, yTarg, zTarg, range, xPos, yPos, zPos)
     =>
         xPos >= xTarg - range && xPos <= xTarg + range &&
-        yPos >= xTarg - range && yPos <= yTarg + range &&
+        yPos >= yTarg - range && yPos <= yTarg + range &&
         zPos >= zTarg - range && zPos <= zTarg + range;
     Func<float, float, float, float, bool> InPosWithRangeOld = (xTarg, yTarg, zTarg, range)
         => InPosWithRange(xTarg, yTarg, zTarg, range, Old.xPos, Old.yPos, Old.zPos);
