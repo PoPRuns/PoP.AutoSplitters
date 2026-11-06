@@ -197,6 +197,23 @@ startup
     Func<float, float, float, float, ValueTuple<float, float, float, float, float, float>> GetBounds = (x, y, z, range)
         => ValueTuple.Create(x - range, x + range, y - range, y + range, z - range, z + range);
 
+    // startup functions and helper variables
+
+    // we use the name mySettings to prevent conflict with the LiveSplit variable "settings"
+    // Key: SettingSlug; Value: Setting
+    var mySettings = new Dictionary<string, Tuple<bool, string, List<string>, string, string, string>>();
+    Action<bool, string, List<string>, string, string, string> AddSetting = (@default, slug, eventSlugs, description, toolTip, parentSlug)
+        => mySettings.Add(slug, Tuple.Create(@default, slug, eventSlugs, description, toolTip, parentSlug));
+    
+    // Key: EventSlug; Value: Event
+    const int StartEvent = 0;
+    const int ResetEvent = 1;
+    const int SplitEvent = 2;
+    const int MiscEvent = 3;
+    var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>>>();
+    Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>> AddEvent = (eventType, slug, settingSlugs, xyzBounds, condition)
+        => events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, xyzBounds, condition));
+
     if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
         DialogResult mbox = MessageBox.Show(timer.Form,
         "This game uses only real time as the timing method.\nWould you like to switch to Real Time?",
