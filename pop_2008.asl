@@ -332,9 +332,9 @@ startup
     AddSetting(false, "anyLegacy",           new List<string> {},                      "Legacy splits that are outdated for Any%",     null,                                                             null);
 
     AddSetting(true,  "CollapsingBridge",    new List<string> {"CollapsingBridge"},    "Collapsing Bridge",                            null,                                                             "specialEvents");
-    AddSetting(true,  "PreDad1",             new List<string> {"CollapsingBridge"},    "Tree of Life",                                 "Reach the tree of life inside the temple for the first time",    "specialEvents");
-    AddSetting(true,  "ThiccCutscene",       new List<string> {"CollapsingBridge"},    "Thicc Cutscene",                               null,                                                             "specialEvents");
-    AddSetting(true,  "RedPlate",            new List<string> {"CollapsingBridge"},    "Step of Ormazd",                               "Splits on entering the Red plate realm",                         "specialEvents");
+    AddSetting(true,  "PreDad1",             new List<string> {"PreDad1"},             "Tree of Life",                                 "Reach the tree of life inside the temple for the first time",    "specialEvents");
+    AddSetting(true,  "ThiccCutscene",       new List<string> {"ThiccCutscene"},       "Thicc Cutscene",                               null,                                                             "specialEvents");
+    AddSetting(true,  "RedPlate",            new List<string> {"RedPlate"},            "Step of Ormazd",                               "Splits on entering the Red plate realm",                         "specialEvents");
     AddSetting(true,  "BluePlate",           new List<string> {"BluePlate"},           "Hand of Ormazd",                               "Splits on entering the Blue plate realm",                        "specialEvents");
     AddSetting(true,  "YellowPlate",         new List<string> {"YellowPlate"},         "Wings of Ormazd",                              "Splits on entering the Yellow plate realm",                      "specialEvents");
     AddSetting(true,  "GreenPlate",          new List<string> {"GreenPlate"},          "Breath of Ormazd",                             "Splits on entering the Green plate realm",                       "specialEvents");
@@ -363,7 +363,7 @@ startup
     AddSetting(true,  "Concubine",           new List<string> {"Concubine"},           "The Palace Rooms",                             "Splits on defeating Concubine in The Palace Rooms",              "combatEvents");
     AddSetting(true,  "CityGateH",           new List<string> {"CityGateH"},           "City Gate",                                    "Splits on defeating Warrior in City Gate",                       "combatEvents");
     AddSetting(true,  "TowerOfArhimanH",     new List<string> {"TowerOfAhrimanH"},     "Tower of Ahriman",                             "Splits on defeating Warrior in Tower of Ahriman",                "combatEvents");
-    AddSetting(true,  "TowerOfOrmazdH",      new List<string> {"TowerOfOrmazd"},       "Tower of Ormazd",                              "Splits on defeating Warrior in Tower of Ormazd",                 "combatEvents");
+    AddSetting(true,  "TowerOfOrmazdH",      new List<string> {"TowerOfOrmazdH"},      "Tower of Ormazd",                              "Splits on defeating Warrior in Tower of Ormazd",                 "combatEvents");
     AddSetting(true,  "QueensTowerH",        new List<string> {"QueensTowerH"},        "Queen's Tower",                                "Splits on defeating Warrior in Queen's Tower",                   "combatEvents");
     AddSetting(true,  "CityOfLightH",        new List<string> {"CityOfLightH"},        "City of Light",                                "Splits on defeating Warrior in City of Light",                   "combatEvents");
     AddSetting(true,  "Warrior",             new List<string> {"Warrior"},             "Warrior's Fortress",                           "Splits on defeating Warrior in his Fortress",                    "combatEvents");
@@ -418,6 +418,7 @@ startup
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CollapsingBridge", new List<string> {}, GetBounds(x, y, z, range), () => InPosWithRangeCurrent(x, y, z, range)))                                                            (-310.25f, -241.0f, -30.2f, 0.2f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "PreDad1",          new List<string> {}, GetBounds(x, y, z, range), () => InPosWithRangeCurrent(x, y, z, range)))                                                            (4f, -388.6f, -40f, 2f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ThiccCutscene",    new List<string> {}, GetBounds(x, y, z, range), () => CompletedEvents.Contains("PreDad1") && Old.YPos < -238f && InPosWithRangeCurrent(x, y, z, range))) (6f, -233.5f, -33f, 2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "RedPlate",         new List<string> {}, GetBounds(x, y, z, range), () => InPosWithRangeCurrent(x, y, z, range)))                                                            (-55f, -447f, -180f, 2f);
 
 
     // ====================================================================================================================
