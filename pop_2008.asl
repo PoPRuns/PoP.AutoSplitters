@@ -219,9 +219,6 @@ startup
     const int ResetEvent = 1;
     const int SplitEvent = 2;
     const int MiscEvent = 3;
-    Action action;
-    Action<float, float, float, float> actionRange;
-    Action<float, float, float, float, float, float> actionBounds;
     var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
     Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> AddEvent = (eventType, slug, settingSlugs, xyzBounds, condition)
         => events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, xyzBounds, condition));
@@ -298,6 +295,10 @@ startup
     // ================================================== settings ==================================================
 
     // ================================================== events ==================================================
+
+    Action action;
+    Action<float, float, float, float> actionRange;
+    Action<float, float, float, float, float, float> actionBounds;
 
     // ====================================================================================================================
     // ================================================== STARTUP SCRIPT ==================================================
@@ -427,6 +428,62 @@ startup
     events = null;
     infoBuilder = null;
 
+    // =====================================================================================================================
+    // ================================================== RUNTIME ACTIONS ==================================================
+    // =====================================================================================================================
+
+    // ================================================== onStart ==================================================
+    Action onStart = () => CompletedEvents.Clear();
+    vars.onStart = onStart;
+
+    // ================================================== update ==================================================
+    var EmptyEventList = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
+    Func<bool> update = () =>
+    {
+        TriggeredEvent = null;
+        int xyzHashCode = GetHashCodeCurrent();
+        List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>> localEvents;
+        XyzEventHashMap.TryGetValue(xyzHashCode, out localEvents);
+        
+        // print local events:
+        /*var builder = new StringBuilder();
+        foreach (var @event in localEvents ?? EmptyEventList) builder.Append(@event.Item2 + "\r\n");
+        print(builder.ToString());*/
+
+        // Concat function means we iterate through the lists one after the other; it does not create a concatenated list
+        foreach (var @event in (localEvents ?? EmptyEventList).Concat(OtherEvents))
+        {
+            if (@event.Item5())
+            {
+                TriggeredEvent = @event;
+                break;
+            }
+        }
+        return true;
+    };
+    vars.update = update;
+
+    // ================================================== start ==================================================
+
+    Func<bool> start = () => CheckEvent(StartEvent);
+    vars.start = start;
+
+    // ================================================== reset ==================================================
+
+    Func<bool> reset = () => CheckEvent(ResetEvent);
+    vars.reset = reset;
+
+    // ================================================== split ==================================================
+
+    Func<bool> split = () =>
+    {
+        CheckEvent(MiscEvent);
+        return CheckEvent(SplitEvent);
+    };
+    vars.split = split;
+
+    // ====================================================================================================
+
     print("pop_2008.asl " + DateTime.Now.ToString());
 }
 
@@ -468,7 +525,10 @@ init
     vars.current = current;
 }
 
-onStart { }
+onStart
+{
+    vars.onStart();
+}
 
 // note that the update block - along with every other block except startup and shutdown - does not run when LiveSplit is not hooked to any game process
 update
@@ -476,8 +536,21 @@ update
     // we avoid explicitly assigning vars.current = current in the update block since it is not needed,
     // and just in case this allows the compiler to perform some optimisations when accessing the vars.current variable
     vars.old = old;
+
+    return vars.update();
 }
 
-start { }
-reset { }
-split { }
+start
+{
+    return vars.start();
+}
+
+reset
+{
+    return vars.reset();
+}
+
+split
+{
+    return vars.split();
+}
