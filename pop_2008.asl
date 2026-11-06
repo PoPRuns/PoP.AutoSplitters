@@ -222,22 +222,22 @@ startup
     Action action;
     Action<float, float, float, float> actionRange;
     Action<float, float, float, float, float, float> actionBounds;
-    var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>>>();
-    Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>> AddEvent = (eventType, slug, settingSlugs, xyzBounds, condition)
+    var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
+    Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> AddEvent = (eventType, slug, settingSlugs, xyzBounds, condition)
         => events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, xyzBounds, condition));
 
     // ================================================== runtime functions and helper variables ==================================================
 
     // Key: Hash; Value: EventList
-    var XyzEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>>>>();
+    var XyzEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>();
 
     // List<Event>
-    var OtherEvents = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>>>();
+    var OtherEvents = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
 
     var CompletedEvents = new HashSet<string>();
 
     // Event
-    Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>> TriggeredEvent = null;
+    Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> TriggeredEvent = null;
 
     Func<int, bool> CheckEvent = (eventType) =>
     {
@@ -354,6 +354,27 @@ startup
     mySettings = null;
 
     // ================================================== fill XyzEventHashMap and OtherEvents ==================================================
+
+    foreach (var @event in events.Values)
+    {
+        if (@event.Item4 == null)
+        {
+            OtherEvents.Add(@event);
+            continue;
+        }
+        ValueTuple<float, float, float, float, float, float> xyzBounds = @event.Item4.Value;
+        int[] hashCodes = GetHashCodesForBounds(xyzBounds.Item1, xyzBounds.Item2, xyzBounds.Item3, xyzBounds.Item4, xyzBounds.Item5, xyzBounds.Item6);
+        foreach (int hashCode in hashCodes)
+        {
+            List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>> localEvents;
+            if (XyzEventHashMap.TryGetValue(hashCode, out localEvents))
+            {
+                localEvents.Add(@event);
+                continue;
+            }
+            XyzEventHashMap.Add(hashCode, new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>> {@event});
+        }
+    }
 
     // ================================================== print info ==================================================
 
