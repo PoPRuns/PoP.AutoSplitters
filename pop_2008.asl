@@ -43,11 +43,11 @@ state("Prince of Persia", "Unknown") {}
 
 startup
 {
-    // FUNCTION DEFINITIONS
+    // ==========================================================================================================================
+    // ================================================== FUNCTION DEFINITIONS ==================================================
+    // ==========================================================================================================================
 
-    // Coord Utils
-
-    // coordinate checks
+    // ================================================== coordinate checks ==================================================
 
     Func<float, float, float?, bool> InBounds = (min, max, pos) => pos >= min && pos <= max;
     Func<float, float, bool> InXBoundsOld = (min, max) => InBounds(min, max, vars.old.xPos);
@@ -101,10 +101,10 @@ startup
         yTarg == vars.current.yPos &&
         zTarg == vars.current.zPos;
 
-    // runtime hash code computations
+    // ================================================== runtime hash code computations ==================================================
 
     // see comments on hash code functions below for guidance on what bucket size is appropriate for each game
-    const float BucketSize = 20f;
+    const float BucketSize = 20f; // <----------------------------------------------------------------------------------------------------- game-specific
 
     // all real numbers are broken down into equally sized buckets
     // e.g. if BucketSize = 20f, then:
@@ -152,7 +152,7 @@ startup
         return (int)hash;
     };
 
-    // one-time hash code computations
+    // ================================================== one-time hash code computations ==================================================
 
     // find all buckets containing coordinates within the given cuboid, and return their hash codes
     // note that if BucketSize is significantly smaller than the lengths of this cuboid,
@@ -197,7 +197,7 @@ startup
     Func<float, float, float, float, ValueTuple<float, float, float, float, float, float>> GetBounds = (x, y, z, range)
         => ValueTuple.Create(x - range, x + range, y - range, y + range, z - range, z + range);
 
-    // startup functions and helper variables
+    // ================================================== startup functions and helper variables ==================================================
 
     // we use the name mySettings to prevent conflict with the LiveSplit variable "settings"
     // Key: SettingSlug; Value: Setting
@@ -214,7 +214,7 @@ startup
     Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>> AddEvent = (eventType, slug, settingSlugs, xyzBounds, condition)
         => events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, xyzBounds, condition));
 
-    // runtime functions and helper variables
+    // ================================================== runtime functions and helper variables ==================================================
 
     // Key: Hash; Value: EventList
     var XyzEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>>>>();
@@ -247,7 +247,7 @@ startup
         return true;
     };
 
-    // game-specific functions and helper variables
+    // ================================================== game-specific functions and helper variables ==================================================
 
     const float SeedRange = 5f;
     Func<float, float, float, bool> EventSeedGet = (xTarg, yTarg, zTarg)
@@ -266,7 +266,12 @@ startup
     =>
         InPosWithRangeCurrent(xTarg, yTarg, zTarg, DadRange) &&
         (vars.old.enemyHP > 0 && vars.current.enemyHP == 0);
+    
+    // ==========================================================================================================================
+    // ================================================== STARTUP INSTRUCTIONS ==================================================
+    // ==========================================================================================================================
 
+    
 
     if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
         DialogResult mbox = MessageBox.Show(timer.Form,
