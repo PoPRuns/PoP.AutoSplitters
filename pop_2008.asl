@@ -43,6 +43,62 @@ state("Prince of Persia", "Unknown") {}
 
 startup
 {
+    // FUNCTION DEFINITIONS
+
+    // Coord Utils
+
+    Func<float, float, float?, bool> InBounds = (min, max, pos) => pos >= min && pos <= max;
+    Func<float, float, bool> InXBoundsOld = (min, max) => InBounds(min, max, vars.old.xPos);
+    Func<float, float, bool> InYBoundsOld = (min, max) => InBounds(min, max, vars.old.yPos);
+    Func<float, float, bool> InZBoundsOld = (min, max) => InBounds(min, max, vars.old.zPos);
+    Func<float, float, bool> InXBoundsCurrent = (min, max) => InBounds(min, max, vars.current.xPos);
+    Func<float, float, bool> InYBoundsCurrent = (min, max) => InBounds(min, max, vars.current.yPos);
+    Func<float, float, bool> InZBoundsCurrent = (min, max) => InBounds(min, max, vars.current.zPos);
+
+    Func<float, float, float, float, float, float, float?, float?, float?, bool> InPosWithBounds = (xMin, xMax, yMin, yMax, zMin, zMax, xPos, yPos, zPos)
+    =>
+        xPos >= xMin && xPos <= xMax &&
+        yPos >= yMin && yPos <= yMax &&
+        zPos >= zMin && zPos <= zMax;
+    Func<float, float, float, float, float, float, bool> InPosWithBoundsOld = (xMin, xMax, yMin, yMax, zMin, zMax)
+        => InPosWithBounds(xMin, xMax, yMin, yMax, zMin, zMax, vars.old.xPos, vars.old.yPos, vars.old.zPos);
+    Func<float, float, float, float, float, float, bool> InPosWithBoundsCurrent = (xMin, xMax, yMin, yMax, zMin, zMax)
+        => InPosWithBounds(xMin, xMax, yMin, yMax, zMin, zMax, vars.current.xPos, vars.current.yPos, vars.current.zPos);
+
+    Func<float, float, float?, bool> InRange = (targ, range, pos) => pos >= targ - range && pos <= targ + range;
+    Func<float, float, bool> InXRangeOld = (targ, range) => InRange(targ, range, vars.old.xPos);
+    Func<float, float, bool> InYRangeOld = (targ, range) => InRange(targ, range, vars.old.yPos);
+    Func<float, float, bool> InZRangeOld = (targ, range) => InRange(targ, range, vars.old.zPos);
+    Func<float, float, bool> InXRangeCurrent = (targ, range) => InRange(targ, range, vars.current.xPos);
+    Func<float, float, bool> InYRangeCurrent = (targ, range) => InRange(targ, range, vars.current.yPos);
+    Func<float, float, bool> InZRangeCurrent = (targ, range) => InRange(targ, range, vars.current.zPos);
+
+    Func<float, float, float, float, float?, float?, float?, bool> InPosWithRange = (xTarg, yTarg, zTarg, range, xPos, yPos, zPos)
+    =>
+        xPos >= xTarg - range && xPos <= xTarg + range &&
+        yPos >= xTarg - range && yPos <= yTarg + range &&
+        zPos >= zTarg - range && zPos <= zTarg + range;
+    Func<float, float, float, float, bool> InPosWithRangeOld = (xTarg, yTarg, zTarg, range)
+        => InPosWithRange(xTarg, yTarg, zTarg, range, vars.old.xPos, vars.old.yPos, vars.old.zPos);
+    Func<float, float, float, float, bool> InPosWithRangeCurrent = (xTarg, yTarg, zTarg, range)
+        => InPosWithRange(xTarg, yTarg, zTarg, range, vars.current.xPos, vars.current.yPos, vars.current.zPos);
+
+    Func<float, float, float, float?, float?, float?, bool> InPosExact = (xTarg, yTarg, zTarg, xPos, yPos, zPos)
+    =>
+        xTarg == xPos &&
+        yTarg == yPos &&
+        zTarg == zPos;
+    Func<float, float, float> InPosExactOld = (xTarg, yTarg, zTarg)
+    =>
+        xTarg == vars.old.xPos &&
+        yTarg == vars.old.yPos &&
+        zTarg == vars.old.zPos;
+    Func<float, float, float> InPosExactCurrent = (xTarg, yTarg, zTarg)
+    =>
+        xTarg == vars.current.xPos &&
+        yTarg == vars.current.yPos &&
+        zTarg == vars.current.zPos;
+
     if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
         DialogResult mbox = MessageBox.Show(timer.Form,
         "This game uses only real time as the timing method.\nWould you like to switch to Real Time?",
