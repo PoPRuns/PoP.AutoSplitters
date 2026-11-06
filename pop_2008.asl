@@ -214,6 +214,39 @@ startup
     Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>> AddEvent = (eventType, slug, settingSlugs, xyzBounds, condition)
         => events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, xyzBounds, condition));
 
+    // runtime functions and helper variables
+
+    // Key: Hash; Value: EventList
+    var XyzEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>>>>();
+
+    // List<Event>
+    var OtherEvents = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>>>();
+
+    var CompletedEvents = new HashSet<string>();
+
+    // Event
+    Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>, Func<bool>> TriggeredEvent = null;
+
+    Func<int, bool> CheckEvent = (eventType) =>
+    {
+        if (TriggeredEvent == null)
+            return false;
+        if (TriggeredEvent.Item1 != eventType)
+            return false;
+        if (!CompletedEvents.Add(TriggeredEvent.Item2))
+            return false;
+        bool eventSetting = false;
+        if (TriggeredEvent.Item3.Count == 0)
+            eventSetting = true;
+        else foreach (string settingSlug in TriggeredEvent.Item3)
+            if (settings[settingSlug])
+                eventSetting = true;
+        if (!eventSetting)
+            return false;
+        print(eventType.ToString() + " " + TriggeredEvent.Item2);
+        return true;
+    };
+
     if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
         DialogResult mbox = MessageBox.Show(timer.Form,
         "This game uses only real time as the timing method.\nWould you like to switch to Real Time?",
