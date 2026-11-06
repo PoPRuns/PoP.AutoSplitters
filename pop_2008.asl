@@ -47,6 +47,8 @@ startup
 
     // Coord Utils
 
+    // coordinate checks
+
     Func<float, float, float?, bool> InBounds = (min, max, pos) => pos >= min && pos <= max;
     Func<float, float, bool> InXBoundsOld = (min, max) => InBounds(min, max, vars.old.xPos);
     Func<float, float, bool> InYBoundsOld = (min, max) => InBounds(min, max, vars.old.yPos);
@@ -88,16 +90,70 @@ startup
         xTarg == xPos &&
         yTarg == yPos &&
         zTarg == zPos;
-    Func<float, float, float> InPosExactOld = (xTarg, yTarg, zTarg)
+    Func<float, float, float, bool> InPosExactOld = (xTarg, yTarg, zTarg)
     =>
         xTarg == vars.old.xPos &&
         yTarg == vars.old.yPos &&
         zTarg == vars.old.zPos;
-    Func<float, float, float> InPosExactCurrent = (xTarg, yTarg, zTarg)
+    Func<float, float, float, bool> InPosExactCurrent = (xTarg, yTarg, zTarg)
     =>
         xTarg == vars.current.xPos &&
         yTarg == vars.current.yPos &&
         zTarg == vars.current.zPos;
+
+    // runtime hash code computations
+
+    // see comments on hash code functions below for guidance on what bucket size is appropriate for each game
+    const float BucketSize = 20f;
+
+    // all real numbers are broken down into equally sized buckets
+    // e.g. if BucketSize = 20f, then:
+    //      0f <= coord < 20f falls into bucket 0
+    //      20f <= coord < 40f falls into bucket 1
+    //      40f <= coord < 60f falls into bucket 2
+    //      -20f <= coord < 0f falls into bucket -1
+    //      -40f <= coord < -20f falls into bucket -2
+    //      and so on...
+    // so all coordinates within the same bucket have the same hash code
+    // if the coordinate value is not found (i.e. is null), then the largest possible bucket value is used
+    //      since it is extremely unlikely that any real coordinates will fall in that bucket
+    Func<float?, int> GetHashCode = coord =>
+    {
+        if (coord == null)
+            return int.MaxValue;
+        int bucket = (int)Math.Floor((float)coord / BucketSize);
+        return bucket.GetHashCode();
+    };
+
+    // fast hashing algorithm with wide dispersion where the same inputs ordered differently yield different results
+    const uint FnvPrime = 0x01000193;   // https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV_prime
+    Func<int, int, int, int> CombineHashCodes = (xHash, yHash, zHash) =>
+    {
+        uint hash = 0;
+        hash = hash * FnvPrime + (uint)xHash;
+        hash = hash * FnvPrime + (uint)yHash;
+        hash = hash * FnvPrime + (uint)zHash;
+        return (int)hash;
+    };
+
+    // as above, but this time the buckets are cubes,
+    // so every point in 3D space falls into a cube bucket of length BucketSize
+    // and all coordinates within the same bucket have the same hash code
+    Func<int> GetHashCodeCurrent = () =>
+    {
+        // this whole function could be reduced to just the following line:
+        // return CombineHashCodes(GetHashCode(vars.current.xPos), GetHashCode(vars.current.yPos), GetHashCode(vars.current.zPos));
+        // but since our methods are lambdas, method calls do not get inlined
+        // so, since this is a hot path (called every cycle), we manually inline it for the sake of performance
+        uint hash = 0;
+        hash = hash * FnvPrime + (vars.current.xPos == null ? int.MaxValue : (uint)(int)Math.Floor(vars.current.xPos / BucketSize));
+        hash = hash * FnvPrime + (vars.current.yPos == null ? int.MaxValue : (uint)(int)Math.Floor(vars.current.yPos / BucketSize));
+        hash = hash * FnvPrime + (vars.current.zPos == null ? int.MaxValue : (uint)(int)Math.Floor(vars.current.zPos / BucketSize));
+        return (int)hash;
+    };
+
+    // one-time hash code computations
+
 
     if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
         DialogResult mbox = MessageBox.Show(timer.Form,
