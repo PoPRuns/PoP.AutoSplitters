@@ -222,8 +222,12 @@ startup
     // we use the name mySettings to prevent conflict with the LiveSplit variable "settings"
     // Key: SettingSlug; Value: Setting
     var mySettings = new Dictionary<string, Tuple<bool, string, List<string>, string, string, string>>();
-    Action<bool, string, List<string>, string, string, string> AddSetting = (@default, slug, eventSlugs, description, toolTip, parentSlug)
-        => mySettings.Add(slug, Tuple.Create(@default, slug, eventSlugs, description, toolTip, parentSlug));
+    Action<bool, string, List<string>, string, string, string> AddSetting = (@default, slug, eventSlugs, description, toolTip, parentSlug) =>
+    {
+        mySettings.Add(slug, Tuple.Create(@default, slug, eventSlugs, description, toolTip, parentSlug));
+        settings.Add(slug, @default, description, parentSlug);
+        settings.SetToolTip(slug, toolTip);
+    };
     
     // Key: EventSlug; Value: Event
     const int StartEvent = 0;
@@ -305,6 +309,9 @@ startup
 
     // ================================================== settings ==================================================
 
+    // parent settings must be specified before their respective children settings
+    // settings with the same parent (or lack of parent) will be displayed in the same order as specified here
+
     // ================================================== events ==================================================
 
     Action action;
@@ -340,36 +347,6 @@ startup
         @event.Item3.Clear();
         @event.Item3.AddRange(settingSlugsCopy);
         settingSlugsCopy.Clear();
-    }
-
-    // add each setting to the LiveSplit settings variable,
-    // reiterating through the mySettings map to ensure that parents get added before children, which LiveSplit requires
-    // we stop iterating once all settings are added, or once an iteration yields no change in the addedSettings hashset
-    var addedSettings = new HashSet<string>();
-    int prevCount;
-    do
-    {
-        prevCount = addedSettings.Count;
-        foreach (var setting in mySettings.Values)
-        {
-            if (addedSettings.Contains(setting.Item2))
-                continue;
-            if (setting.Item6 == null || addedSettings.Contains(setting.Item6))
-            {
-                addedSettings.Add(setting.Item2);
-                settings.Add(setting.Item2, setting.Item1, setting.Item4, setting.Item6);
-                settings.SetToolTip(setting.Item2, setting.Item5);
-            }
-        }
-    } while (addedSettings.Count < mySettings.Count && prevCount < addedSettings.Count);
-    if (addedSettings.Count < mySettings.Count)
-    {
-        print("Error (ASL): the following settings could not be added because they do not have a valid parent:");
-        var builder = new StringBuilder();
-        foreach (string settingSlug in mySettings.Keys.Except(addedSettings))
-            builder.Append("\t" + settingSlug + "\r\n");
-        print(builder.ToString());
-        throw new Exception("Internal exception (ASL): not all settings have a valid parent");
     }
 
     // ================================================== apply configured events ==================================================
@@ -434,7 +411,6 @@ startup
 
     // de-reference unneeded collections to allow for garbage collection
     settingSlugsCopy = null;
-    addedSettings = null;
     mySettings = null;
     events = null;
     infoBuilder = null;
