@@ -247,6 +247,27 @@ startup
         return true;
     };
 
+    // game-specific functions and helper variables
+
+    const float SeedRange = 5f;
+    Func<float, float, float, bool> EventSeedGet = (xTarg, yTarg, zTarg)
+    =>
+        InPosWithRangeCurrent(xTarg, yTarg, zTarg, SeedRange) &&
+        (vars.current.seedCount != null && vars.current.seedCount == vars.old.seedCount + 1);
+    
+    const float BossRange = 30f;
+    Func<float, float, float, bool> EventBossKill = (xTarg, yTarg, zTarg)
+    =>
+        InPosWithRangeCurrent(xTarg, yTarg, zTarg, BossRange) &&
+        (vars.old.combat == 2 && vars.current.combat == 0);
+    
+    const float DadRange = 30f;
+    Func<float, float, float, bool> EventDadKill = (xTarg, yTarg, zTarg)
+    =>
+        InPosWithRangeCurrent(xTarg, yTarg, zTarg, DadRange) &&
+        (vars.old.enemyHP > 0 && vars.current.enemyHP == 0);
+
+
     if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
         DialogResult mbox = MessageBox.Show(timer.Form,
         "This game uses only real time as the timing method.\nWould you like to switch to Real Time?",
