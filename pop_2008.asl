@@ -414,19 +414,48 @@ startup
     //                                                                                                 XyzBounds:
     //                                                                            SettingSlugs:         (float,float,float,
     //                                   EventType:int        Slug:string          List<string>         float,float,float)?       Condition:Func<bool>
-    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartLoad",        new List<string> {}, BoundsR(x,y,z,range),       () => (Old.XPos == x && Old.YPos == y) && (Current.XPos != x || Current.YPos != y))) (-465f, -351f, -24f, 5f);
-    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetLoad",        new List<string> {}, BoundsR(x,y,z,range),       () => (Old.XPos != x || Old.YPos != y) && (Current.XPos == x && Current.YPos == y))) (-465f, -351f, -24f, 5f);
-    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartNew",         new List<string> {}, BoundsR(x,y,z,5f),          () => InPosWithRangeOld(x, y, z, range) && !InPosWithRangeCurrent(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
-    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetNew",         new List<string> {}, BoundsR(x,y,z,range),       () => !InPosWithRangeOld(x, y, z, range) && InPosWithRangeCurrent(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CollapsingBridge", new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-310.25f, -241.0f, -30.2f, 0.2f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "PreDad1",          new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (4f, -388.6f, -40f, 2f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ThiccCutscene",    new List<string> {}, BoundsR(x,y,z,range),       () => CompletedEvents.Contains("PreDad1") && Old.YPos < -238f && InPosWithRangeCurrent(x, y, z, range))) (6f, -233.5f, -33f, 2f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "RedPlate",         new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-55f, -447f, -180f, 2f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "BluePlate",        new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (45f, -456f, -180f, 2f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "YellowPlate",      new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-156f, -413f, -180f, 2f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "GreenPlate",       new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (150f, -444f, -182f, 2f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheGod",           new List<string> {}, BoundsB(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (7.129f, 7.131f, -401.502f, -401.5f, -31.4f, -21f);
-    
+    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartLoad",          new List<string> {}, BoundsR(x,y,z,range),       () => (Old.XPos == x && Old.YPos == y) && (Current.XPos != x || Current.YPos != y))) (-465f, -351f, -24f, 5f);
+    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetLoad",          new List<string> {}, BoundsR(x,y,z,range),       () => (Old.XPos != x || Old.YPos != y) && (Current.XPos == x && Current.YPos == y))) (-465f, -351f, -24f, 5f);
+    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartNew",           new List<string> {}, BoundsR(x,y,z,5f),          () => InPosWithRangeOld(x, y, z, range) && !InPosWithRangeCurrent(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
+    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetNew",           new List<string> {}, BoundsR(x,y,z,range),       () => !InPosWithRangeOld(x, y, z, range) && InPosWithRangeCurrent(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CollapsingBridge",   new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-310.25f, -241.0f, -30.2f, 0.2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "PreDad1",            new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (4f, -388.6f, -40f, 2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ThiccCutscene",      new List<string> {}, BoundsR(x,y,z,range),       () => CompletedEvents.Contains("PreDad1") && Old.YPos < -238f && InPosWithRangeCurrent(x, y, z, range))) (6f, -233.5f, -33f, 2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "RedPlate",           new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-55f, -447f, -180f, 2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "BluePlate",          new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (45f, -456f, -180f, 2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "YellowPlate",        new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-156f, -413f, -180f, 2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "GreenPlate",         new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (150f, -444f, -182f, 2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheGod",             new List<string> {}, BoundsB(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (7.129f, 7.131f, -401.502f, -401.5f, -31.4f, -21f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "Resurrection",       new List<string> {}, BoundsB(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (5.562f, 5.566f, -222.745f, -222.517f, -33.1f, -21f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Dad1",               new List<string> {}, BoundsR(x,y,z,range),       () => Old.xPos < 5.7f && InPosWithRangeCurrent(x, y, z, range))) (11.3f, -392.9f, -40f, 1f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Dad2",               new List<string> {}, BoundsR(x,y,z,range),       () => DadKill(x, y, z))) (6f, -187f, -48f, DadRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "KingsGateH",         new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (-413.5f, -66.5f, 25f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "SunTempleH",         new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (-554.5f, -54f, 34f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "MarshallingGroundH", new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (-761.5f, -17.5f, 19f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "MartyrsTowerH",      new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (-559.5f, 193.5f, 35f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "WindmillsH",         new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (-761f, 150f, 45f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Hunter",             new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (-929.415f, 320.888f, -90.3f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CauldronH",          new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (-168f, 225f, 20f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ConstructionYardH",  new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (-251.5f, 456.5f, 31f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "MachineryGroundH",   new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (-400f, 457f, 18f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "MachineryGroundH2",  new List<string> {}, BoundsR(x,y,z,range),       () => InPosExactCurrent(x, y, z))) (-393.2969971f, 517.6463623f, 56.27552414f, 0f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ReservoirH",         new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (-156.5f, 571.5f, 8f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "HeavensStairH",      new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (-291f, 651.5f, 99.2f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Alchemist",          new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (-296.593f, 697.233f, 296.199f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CavernH",            new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (155f, 180.5f, -22.5f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "RoyalGardensH",      new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (265f, 381.5f, 35.5f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "SpireOfDreamsH",     new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (187.5f, 550f, 141.5f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "RoyalSpireH",        new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (468.5f, 426f, 141.5f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CoronationHallH",    new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (340f, 582.5f, 32.5f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Concubine",          new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (352.792f, 801.051f, 150.260f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CityGateH",          new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (421.5f, -87.5f, -24f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "TowerOfAhrimanH",    new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (598.5f, 13.5f, 86f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "TowerOfOrmazdH",     new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (654f, 208f, -7f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "QueensTowerH",       new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (787f, -32.5f, 98.5f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CityOfLightH",       new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (804f, 113f, -42.5f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Warrior",            new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (1070.478f, 279.147f, -29.571f, BossRange);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "King",               new List<string> {}, BoundsR(x,y,z,range),       () => CompletedEvents.Contains("Warrior") && BossKill(x, y, z))) (5f, -365f, -32f, BossRange);
+
 
     // ====================================================================================================================
     // ================================================== STARTUP SCRIPT ==================================================
