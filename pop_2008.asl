@@ -578,20 +578,21 @@ startup
     infoBuilder.Append("\r\n");
 
     infoBuilder.Append("Settings detected:\r\n");
-    infoBuilder.Append("{Setting} : {Parent}\r\n");
+    infoBuilder.Append("\t" + "{Setting}".PadRight(30) + " : {Parent}\r\n");
     foreach (var setting in mySettings.Values)
-        infoBuilder.Append("\t" + setting.Item2 + " : " + (setting.Item6 ?? "{null}" + "\r\n"));
+        infoBuilder.Append("\t" + setting.Item2.PadRight(30) + " : " + (setting.Item6 ?? "{null}") + "\r\n");
     infoBuilder.Append("Total settings: " + mySettings.Count.ToString() + "\r\n\r\n");
 
     infoBuilder.Append("Events detected:\r\n");
-    infoBuilder.Append("{EventType} {Event} {HasXyzBounds} => {[..Settings]}\r\n");
+    infoBuilder.Append("\t" + "{EventType} {Event}".PadRight(45) + " {HasXyzBounds}".PadRight(6) + " => {[..Settings]}\r\n");
     foreach (var @event in events.Values)
     {
         if (@event.Item3.Count == 0)
             eventsWithNoSettings.Add(@event.Item2);
         foreach (string settingSlug in @event.Item3)
             settingsWithEvents.Add(settingSlug);
-        infoBuilder.Append("\t" + GetEventString(@event.Item1) + " " + @event.Item2 + " " + (@event.Item4 != null).ToString() + " => [" + string.Join(", ", @event.Item3) + "]\r\n");
+        infoBuilder.Append("\t" + (GetEventString(@event.Item1) + " " + @event.Item2).PadRight(45) + (" " + (@event.Item4 != null).ToString()).PadRight(6)
+            + " => [" + string.Join(", ", @event.Item3) + "]\r\n");
     }
     infoBuilder.Append("Total events: " + events.Count.ToString() + "\r\n\r\n");
 
