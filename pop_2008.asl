@@ -225,6 +225,18 @@ startup
     var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
     Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> AddEvent = (eventType, slug, settingSlugs, xyzBounds, condition)
         => events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, xyzBounds, condition));
+    
+    Func<int, string> GetEventString = eventType =>
+    {
+        switch (eventType)
+        {
+        case StartEvent: return "StartEvent";
+        case ResetEvent: return "ResetEvent";
+        case SplitEvent: return "SplitEvent";
+        case MiscEvent:  return "MiscEvent";
+        default:         return "UnknownEvent";
+        }
+    };
 
     // ================================================== runtime functions and helper variables ==================================================
 
@@ -255,7 +267,7 @@ startup
                 eventSetting = true;
         if (!eventSetting)
             return false;
-        print(eventType.ToString() + " " + TriggeredEvent.Item2);
+        print(GetEventString(eventType) + " " + TriggeredEvent.Item2);
         return true;
     };
 
@@ -291,7 +303,7 @@ startup
     // ================================================== STARTUP SCRIPT ==================================================
     // ====================================================================================================================
 
-    // ================================================== apply settings ==================================================
+    // ================================================== apply configured settings ==================================================
 
     // add each setting that references an event to that event's settings list
     // and clear each setting's events list
@@ -348,13 +360,9 @@ startup
         throw new Exception("Internal exception (ASL): not all settings have a valid parent");
     }
 
-    // de-reference unneeded collections to allow for garbage collection
-    settingSlugsCopy = null;
-    addedSettings = null;
-    mySettings = null;
+    // ================================================== apply configured events ==================================================
 
-    // ================================================== fill XyzEventHashMap and OtherEvents ==================================================
-
+    // fill XyzEventHashMap and OtherEvents
     foreach (var @event in events.Values)
     {
         if (@event.Item4 == null)
@@ -376,8 +384,29 @@ startup
         }
     }
 
-    // ================================================== print info ==================================================
+    // allocate a large enough capacity at startup so that the CompletedEvents hashset does not need to be reallocated as it grows during runtime
+    CompletedEvents = new HashSet<string>(events.Count);
 
+    // ================================================== outputs ==================================================
+
+    // print detected settings and events
+    var infoBuilder = new StringBuilder();
+
+    infoBuilder.Append("\r\nSettings detected:\r\n");
+    infoBuilder.Append("{Setting} : {Parent}\r\n");
+    foreach (var setting in mySettings.Values)
+        infoBuilder.Append("\t" + setting.Item2 + " : " + (setting.Item6 ?? "{null}" + "\r\n"));
+    infoBuilder.Append("Total settings: " + mySettings.Count.ToString() + "\r\n\r\n");
+
+    infoBuilder.Append("Events detected:\r\n");
+    infoBuilder.Append("{EventType} {Event} {HasXyzBounds} => {[..Settings]}\r\n");
+    foreach (var @event in events.Values)
+        infoBuilder.Append("\t" + GetEventString(@event.Item1) + " " + @event.Item2 + " " + (@event.Item4 != null).ToString() + " => [" + string.Join(", ", @event.Item3) + "]\r\n");
+    infoBuilder.Append("Total events: " + events.Count.ToString() + "\r\n");
+
+    print(infoBuilder.ToString());
+
+    // switch to real time prompt
     if (timer.CurrentTimingMethod != TimingMethod.RealTime) {
         DialogResult mbox = MessageBox.Show(timer.Form,
         "This game uses only real time as the timing method.\nWould you like to switch to Real Time?",
@@ -388,6 +417,15 @@ startup
             timer.CurrentTimingMethod = TimingMethod.RealTime;
         }
     }
+
+    // ================================================== cleanup ==================================================
+
+    // de-reference unneeded collections to allow for garbage collection
+    settingSlugsCopy = null;
+    addedSettings = null;
+    mySettings = null;
+    events = null;
+    infoBuilder = null;
 
     print("pop_2008.asl " + DateTime.Now.ToString());
 }
