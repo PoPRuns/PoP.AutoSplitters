@@ -27,16 +27,6 @@ state("Prince of Persia", "Unknown") {}
 // Setting.EventSlugs is cleared during startup
 // Event.SettingSlugs is filled during startup, with duplicates removed
 
-// each setting has a list of events that it's tied to, and each event has a list of settings that it's tied to
-// however, this does not need to be explicitly specified both ways
-// so we may either specify which events are tied to each setting, and let the script auto-fill the settings list for each event,
-//      or we may specify which settings are tied to each event,
-//      or we can do any combination of both, and the script will auto-fill the settings list for each event, removing any duplicates
-// after startup, the events list for each setting is cleared, so only the settings list for each event remains
-
-// if an event has no setting tied to it, then it succeeds upon meeting its condition
-// if an event has one or more settings tied to it, then it succeeds upon meeting its condition if and only if at least one of its settings permits it
-
 // for Event.SettingSlugs we prefer a List over a HashSet because iterating over a list is faster
 // the downside is that removing duplicates is much slower as it requires an extra hashset allocation and copying items between collections
 // but this removal of duplicates is only done upon startup, so we sacrifice some startup performance in order to gain runtime performance
@@ -263,7 +253,7 @@ startup
     // Event
     Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> TriggeredEvent = null;
 
-    Func<int, bool> CheckEvent = (eventType) =>
+    Func<int, bool> CheckEvent = eventType =>
     {
         if (TriggeredEvent == null)
             return false;
@@ -286,19 +276,19 @@ startup
     // ================================================== game-specific functions and helper variables ==================================================
 
     const float SeedRange = 5f;
-    Func<float, float, float, bool> EventSeedGet = (xTarg, yTarg, zTarg)
+    Func<float, float, float, bool> SeedGet = (xTarg, yTarg, zTarg)
     =>
         InPosWithRangeCurrent(xTarg, yTarg, zTarg, SeedRange) &&
         (Current.seedCount != null && Current.seedCount == Old.seedCount + 1);
     
     const float BossRange = 30f;
-    Func<float, float, float, bool> EventBossKill = (xTarg, yTarg, zTarg)
+    Func<float, float, float, bool> BossKill = (xTarg, yTarg, zTarg)
     =>
         InPosWithRangeCurrent(xTarg, yTarg, zTarg, BossRange) &&
         (Old.combat == 2 && Current.combat == 0);
     
     const float DadRange = 30f;
-    Func<float, float, float, bool> EventDadKill = (xTarg, yTarg, zTarg)
+    Func<float, float, float, bool> DadKill = (xTarg, yTarg, zTarg)
     =>
         InPosWithRangeCurrent(xTarg, yTarg, zTarg, DadRange) &&
         (Old.enemyHP > 0 && Current.enemyHP == 0);
@@ -306,6 +296,21 @@ startup
     // ===================================================================================================================
     // ================================================== CONFIGURATION ==================================================
     // ===================================================================================================================
+
+    // each setting has a list of events that it's tied to, and each event has a list of settings that it's tied to
+    // however, this does not need to be explicitly specified both ways
+    // so we may either specify which events are tied to each setting, and let the script auto-fill the settings list for each event,
+    //      or we may specify which settings are tied to each event,
+    //      or we can do any combination of both, and the script will auto-fill the settings list for each event, removing any duplicates
+    // after startup, the events list for each setting is cleared, so only the settings list for each event remains
+
+    // if an event has no setting tied to it, then it succeeds upon meeting its condition
+    // if an event has one or more settings tied to it, then it succeeds upon meeting its condition if and only if at least one of its settings permits it
+
+    // if we try to tie to a setting an event which is not defined, an exception will be thrown and startup will fail
+    // likewise if we try to tie an event to a setting which is not defined, an exception will be thrown
+    // But, WARNING: if we forget to tie an event with a setting,
+    //      the script will work normally, the setting will do nothing, and the event will always succeed regardless of the setting
 
     // ================================================== settings ==================================================
 
@@ -327,6 +332,7 @@ startup
     // add each setting that references an event to that event's settings list
     // and clear each setting's events list
     //      so that in the end only the events have references to their respective settings and not the other way around
+    // if a setting points to an event that doesn't exist, an exception will be thrown
     foreach (var setting in mySettings.Values)
     {
         foreach (string eventSlug in setting.Item3)
@@ -339,11 +345,16 @@ startup
     }
 
     // remove duplicate settings from each event's settings list
+    // if an event points to a setting that doesn't exist, an exception will be thrown
     var settingSlugsCopy = new HashSet<string>();
     foreach (var @event in events.Values)
     {
         foreach (string settingSlug in @event.Item3)
+        {
+            if (!mySettings.ContainsKey(settingSlug))
+                throw new Exception("Internal exception (ASL): cannot write setting " + settingSlug + " to event " + @event.Item2 + " because this setting doesn't exist");
             settingSlugsCopy.Add(settingSlug);
+        }
         @event.Item3.Clear();
         @event.Item3.AddRange(settingSlugsCopy);
         settingSlugsCopy.Clear();
