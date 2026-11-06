@@ -50,16 +50,25 @@ startup
     // ================================================== FUNCTION DEFINITIONS ==================================================
     // ==========================================================================================================================
 
-    // ================================================== state objects ==================================================
+    // ================================================== action variables ==================================================
 
     dynamic Old = null;
     dynamic Current = null;
 
+    // the "settings" variable points to a different object depending on which block you use it from
+    // from the startup block it points to a LiveSplit.ASL.ASLSettingsBuilder object
+    // from all other blocks it points to a LiveSplit.ASL.ASLSettingsReader object
+    // so in order to read settings from the startup block, we need to pass the reader manually from another block
+    // unfortunately ASL does not let us directly refer to the "LiveSplit.ASL.ASLSettingsReader" type, so we are forced to declare it as a "dynamic" type
+    dynamic SettingsReader = null;
+
     Action<dynamic> SetOld = _old => Old = _old;
     Action<dynamic> SetCurrent = _current => Current = _current;
+    Action<dynamic> SetSettingsReader = settingsReader => SettingsReader = settingsReader;
 
     vars.SetOld = SetOld;
     vars.SetCurrent = SetCurrent;
+    vars.SetSettingsReader = SetSettingsReader;
 
     // ================================================== coordinate checks ==================================================
 
@@ -272,7 +281,7 @@ startup
         if (TriggeredEvent.Item3.Count == 0)
             eventSetting = true;
         else foreach (string settingSlug in TriggeredEvent.Item3)
-            if (settings[settingSlug])
+            if (SettingsReader[settingSlug])
                 eventSetting = true;
         if (!eventSetting)
             return false;
@@ -650,7 +659,7 @@ startup
         // print local events:
         /*var builder = new StringBuilder();
         foreach (var @event in localEvents ?? EmptyEventList) builder.Append(@event.Item2 + "\r\n");
-        print(builder.ToString());*/
+        if ((localEvents ?? EmptyEventList).Count > 0) print(builder.ToString());*/
 
         // Concat function means we iterate through the lists one after the other; it does not create a concatenated list
         foreach (var @event in (localEvents ?? EmptyEventList).Concat(OtherEvents))
@@ -730,6 +739,7 @@ init
     //      not copying the actual contents of the object
     vars.SetOld(old);
     vars.SetCurrent(current);
+    vars.SetSettingsReader(settings);
 }
 
 onStart
