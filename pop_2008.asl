@@ -208,8 +208,11 @@ startup
         return hashCodes;
     };
 
-    Func<float, float, float, float, ValueTuple<float, float, float, float, float, float>> GetBounds = (x, y, z, range)
+    Func<float, float, float, float, ValueTuple<float, float, float, float, float, float>> BoundsR = (x, y, z, range)
         => ValueTuple.Create(x - range, x + range, y - range, y + range, z - range, z + range);
+    
+    Func<float, float, float, float, float, float, ValueTuple<float, float, float, float, float, float>> BoundsB = (x1, x2, y1, y2, z1, z2)
+        => ValueTuple.Create(x1, x2, y1, y2, z1, z2);
 
     // ================================================== startup functions and helper variables ==================================================
 
@@ -411,15 +414,19 @@ startup
     //                                                                                                 XyzBounds:
     //                                                                            SettingSlugs:         (float,float,float,
     //                                   EventType:int        Slug:string          List<string>         float,float,float)?       Condition:Func<bool>
-    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartLoad",        new List<string> {}, GetBounds(x, y, z, range), () => (Old.XPos == x && Old.YPos == y) && (Current.XPos != x || Current.YPos != y)))                     (-465f, -351f, -24f, 5f);
-    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetLoad",        new List<string> {}, GetBounds(x, y, z, range), () => (Old.XPos != x || Old.YPos != y) && (Current.XPos == x && Current.YPos == y)))                     (-465f, -351f, -24f, 5f);
-    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartNew",         new List<string> {}, GetBounds(x, y, z, 5f),    () => InPosWithRangeOld(x, y, z, range) && !InPosWithRangeCurrent(x, y, z, range)))                      (-462.302f, -348.223f, -23.956f, 0.003f);
-    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetNew",         new List<string> {}, GetBounds(x, y, z, range), () => !InPosWithRangeOld(x, y, z, range) && InPosWithRangeCurrent(x, y, z, range)))                      (-462.302f, -348.223f, -23.956f, 0.003f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CollapsingBridge", new List<string> {}, GetBounds(x, y, z, range), () => InPosWithRangeCurrent(x, y, z, range)))                                                            (-310.25f, -241.0f, -30.2f, 0.2f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "PreDad1",          new List<string> {}, GetBounds(x, y, z, range), () => InPosWithRangeCurrent(x, y, z, range)))                                                            (4f, -388.6f, -40f, 2f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ThiccCutscene",    new List<string> {}, GetBounds(x, y, z, range), () => CompletedEvents.Contains("PreDad1") && Old.YPos < -238f && InPosWithRangeCurrent(x, y, z, range))) (6f, -233.5f, -33f, 2f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "RedPlate",         new List<string> {}, GetBounds(x, y, z, range), () => InPosWithRangeCurrent(x, y, z, range)))                                                            (-55f, -447f, -180f, 2f);
-
+    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartLoad",        new List<string> {}, BoundsR(x,y,z,range),       () => (Old.XPos == x && Old.YPos == y) && (Current.XPos != x || Current.YPos != y))) (-465f, -351f, -24f, 5f);
+    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetLoad",        new List<string> {}, BoundsR(x,y,z,range),       () => (Old.XPos != x || Old.YPos != y) && (Current.XPos == x && Current.YPos == y))) (-465f, -351f, -24f, 5f);
+    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartNew",         new List<string> {}, BoundsR(x,y,z,5f),          () => InPosWithRangeOld(x, y, z, range) && !InPosWithRangeCurrent(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
+    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetNew",         new List<string> {}, BoundsR(x,y,z,range),       () => !InPosWithRangeOld(x, y, z, range) && InPosWithRangeCurrent(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CollapsingBridge", new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-310.25f, -241.0f, -30.2f, 0.2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "PreDad1",          new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (4f, -388.6f, -40f, 2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ThiccCutscene",    new List<string> {}, BoundsR(x,y,z,range),       () => CompletedEvents.Contains("PreDad1") && Old.YPos < -238f && InPosWithRangeCurrent(x, y, z, range))) (6f, -233.5f, -33f, 2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "RedPlate",         new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-55f, -447f, -180f, 2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "BluePlate",        new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (45f, -456f, -180f, 2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "YellowPlate",      new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-156f, -413f, -180f, 2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "GreenPlate",       new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (150f, -444f, -182f, 2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheGod",           new List<string> {}, BoundsB(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (7.129f, 7.131f, -401.502f, -401.5f, -31.4f, -21f);
+    
 
     // ====================================================================================================================
     // ================================================== STARTUP SCRIPT ==================================================
