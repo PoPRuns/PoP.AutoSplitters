@@ -56,15 +56,26 @@ startup
     // ================================================== FUNCTION DEFINITIONS ==================================================
     // ==========================================================================================================================
 
+    // ================================================== state objects ==================================================
+
+    dynamic Old = null;
+    dynamic Current = null;
+
+    Action<dynamic> SetOld = _old => Old = _old;
+    Action<dynamic> SetCurrent = _current => Current = _current;
+
+    vars.SetOld = SetOld;
+    vars.SetCurrent = SetCurrent;
+
     // ================================================== coordinate checks ==================================================
 
     Func<float, float, float?, bool> InBounds = (min, max, pos) => pos >= min && pos <= max;
-    Func<float, float, bool> InXBoundsOld = (min, max) => InBounds(min, max, vars.old.xPos);
-    Func<float, float, bool> InYBoundsOld = (min, max) => InBounds(min, max, vars.old.yPos);
-    Func<float, float, bool> InZBoundsOld = (min, max) => InBounds(min, max, vars.old.zPos);
-    Func<float, float, bool> InXBoundsCurrent = (min, max) => InBounds(min, max, vars.current.xPos);
-    Func<float, float, bool> InYBoundsCurrent = (min, max) => InBounds(min, max, vars.current.yPos);
-    Func<float, float, bool> InZBoundsCurrent = (min, max) => InBounds(min, max, vars.current.zPos);
+    Func<float, float, bool> InXBoundsOld = (min, max) => InBounds(min, max, Old.xPos);
+    Func<float, float, bool> InYBoundsOld = (min, max) => InBounds(min, max, Old.yPos);
+    Func<float, float, bool> InZBoundsOld = (min, max) => InBounds(min, max, Old.zPos);
+    Func<float, float, bool> InXBoundsCurrent = (min, max) => InBounds(min, max, Current.xPos);
+    Func<float, float, bool> InYBoundsCurrent = (min, max) => InBounds(min, max, Current.yPos);
+    Func<float, float, bool> InZBoundsCurrent = (min, max) => InBounds(min, max, Current.zPos);
 
     Func<float, float, float, float, float, float, float?, float?, float?, bool> InPosWithBounds = (xMin, xMax, yMin, yMax, zMin, zMax, xPos, yPos, zPos)
     =>
@@ -72,17 +83,17 @@ startup
         yPos >= yMin && yPos <= yMax &&
         zPos >= zMin && zPos <= zMax;
     Func<float, float, float, float, float, float, bool> InPosWithBoundsOld = (xMin, xMax, yMin, yMax, zMin, zMax)
-        => InPosWithBounds(xMin, xMax, yMin, yMax, zMin, zMax, vars.old.xPos, vars.old.yPos, vars.old.zPos);
+        => InPosWithBounds(xMin, xMax, yMin, yMax, zMin, zMax, Old.xPos, Old.yPos, Old.zPos);
     Func<float, float, float, float, float, float, bool> InPosWithBoundsCurrent = (xMin, xMax, yMin, yMax, zMin, zMax)
-        => InPosWithBounds(xMin, xMax, yMin, yMax, zMin, zMax, vars.current.xPos, vars.current.yPos, vars.current.zPos);
+        => InPosWithBounds(xMin, xMax, yMin, yMax, zMin, zMax, Current.xPos, Current.yPos, Current.zPos);
 
     Func<float, float, float?, bool> InRange = (targ, range, pos) => pos >= targ - range && pos <= targ + range;
-    Func<float, float, bool> InXRangeOld = (targ, range) => InRange(targ, range, vars.old.xPos);
-    Func<float, float, bool> InYRangeOld = (targ, range) => InRange(targ, range, vars.old.yPos);
-    Func<float, float, bool> InZRangeOld = (targ, range) => InRange(targ, range, vars.old.zPos);
-    Func<float, float, bool> InXRangeCurrent = (targ, range) => InRange(targ, range, vars.current.xPos);
-    Func<float, float, bool> InYRangeCurrent = (targ, range) => InRange(targ, range, vars.current.yPos);
-    Func<float, float, bool> InZRangeCurrent = (targ, range) => InRange(targ, range, vars.current.zPos);
+    Func<float, float, bool> InXRangeOld = (targ, range) => InRange(targ, range, Old.xPos);
+    Func<float, float, bool> InYRangeOld = (targ, range) => InRange(targ, range, Old.yPos);
+    Func<float, float, bool> InZRangeOld = (targ, range) => InRange(targ, range, Old.zPos);
+    Func<float, float, bool> InXRangeCurrent = (targ, range) => InRange(targ, range, Current.xPos);
+    Func<float, float, bool> InYRangeCurrent = (targ, range) => InRange(targ, range, Current.yPos);
+    Func<float, float, bool> InZRangeCurrent = (targ, range) => InRange(targ, range, Current.zPos);
 
     Func<float, float, float, float, float?, float?, float?, bool> InPosWithRange = (xTarg, yTarg, zTarg, range, xPos, yPos, zPos)
     =>
@@ -90,9 +101,9 @@ startup
         yPos >= xTarg - range && yPos <= yTarg + range &&
         zPos >= zTarg - range && zPos <= zTarg + range;
     Func<float, float, float, float, bool> InPosWithRangeOld = (xTarg, yTarg, zTarg, range)
-        => InPosWithRange(xTarg, yTarg, zTarg, range, vars.old.xPos, vars.old.yPos, vars.old.zPos);
+        => InPosWithRange(xTarg, yTarg, zTarg, range, Old.xPos, Old.yPos, Old.zPos);
     Func<float, float, float, float, bool> InPosWithRangeCurrent = (xTarg, yTarg, zTarg, range)
-        => InPosWithRange(xTarg, yTarg, zTarg, range, vars.current.xPos, vars.current.yPos, vars.current.zPos);
+        => InPosWithRange(xTarg, yTarg, zTarg, range, Current.xPos, Current.yPos, Current.zPos);
 
     Func<float, float, float, float?, float?, float?, bool> InPosExact = (xTarg, yTarg, zTarg, xPos, yPos, zPos)
     =>
@@ -101,14 +112,14 @@ startup
         zTarg == zPos;
     Func<float, float, float, bool> InPosExactOld = (xTarg, yTarg, zTarg)
     =>
-        xTarg == vars.old.xPos &&
-        yTarg == vars.old.yPos &&
-        zTarg == vars.old.zPos;
+        xTarg == Old.xPos &&
+        yTarg == Old.yPos &&
+        zTarg == Old.zPos;
     Func<float, float, float, bool> InPosExactCurrent = (xTarg, yTarg, zTarg)
     =>
-        xTarg == vars.current.xPos &&
-        yTarg == vars.current.yPos &&
-        zTarg == vars.current.zPos;
+        xTarg == Current.xPos &&
+        yTarg == Current.yPos &&
+        zTarg == Current.zPos;
 
     // ================================================== runtime hash code computations ==================================================
 
@@ -151,13 +162,13 @@ startup
     Func<int> GetHashCodeCurrent = () =>
     {
         // this whole function could be reduced to just the following line:
-        // return CombineHashCodes(GetHashCode(vars.current.xPos), GetHashCode(vars.current.yPos), GetHashCode(vars.current.zPos));
+        // return CombineHashCodes(GetHashCode(Current.xPos), GetHashCode(Current.yPos), GetHashCode(Current.zPos));
         // but since our methods are lambdas, method calls do not get inlined
         // so, since this is a hot path (called every cycle), we manually inline it for the sake of performance
         uint hash = 0;
-        hash = hash * FnvPrime + (vars.current.xPos == null ? int.MaxValue : (uint)(int)Math.Floor(vars.current.xPos / BucketSize));
-        hash = hash * FnvPrime + (vars.current.yPos == null ? int.MaxValue : (uint)(int)Math.Floor(vars.current.yPos / BucketSize));
-        hash = hash * FnvPrime + (vars.current.zPos == null ? int.MaxValue : (uint)(int)Math.Floor(vars.current.zPos / BucketSize));
+        hash = hash * FnvPrime + (Current.xPos == null ? int.MaxValue : (uint)(int)Math.Floor(Current.xPos / BucketSize));
+        hash = hash * FnvPrime + (Current.yPos == null ? int.MaxValue : (uint)(int)Math.Floor(Current.yPos / BucketSize));
+        hash = hash * FnvPrime + (Current.zPos == null ? int.MaxValue : (uint)(int)Math.Floor(Current.zPos / BucketSize));
         return (int)hash;
     };
 
@@ -274,19 +285,19 @@ startup
     Func<float, float, float, bool> EventSeedGet = (xTarg, yTarg, zTarg)
     =>
         InPosWithRangeCurrent(xTarg, yTarg, zTarg, SeedRange) &&
-        (vars.current.seedCount != null && vars.current.seedCount == vars.old.seedCount + 1);
+        (Current.seedCount != null && Current.seedCount == Old.seedCount + 1);
     
     const float BossRange = 30f;
     Func<float, float, float, bool> EventBossKill = (xTarg, yTarg, zTarg)
     =>
         InPosWithRangeCurrent(xTarg, yTarg, zTarg, BossRange) &&
-        (vars.old.combat == 2 && vars.current.combat == 0);
+        (Old.combat == 2 && Current.combat == 0);
     
     const float DadRange = 30f;
     Func<float, float, float, bool> EventDadKill = (xTarg, yTarg, zTarg)
     =>
         InPosWithRangeCurrent(xTarg, yTarg, zTarg, DadRange) &&
-        (vars.old.enemyHP > 0 && vars.current.enemyHP == 0);
+        (Old.enemyHP > 0 && Current.enemyHP == 0);
     
     // ===================================================================================================================
     // ================================================== CONFIGURATION ==================================================
@@ -433,12 +444,12 @@ startup
     // =====================================================================================================================
 
     // ================================================== onStart ==================================================
-    Action onStart = () => CompletedEvents.Clear();
-    vars.onStart = onStart;
+    Action OnStart = () => CompletedEvents.Clear();
+    vars.OnStart = OnStart;
 
     // ================================================== update ==================================================
     var EmptyEventList = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
-    Func<bool> update = () =>
+    Func<bool> Update = () =>
     {
         TriggeredEvent = null;
         int xyzHashCode = GetHashCodeCurrent();
@@ -461,26 +472,26 @@ startup
         }
         return true;
     };
-    vars.update = update;
+    vars.Update = Update;
 
     // ================================================== start ==================================================
 
-    Func<bool> start = () => CheckEvent(StartEvent);
-    vars.start = start;
+    Func<bool> Start = () => CheckEvent(StartEvent);
+    vars.Start = Start;
 
     // ================================================== reset ==================================================
 
-    Func<bool> reset = () => CheckEvent(ResetEvent);
-    vars.reset = reset;
+    Func<bool> Reset = () => CheckEvent(ResetEvent);
+    vars.Reset = Reset;
 
     // ================================================== split ==================================================
 
-    Func<bool> split = () =>
+    Func<bool> Split = () =>
     {
         CheckEvent(MiscEvent);
         return CheckEvent(SplitEvent);
     };
-    vars.split = split;
+    vars.Split = Split;
 
     // ====================================================================================================
 
@@ -514,43 +525,44 @@ init
     // (this is a "feature" of the ASL variables specifically; in standard C#, functions use the updated values at the time the function is called; cf. closure)
     // likewise any functions defined in the startup block will not be able to read the "old" and "current" values at the time of the function call at all,
     //      since those variables point to nothing (that is, old=null and current=null) at the time of startup
-    // but if we explicitly write the new "old" and "current" objects into vars.old and vars.current as they are updated,
+    // but if we explicitly write the new "old" and "current" objects into the "Old" and "Current" variables defined in the startup block as they are updated,
     //      then we can safely define functions in both the startup and the init blocks, and they will safely read the updated "old" and "current" objects,
     //      as they are at the time of the function call
-    // this is because the "old" and "current" objects are placed behind the "vars" variable,
-    //      and the "vars" variable always points to the same "vars" object for the lifetime of the script
+    // this is because the "old" and "current" objects are placed behind the "Old" and "Current" variables
+    //      which get captured by the closure created when a function lambda is defined,
+    //      so the lambda will always look for the object behind the variable at the time of the function call
     // the "current" and "old" objects are of type System.ExpandoObject which is a reference type, so here we are merely passing a reference to the object,
     //      not copying the actual contents of the object
-    vars.old = old;
-    vars.current = current;
+    vars.SetOld(old);
+    vars.SetCurrent(current);
 }
 
 onStart
 {
-    vars.onStart();
+    vars.OnStart();
 }
 
 // note that the update block - along with every other block except startup and shutdown - does not run when LiveSplit is not hooked to any game process
 update
 {
-    // we avoid explicitly assigning vars.current = current in the update block since it is not needed,
-    // and just in case this allows the compiler to perform some optimisations when accessing the vars.current variable
-    vars.old = old;
+    // we avoid explicitly assigning vars.SetCurrent(current) in the update block since it is not needed,
+    // and just in case this allows the compiler to perform some optimisations when accessing the Current variable
+    vars.SetOld(old);
 
-    return vars.update();
+    return vars.Update();
 }
 
 start
 {
-    return vars.start();
+    return vars.Start();
 }
 
 reset
 {
-    return vars.reset();
+    return vars.Reset();
 }
 
 split
 {
-    return vars.split();
+    return vars.Split();
 }
