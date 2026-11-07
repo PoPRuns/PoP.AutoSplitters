@@ -28,9 +28,6 @@ state("Prince of Persia", "Unknown") { }
 // Setting: Tuple<bool, string, List<string>, string, string, string>
 // Event:   Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>
 
-// Setting.EventSlugs is cleared during startup
-// Event.SettingSlugs is filled during startup, with duplicates removed
-
 // for Event.SettingSlugs we prefer a List over a HashSet because iterating over a list is faster
 // the downside is that removing duplicates is much slower as it requires an extra hashset allocation and copying items between collections
 // but this removal of duplicates is only done upon startup, so we sacrifice some startup performance in order to gain runtime performance
@@ -44,6 +41,7 @@ state("Prince of Persia", "Unknown") { }
 // then once we're done using it we should de-reference it, i.e.:
 // tempCollection = null;
 // for any leftover empty/small collections, we don't need to bother
+// to help keep track, any declared object that should be de-referenced at the end is marked with a "GC" comment
 startup
 {
     // ==========================================================================================================================
@@ -232,7 +230,7 @@ startup
 
     // we use the name mySettings to prevent conflict with the LiveSplit variable "settings"
     // Key: SettingSlug; Value: Setting
-    var mySettings = new Dictionary<string, Tuple<bool, string, List<string>, string, string, string>>();
+    var mySettings = new Dictionary<string, Tuple<bool, string, List<string>, string, string, string>>(); // GC
     Action<bool, string, List<string>, string, string, string> AddSetting = (@default, slug, eventSlugs, description, toolTip, parentSlug) =>
     {
         mySettings.Add(slug, Tuple.Create(@default, slug, eventSlugs, description, toolTip, parentSlug));
@@ -245,7 +243,7 @@ startup
     const int ResetEvent = 1;
     const int SplitEvent = 2;
     const int MiscEvent = 3;
-    var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
+    var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>(); // GC
     Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> AddEvent = (eventType, slug, settingSlugs, xyzBounds, condition)
         => events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, xyzBounds, condition));
     
@@ -269,7 +267,7 @@ startup
     // List<Event>
     var OtherEvents = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
 
-    var CompletedEvents = new HashSet<string>();
+    HashSet<string> CompletedEvents = null;
 
     // Event
     Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> TriggeredEvent = null;
@@ -320,11 +318,10 @@ startup
 
     // each setting has a list of events that it's tied to, and each event has a list of settings that it's tied to
     // however, this does not need to be explicitly specified both ways
-    // so we may either specify which events are tied to each setting, and let the script auto-fill the settings list for each event,
+    // so we may either specify which events are tied to each setting,
     //      or we may specify which settings are tied to each event,
-    //      or we can do any combination of both, and the script will auto-fill the settings list for each event, removing any duplicates
-    // after startup, the events list for each setting is cleared, so only the settings list for each event remains
-    //      (though in the end this does not matter since after startup we de-reference mySettings and so the dictionary along with all of its Setting objects gets garbage collected)
+    //      or we can do any combination of both, and the script will auto-fill the settings list for each event and the events list for each setting, removing any duplicates
+    // after startup all Setting objects get garbage collected and only Event objects remain
 
     // if an event has no setting tied to it, then it succeeds upon meeting its condition
     // if an event has one or more settings tied to it, then it succeeds upon meeting its condition if and only if at least one of its settings permits it
@@ -333,9 +330,7 @@ startup
     // likewise if we try to tie an event to a setting which is not defined, an exception will be thrown
     // But, WARNING: if we forget to tie an event with a setting,
     //      the script will work normally, the setting will do nothing, and the event will always succeed regardless of the setting
-    // to avoid forgetting to tie settings with events, when we make a change, we should open DebugView and observe the printed events detected upon startup
-    //      and review what settings are tied to each event
-    //      and likewise observe if there are any settings with no events or events with no settings that are erroneous
+    // to avoid forgetting to tie settings with events, when we make a change, we should open DebugView and review the printed settings, events, and statistics thereof to make sure they are correct
 
     // ================================================== settings ==================================================
 
@@ -519,12 +514,10 @@ startup
     // ================================================== STARTUP SCRIPT ==================================================
     // ====================================================================================================================
 
-    // ================================================== apply configured settings ==================================================
+    // ================================================== apply configured setting-event links ==================================================
 
-    // add each setting that references an event to that event's settings list
-    // and clear each setting's events list
-    //      so that in the end only the events have references to their respective settings and not the other way around
-    // if a setting points to an event that doesn't exist, an exception will be thrown
+    // add each setting that references an event to that event's settings list,
+    // or throw an exception if a setting points to an event that doesn't exist
     foreach (var setting in mySettings.Values)
     {
         foreach (string eventSlug in setting.Item3)
@@ -536,25 +529,38 @@ startup
                 throw new Exception("Internal exception (ASL): cannot write event " + eventSlug + " to setting " + setting.Item2 + " because this event doesn't exist");
             myEvent.Item3.Add(setting.Item2);
         }
-        setting.Item3.Clear();
-        setting.Item3.TrimExcess();
     }
 
-    // remove duplicate settings from each event's settings list and trim the list's capacity down to the desired size to save memory
-    // if an event points to a setting that doesn't exist, an exception will be thrown
-    var settingSlugsCopy = new HashSet<string>();
+    var slugsTemp = new HashSet<string>(); // GC
+
+    // add each event that references a setting to that setting's events list,
+    // or throw an exception if an event points to a setting that doesn't exist
+    // and remove duplicate settings from each event's settings list
     foreach (var @event in events.Values)
     {
         foreach (string settingSlug in @event.Item3)
         {
-            if (!mySettings.ContainsKey(settingSlug))
+            Tuple<bool, string, List<string>, string, string, string> setting;
+            if (!mySettings.TryGetValue(settingSlug, out setting))
                 throw new Exception("Internal exception (ASL): cannot write setting " + settingSlug + " to event " + @event.Item2 + " because this setting doesn't exist");
-            settingSlugsCopy.Add(settingSlug);
+            setting.Item3.Add(@event.Item2);
+            slugsTemp.Add(settingSlug);
         }
         @event.Item3.Clear();
-        @event.Item3.AddRange(settingSlugsCopy);
+        @event.Item3.AddRange(slugsTemp);
         @event.Item3.TrimExcess();
-        settingSlugsCopy.Clear();
+        slugsTemp.Clear();
+    }
+
+    // remove duplicate events from each setting's events list
+    foreach (var setting in mySettings.Values)
+    {
+        foreach (string eventSlug in setting.Item3)
+            slugsTemp.Add(eventSlug);
+        setting.Item3.Clear();
+        setting.Item3.AddRange(slugsTemp);
+        setting.Item3.TrimExcess();
+        slugsTemp.Clear();
     }
 
     // ================================================== apply configured events ==================================================
@@ -591,35 +597,40 @@ startup
 
     // ================================================== debug ==================================================
 
-    var infoBuilder = new StringBuilder();
-    var eventsWithNoSettings = new HashSet<string>();
-    var settingsWithEvents = new HashSet<string>();
+    var infoBuilder = new StringBuilder(); // GC
+    var settingsWithNoEvents = new List<string>(); // GC
+    var eventsWithNoSettings = new List<string>(); // GC
 
     infoBuilder.Append("\r\n");
 
     // settings and events
 
     infoBuilder.Append("Settings detected:\r\n");
-    infoBuilder.Append("\t" + "{Setting}".PadRight(30) + " : {Parent}\r\n");
+    infoBuilder.Append("\t" + "{Default} {Setting}".PadRight(36) + " : " + "{Parent}".PadRight(30) + " => {Count:[..Events]}\r\n");
     foreach (var setting in mySettings.Values)
-        infoBuilder.Append("\t" + setting.Item2.PadRight(30) + " : " + (setting.Item6 ?? "{null}") + "\r\n");
+    {
+        if (setting.Item3.Count == 0)
+            settingsWithNoEvents.Add(setting.Item2);
+        infoBuilder.Append("\t" + setting.Item1.ToString().PadRight(5) + " " + setting.Item2.PadRight(30) + " : " + (setting.Item6 ?? "{null}").PadRight(30)
+            + " => " + setting.Item3.Count + ":[" + string.Join(", ", setting.Item3) + "]\r\n");
+    }
     infoBuilder.Append("Total settings: " + mySettings.Count.ToString() + "\r\n\r\n");
 
     infoBuilder.Append("Events detected:\r\n");
-    infoBuilder.Append("\t" + "{EventType} {Event}".PadRight(45) + " {HasXyzBounds}".PadRight(6) + " => {[..Settings]}\r\n");
+    infoBuilder.Append("\t" + "{EventType}     {Event}".PadRight(46) + " {HasXyzBounds} => {Count:[..Settings]}\r\n");
     foreach (var @event in events.Values)
     {
         if (@event.Item3.Count == 0)
             eventsWithNoSettings.Add(@event.Item2);
-        foreach (string settingSlug in @event.Item3)
-            settingsWithEvents.Add(settingSlug);
-        infoBuilder.Append("\t" + (GetEventString(@event.Item1) + " " + @event.Item2).PadRight(45) + (" " + (@event.Item4 != null).ToString()).PadRight(6)
-            + " => [" + string.Join(", ", @event.Item3) + "]\r\n");
+        infoBuilder.Append("\t" + GetEventString(@event.Item1).PadRight(15) + " " + @event.Item2.PadRight(30) + " " + (@event.Item4 != null).ToString().PadRight(5)
+            + " => " + @event.Item3.Count + ":[" + string.Join(", ", @event.Item3) + "]\r\n");
     }
     infoBuilder.Append("Total events: " + events.Count.ToString() + "\r\n\r\n");
 
-    infoBuilder.Append("Settings with no events: (total=" + (mySettings.Count - settingsWithEvents.Count).ToString() + ")\r\n");
-    foreach (string settingSlug in mySettings.Keys.Except(settingsWithEvents))
+
+
+    infoBuilder.Append("Settings with no events: (total=" + settingsWithNoEvents.Count.ToString() + ")\r\n");
+    foreach (string settingSlug in settingsWithNoEvents)
         infoBuilder.Append("\t" + settingSlug + "\r\n");
     infoBuilder.Append("\r\n");
     
@@ -647,8 +658,8 @@ startup
     int collisionSum = 0;
     int maxEventsPerBucket = 0;
     double avgEventsPerBucket;
-    var bucketGroupsPerEventCount = new List<List<List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>>();
-    var bucketCountsPerEventCount = new List<int>();
+    var bucketGroupsPerEventCount = new List<List<List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>>(); // GC
+    var bucketCountsPerEventCount = new List<int>(); // GC
     const int MinEventCountPerBucketToCompute = 2; // change to a higher number if startup script lags or debug info gets too spammy
     foreach (var bucket in XyzEventHashMap.Values)
     {
@@ -699,12 +710,12 @@ startup
     // ================================================== cleanup ==================================================
 
     // de-reference unneeded collections to allow for garbage collection
-    settingSlugsCopy = null;
     mySettings = null;
     events = null;
+    slugsTemp = null;
     infoBuilder = null;
+    settingsWithNoEvents = null;
     eventsWithNoSettings = null;
-    settingsWithEvents = null;
     bucketGroupsPerEventCount = null;
     bucketCountsPerEventCount = null;
 
