@@ -50,23 +50,13 @@ startup
 
     // ================================================== action variables ==================================================
 
-    dynamic Old = null;
-    dynamic Current = null;
-
-    // the "settings" variable points to a different object depending on which block you use it from
-    // from the startup block it points to a LiveSplit.ASL.ASLSettingsBuilder object
-    // from all other blocks (including shutdown) it points to a LiveSplit.ASL.ASLSettingsReader object
-    // so in order to read settings from the startup block, we need to pass the reader manually from another block
-    // unfortunately ASL does not let us directly refer to the "LiveSplit.ASL.ASLSettingsReader" type, so we are forced to declare it as a "dynamic" type
-    dynamic SettingsReader = null;
-
-    Action<dynamic> SetOld = _old => Old = _old;
-    Action<dynamic> SetCurrent = _current => Current = _current;
-    Action<dynamic> SetSettingsReader = settingsReader => SettingsReader = settingsReader;
+    Action<dynamic> SetOld = newOld => old = newOld;
+    Action<dynamic> SetCurrent = newCurrent => current = newCurrent;
+    Action<dynamic> SetSettings = newSettings => settings = newSettings;
 
     vars.SetOld = SetOld;
     vars.SetCurrent = SetCurrent;
-    vars.SetSettingsReader = SetSettingsReader;
+    vars.SetSettings = SetSettings;
 
     // ================================================== coordinate checks ==================================================
 
@@ -76,12 +66,12 @@ startup
     // (e.g. InXBoundsOld manually performs the same check as InBounds instead of just calling InBounds)
 
     Func<float, float, float?, bool> InBounds = (min, max, pos) => pos >= min && pos <= max;
-    Func<float, float, bool> InXBoundsOld = (min, max) => Old.xPos >= min && Old.xPos <= max;
-    Func<float, float, bool> InYBoundsOld = (min, max) => Old.yPos >= min && Old.yPos <= max;
-    Func<float, float, bool> InZBoundsOld = (min, max) => Old.zPos >= min && Old.zPos <= max;
-    Func<float, float, bool> InXBoundsCurrent = (min, max) => Current.xPos >= min && Current.xPos <= max;
-    Func<float, float, bool> InYBoundsCurrent = (min, max) => Current.yPos >= min && Current.yPos <= max;
-    Func<float, float, bool> InZBoundsCurrent = (min, max) => Current.zPos >= min && Current.zPos <= max;
+    Func<float, float, bool> InXBoundsOld = (min, max) => old.xPos >= min && old.xPos <= max;
+    Func<float, float, bool> InYBoundsOld = (min, max) => old.yPos >= min && old.yPos <= max;
+    Func<float, float, bool> InZBoundsOld = (min, max) => old.zPos >= min && old.zPos <= max;
+    Func<float, float, bool> InXBoundsCurrent = (min, max) => current.xPos >= min && current.xPos <= max;
+    Func<float, float, bool> InYBoundsCurrent = (min, max) => current.yPos >= min && current.yPos <= max;
+    Func<float, float, bool> InZBoundsCurrent = (min, max) => current.zPos >= min && current.zPos <= max;
 
     Func<float, float, float, float, float, float, float?, float?, float?, bool> InPosWithBounds = (xMin, xMax, yMin, yMax, zMin, zMax, xPos, yPos, zPos)
     =>
@@ -91,23 +81,23 @@ startup
 
     Func<float, float, float, float, float, float, bool> InPosWithBoundsOld = (xMin, xMax, yMin, yMax, zMin, zMax)
     =>
-        Old.xPos >= xMin && Old.xPos <= xMax &&
-        Old.yPos >= yMin && Old.yPos <= yMax &&
-        Old.zPos >= zMin && Old.zPos <= zMax;
+        old.xPos >= xMin && old.xPos <= xMax &&
+        old.yPos >= yMin && old.yPos <= yMax &&
+        old.zPos >= zMin && old.zPos <= zMax;
 
     Func<float, float, float, float, float, float, bool> InPosWithBoundsCurrent = (xMin, xMax, yMin, yMax, zMin, zMax)
     =>
-        Current.xPos >= xMin && Current.xPos <= xMax &&
-        Current.yPos >= yMin && Current.yPos <= yMax &&
-        Current.zPos >= zMin && Current.zPos <= zMax;
+        current.xPos >= xMin && current.xPos <= xMax &&
+        current.yPos >= yMin && current.yPos <= yMax &&
+        current.zPos >= zMin && current.zPos <= zMax;
 
     Func<float, float, float?, bool> InRange = (targ, range, pos) => pos >= targ - range && pos <= targ + range;
-    Func<float, float, bool> InXRangeOld = (targ, range) => Old.xPos >= targ - range && Old.xPos <= targ + range;
-    Func<float, float, bool> InYRangeOld = (targ, range) => Old.yPos >= targ - range && Old.yPos <= targ + range;
-    Func<float, float, bool> InZRangeOld = (targ, range) => Old.zPos >= targ - range && Old.zPos <= targ + range;
-    Func<float, float, bool> InXRangeCurrent = (targ, range) => Current.xPos >= targ - range && Current.xPos <= targ + range;
-    Func<float, float, bool> InYRangeCurrent = (targ, range) => Current.yPos >= targ - range && Current.yPos <= targ + range;
-    Func<float, float, bool> InZRangeCurrent = (targ, range) => Current.zPos >= targ - range && Current.zPos <= targ + range;
+    Func<float, float, bool> InXRangeOld = (targ, range) => old.xPos >= targ - range && old.xPos <= targ + range;
+    Func<float, float, bool> InYRangeOld = (targ, range) => old.yPos >= targ - range && old.yPos <= targ + range;
+    Func<float, float, bool> InZRangeOld = (targ, range) => old.zPos >= targ - range && old.zPos <= targ + range;
+    Func<float, float, bool> InXRangeCurrent = (targ, range) => current.xPos >= targ - range && current.xPos <= targ + range;
+    Func<float, float, bool> InYRangeCurrent = (targ, range) => current.yPos >= targ - range && current.yPos <= targ + range;
+    Func<float, float, bool> InZRangeCurrent = (targ, range) => current.zPos >= targ - range && current.zPos <= targ + range;
 
     Func<float, float, float, float, float?, float?, float?, bool> InPosWithRange = (xTarg, yTarg, zTarg, range, xPos, yPos, zPos)
     =>
@@ -117,15 +107,15 @@ startup
 
     Func<float, float, float, float, bool> InPosWithRangeOld = (xTarg, yTarg, zTarg, range)
     =>
-        Old.xPos >= xTarg - range && Old.xPos <= xTarg + range &&
-        Old.yPos >= yTarg - range && Old.yPos <= yTarg + range &&
-        Old.zPos >= zTarg - range && Old.zPos <= zTarg + range;
+        old.xPos >= xTarg - range && old.xPos <= xTarg + range &&
+        old.yPos >= yTarg - range && old.yPos <= yTarg + range &&
+        old.zPos >= zTarg - range && old.zPos <= zTarg + range;
 
     Func<float, float, float, float, bool> InPosWithRangeCurrent = (xTarg, yTarg, zTarg, range)
     =>
-        Current.xPos >= xTarg - range && Current.xPos <= xTarg + range &&
-        Current.yPos >= yTarg - range && Current.yPos <= yTarg + range &&
-        Current.zPos >= zTarg - range && Current.zPos <= zTarg + range;
+        current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
+        current.yPos >= yTarg - range && current.yPos <= yTarg + range &&
+        current.zPos >= zTarg - range && current.zPos <= zTarg + range;
 
     Func<float, float, float, float?, float?, float?, bool> InPosExact = (xTarg, yTarg, zTarg, xPos, yPos, zPos)
     =>
@@ -135,15 +125,15 @@ startup
 
     Func<float, float, float, bool> InPosExactOld = (xTarg, yTarg, zTarg)
     =>
-        xTarg == Old.xPos &&
-        yTarg == Old.yPos &&
-        zTarg == Old.zPos;
+        xTarg == old.xPos &&
+        yTarg == old.yPos &&
+        zTarg == old.zPos;
         
     Func<float, float, float, bool> InPosExactCurrent = (xTarg, yTarg, zTarg)
     =>
-        xTarg == Current.xPos &&
-        yTarg == Current.yPos &&
-        zTarg == Current.zPos;
+        xTarg == current.xPos &&
+        yTarg == current.yPos &&
+        zTarg == current.zPos;
 
     // ================================================== runtime hash code computations ==================================================
 
@@ -188,9 +178,9 @@ startup
     Func<int> GetXyzHashCodeCurrent = () =>
     {
         uint hash = 0;
-        hash = hash * FnvPrime + (Current.xPos == null ? int.MaxValue : (uint)(int)Math.Floor(Current.xPos / BucketSize));
-        hash = hash * FnvPrime + (Current.yPos == null ? int.MaxValue : (uint)(int)Math.Floor(Current.yPos / BucketSize));
-        hash = hash * FnvPrime + (Current.zPos == null ? int.MaxValue : (uint)(int)Math.Floor(Current.zPos / BucketSize));
+        hash = hash * FnvPrime + (current.xPos == null ? int.MaxValue : (uint)(int)Math.Floor(current.xPos / BucketSize));
+        hash = hash * FnvPrime + (current.yPos == null ? int.MaxValue : (uint)(int)Math.Floor(current.yPos / BucketSize));
+        hash = hash * FnvPrime + (current.zPos == null ? int.MaxValue : (uint)(int)Math.Floor(current.zPos / BucketSize));
         return (int)hash;
     };
 
@@ -305,7 +295,7 @@ startup
         if (TriggeredEvent.Item3.Count == 0)
             eventSetting = true;
         else foreach (string settingSlug in TriggeredEvent.Item3)
-            if (SettingsReader[settingSlug])
+            if (settings[settingSlug])
                 eventSetting = true;
         if (!eventSetting)
             return false;
@@ -319,19 +309,19 @@ startup
     Func<float, float, float, bool> SeedGet = (xTarg, yTarg, zTarg)
     =>
         InPosWithRangeCurrent(xTarg, yTarg, zTarg, SeedRange) &&
-        (Current.seedCount != null && Current.seedCount == Old.seedCount + 1);
+        (current.seedCount != null && current.seedCount == old.seedCount + 1);
     
     const float BossRange = 30f;
     Func<float, float, float, bool> BossKill = (xTarg, yTarg, zTarg)
     =>
         InPosWithRangeCurrent(xTarg, yTarg, zTarg, BossRange) &&
-        (Old.combat == 2 && Current.combat == 0);
+        (old.combat == 2 && current.combat == 0);
     
     const float DadRange = 30f;
     Func<float, float, float, bool> DadKill = (xTarg, yTarg, zTarg)
     =>
         InPosWithRangeCurrent(xTarg, yTarg, zTarg, DadRange) &&
-        (Old.enemyHP > 0 && Current.enemyHP == 0);
+        (old.enemyHP > 0 && current.enemyHP == 0);
     
     // ===================================================================================================================
     // ================================================== CONFIGURATION ==================================================
@@ -450,14 +440,14 @@ startup
     //                                                                                                    XyzBounds:
     //                                                                               SettingSlugs:         (float,float,float,
     //                                   EventType:int        Slug:string             List<string>         float,float,float)?        Condition:Func<bool>
-    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartLoad",           new List<string> {}, BoundsR(x,y,z,range),       () => (Old.xPos == x && Old.yPos == y) && (Current.xPos != x || Current.yPos != y))) (-465f, -351f, -24f, 5f);
-    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetLoad",           new List<string> {}, BoundsR(x,y,z,range),       () => (Old.xPos != x || Old.yPos != y) && (Current.xPos == x && Current.yPos == y))) (-465f, -351f, -24f, 5f);
+    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartLoad",           new List<string> {}, BoundsR(x,y,z,range),       () => (old.xPos == x && old.yPos == y) && (current.xPos != x || current.yPos != y))) (-465f, -351f, -24f, 5f);
+    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetLoad",           new List<string> {}, BoundsR(x,y,z,range),       () => (old.xPos != x || old.yPos != y) && (current.xPos == x && current.yPos == y))) (-465f, -351f, -24f, 5f);
     (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartNew",            new List<string> {}, BoundsR(x,y,z,5f),          () => InPosWithRangeOld(x, y, z, range) && !InPosWithRangeCurrent(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
     (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetNew",            new List<string> {}, BoundsR(x,y,z,range),       () => !InPosWithRangeOld(x, y, z, range) && InPosWithRangeCurrent(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
 
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CollapsingBridge",    new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-310.25f, -241.0f, -30.2f, 0.2f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "PreDad1",             new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (4f, -388.6f, -40f, 2f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ThiccCutscene",       new List<string> {}, BoundsR(x,y,z,range),       () => CompletedEvents.Contains("PreDad1") && Old.yPos < -238f && InPosWithRangeCurrent(x, y, z, range))) (6f, -233.5f, -33f, 2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ThiccCutscene",       new List<string> {}, BoundsR(x,y,z,range),       () => CompletedEvents.Contains("PreDad1") && old.yPos < -238f && InPosWithRangeCurrent(x, y, z, range))) (6f, -233.5f, -33f, 2f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "RedPlate",            new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-55f, -447f, -180f, 2f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "BluePlate",           new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (45f, -456f, -180f, 2f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "YellowPlate",         new List<string> {}, BoundsR(x,y,z,range),       () => InPosWithRangeCurrent(x, y, z, range))) (-156f, -413f, -180f, 2f);
@@ -465,7 +455,7 @@ startup
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheGod",              new List<string> {}, BoundsB(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (7.129f, 7.131f, -401.502f, -401.5f, -31.4f, -21f);
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "Resurrection",        new List<string> {}, BoundsB(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (5.562f, 5.566f, -222.745f, -222.517f, -33.1f, -21f);
 
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Dad1",                new List<string> {}, BoundsR(x,y,z,range),       () => Old.xPos < 5.7f && InPosWithRangeCurrent(x, y, z, range))) (11.3f, -392.9f, -40f, 1f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Dad1",                new List<string> {}, BoundsR(x,y,z,range),       () => old.xPos < 5.7f && InPosWithRangeCurrent(x, y, z, range))) (11.3f, -392.9f, -40f, 1f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Dad2",                new List<string> {}, BoundsR(x,y,z,range),       () => DadKill(x, y, z))) (6f, -187f, -48f, DadRange);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "KingsGateH",          new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (-413.5f, -66.5f, 25f, BossRange);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "SunTempleH",          new List<string> {}, BoundsR(x,y,z,range),       () => BossKill(x, y, z))) (-554.5f, -54f, 34f, BossRange);
@@ -846,7 +836,7 @@ init
     //      not copying the actual contents of the object
     vars.SetOld(old);
     vars.SetCurrent(current);
-    vars.SetSettingsReader(settings);
+    vars.SetSettings(settings);
 }
 
 onStart
