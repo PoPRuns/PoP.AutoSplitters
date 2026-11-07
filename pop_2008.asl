@@ -344,8 +344,8 @@ startup
     //      or we can do any combination of both, and the script will auto-fill the settings list for each event and the events list for each setting, removing any duplicates
     // after startup all Setting objects get garbage collected and only Event objects remain
 
-    // if an event has no setting tied to it, then it succeeds upon meeting its condition
-    // if an event has one or more settings tied to it, then it succeeds upon meeting its condition if and only if at least one of its settings permits it
+    // if an event has no setting tied to it, then it succeeds upon meeting its condition (as long as it is not in CompletedEvents)
+    // if an event has one or more settings tied to it, then it succeeds upon meeting its condition if only if at least one of its settings permits it (as long as it is not in CompletedEvents)
 
     // if we try to tie to a setting an event which is not defined, an exception will be thrown and startup will fail
     // likewise if we try to tie an event to a setting which is not defined, an exception will be thrown
