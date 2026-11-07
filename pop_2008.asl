@@ -162,7 +162,7 @@ startup
     // if the coordinate value is not found (i.e. is null), then the largest possible bucket value is used
     //      since it is extremely unlikely that any real coordinates will fall in that bucket
     // if coord is somehow NaN, ∞, or -∞, the cast to an int will turn it into 0, so this function will return 0
-    Func<float?, int> GetHashCodeCoord = coord =>
+    Func<float?, int> GetCoordHashCode = coord =>
     {
         if (coord == null)
             return int.MaxValue;
@@ -172,7 +172,7 @@ startup
 
     // fast hashing algorithm with wide dispersion where the same inputs ordered differently yield different results
     const uint FnvPrime = 0x01000193;   // https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV_prime
-    Func<int, int, int, int> CombineHashCodes = (xHash, yHash, zHash) =>
+    Func<int, int, int, int> CombineCoordHashCodes = (xHash, yHash, zHash) =>
     {
         uint hash = 0;
         hash = hash * FnvPrime + (uint)xHash;
@@ -184,7 +184,7 @@ startup
     // as above, but this time the buckets are cubes,
     // so every point in 3D space falls into a cube bucket of length BucketSize
     // and all coordinates within the same bucket have the same hash code
-    Func<int> GetHashCodeCurrent = () =>
+    Func<int> GetXyzHashCodeCurrent = () =>
     {
         uint hash = 0;
         hash = hash * FnvPrime + (Current.xPos == null ? int.MaxValue : (uint)(int)Math.Floor(Current.xPos / BucketSize));
@@ -231,7 +231,7 @@ startup
                     int xHashCode = minXBucket + x;
                     int yHashCode = minYBucket + y;
                     int zHashCode = minZBucket + z;
-                    int hashCode = CombineHashCodes(xHashCode, yHashCode, zHashCode);
+                    int hashCode = CombineCoordHashCodes(xHashCode, yHashCode, zHashCode);
                     hashCodes[index] = hashCode;
                     index++;
                 }
@@ -754,15 +754,20 @@ startup
     Func<bool> Update = () =>
     {
         TriggeredEvent = null;
-        int xyzHashCode = GetHashCodeCurrent();
+        int xyzHashCode = GetXyzHashCodeCurrent();
         List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>> localEvents;
         XyzEventHashMap.TryGetValue(xyzHashCode, out localEvents);
         localEvents = localEvents ?? EmptyEventList;
         
         // print local events:
-        /*var builder = new StringBuilder();
-        foreach (var @event in localEvents ?? EmptyEventList) builder.Append(@event.Item2 + "\r\n");
-        if ((localEvents ?? EmptyEventList).Count > 0) print(builder.ToString());*/
+        /*var builderLocal = new StringBuilder();
+        foreach (var @event in localEvents) builderLocal.Append(@event.Item2 + "\r\n");
+        if (localEvents.Count > 0) print(builderLocal.ToString());*/
+
+        // print non-location-based events:
+        /*var builderOther = new StringBuilder();
+        foreach (var @event in OtherEvents) builderOther.Append(@event.Item2 + "\r\n");
+        if (OtherEvents.Count > 0) print(builderOther.ToString());*/
 
         // Concat function means we iterate through the lists one after the other; it does not create a concatenated list
         foreach (var @event in localEvents.Concat(OtherEvents))
