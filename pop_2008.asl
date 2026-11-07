@@ -338,7 +338,7 @@ startup
 
     // ================================================== settings ==================================================
 
-    // parent settings must be specified before their respective children settings
+    // parent settings must be specified before their respective children settings (else an exception will be thrown on startup)
     // settings with the same parent (or lack of parent) will be displayed in the same order as specified here
 
     //Default:bool    Slug:string            EventSlugs:List<string>                   Description:string                              ToolTip:string?                                                   ParentSlug:string?
