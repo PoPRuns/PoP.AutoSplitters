@@ -726,6 +726,7 @@ startup
         int xyzHashCode = GetHashCodeCurrent();
         List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>> localEvents;
         XyzEventHashMap.TryGetValue(xyzHashCode, out localEvents);
+        localEvents = localEvents ?? EmptyEventList;
         
         // print local events:
         /*var builder = new StringBuilder();
@@ -733,7 +734,7 @@ startup
         if ((localEvents ?? EmptyEventList).Count > 0) print(builder.ToString());*/
 
         // Concat function means we iterate through the lists one after the other; it does not create a concatenated list
-        foreach (var @event in (localEvents ?? EmptyEventList).Concat(OtherEvents))
+        foreach (var @event in localEvents.Concat(OtherEvents))
         {
             if (@event.Item5())
             {
