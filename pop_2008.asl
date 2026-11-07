@@ -184,6 +184,7 @@ startup
     // as above, but this time the buckets are cubes,
     // so every point in 3D space falls into a cube bucket of length BucketSize
     // and all coordinates within the same bucket have the same hash code
+    // we manually inline here since this is a hot path (see comment about inlining above)
     Func<int> GetXyzHashCodeCurrent = () =>
     {
         uint hash = 0;
@@ -210,14 +211,14 @@ startup
     // (if the debug output is too spammy, we can increase the MinEventCountPerBucketToCompute constant until it is sufficiently terse)
     Func<float, float, float, float, float, float, int[]> GetHashCodesForBounds = (xMin, xMax, yMin, yMax, zMin, zMax) =>
     {
-        int minXBucket = (int)Math.Floor(xMin / BucketSize);
-        int maxXBucket = (int)Math.Floor(xMax / BucketSize);
+        int minXBucket = GetCoordHashCode(xMin);
+        int maxXBucket = GetCoordHashCode(xMax);
         int xBucketCount = maxXBucket - minXBucket + 1;
-        int minYBucket = (int)Math.Floor(yMin / BucketSize);
-        int maxYBucket = (int)Math.Floor(yMax / BucketSize);
+        int minYBucket = GetCoordHashCode(yMin);
+        int maxYBucket = GetCoordHashCode(yMax);
         int yBucketCount = maxYBucket - minYBucket + 1;
-        int minZBucket = (int)Math.Floor(zMin / BucketSize);
-        int maxZBucket = (int)Math.Floor(zMax / BucketSize);
+        int minZBucket = GetCoordHashCode(zMin);
+        int maxZBucket = GetCoordHashCode(zMax);
         int zBucketCount = maxZBucket - minZBucket + 1;
         int bucketCount = xBucketCount * yBucketCount * zBucketCount;
         int[] hashCodes = new int[bucketCount];
