@@ -161,6 +161,7 @@ startup
     // so all coordinates within the same bucket have the same hash code
     // if the coordinate value is not found (i.e. is null), then the largest possible bucket value is used
     //      since it is extremely unlikely that any real coordinates will fall in that bucket
+    // if coord is somehow NaN, ∞, or -∞, the cast to an int will turn it into 0, so this function will return 0
     Func<float?, int> GetHashCodeCoord = coord =>
     {
         if (coord == null)
