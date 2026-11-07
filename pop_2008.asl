@@ -57,7 +57,7 @@ startup
 
     // the "settings" variable points to a different object depending on which block you use it from
     // from the startup block it points to a LiveSplit.ASL.ASLSettingsBuilder object
-    // from all other blocks it points to a LiveSplit.ASL.ASLSettingsReader object
+    // from all other blocks (including shutdown) it points to a LiveSplit.ASL.ASLSettingsReader object
     // so in order to read settings from the startup block, we need to pass the reader manually from another block
     // unfortunately ASL does not let us directly refer to the "LiveSplit.ASL.ASLSettingsReader" type, so we are forced to declare it as a "dynamic" type
     dynamic SettingsReader = null;
