@@ -621,15 +621,16 @@ startup
         infoBuilder.Append("\t" + eventSlug + "\r\n");
     infoBuilder.Append("\r\n");
 
-    // the hash map count is how many elements it actually stores
-    // while its capacity is the total number of elements that it can hold based on how much memory it has been allocated
+    // the hash map count is how many keys it actually stores
+    // while its capacity is the total number of keys that it can hold based on how much memory it has been allocated
     int xyzEventHashMapCapacity =
         ((Array)
         typeof(Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>)
         .GetField("entries", BindingFlags.NonPublic | BindingFlags.Instance)
         .GetValue(XyzEventHashMap))
         .Length;
-    infoBuilder.Append("XyzEventHashMap capacity: " + XyzEventHashMap.Count.ToString() + "/" + xyzEventHashMapCapacity);
+    infoBuilder.Append("XyzEventHashMap capacity: " + XyzEventHashMap.Count.ToString() + "/" + xyzEventHashMapCapacity + "\r\n");
+    infoBuilder.Append("OtherEvents capacity: " + OtherEvents.Count.ToString() + "/" + OtherEvents.Capacity.ToString() + "\r\n");
     infoBuilder.Append("\r\n");
 
     print(infoBuilder.ToString());
