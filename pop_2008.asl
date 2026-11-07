@@ -41,7 +41,7 @@ state("Prince of Persia", "Unknown") { }
 // then once we're done using it we should de-reference it, i.e.:
 // tempCollection = null;
 // for any leftover empty/small collections, we don't need to bother
-// to help keep track, any declared object that should be de-referenced at the end is marked with a "GC" comment
+// to help keep track, any declared object that should be de-referenced at the end should be marked with a "GC" comment
 startup
 {
     // ==========================================================================================================================
