@@ -803,7 +803,7 @@ init
     //      since those variables point to nothing (that is, old=null and current=null) at the time of startup
     // but if we explicitly write the new "old" and "current" objects into the "Old" and "Current" variables defined in the startup block as they are updated,
     //      then we can safely define functions in both the startup and the init blocks, and they will safely read the updated "old" and "current" objects,
-    //      as they are at the time of the function call
+    //      as they are at the time of the function call - as long as we refer to the manually created "Old" and "Current" variables rather than the built-in "old" and "current" ones
     // this is because the "old" and "current" objects are placed behind the "Old" and "Current" variables
     //      which get captured by the closure created when a function lambda is defined,
     //      so the lambda will always look for the object behind the variable at the time of the function call
