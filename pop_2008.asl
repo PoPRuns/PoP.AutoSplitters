@@ -70,52 +70,75 @@ startup
 
     // ================================================== coordinate checks ==================================================
 
+    // for functions that are expected to be called every cycle, we deliberately avoid calling other small functions from within a function
+    // because we cannot define real functions but only lambdas, and so the compiler cannot optimise (inline) any function calls
+    // so for the sake of performance, we inline small composite functions manually,
+    // (e.g. InXBoundsOld manually performs the same check as InBounds instead of just calling InBounds)
+
     Func<float, float, float?, bool> InBounds = (min, max, pos) => pos >= min && pos <= max;
-    Func<float, float, bool> InXBoundsOld = (min, max) => InBounds(min, max, Old.xPos);
-    Func<float, float, bool> InYBoundsOld = (min, max) => InBounds(min, max, Old.yPos);
-    Func<float, float, bool> InZBoundsOld = (min, max) => InBounds(min, max, Old.zPos);
-    Func<float, float, bool> InXBoundsCurrent = (min, max) => InBounds(min, max, Current.xPos);
-    Func<float, float, bool> InYBoundsCurrent = (min, max) => InBounds(min, max, Current.yPos);
-    Func<float, float, bool> InZBoundsCurrent = (min, max) => InBounds(min, max, Current.zPos);
+    Func<float, float, bool> InXBoundsOld = (min, max) => Old.xPos >= min && Old.xPos <= max;
+    Func<float, float, bool> InYBoundsOld = (min, max) => Old.yPos >= min && Old.yPos <= max;
+    Func<float, float, bool> InZBoundsOld = (min, max) => Old.zPos >= min && Old.zPos <= max;
+    Func<float, float, bool> InXBoundsCurrent = (min, max) => Current.xPos >= min && Current.xPos <= max;
+    Func<float, float, bool> InYBoundsCurrent = (min, max) => Current.yPos >= min && Current.yPos <= max;
+    Func<float, float, bool> InZBoundsCurrent = (min, max) => Current.zPos >= min && Current.zPos <= max;
 
     Func<float, float, float, float, float, float, float?, float?, float?, bool> InPosWithBounds = (xMin, xMax, yMin, yMax, zMin, zMax, xPos, yPos, zPos)
     =>
         xPos >= xMin && xPos <= xMax &&
         yPos >= yMin && yPos <= yMax &&
         zPos >= zMin && zPos <= zMax;
+
     Func<float, float, float, float, float, float, bool> InPosWithBoundsOld = (xMin, xMax, yMin, yMax, zMin, zMax)
-        => InPosWithBounds(xMin, xMax, yMin, yMax, zMin, zMax, Old.xPos, Old.yPos, Old.zPos);
+    =>
+        Old.xPos >= xMin && Old.xPos <= xMax &&
+        Old.yPos >= yMin && Old.yPos <= yMax &&
+        Old.zPos >= zMin && Old.zPos <= zMax;
+
     Func<float, float, float, float, float, float, bool> InPosWithBoundsCurrent = (xMin, xMax, yMin, yMax, zMin, zMax)
-        => InPosWithBounds(xMin, xMax, yMin, yMax, zMin, zMax, Current.xPos, Current.yPos, Current.zPos);
+    =>
+        Current.xPos >= xMin && Current.xPos <= xMax &&
+        Current.yPos >= yMin && Current.yPos <= yMax &&
+        Current.zPos >= zMin && Current.zPos <= zMax;
 
     Func<float, float, float?, bool> InRange = (targ, range, pos) => pos >= targ - range && pos <= targ + range;
-    Func<float, float, bool> InXRangeOld = (targ, range) => InRange(targ, range, Old.xPos);
-    Func<float, float, bool> InYRangeOld = (targ, range) => InRange(targ, range, Old.yPos);
-    Func<float, float, bool> InZRangeOld = (targ, range) => InRange(targ, range, Old.zPos);
-    Func<float, float, bool> InXRangeCurrent = (targ, range) => InRange(targ, range, Current.xPos);
-    Func<float, float, bool> InYRangeCurrent = (targ, range) => InRange(targ, range, Current.yPos);
-    Func<float, float, bool> InZRangeCurrent = (targ, range) => InRange(targ, range, Current.zPos);
+    Func<float, float, bool> InXRangeOld = (targ, range) => Old.xPos >= targ - range && Old.xPos <= targ + range;
+    Func<float, float, bool> InYRangeOld = (targ, range) => Old.yPos >= targ - range && Old.yPos <= targ + range;
+    Func<float, float, bool> InZRangeOld = (targ, range) => Old.zPos >= targ - range && Old.zPos <= targ + range;
+    Func<float, float, bool> InXRangeCurrent = (targ, range) => Current.xPos >= targ - range && Current.xPos <= targ + range;
+    Func<float, float, bool> InYRangeCurrent = (targ, range) => Current.yPos >= targ - range && Current.yPos <= targ + range;
+    Func<float, float, bool> InZRangeCurrent = (targ, range) => Current.zPos >= targ - range && Current.zPos <= targ + range;
 
     Func<float, float, float, float, float?, float?, float?, bool> InPosWithRange = (xTarg, yTarg, zTarg, range, xPos, yPos, zPos)
     =>
         xPos >= xTarg - range && xPos <= xTarg + range &&
         yPos >= yTarg - range && yPos <= yTarg + range &&
         zPos >= zTarg - range && zPos <= zTarg + range;
+
     Func<float, float, float, float, bool> InPosWithRangeOld = (xTarg, yTarg, zTarg, range)
-        => InPosWithRange(xTarg, yTarg, zTarg, range, Old.xPos, Old.yPos, Old.zPos);
+    =>
+        Old.xPos >= xTarg - range && Old.xPos <= xTarg + range &&
+        Old.yPos >= yTarg - range && Old.yPos <= yTarg + range &&
+        Old.zPos >= zTarg - range && Old.zPos <= zTarg + range;
+
     Func<float, float, float, float, bool> InPosWithRangeCurrent = (xTarg, yTarg, zTarg, range)
-        => InPosWithRange(xTarg, yTarg, zTarg, range, Current.xPos, Current.yPos, Current.zPos);
+    =>
+        Current.xPos >= xTarg - range && Current.xPos <= xTarg + range &&
+        Current.yPos >= yTarg - range && Current.yPos <= yTarg + range &&
+        Current.zPos >= zTarg - range && Current.zPos <= zTarg + range;
 
     Func<float, float, float, float?, float?, float?, bool> InPosExact = (xTarg, yTarg, zTarg, xPos, yPos, zPos)
     =>
         xTarg == xPos &&
         yTarg == yPos &&
         zTarg == zPos;
+
     Func<float, float, float, bool> InPosExactOld = (xTarg, yTarg, zTarg)
     =>
         xTarg == Old.xPos &&
         yTarg == Old.yPos &&
         zTarg == Old.zPos;
+        
     Func<float, float, float, bool> InPosExactCurrent = (xTarg, yTarg, zTarg)
     =>
         xTarg == Current.xPos &&
@@ -138,7 +161,7 @@ startup
     // so all coordinates within the same bucket have the same hash code
     // if the coordinate value is not found (i.e. is null), then the largest possible bucket value is used
     //      since it is extremely unlikely that any real coordinates will fall in that bucket
-    Func<float?, int> GetHashCode = coord =>
+    Func<float?, int> GetHashCodeCoord = coord =>
     {
         if (coord == null)
             return int.MaxValue;
@@ -162,10 +185,6 @@ startup
     // and all coordinates within the same bucket have the same hash code
     Func<int> GetHashCodeCurrent = () =>
     {
-        // this whole function could be reduced to just the following line:
-        // return CombineHashCodes(GetHashCode(Current.xPos), GetHashCode(Current.yPos), GetHashCode(Current.zPos));
-        // but since our methods are lambdas, method calls do not get inlined
-        // so, since this is a hot path (called every cycle), we manually inline it for the sake of performance
         uint hash = 0;
         hash = hash * FnvPrime + (Current.xPos == null ? int.MaxValue : (uint)(int)Math.Floor(Current.xPos / BucketSize));
         hash = hash * FnvPrime + (Current.yPos == null ? int.MaxValue : (uint)(int)Math.Floor(Current.yPos / BucketSize));
