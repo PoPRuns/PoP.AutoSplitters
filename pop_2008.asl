@@ -324,6 +324,7 @@ startup
     //      or we may specify which settings are tied to each event,
     //      or we can do any combination of both, and the script will auto-fill the settings list for each event, removing any duplicates
     // after startup, the events list for each setting is cleared, so only the settings list for each event remains
+    //      (though in the end this does not matter since after startup we de-reference mySettings and so the dictionary along with all of its Setting objects gets garbage collected)
 
     // if an event has no setting tied to it, then it succeeds upon meeting its condition
     // if an event has one or more settings tied to it, then it succeeds upon meeting its condition if and only if at least one of its settings permits it
