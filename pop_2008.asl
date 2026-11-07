@@ -648,8 +648,6 @@ startup
     }
     infoBuilder.Append("Total events: " + events.Count.ToString() + "\r\n\r\n");
 
-
-
     infoBuilder.Append("Settings with no events: (total=" + settingsWithNoEvents.Count.ToString() + ")\r\n");
     foreach (string settingSlug in settingsWithNoEvents)
         infoBuilder.Append("\t" + settingSlug + "\r\n");
