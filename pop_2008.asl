@@ -534,7 +534,7 @@ startup
         setting.Item3.TrimExcess();
     }
 
-    // remove duplicate settings from each event's settings list
+    // remove duplicate settings from each event's settings list and trim the list's capacity down to the desired size to save memory
     // if an event points to a setting that doesn't exist, an exception will be thrown
     var settingSlugsCopy = new HashSet<string>();
     foreach (var @event in events.Values)
@@ -547,6 +547,7 @@ startup
         }
         @event.Item3.Clear();
         @event.Item3.AddRange(settingSlugsCopy);
+        @event.Item3.TrimExcess();
         settingSlugsCopy.Clear();
     }
 
