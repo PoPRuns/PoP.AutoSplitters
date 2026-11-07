@@ -582,29 +582,8 @@ startup
 
     // since most of the lists in XyzEventHashMap contain only one value and likely have a capacity of 4, it is worth reducing the capacity of the lists
     //      to the actual desired size and reduce memory usage from these lists by almost 4 times
-    // with the same iteration we can also calculate some useful statistics to display at the end
-    int collisionSum = 0;
-    int maxEventsPerBucket = 0;
-    double avgEventsPerBucket;
-    var bucketGroupsPerEventCount = new List<List<List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>>();
-    var bucketCountsPerEventCount = new List<int>();
-    const int MinEventCountPerBucketToCompute = 2; // change to a higher number if startup script lags or debug info gets too spammy
     foreach (var bucket in XyzEventHashMap.Values)
-    {
         bucket.TrimExcess();
-        collisionSum += bucket.Count;
-        if (bucket.Count >= maxEventsPerBucket)
-            maxEventsPerBucket = bucket.Count;
-        for (int i = bucketGroupsPerEventCount.Count; i <= bucket.Count; i++)
-        {
-            bucketGroupsPerEventCount.Add(new List<List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>());
-            bucketCountsPerEventCount.Add(0);
-        }
-        if (bucket.Count >= MinEventCountPerBucketToCompute)
-            bucketGroupsPerEventCount[bucket.Count].Add(bucket);
-        bucketCountsPerEventCount[bucket.Count]++;
-    }
-    avgEventsPerBucket = (double)collisionSum / (double)XyzEventHashMap.Count;
 
     // allocate a large enough capacity at startup so that the CompletedEvents hashset does not need to be reallocated as it grows during runtime
     CompletedEvents = new HashSet<string>(events.Count);
@@ -616,6 +595,8 @@ startup
     var settingsWithEvents = new HashSet<string>();
 
     infoBuilder.Append("\r\n");
+
+    // settings and events
 
     infoBuilder.Append("Settings detected:\r\n");
     infoBuilder.Append("\t" + "{Setting}".PadRight(30) + " : {Parent}\r\n");
@@ -646,6 +627,8 @@ startup
         infoBuilder.Append("\t" + eventSlug + "\r\n");
     infoBuilder.Append("\r\n");
 
+    // buckets
+
     infoBuilder.Append("Bucket size: " + BucketSize.ToString() + "\r\n\r\n");
 
     // the hash map count is how many keys it actually stores
@@ -659,6 +642,28 @@ startup
     infoBuilder.Append("XyzEventHashMap capacity: " + XyzEventHashMap.Count.ToString() + "/" + xyzEventHashMapCapacity + "\r\n");
     infoBuilder.Append("OtherEvents capacity: " + OtherEvents.Count.ToString() + "/" + OtherEvents.Capacity.ToString() + "\r\n");
     infoBuilder.Append("\r\n");
+
+    int collisionSum = 0;
+    int maxEventsPerBucket = 0;
+    double avgEventsPerBucket;
+    var bucketGroupsPerEventCount = new List<List<List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>>();
+    var bucketCountsPerEventCount = new List<int>();
+    const int MinEventCountPerBucketToCompute = 2; // change to a higher number if startup script lags or debug info gets too spammy
+    foreach (var bucket in XyzEventHashMap.Values)
+    {
+        collisionSum += bucket.Count;
+        if (bucket.Count >= maxEventsPerBucket)
+            maxEventsPerBucket = bucket.Count;
+        for (int i = bucketGroupsPerEventCount.Count; i <= bucket.Count; i++)
+        {
+            bucketGroupsPerEventCount.Add(new List<List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>());
+            bucketCountsPerEventCount.Add(0);
+        }
+        if (bucket.Count >= MinEventCountPerBucketToCompute)
+            bucketGroupsPerEventCount[bucket.Count].Add(bucket);
+        bucketCountsPerEventCount[bucket.Count]++;
+    }
+    avgEventsPerBucket = (double)collisionSum / (double)XyzEventHashMap.Count;
 
     infoBuilder.Append("Average events per bucket: " + avgEventsPerBucket.ToString() + "\r\n");
     infoBuilder.Append("Maximum events per bucket: " + maxEventsPerBucket.ToString() + "\r\n");
@@ -707,10 +712,12 @@ startup
     // =====================================================================================================================
 
     // ================================================== onStart ==================================================
+
     Action OnStart = () => CompletedEvents.Clear();
     vars.OnStart = OnStart;
 
     // ================================================== update ==================================================
+
     var EmptyEventList = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
     Func<bool> Update = () =>
     {
