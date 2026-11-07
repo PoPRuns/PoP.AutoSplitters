@@ -615,9 +615,8 @@ startup
     // allocate a large enough capacity at startup so that the CompletedEvents hashset does not need to be reallocated as it grows during runtime
     CompletedEvents = new HashSet<string>(events.Count);
 
-    // ================================================== outputs ==================================================
+    // ================================================== debug ==================================================
 
-    // print detected settings and events
     var infoBuilder = new StringBuilder();
     var eventsWithNoSettings = new HashSet<string>();
     var settingsWithEvents = new HashSet<string>();
@@ -681,7 +680,8 @@ startup
 
     print(infoBuilder.ToString());
 
-    // switch to real time prompt
+    // ================================================== timing method prompt ==================================================
+    
     if (timer.CurrentTimingMethod != TimingMethod.RealTime)
     {
         DialogResult mbox = MessageBox.Show(timer.Form,
