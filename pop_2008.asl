@@ -28,7 +28,7 @@ state("Prince of Persia", "Unknown") { }
 // Setting: Tuple<bool, string, List<string>, string, string, string>
 // Event:   Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>
 
-// for Event.SettingSlugs we prefer a List over a HashSet because iterating over a list is faster
+// for Event.SettingSlugs and Setting.EventSlugs we prefer a List over a HashSet because iterating over a list is faster
 // the downside is that removing duplicates is much slower as it requires an extra hashset allocation and copying items between collections
 // but this removal of duplicates is only done upon startup, so we sacrifice some startup performance in order to gain runtime performance
 
