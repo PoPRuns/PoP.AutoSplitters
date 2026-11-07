@@ -188,9 +188,8 @@ startup
     // once startup is complete the size of XyzEventHashMap is printed and can be viewed with DebugView
     // so for each game we can try changing BucketSize and seeing how the XyzEventHashMap capacity changes
     // this XyzEventHashMap capacity should inform how big the bucket size should be (multiply it by about 50-100 to get a ballpark estimate of the number of bytes it is occupying in memory)
-    // likewise some collision statistics are printed regarding how often events collide in the same bucket, and buckets with maximum collisions are printed
-    // for a more fine-grained overview of the distributions of event collisions for each bucket size, change the ignoreCollisionCountGreaterThanOrEqualTo variable to a desired number for testing
-    // for example if for a given bucket size max events per bucket is 10 but you want to know how many buckets have 9, 8, 7, (etc.) events, then set that variable to 10, 9, 8, etc. and this info will be printed
+    // likewise the distribution of buckets that contain collisions is printed at the end, which should also inform us of what bucket size to choose
+    // (if the debug output is too spammy, we can increase the MinEventCountPerBucketToCompute constant until it is sufficiently terse)
     Func<float, float, float, float, float, float, int[]> GetHashCodesForBounds = (xMin, xMax, yMin, yMax, zMin, zMax) =>
     {
         int minXBucket = (int)Math.Floor(xMin / BucketSize);
@@ -587,30 +586,25 @@ startup
     int collisionSum = 0;
     int maxEventsPerBucket = 0;
     double avgEventsPerBucket;
-    var maxCollisionBuckets = new List<List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>();
-    int ignoreCollisionCountGreaterThanOrEqualTo = int.MaxValue; // change to desired number for testing
-    int bucketsToCount = 0;
+    var bucketGroupsPerEventCount = new List<List<List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>>();
+    var bucketCountsPerEventCount = new List<int>();
+    const int MinEventCountPerBucketToCompute = 2; // change to a higher number if startup script lags or debug info gets too spammy
     foreach (var bucket in XyzEventHashMap.Values)
     {
         bucket.TrimExcess();
-        if (bucket.Count >= ignoreCollisionCountGreaterThanOrEqualTo)
-            continue;
-        bucketsToCount++;
         collisionSum += bucket.Count;
-        if (bucket.Count == maxEventsPerBucket)
-        {
-            maxCollisionBuckets.Add(bucket);
-            continue;
-        }
-        if (bucket.Count > maxEventsPerBucket)
-        {
+        if (bucket.Count >= maxEventsPerBucket)
             maxEventsPerBucket = bucket.Count;
-            maxCollisionBuckets.Clear();
-            maxCollisionBuckets.Add(bucket);
-            continue;
+        for (int i = bucketGroupsPerEventCount.Count; i <= bucket.Count; i++)
+        {
+            bucketGroupsPerEventCount.Add(new List<List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>());
+            bucketCountsPerEventCount.Add(0);
         }
+        if (bucket.Count >= MinEventCountPerBucketToCompute)
+            bucketGroupsPerEventCount[bucket.Count].Add(bucket);
+        bucketCountsPerEventCount[bucket.Count]++;
     }
-    avgEventsPerBucket = (double)collisionSum / (double)bucketsToCount;
+    avgEventsPerBucket = (double)collisionSum / (double)XyzEventHashMap.Count;
 
     // allocate a large enough capacity at startup so that the CompletedEvents hashset does not need to be reallocated as it grows during runtime
     CompletedEvents = new HashSet<string>(events.Count);
@@ -666,22 +660,25 @@ startup
     infoBuilder.Append("OtherEvents capacity: " + OtherEvents.Count.ToString() + "/" + OtherEvents.Capacity.ToString() + "\r\n");
     infoBuilder.Append("\r\n");
 
-    if (ignoreCollisionCountGreaterThanOrEqualTo < int.MaxValue)
-        infoBuilder.Append("[Ignoring buckets with an equal to or greater than collision count as: " + ignoreCollisionCountGreaterThanOrEqualTo.ToString() + "]\r\n\r\n");
-
     infoBuilder.Append("Average events per bucket: " + avgEventsPerBucket.ToString() + "\r\n");
     infoBuilder.Append("Maximum events per bucket: " + maxEventsPerBucket.ToString() + "\r\n");
     infoBuilder.Append("\r\n");
 
-    infoBuilder.Append("Buckets with maximum collisions:\r\n");
-    foreach (var eventList in maxCollisionBuckets)
-        infoBuilder.Append("\t[" + string.Join(", ", eventList.Select(@event => @event.Item2)) + "]\r\n");
-    infoBuilder.Append("\r\n");
+    for (int i = bucketGroupsPerEventCount.Count - 1; i >= 1; i--)
+    {
+        bool omit = i < MinEventCountPerBucketToCompute;
+        infoBuilder.Append("Buckets with " + i + " events (total=" + bucketCountsPerEventCount[i] + "):" + (omit ? " (omitted)\r\n" : string.Empty) + "\r\n");
+        if (omit)
+            continue;
+        foreach (var bucket in bucketGroupsPerEventCount[i])
+            infoBuilder.Append("\t[" + string.Join(", ", bucket.Select(@event => @event.Item2)) + "]\r\n");
+        infoBuilder.Append("\r\n");
+    }
 
     print(infoBuilder.ToString());
 
     // ================================================== timing method prompt ==================================================
-    
+
     if (timer.CurrentTimingMethod != TimingMethod.RealTime)
     {
         DialogResult mbox = MessageBox.Show(timer.Form,
@@ -702,7 +699,8 @@ startup
     infoBuilder = null;
     eventsWithNoSettings = null;
     settingsWithEvents = null;
-    maxCollisionBuckets = null;
+    bucketGroupsPerEventCount = null;
+    bucketCountsPerEventCount = null;
 
     // =====================================================================================================================
     // ================================================== RUNTIME ACTIONS ==================================================
