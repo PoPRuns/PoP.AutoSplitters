@@ -555,6 +555,8 @@ startup
     // ================================================== STARTUP SCRIPT ==================================================
     // ====================================================================================================================
 
+    refreshRate = 120;
+
     // ================================================== apply configured setting-event links ==================================================
 
     // add each setting that references an event to that event's settings list,
@@ -827,7 +829,6 @@ startup
 
 init
 {
-    refreshRate = 120;
     if (game.ProcessName == "PrinceOfPersia_Launcher")
     {
         version = "Digital";
