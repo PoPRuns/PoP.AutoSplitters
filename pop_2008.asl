@@ -332,7 +332,7 @@ startup
     const float SeedRange = 5f;
     Func<float, float, float, bool> SeedGet = (xTarg, yTarg, zTarg)
     =>
-        current.seedCount != null && current.seedCount == old.seedCount + 1 &&
+        old.seedCount != null && current.seedCount == old.seedCount + 1 &&
         current.xPos >= xTarg - SeedRange && current.xPos <= xTarg + SeedRange &&
         current.yPos >= yTarg - SeedRange && current.yPos <= yTarg + SeedRange &&
         current.zPos >= zTarg - SeedRange && current.zPos <= zTarg + SeedRange;
