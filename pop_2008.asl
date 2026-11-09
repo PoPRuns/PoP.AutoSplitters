@@ -1,21 +1,19 @@
 state("PrinceOfPersia_Launcher", "Digital")
 {
-    int seedCount       : 0x00B37F64, 0xDC;
-    float xPos          : 0x00B30D08, 0x40;
-    float yPos          : 0x00B30D08, 0x44;
-    float zPos          : 0x00B30D08, 0x48;
-    int combat          : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
-    int enemyHp         : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8, 0x250;
+    int seedCount : 0x00B37F64, 0xDC;
+    float xPos    : 0x00B30D08, 0x40;
+    float yPos    : 0x00B30D08, 0x44;
+    float zPos    : 0x00B30D08, 0x48;
+    uint enemyPtr : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8; // pointer to the object that contains enemy data; is zero if there is no enemy
 }
 
 state("Prince of Persia", "DRM Free")
 {
-    int seedCount       : 0x00B37F64, 0xDC;
-    float xPos          : 0x00B30D08, 0x40;
-    float yPos          : 0x00B30D08, 0x44;
-    float zPos          : 0x00B30D08, 0x48;
-    int combat          : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
-    int enemyHp         : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8, 0x250;
+    int seedCount : 0x00B37F64, 0xDC;
+    float xPos    : 0x00B30D08, 0x40;
+    float yPos    : 0x00B30D08, 0x44;
+    float zPos    : 0x00B30D08, 0x48;
+    uint enemyPtr : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8; // see comment above
 }
 
 state("Prince of Persia", "Unknown") { }
@@ -304,7 +302,7 @@ startup
 
     HashSet<string> CompletedEvents = null;
 
-    // Event
+    // update block sets this to an event that is not in CompletedEvents and has been triggered on this cycle
     Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> TriggeredEvent = null;
 
     Func<int, bool> CheckEvent = eventType =>
@@ -312,8 +310,6 @@ startup
         if (TriggeredEvent == null)
             return false;
         if (TriggeredEvent.Item1 != eventType)
-            return false;
-        if (!CompletedEvents.Add(TriggeredEvent.Item2))
             return false;
         bool eventSetting = false;
         if (TriggeredEvent.Item3.Count == 0)
@@ -323,6 +319,7 @@ startup
                 eventSetting = true;
         if (!eventSetting)
             return false;
+        CompletedEvents.Add(TriggeredEvent.Item2);
         print(GetEventString(eventType) + " " + TriggeredEvent.Item2);
         return true;
     };
@@ -338,35 +335,20 @@ startup
         current.zPos >= zTarg - SeedRange && current.zPos <= zTarg + SeedRange;
     
     // this is the moment the combat state finishes and the enemy HP bar disappears
-    // though some fights (such as Dad 2, Fight 1, Fight 2) never enter combat state at all
     const float CombatRangeXy = 30f;
     const float CombatRangeZ = 6f;
     Func<float, float, float, bool> CombatFin = (xTarg, yTarg, zTarg)
     =>
-        old.combat == 2 && current.combat == 0 &&
+        old.enemyPtr != 0 && current.enemyPtr == 0 &&
         current.xPos >= xTarg - CombatRangeXy && current.xPos <= xTarg + CombatRangeXy &&
         current.yPos >= yTarg - CombatRangeXy && current.yPos <= yTarg + CombatRangeXy &&
         current.zPos >= zTarg - CombatRangeZ && current.zPos <= zTarg + CombatRangeZ;
-    
-    // this is the moment enemy HP goes to 0, which is followed by an inconsistent combo finishing animation, which is followed by the fight ending
-    // though some fights (such as Dad 2, Fight 1) end at this exact moment, cutting the final combo finishing animation
-    const float EnemyRangeXy = 30f;
-    const float EnemyRangeZ = 6f;
-    Func<float, float, float, bool> EnemyKill = (xTarg, yTarg, zTarg)
-    =>
-        old.enemyHp > 0 && current.enemyHp == 0 &&
-        current.xPos >= xTarg - EnemyRangeXy && current.xPos <= xTarg + EnemyRangeXy &&
-        current.yPos >= yTarg - EnemyRangeXy && current.yPos <= yTarg + EnemyRangeXy &&
-        current.zPos >= zTarg - EnemyRangeZ && current.zPos <= zTarg + EnemyRangeZ;
     
     Func<float, float, float, ValueTuple<float, float, float, float, float, float>> BoundsSeed = (x, y, z)
         => ValueTuple.Create(x - SeedRange, x + SeedRange, y - SeedRange, y + SeedRange, z - SeedRange, z + SeedRange);
 
     Func<float, float, float, ValueTuple<float, float, float, float, float, float>> BoundsCombat = (x, y, z)
         => ValueTuple.Create(x - CombatRangeXy, x + CombatRangeXy, y - CombatRangeXy, y + CombatRangeXy, z - CombatRangeZ, z + CombatRangeZ);
-
-    Func<float, float, float, ValueTuple<float, float, float, float, float, float>> BoundsEnemy = (x, y, z)
-        => ValueTuple.Create(x - EnemyRangeXy, x + EnemyRangeXy, y - EnemyRangeXy, y + EnemyRangeXy, z - EnemyRangeZ, z + EnemyRangeZ);
     
     // ===================================================================================================================
     // ================================================== CONFIGURATION ==================================================
@@ -502,10 +484,10 @@ startup
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheGod",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (7.129f, 7.131f, -401.502f, -401.5f, -31.4f, -21f);
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "Resurrection",        new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (5.562f, 5.566f, -222.745f, -222.517f, -33.1f, -21f);
 
-    (actionPos=(x,y,z)                => AddEvent(MiscEvent,  "Fight3_1",            new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (-186f, -231f, -32f);
-    (actionPos=(x,y,z)                => AddEvent(SplitEvent, "ThirdFight",          new List<string> {}, BoundsCombat(x,y,z),       () => CompletedEvents.Contains("Fight3_1") && CombatFin(x, y, z))) (-186f, -231f, -32f);
+    (actionPos=(x,y,z)                => AddEvent(MiscEvent,  "Fight3_1",            new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (-186f, -140f, -32f);
+    (actionPos=(x,y,z)                => AddEvent(SplitEvent, "ThirdFight",          new List<string> {}, BoundsCombat(x,y,z),       () => CompletedEvents.Contains("Fight3_1") && CombatFin(x, y, z))) (-186f, -140f, -32f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "Dad1",                new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (5f, -402f, -40f);
-    (actionPos=(x,y,z)                => AddEvent(SplitEvent, "Dad2",                new List<string> {}, BoundsEnemy(x,y,z),        () => EnemyKill(x, y, z))) (6f, -187f, -48f);
+    (actionPos=(x,y,z)                => AddEvent(SplitEvent, "Dad2",                new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (6f, -187f, -48f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "KingsGateH",          new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (-413.5f, -66.5f, 25f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "SunTempleH",          new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (-554.5f, -54f, 34f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "MarshallingGroundH",  new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (-761.5f, -17.5f, 19f);
@@ -809,7 +791,7 @@ startup
         // Concat function means we iterate through the lists one after the other; it does not create a concatenated list
         foreach (var @event in localEvents.Concat(OtherEvents))
         {
-            if (@event.Item5())
+            if (!CompletedEvents.Contains(@event.Item2) && @event.Item5())
             {
                 TriggeredEvent = @event;
                 break;
