@@ -467,7 +467,7 @@ startup
 
     (actionRange=(x,y,z,range)        => AddEvent(MiscEvent,  "Fight3_1",            new List<string> {}, BoundsR(x,y,z,range),       () => CombatFin(x, y, z))) (-186f, -231f, -32f, CombatRange);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ThirdFight",          new List<string> {}, BoundsR(x,y,z,range),       () => CompletedEvents.Contains("Fight3_1") && CombatFin(x, y, z))) (-186f, -231f, -32f, CombatRange);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Dad1",                new List<string> {}, BoundsR(x,y,z,range),       () => old.xPos < 5.7f && InPosWithRangeCurrent(x, y, z, range))) (11.3f, -392.9f, -40f, 1f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Dad1",                new List<string> {}, BoundsR(x,y,z,range),       () => CombatFin(x, y, z))) (5f, -402f, -40f, CombatRange);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Dad2",                new List<string> {}, BoundsR(x,y,z,range),       () => EnemyKill(x, y, z))) (6f, -187f, -48f, EnemyRange);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "KingsGateH",          new List<string> {}, BoundsR(x,y,z,range),       () => CombatFin(x, y, z))) (-413.5f, -66.5f, 25f, CombatRange);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "SunTempleH",          new List<string> {}, BoundsR(x,y,z,range),       () => CombatFin(x, y, z))) (-554.5f, -54f, 34f, CombatRange);
