@@ -311,10 +311,10 @@ startup
         else foreach (string settingSlug in TriggeredEvent.Item3)
             if (settings[settingSlug])
                 eventSetting = true;
-        if (!eventSetting)
-            return false;
         CompletedEvents.Add(TriggeredEvent.Item2);
         print(GetEventString(eventType) + " " + TriggeredEvent.Item2);
+        if (!eventSetting)
+            return false;
         return true;
     };
 
