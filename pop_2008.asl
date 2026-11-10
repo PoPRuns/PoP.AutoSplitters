@@ -333,7 +333,7 @@ startup
             }
         }
         CompletedEvents.Add(TriggeredEvent.Item2);
-        print(GetEventString(eventType) + " " + TriggeredEvent.Item2);
+        print(GetEventString(eventType) + " " + TriggeredEvent.Item2 + " " + eventSetting);
         return eventSetting;
     };
 
@@ -780,7 +780,11 @@ startup
 
     // ================================================== onReset ==================================================
 
-    Action OnReset = () => CompletedEvents.Clear();
+    Action OnReset = () =>
+    {
+        CompletedEvents.Clear();
+        print("CompletedEvents cleared.");
+    };
     vars.OnReset = OnReset;
 
     // ================================================== update ==================================================
