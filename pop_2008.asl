@@ -821,8 +821,9 @@ EventsConfigDone:
     // ================================================== update ==================================================
 
     var EmptyEventList = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
-    Func<bool> Update = () =>
+    Func<ExpandoObject, bool> Update = newOld =>
     {
+        old = newOld;
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
         List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>> localEvents;
@@ -925,11 +926,7 @@ onReset
 // note that the update block - along with every other block except startup and shutdown - does not run when LiveSplit is not hooked to any game process
 update
 {
-    // we avoid explicitly assigning vars.SetCurrent(current) in the update block since it is not needed,
-    // and just in case this allows the compiler to perform some optimisations when accessing the Current variable
-    vars.SetOld(old);
-
-    return vars.Update();
+    return vars.Update(old);
 }
 
 start
