@@ -384,7 +384,7 @@ startup
     // parent settings must be specified before their respective children settings (else an exception will be thrown on startup)
     // settings with the same parent (or lack of parent) will be displayed in the same order as specified here
 
-    //Default:bool    Slug:string            EventSlugs:List<string>                   Description:string                              ToolTip:string?                                                   ParentSlug:string?
+    //Default:bool    Slug:string            EventSlugs:List<string>                   Description:string                               ToolTip:string?                                                   ParentSlug:string?
     AddSetting(true,  "specialEvents",       new List<string> {},                      "Split on scripted game events",                 null,                                                             null);
     AddSetting(true,  "combatEvents",        new List<string> {},                      "Split on defeating enemies in specific levels", null,                                                             null);
     AddSetting(true,  "anyStandard",         new List<string> {},                      "Splits specific to the Any% (Standard) route",  null,                                                             null);
@@ -477,7 +477,7 @@ startup
 
     //                                                                                                    XyzBounds:
     //                                                                               SettingSlugs:         (float,float,float,
-    //                                   EventType:int        Slug:string             List<string>         float,float,float)?        Condition:Func<bool>
+    //                                   EventType:int        Slug:string             List<string>         float,float,float)?       Condition:Func<bool>
     (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartLoad",           new List<string> {}, BoundsRange(x,y,z,range),  () => (old.xPos == x && old.yPos == y) && (current.xPos != x || current.yPos != y))) (-465f, -351f, -24f, 5f);
     (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetLoad",           new List<string> {}, BoundsRange(x,y,z,range),  () => (old.xPos != x || old.yPos != y) && (current.xPos == x && current.yPos == y))) (-465f, -351f, -24f, 5f);
     (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartNew",            new List<string> {}, BoundsRange(x,y,z,5f),     () => InPosWithRangeOld(x, y, z, range) && !InPosWithRangeCurrent(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
