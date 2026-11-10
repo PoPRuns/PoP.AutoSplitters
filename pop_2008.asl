@@ -260,6 +260,8 @@ startup
     var mySettings = new Dictionary<string, Tuple<bool, string, List<string>, string, string, string>>(); // GC
     Action<bool, string, List<string>, string, string, string> AddSetting = (@default, slug, eventSlugs, description, toolTip, parentSlug) =>
     {
+        if (mySettings.ContainsKey(slug))
+            throw new Exception("Internal exception (ASL): setting " + slug + " has already been added.");
         mySettings.Add(slug, Tuple.Create(@default, slug, eventSlugs, description, toolTip, parentSlug));
         settings.Add(slug, @default, description, parentSlug);
         settings.SetToolTip(slug, toolTip);
@@ -271,8 +273,12 @@ startup
     const int SplitEvent = 2;
     const int MiscEvent = 3;
     var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>(); // GC
-    Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> AddEvent = (eventType, slug, settingSlugs, xyzBounds, condition)
-        => events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, xyzBounds, condition));
+    Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> AddEvent = (eventType, slug, settingSlugs, xyzBounds, condition) =>
+    {
+        if (events.ContainsKey(slug))
+            throw new Exception("Internal exception (ASL): event " + slug + " has already been added.");
+        events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, xyzBounds, condition));
+    };
     
     Func<int, string> GetEventString = eventType =>
     {
