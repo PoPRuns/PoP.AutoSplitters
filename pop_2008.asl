@@ -313,9 +313,7 @@ startup
                 eventSetting = true;
         CompletedEvents.Add(TriggeredEvent.Item2);
         print(GetEventString(eventType) + " " + TriggeredEvent.Item2);
-        if (!eventSetting)
-            return false;
-        return true;
+        return eventSetting;
     };
 
     // ================================================== game-specific functions and helper variables ==================================================
