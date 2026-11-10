@@ -63,7 +63,7 @@ startup
     // so for the sake of performance, we inline small composite functions manually,
     // (e.g. InXBoundsOld manually performs the same check as InBounds instead of just calling InBounds)
 
-    Func<float, float, float?, bool> InBounds = (min, max, pos) => pos >= min && pos <= max;
+    Func<float, float, float, bool> InBounds = (min, max, pos) => pos >= min && pos <= max;
     Func<float, float, bool> InXBoundsOld = (min, max) => old.xPos >= min && old.xPos <= max;
     Func<float, float, bool> InYBoundsOld = (min, max) => old.yPos >= min && old.yPos <= max;
     Func<float, float, bool> InZBoundsOld = (min, max) => old.zPos >= min && old.zPos <= max;
@@ -71,7 +71,7 @@ startup
     Func<float, float, bool> InYBoundsCurrent = (min, max) => current.yPos >= min && current.yPos <= max;
     Func<float, float, bool> InZBoundsCurrent = (min, max) => current.zPos >= min && current.zPos <= max;
 
-    Func<float, float, float, float, float, float, float?, float?, float?, bool> InPosWithBounds = (xMin, xMax, yMin, yMax, zMin, zMax, xPos, yPos, zPos)
+    Func<float, float, float, float, float, float, float, float, float, bool> InPosWithBounds = (xMin, xMax, yMin, yMax, zMin, zMax, xPos, yPos, zPos)
     =>
         xPos >= xMin && xPos <= xMax &&
         yPos >= yMin && yPos <= yMax &&
@@ -89,7 +89,7 @@ startup
         current.yPos >= yMin && current.yPos <= yMax &&
         current.zPos >= zMin && current.zPos <= zMax;
 
-    Func<float, float, float?, bool> InRange = (targ, range, pos) => pos >= targ - range && pos <= targ + range;
+    Func<float, float, float, bool> InRange = (targ, range, pos) => pos >= targ - range && pos <= targ + range;
     Func<float, float, bool> InXRangeOld = (targ, range) => old.xPos >= targ - range && old.xPos <= targ + range;
     Func<float, float, bool> InYRangeOld = (targ, range) => old.yPos >= targ - range && old.yPos <= targ + range;
     Func<float, float, bool> InZRangeOld = (targ, range) => old.zPos >= targ - range && old.zPos <= targ + range;
@@ -97,7 +97,7 @@ startup
     Func<float, float, bool> InYRangeCurrent = (targ, range) => current.yPos >= targ - range && current.yPos <= targ + range;
     Func<float, float, bool> InZRangeCurrent = (targ, range) => current.zPos >= targ - range && current.zPos <= targ + range;
 
-    Func<float, float, float, float, float?, float?, float?, bool> InPosWithRange = (xTarg, yTarg, zTarg, range, xPos, yPos, zPos)
+    Func<float, float, float, float, float, float, float, bool> InPosWithRange = (xTarg, yTarg, zTarg, range, xPos, yPos, zPos)
     =>
         xPos >= xTarg - range && xPos <= xTarg + range &&
         yPos >= yTarg - range && yPos <= yTarg + range &&
@@ -115,7 +115,7 @@ startup
         current.yPos >= yTarg - range && current.yPos <= yTarg + range &&
         current.zPos >= zTarg - range && current.zPos <= zTarg + range;
 
-    Func<float, float, float, float, float, float?, float?, float?, bool> InPosWithRangeXyZ = (xTarg, yTarg, zTarg, xyRange, zRange, xPos, yPos, zPos)
+    Func<float, float, float, float, float, float, float, float, bool> InPosWithRangeXyZ = (xTarg, yTarg, zTarg, xyRange, zRange, xPos, yPos, zPos)
     =>
         xPos >= xTarg - xyRange && xPos <= xTarg + xyRange &&
         yPos >= yTarg - xyRange && yPos <= yTarg + xyRange &&
@@ -133,7 +133,7 @@ startup
         current.yPos >= yTarg - xyRange && current.yPos <= yTarg + xyRange &&
         current.zPos >= zTarg - zRange && current.zPos <= zTarg + zRange;
 
-    Func<float, float, float, float?, float?, float?, bool> InPosExact = (xTarg, yTarg, zTarg, xPos, yPos, zPos)
+    Func<float, float, float, float, float, float, bool> InPosExact = (xTarg, yTarg, zTarg, xPos, yPos, zPos)
     =>
         xTarg == xPos &&
         yTarg == yPos &&
@@ -180,13 +180,7 @@ startup
     // if the coordinate value is not found (i.e. is null), then the largest possible bucket value is used
     //      since it is extremely unlikely that any real coordinates will fall in that bucket
     // if coord is somehow NaN, ∞, or -∞, the cast to an int will turn it into 0, so this function will return 0
-    Func<float?, int> GetCoordHashCode = coord =>
-    {
-        if (coord == null)
-            return int.MaxValue;
-        int bucket = (int)Math.Floor((float)coord / BucketSize);
-        return bucket;
-    };
+    Func<float, int> GetCoordHashCode = coord => (int)Math.Floor(coord / BucketSize);
 
     // fast hashing algorithm with wide dispersion where the same inputs ordered differently yield different results
     const uint FnvPrime = 0x01000193;   // https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV_prime
@@ -206,9 +200,9 @@ startup
     Func<int> GetXyzHashCodeCurrent = () =>
     {
         uint hash = 0;
-        hash = hash * FnvPrime + (current.xPos == null ? int.MaxValue : (uint)(int)Math.Floor(current.xPos / BucketSize));
-        hash = hash * FnvPrime + (current.yPos == null ? int.MaxValue : (uint)(int)Math.Floor(current.yPos / BucketSize));
-        hash = hash * FnvPrime + (current.zPos == null ? int.MaxValue : (uint)(int)Math.Floor(current.zPos / BucketSize));
+        hash = hash * FnvPrime + (uint)(int)Math.Floor(current.xPos / BucketSize);
+        hash = hash * FnvPrime + (uint)(int)Math.Floor(current.yPos / BucketSize);
+        hash = hash * FnvPrime + (uint)(int)Math.Floor(current.zPos / BucketSize);
         return (int)hash;
     };
 
@@ -329,7 +323,7 @@ startup
     const float SeedRange = 5f;
     Func<float, float, float, bool> SeedGet = (xTarg, yTarg, zTarg)
     =>
-        old.seedCount != null && current.seedCount == old.seedCount + 1 &&
+        current.seedCount == old.seedCount + 1 &&
         current.xPos >= xTarg - SeedRange && current.xPos <= xTarg + SeedRange &&
         current.yPos >= yTarg - SeedRange && current.yPos <= yTarg + SeedRange &&
         current.zPos >= zTarg - SeedRange && current.zPos <= zTarg + SeedRange;
