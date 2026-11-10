@@ -325,8 +325,13 @@ startup
         if (TriggeredEvent.Item3.Count == 0)
             eventSetting = true;
         else foreach (string settingSlug in TriggeredEvent.Item3)
+        {
             if (settings[settingSlug])
+            {
                 eventSetting = true;
+                break;
+            }
+        }
         CompletedEvents.Add(TriggeredEvent.Item2);
         print(GetEventString(eventType) + " " + TriggeredEvent.Item2);
         return eventSetting;
@@ -839,9 +844,7 @@ startup
 init
 {
     if (game.ProcessName == "PrinceOfPersia_Launcher")
-    {
         version = "Digital";
-    }
     else
     {
         string MD5Hash;
