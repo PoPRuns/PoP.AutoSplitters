@@ -97,6 +97,16 @@ startup
     Func<float, float, bool> InYRangeCurrent = (targ, range) => current.yPos >= targ - range && current.yPos <= targ + range;
     Func<float, float, bool> InZRangeCurrent = (targ, range) => current.zPos >= targ - range && current.zPos <= targ + range;
 
+    Func<float, float, float, bool> InXyRangeOld = (xTarg, yTarg, range)
+    =>
+        old.xPos >= xTarg - range && old.xPos <= xTarg + range &&
+        old.yPos >= yTarg - range && old.yPos <= yTarg + range;
+    
+    Func<float, float, float, bool> InXyRangeCurrent = (xTarg, yTarg, range)
+    =>
+        current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
+        current.yPos >= yTarg - range && current.yPos <= yTarg + range;
+
     Func<float, float, float, float, float, float, float, bool> InPosWithRange = (xTarg, yTarg, zTarg, range, xPos, yPos, zPos)
     =>
         xPos >= xTarg - range && xPos <= xTarg + range &&
@@ -334,19 +344,20 @@ startup
     
     // this is the moment the combat state finishes and the enemy HP bar disappears
     const float CombatRangeXy = 30f;
-    const float CombatRangeZ = 6f;
+    const float CombatRangeZMinus = 2f;
+    const float CombatRangeZPlus = 6f;
     Func<float, float, float, bool> CombatFin = (xTarg, yTarg, zTarg)
     =>
         old.enemyPtr != 0 && current.enemyPtr == 0 &&
         current.xPos >= xTarg - CombatRangeXy && current.xPos <= xTarg + CombatRangeXy &&
         current.yPos >= yTarg - CombatRangeXy && current.yPos <= yTarg + CombatRangeXy &&
-        current.zPos >= zTarg - CombatRangeZ && current.zPos <= zTarg + CombatRangeZ;
+        current.zPos >= zTarg - CombatRangeZMinus && current.zPos <= zTarg + CombatRangeZPlus;
     
     Func<float, float, float, ValueTuple<float, float, float, float, float, float>> BoundsSeed = (x, y, z)
         => ValueTuple.Create(x - SeedRange, x + SeedRange, y - SeedRange, y + SeedRange, z - SeedRange, z + SeedRange);
 
     Func<float, float, float, ValueTuple<float, float, float, float, float, float>> BoundsCombat = (x, y, z)
-        => ValueTuple.Create(x - CombatRangeXy, x + CombatRangeXy, y - CombatRangeXy, y + CombatRangeXy, z - CombatRangeZ, z + CombatRangeZ);
+        => ValueTuple.Create(x - CombatRangeXy, x + CombatRangeXy, y - CombatRangeXy, y + CombatRangeXy, z - CombatRangeZMinus, z + CombatRangeZPlus);
     
     // ===================================================================================================================
     // ================================================== CONFIGURATION ==================================================
