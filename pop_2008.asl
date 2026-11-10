@@ -48,9 +48,9 @@ startup
 
     // ================================================== action variables ==================================================
 
-    Action<dynamic> SetOld = newOld => old = newOld;
-    Action<dynamic> SetCurrent = newCurrent => current = newCurrent;
-    Action<dynamic> SetSettings = newSettings => settings = newSettings;
+    Action<ExpandoObject> SetOld = newOld => old = newOld;
+    Action<ExpandoObject> SetCurrent = newCurrent => current = newCurrent;
+    Action<object> SetSettings = newSettings => settings = newSettings;
 
     vars.SetOld = SetOld;
     vars.SetCurrent = SetCurrent;
