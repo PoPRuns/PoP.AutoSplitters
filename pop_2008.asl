@@ -46,16 +46,6 @@ startup
     // ================================================== FUNCTION DEFINITIONS ==================================================
     // ==========================================================================================================================
 
-    // ================================================== action variables ==================================================
-
-    Action<ExpandoObject> SetOld = newOld => old = newOld;
-    Action<ExpandoObject> SetCurrent = newCurrent => current = newCurrent;
-    Action<object> SetSettings = newSettings => settings = newSettings;
-
-    vars.SetOld = SetOld;
-    vars.SetCurrent = SetCurrent;
-    vars.SetSettings = SetSettings;
-
     // ================================================== coordinate checks ==================================================
 
     // for functions that are expected to be called every cycle, we deliberately avoid calling other small functions from within a function
@@ -809,6 +799,16 @@ EventsConfigDone:
     // ================================================== RUNTIME ACTIONS ==================================================
     // =====================================================================================================================
 
+    // ================================================== init ==================================================
+
+    Action<ExpandoObject, ExpandoObject, object> Init = (newOld, newCurrent, newSettings) =>
+    {
+        old = newOld;
+        current = newCurrent;
+        settings = newSettings;
+    };
+    vars.Init = Init;
+
     // ================================================== onReset ==================================================
 
     Action OnReset = () =>
@@ -824,6 +824,7 @@ EventsConfigDone:
     Func<ExpandoObject, bool> Update = newOld =>
     {
         old = newOld;
+
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
         List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>> localEvents;
@@ -894,28 +895,8 @@ init
         default: version = "Unknown"; break;
         }
     }
-    
-    // when LiveSplit hooks to a game process, it creates one "current" object and the "current" variable always points to the same object for the lifetime of the process hook
-    // however when LiveSplit initially hooks to a game process, the "old" variable also points to the same object as the "current" variable
-    // then LiveSplit creates a new "old" object every cycle
-    // so with each cycle, LiveSplit dismisses the old "old" object and creates a new one, copying all data from the "current" object,
-    //      and then reads new data from the game process and copies it into the existing "current" object, overwriting the previous data
-    // note that if we write any functions that use the "old" and "current" variables in the init block,
-    //      those functions will treat the "old" and "current" variables as the same since they both pointed to the same object at the time the function was defined
-    // (this is a "feature" of the ASL variables specifically; in standard C#, functions use the updated values at the time the function is called; cf. closure)
-    // likewise any functions defined in the startup block will not be able to read the "old" and "current" values at the time of the function call at all,
-    //      since those variables point to nothing (that is, old=null and current=null) at the time of startup
-    // but if we explicitly write the new "old" and "current" objects into the "Old" and "Current" variables defined in the startup block as they are updated,
-    //      then we can safely define functions in both the startup and the init blocks, and they will safely read the updated "old" and "current" objects,
-    //      as they are at the time of the function call - as long as we refer to the manually created "Old" and "Current" variables rather than the built-in "old" and "current" ones
-    // this is because the "old" and "current" objects are placed behind the "Old" and "Current" variables
-    //      which get captured by the closure created when a function lambda is defined,
-    //      so the lambda will always look for the object behind the variable at the time of the function call
-    // the "current" and "old" objects are of type System.ExpandoObject which is a reference type, so here we are merely passing a reference to the object,
-    //      not copying the actual contents of the object
-    vars.SetOld(old);
-    vars.SetCurrent(current);
-    vars.SetSettings(settings);
+
+    vars.Init(old, current, settings);
 }
 
 onReset
