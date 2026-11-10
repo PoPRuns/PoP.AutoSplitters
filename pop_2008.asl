@@ -389,6 +389,13 @@ startup
     // parent settings must be specified before their respective children settings (else an exception will be thrown on startup)
     // settings with the same parent (or lack of parent) will be displayed in the same order as specified here
 
+    bool baseGame = !timer.Run.CategoryName.ToLower().Contains("epilogue");
+
+    if (baseGame) goto BaseGameSettingsConfig;
+    else          goto EpilogueSettingsConfig;
+
+BaseGameSettingsConfig:
+
     //Default:bool    Slug:string            EventSlugs:List<string>                   Description:string                               ToolTip:string?                                                   ParentSlug:string?
     AddSetting(true,  "specialEvents",       new List<string> {},                      "Split on scripted game events",                 null,                                                             null);
     AddSetting(true,  "combatEvents",        new List<string> {},                      "Split on defeating enemies in specific levels", null,                                                             null);
@@ -472,6 +479,14 @@ startup
     AddSetting(true,  "CoronationHallNDJE",  new List<string> {"CoronationHallNDJE"},  "Coronation Hall",                               null,                                                             "anyLegacy");
     AddSetting(true,  "Seed540",             new List<string> {"Seed540"},             "540 Seeds",                                     "Splits on getting the final seed at Heaven's Stair",             "anyLegacy");
 
+    goto SettingsConfigDone;
+
+EpilogueSettingsConfig:
+
+    goto SettingsConfigDone;
+
+SettingsConfigDone:
+
     // ================================================== events ==================================================
 
     Action action;
@@ -479,6 +494,11 @@ startup
     Action<float, float, float, float> actionRange;
     Action<float, float, float, float, float> actionRangeXyZ;
     Action<float, float, float, float, float, float> actionBounds;
+
+    if (baseGame) goto BaseGameEventsConfig;
+    else          goto EpilogueEventsConfig;
+
+BaseGameEventsConfig:
 
     //                                                                                                    XyzBounds:
     //                                                                               SettingSlugs:         (float,float,float,
@@ -564,6 +584,14 @@ startup
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "QueensTowerNDJE",     new List<string> {}, BoundsSeed(x,y,z),         () => SeedGet(x, y, z))) (637.262f, 27.224f, -28.603f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "CoronationHallNDJE",  new List<string> {}, BoundsSeed(x,y,z),         () => SeedGet(x, y, z))) (340f, 590f, 19f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "Seed540",             new List<string> {}, BoundsSeed(x,y,z),         () => SeedGet(x, y, z))) (-280f, 696f, 87f);
+
+    goto EventsConfigDone;
+
+EpilogueEventsConfig:
+
+    goto EventsConfigDone;
+
+EventsConfigDone:
 
     // ====================================================================================================================
     // ================================================== STARTUP SCRIPT ==================================================
@@ -700,12 +728,15 @@ startup
 
     // the hash map count is how many keys it actually stores
     // while its capacity is the total number of keys that it can hold based on how much memory it has been allocated
-    int xyzEventHashMapCapacity =
-        ((Array)
-        typeof(Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>)
-        .GetField("entries", BindingFlags.NonPublic | BindingFlags.Instance)
-        .GetValue(XyzEventHashMap))
-        .Length;
+    int xyzEventHashMapCapacity;
+    {
+        Array backingArray =
+            (Array)
+            typeof(Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>)
+            .GetField("entries", BindingFlags.NonPublic | BindingFlags.Instance)
+            .GetValue(XyzEventHashMap);
+        xyzEventHashMapCapacity = backingArray != null ? backingArray.Length : 0;
+    }
     infoBuilder.Append("XyzEventHashMap capacity: " + XyzEventHashMap.Count.ToString() + "/" + xyzEventHashMapCapacity + "\r\n");
     infoBuilder.Append("OtherEvents capacity: " + OtherEvents.Count.ToString() + "/" + OtherEvents.Capacity.ToString() + "\r\n");
     infoBuilder.Append("\r\n");
