@@ -26,20 +26,7 @@ state("Prince of Persia", "Unknown") { }
 // Setting: Tuple<bool, string, List<string>, string, string, string>
 // Event:   Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>
 
-// for Event.SettingSlugs and Setting.EventSlugs we prefer a List over a HashSet because iterating over a list is faster
-// the downside is that removing duplicates is much slower as it requires an extra hashset allocation and copying items between collections
-// but this removal of duplicates is only done upon startup, so we sacrifice some startup performance in order to gain runtime performance
-
-// since the startup block contains all the functions, any reference types defined in this block will not get automatically garbage collected once the block finishes executing
-//      because of closures
-// so if we allocate any large collections that are no longer needed at runtime,
-//      in order to save memory we need to manually de-reference them so that they can get garbage collected
-// e.g. if we have a large collection that is no longer needed at runtime:
-// var tempCollection = new List<string>();
-// then once we're done using it we should de-reference it, i.e.:
-// tempCollection = null;
-// for any leftover empty/small collections, we don't need to bother
-// to help keep track, any declared object that should be de-referenced at the end should be marked with a "GC" comment
+// any declared object that should be de-referenced at the end to ensure garbage collection should be marked with a "GC" comment
 startup
 {
     // ==========================================================================================================================
@@ -47,11 +34,6 @@ startup
     // ==========================================================================================================================
 
     // ================================================== coordinate checks ==================================================
-
-    // for functions that are expected to be called every cycle, we deliberately avoid calling other small functions from within a function
-    // because we cannot define real functions but only lambdas, and so the compiler cannot optimise (inline) any function calls
-    // so for the sake of performance, we inline small composite functions manually,
-    // (e.g. InXBoundsOld manually performs the same check as InBounds instead of just calling InBounds)
 
     Func<float, float, float, bool> InBounds = (min, max, pos) => pos >= min && pos <= max;
     Func<float, float, bool> InXBoundsOld = (min, max) => old.xPos >= min && old.xPos <= max;
@@ -165,24 +147,11 @@ startup
 
     // ================================================== runtime hash code computations ==================================================
 
-    // see comments on hash code functions below for guidance on what bucket size is appropriate for each game
+    // see the hashing section in DOCUMENTATION.md for guidance on what bucket size to choose for each game
     const float BucketSize = 20f; // <----------------------------------------------------------------------------------------------------- game-specific
 
-    // all real numbers are broken down into equally sized buckets
-    // e.g. if BucketSize = 20f, then:
-    //      0f <= coord < 20f falls into bucket 0
-    //      20f <= coord < 40f falls into bucket 1
-    //      40f <= coord < 60f falls into bucket 2
-    //      -20f <= coord < 0f falls into bucket -1
-    //      -40f <= coord < -20f falls into bucket -2
-    //      and so on...
-    // so all coordinates within the same bucket have the same hash code
-    // if the coordinate value is not found (i.e. is null), then the largest possible bucket value is used
-    //      since it is extremely unlikely that any real coordinates will fall in that bucket
-    // if coord is somehow NaN, ∞, or -∞, the cast to an int will turn it into 0, so this function will return 0
     Func<float, int> GetCoordHashCode = coord => (int)Math.Floor(coord / BucketSize);
 
-    // fast hashing algorithm with wide dispersion where the same inputs ordered differently yield different results
     const uint FnvPrime = 0x01000193;   // https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV_prime
     Func<int, int, int, int> CombineCoordHashCodes = (xHash, yHash, zHash) =>
     {
@@ -193,10 +162,6 @@ startup
         return (int)hash;
     };
 
-    // as above, but this time the buckets are cubes,
-    // so every point in 3D space falls into a cube bucket of length BucketSize
-    // and all coordinates within the same bucket have the same hash code
-    // we manually inline here since this is a hot path (see comment about inlining above)
     Func<int> GetXyzHashCodeCurrent = () =>
     {
         uint hash = 0;
@@ -208,19 +173,6 @@ startup
 
     // ================================================== one-time hash code computations ==================================================
 
-    // find all buckets containing coordinates within the given cuboid, and return their hash codes
-    // note that if BucketSize is significantly smaller than the lengths of this cuboid,
-    // then the size of the returned array will be very large, since it grows cubically
-    // so to avoid having to store extremely large arrays in memory, BucketSize should not be smaller than the largest expected cuboid length...
-    //      ... by more than an order of magnitude or so
-    // on the other hand, if BucketSize is so large that many cuboids are found in the same bucket, this will drastically slow down performance...
-    //      ... since the script will have to compare against each cuboid in that bucket on each cycle (e.g. 120 times per second)
-    // so for each game an appropriate bucket size should be chosen to get the best mix of saving memory and increasing performance
-    // once startup is complete the size of XyzEventHashMap is printed and can be viewed with DebugView
-    // so for each game we can try changing BucketSize and seeing how the XyzEventHashMap capacity changes
-    // this XyzEventHashMap capacity should inform how big the bucket size should be (multiply it by about 50-100 to get a ballpark estimate of the number of bytes it is occupying in memory)
-    // likewise the distribution of buckets that contain collisions is printed at the end, which should also inform us of what bucket size to choose
-    // (if the debug output is too spammy, we can increase the MinEventCountPerBucketToCompute constant until it is sufficiently terse)
     Func<float, float, float, float, float, float, int[]> GetHashCodesForBounds = (xMin, xMax, yMin, yMax, zMin, zMax) =>
     {
         int minXBucket = GetCoordHashCode(xMin);
@@ -358,28 +310,9 @@ startup
     // ================================================== CONFIGURATION ==================================================
     // ===================================================================================================================
 
-    // each setting has a list of events that it's tied to, and each event has a list of settings that it's tied to
-    // however, this does not need to be explicitly specified both ways
-    // so we may either specify which events are tied to each setting,
-    //      or we may specify which settings are tied to each event,
-    //      or we can do any combination of both, and the script will auto-fill the settings list for each event and the events list for each setting, removing any duplicates
-    // after startup all Setting objects get garbage collected and only Event objects remain
-
-    // if an event has no setting tied to it, then it succeeds upon meeting its condition (as long as it is not in CompletedEvents)
-    // if an event has one or more settings tied to it, then it succeeds upon meeting its condition if only if at least one of its settings permits it (as long as it is not in CompletedEvents)
-
-    // if we try to tie to a setting an event which is not defined, an exception will be thrown and startup will fail
-    // likewise if we try to tie an event to a setting which is not defined, an exception will be thrown
-    // But, WARNING: if we forget to tie an event with a setting,
-    //      the script will work normally, the setting will do nothing, and the event will always succeed regardless of the setting
-    // to avoid forgetting to tie settings with events, when we make a change, we should open DebugView and review the printed settings, events, and statistics thereof to make sure they are correct
+    bool baseGame = !timer.Run.CategoryName.ToLower().Contains("epilogue");
 
     // ================================================== settings ==================================================
-
-    // parent settings must be specified before their respective children settings (else an exception will be thrown on startup)
-    // settings with the same parent (or lack of parent) will be displayed in the same order as specified here
-
-    bool baseGame = !timer.Run.CategoryName.ToLower().Contains("epilogue");
 
     if (baseGame) goto BaseGameSettingsConfig;
     else          goto EpilogueSettingsConfig;
