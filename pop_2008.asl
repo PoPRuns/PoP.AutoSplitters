@@ -26,7 +26,7 @@ state("Prince of Persia", "Unknown") { }
 // Setting: Tuple<bool, string, List<string>, string, string, string>
 // Event:   Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>
 
-// any declared object that should be de-referenced at the end to ensure garbage collection should be marked with a "GC" comment
+// any temporary object that is not needed after startup should be marked with a "GC" comment and set to null before startup finishes
 startup
 {
     // ==========================================================================================================================
