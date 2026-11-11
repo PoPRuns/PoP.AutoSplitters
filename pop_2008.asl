@@ -339,6 +339,7 @@ BaseGameSettingsConfig:
     AddSetting(false, "ThirdFight",          new List<string> {"ThirdFight"},          "Third Fight",                                   "Splits on defeating all human enemies in Fight 3",               "combatEvents");
     AddSetting(true,  "Dad1",                new List<string> {"Dad1"},                "Dad Fight 1",                                   "Splits on finishing the Dad 1 fight",                            "combatEvents");
     AddSetting(true,  "Dad2",                new List<string> {"Dad2"},                "Dad Fight 2",                                   "Splits on finishing the Dad 2 fight",                            "combatEvents");
+    AddSetting(false, "Dad3",                new List<string> {"Dad3"},                "Dad Fight 3",                                   "Splits on finishing the Dad 3 fight",                            "combatEvents");
     AddSetting(true,  "KingsGateH",          new List<string> {"KingsGateH"},          "King's Gate",                                   "Splits on defeating Hunter in King's Gate",                      "combatEvents");
     AddSetting(true,  "SunTempleH",          new List<string> {"SunTempleH"},          "The Sun Temple",                                "Splits on defeating Hunter in The Sun Temple",                   "combatEvents");
     AddSetting(true,  "MarshallingGroundH",  new List<string> {"MarshallingGroundH"},  "Marshalling Ground",                            "Splits on defeating Hunter in Marshalling Ground",               "combatEvents");
@@ -445,6 +446,7 @@ BaseGameEventsConfig:
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "ThirdFight",          new List<string> {}, BoundsCombat(x,y,z),       () => CompletedEvents.Contains("Fight3_1") && CombatFin(x, y, z))) (-186f, -140f, -32f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "Dad1",                new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (5f, -402f, -40f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "Dad2",                new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (6f, -187f, -48f);
+    (actionPos=(x,y,z)                => AddEvent(SplitEvent, "Dad3",                new List<string> {}, BoundsCombat(x,y,z),       () => CompletedEvents.Contains("Dad2") && CombatFin(x, y, z))) (6f, -187f, -48f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "KingsGateH",          new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (-413.5f, -66.5f, 25f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "SunTempleH",          new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (-554.5f, -54f, 34f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "MarshallingGroundH",  new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (-761.5f, -17.5f, 19f);
