@@ -419,6 +419,25 @@ BaseGameSettingsConfig:
 
 EpilogueSettingsConfig:
 
+    AddSetting(true,  "EDad1",               new List<string> {"EDad1"},               "Dad 1",                                         "Splits on finishing the Dad 1 fight",                            null);
+    AddSetting(true,  "EAlleyway",           new List<string> {"EAlleyway"},           "Alleyway",                                      null,                                                             null);
+    AddSetting(true,  "EWaterTank",          new List<string> {"EWaterTank"},          "Water Tank",                                    "Splits on entering the Shapeshifter 1 fight in Water Tank",    null);
+    AddSetting(true,  "EShapeshifter1",      new List<string> {"EShapeshifter1"},      "Shapeshifter 1",                                "Splits on finishing the Shapeshifter 1 fight",                 null);
+    AddSetting(true,  "EChimney",            new List<string> {"EChimney"},            "Chimney",                                       null,                                                             null);
+    AddSetting(true,  "EPurplePlate",        new List<string> {"EPurplePlate"},        "Energize",                                      "Splits on cutscene where we obtain Purple plate",              null);
+    AddSetting(true,  "EHammam",             new List<string> {"EHammam"},             "Hammam",                                        "Splits on entering the Shapeshifter 2 fight in Hammam",        null);
+    AddSetting(true,  "EShapeshifter2",      new List<string> {"EShapeshifter2"},      "Shapeshifter 2",                                "Splits on finishing the Shapeshifter 2 fight",                 null);
+    AddSetting(true,  "EAvenue",             new List<string> {"EAvenue"},             "Avenue",                                        null,                                                             null);
+    AddSetting(true,  "EDad2",               new List<string> {"EDad2"},               "Dad 2",                                         "Splits on finishing the Dad 2 fight",                          null);
+    AddSetting(true,  "ETunnel",             new List<string> {"ETunnel"},             "Tunnel",                                        "Splits on entering the Shapeshifter 3 fight in Tunnel",        null);
+    AddSetting(true,  "EShapeshifter3",      new List<string> {"EShapeshifter3"},      "Shapeshifter 3",                                "Splits on finishing the Shapeshifter 3 fight",                 null);
+    AddSetting(true,  "ETomb1",              new List<string> {"ETomb1"},              "Tomb I",                                        "Splits on entering the Dad 3 fight in Tomb",                   null);
+    AddSetting(true,  "EDad3",               new List<string> {"EDad3"},               "Dad 3",                                         "Splits on finishing the Dad 3 fight",                          null);
+    AddSetting(true,  "ETomb2",              new List<string> {"ETomb2"},              "Tomb II",                                       "Splits on entering the Shapeshifter 4 fight after Tomb",       null);
+    AddSetting(true,  "EShapeshifter4",      new List<string> {"EShapeshifter4"},      "Shapeshifter 4",                                "Splits on finishing the Shapeshifter 4 fight",                 null);
+    AddSetting(true,  "EDad4",               new List<string> {"EDad4"},               "Dad 4",                                         "Splits on finishing the Dad 4 fight",                          null);
+    AddSetting(true,  "EBallroom",           new List<string> {"EBallroom"},           "Ballroom",                                      "Splits on finishing the Epilogue",                             null);
+
     goto SettingsConfigDone;
 
 SettingsConfigDone:
