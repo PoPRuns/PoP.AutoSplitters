@@ -4,6 +4,7 @@ state("PrinceOfPersia_Launcher", "Digital")
     float xPos    : 0x00B30D08, 0x40;
     float yPos    : 0x00B30D08, 0x44;
     float zPos    : 0x00B30D08, 0x48;
+    int combat    : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC; // 2 when in combat (except some fights), 0 when not
     uint enemyPtr : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8; // pointer to the object that contains enemy data; is zero if there is no enemy
 }
 
@@ -13,6 +14,7 @@ state("Prince of Persia", "DRM Free")
     float xPos    : 0x00B30D08, 0x40;
     float yPos    : 0x00B30D08, 0x44;
     float zPos    : 0x00B30D08, 0x48;
+    int combat    : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
     uint enemyPtr : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8; // see comment above
 }
 
@@ -290,12 +292,14 @@ startup
         current.zPos >= zTarg - SeedRange && current.zPos <= zTarg + SeedRange;
     
     // this is the moment the combat state finishes and the enemy HP bar disappears
+    // checking the enemy pointer is sufficient for most fights
+    // but we also check combat state purely for Shapeshifter fights, so that it doesn't split between the two enemies
     const float CombatRangeXy = 30f;
     const float CombatRangeZMinus = 2f;
     const float CombatRangeZPlus = 6f;
     Func<float, float, float, bool> CombatFin = (xTarg, yTarg, zTarg)
     =>
-        old.enemyPtr != 0 && current.enemyPtr == 0 &&
+        old.enemyPtr != 0 && current.enemyPtr == 0 && current.combat == 0 &&
         current.xPos >= xTarg - CombatRangeXy && current.xPos <= xTarg + CombatRangeXy &&
         current.yPos >= yTarg - CombatRangeXy && current.yPos <= yTarg + CombatRangeXy &&
         current.zPos >= zTarg - CombatRangeZMinus && current.zPos <= zTarg + CombatRangeZPlus;
@@ -519,6 +523,7 @@ EpilogueEventsConfig:
 
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EDad1",               new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (-117f, -281f, 0f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "EAlleyway",           new List<string> {}, BoundsRange(x,y,z,range),  () => InPosWithRangeCurrent(x, y, z, range))) (53f, -121f, -8f, 7f);
+    (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EShapeshifter1",      new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (-60f, -71, 22f);
 
     goto EventsConfigDone;
 
