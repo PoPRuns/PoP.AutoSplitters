@@ -530,8 +530,9 @@ EpilogueEventsConfig:
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "EDad2",               new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (387.867f, 64.639f, -142.15f, 0.1f); // B2 B1^2 and B2 B2* yield different combat state ends, so we use coords only for this fight
     (actionRangeXyZ=(x,y,z,r1,r2)     => AddEvent(SplitEvent, "ETunnel",             new List<string> {}, BoundsRangeXyZ(x,y,z,r1,r2), () => InPosWithRangeXyZCurrent(x, y, z, r1, r2))) (661.5f, 109.5f, -96.45f, 8f, 0.1f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "EShapeshifter3",      new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (702.928f, 107.448f, -93.094f, 0.1f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ETomb",               new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (786.554f, 107.579f, -104.003f, 0.1f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ETomb1",              new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (786.554f, 107.579f, -104.003f, 0.1f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EDad3",               new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (803f, 108f, -104f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ETomb2",              new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (920f, 88.82f, -104f, 0.1f);
 
     goto EventsConfigDone;
 
