@@ -517,6 +517,8 @@ EpilogueEventsConfig:
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(StartEvent, "EStart",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => !InPosWithBoundsOld(x1, x2, y1, y2, z1, z2) && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-117.9f, -117.4f, -433f, -432.5f, 19f, 19.027f);
     (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "EResetNew",           new List<string> {}, BoundsRange(x,y,z,range),  () => !InPosWithRangeOld(x, y, z, range) && InPosWithRangeCurrent(x, y, z, range))) (-137f, -480f, 23f, 5f);
 
+    (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EDad1",               new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (-117f, -281f, 0f);
+
     goto EventsConfigDone;
 
 EventsConfigDone:
@@ -706,6 +708,11 @@ EventsConfigDone:
         infoBuilder.Append("\r\n");
     }
 
+    infoBuilder.Append("Non-location-based events: (total=" + OtherEvents.Count + ")\r\n");
+    foreach (var @event in OtherEvents)
+        infoBuilder.Append("\t" + @event.Item2 + "\r\n");
+    infoBuilder.Append("\r\n");
+
     print(infoBuilder.ToString());
 
     // ================================================== timing method prompt ==================================================
@@ -773,11 +780,6 @@ EventsConfigDone:
         /*var builderLocal = new StringBuilder();
         foreach (var @event in localEvents) builderLocal.Append(@event.Item2 + "\r\n");
         if (localEvents.Count > 0) print(builderLocal.ToString());*/
-
-        // print non-location-based events:
-        /*var builderOther = new StringBuilder();
-        foreach (var @event in OtherEvents) builderOther.Append(@event.Item2 + "\r\n");
-        if (OtherEvents.Count > 0) print(builderOther.ToString());*/
 
         // Concat function means we iterate through the lists one after the other; it does not create a concatenated list
         foreach (var @event in localEvents.Concat(OtherEvents))
