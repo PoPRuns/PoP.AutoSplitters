@@ -514,6 +514,9 @@ BaseGameEventsConfig:
 
 EpilogueEventsConfig:
 
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(StartEvent, "EStart",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => !InPosWithBoundsOld(x1, x2, y1, y2, z1, z2) && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-117.9f, -117.4f, -433f, -432.5f, 19f, 19.027f);
+    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "EResetNew",           new List<string> {}, BoundsRange(x,y,z,range),  () => !InPosWithRangeOld(x, y, z, range) && InPosWithRangeCurrent(x, y, z, range))) (-137f, -480f, 23f, 5f);
+
     goto EventsConfigDone;
 
 EventsConfigDone:
