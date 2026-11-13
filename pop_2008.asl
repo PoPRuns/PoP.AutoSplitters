@@ -546,6 +546,7 @@ EpilogueEventsConfig:
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ETomb2",              new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (920f, 88.82f, -104f, 0.1f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EShapeshifter4",      new List<string> {}, BoundsCombat(x,y,z),         () => EnemyHp0(x, y, z))) (920f, 76f, -104f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EDad4",               new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (1105f, 43f, -140f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "EBallroom",           new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (1247.5f, 43f, -55.8f, 0.1f);
 
     goto EventsConfigDone;
 
