@@ -4,8 +4,8 @@ state("PrinceOfPersia_Launcher", "Digital")
     float xPos    : 0x00B30D08, 0x40;
     float yPos    : 0x00B30D08, 0x44;
     float zPos    : 0x00B30D08, 0x48;
-    int combat    : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC; // 2 when in combat (except some fights), 0 when not
     uint enemyPtr : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8; // pointer to the object that contains enemy data; is zero if there is no enemy
+    int enemyHp   : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8, 0x250;
 }
 
 state("Prince of Persia", "DRM Free")
@@ -14,8 +14,8 @@ state("Prince of Persia", "DRM Free")
     float xPos    : 0x00B30D08, 0x40;
     float yPos    : 0x00B30D08, 0x44;
     float zPos    : 0x00B30D08, 0x48;
-    int combat    : 0x00B37F6C, 0xE0, 0x1C, 0xC, 0x7CC;
     uint enemyPtr : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8; // see comment above
+    int enemyHp   : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8, 0x250;
 }
 
 state("Prince of Persia", "Unknown") { }
@@ -292,14 +292,22 @@ startup
         current.zPos >= zTarg - SeedRange && current.zPos <= zTarg + SeedRange;
     
     // this is the moment the combat state finishes and the enemy HP bar disappears
-    // checking the enemy pointer is sufficient for most fights
-    // but we also check combat state purely for Shapeshifter fights, so that it doesn't split between the two enemies
     const float CombatRangeXy = 30f;
     const float CombatRangeZMinus = 2f;
     const float CombatRangeZPlus = 6f;
     Func<float, float, float, bool> CombatFin = (xTarg, yTarg, zTarg)
     =>
-        old.enemyPtr != 0 && current.enemyPtr == 0 && current.combat == 0 &&
+        old.enemyPtr != 0 && current.enemyPtr == 0 &&
+        current.xPos >= xTarg - CombatRangeXy && current.xPos <= xTarg + CombatRangeXy &&
+        current.yPos >= yTarg - CombatRangeXy && current.yPos <= yTarg + CombatRangeXy &&
+        current.zPos >= zTarg - CombatRangeZMinus && current.zPos <= zTarg + CombatRangeZPlus;
+    
+    // this is the moment the enemy's HP goes to 0, but while we are still in combat state (assuming these two things overlap)
+    // useful for Shapeshifter fights that have the teleport glitch, as the CombatFin split would reveal when a user can jump safely and would constitute memory viewing during the run
+    //      which is against the rules
+    Func<float, float, float, bool> EnemyHp0 = (xTarg, yTarg, zTarg)
+    =>
+        old.enemyHp > 0 && current.enemyPtr != 0 && current.enemyHp == 0 &&
         current.xPos >= xTarg - CombatRangeXy && current.xPos <= xTarg + CombatRangeXy &&
         current.yPos >= yTarg - CombatRangeXy && current.yPos <= yTarg + CombatRangeXy &&
         current.zPos >= zTarg - CombatRangeZMinus && current.zPos <= zTarg + CombatRangeZPlus;
@@ -523,16 +531,21 @@ EpilogueEventsConfig:
 
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EDad1",               new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-117f, -281f, 0f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "EAlleyway",           new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (53f, -121f, -8f, 7f);
-    (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EShapeshifter1",      new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-60f, -71, 22f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "EPurplePlate",        new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (14.9f, 3.9f, -111.6f, 1f);
-    (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EShapeshifter2",      new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-15f, 29f, -136f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "EWaterTank",          new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-47.2f, -71f, 22f, 0.1f);
+    (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EShapeshifter1",      new List<string> {}, BoundsCombat(x,y,z),         () => EnemyHp0(x, y, z))) (-60f, -71, 22f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "EChimney",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-118f, -115f, -73f, -68.9f, -125f, -123f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "EPurplePlate",        new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (14.9f, 3.9f, -111.6f, 0.1f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "EHammam",             new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-5.7f, 25.6f, -136.1f, 0.1f);
+    (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EShapeshifter2",      new List<string> {}, BoundsCombat(x,y,z),         () => EnemyHp0(x, y, z))) (-15f, 29f, -136f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "EAvenue",             new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (330.3f, 61.6f, -126.2f, 1f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "EDad2",               new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (387.867f, 64.639f, -142.15f, 0.1f); // B2 B1^2 and B2 B2* yield different combat state ends, so we use coords only for this fight
     (actionRangeXyZ=(x,y,z,r1,r2)     => AddEvent(SplitEvent, "ETunnel",             new List<string> {}, BoundsRangeXyZ(x,y,z,r1,r2), () => InPosWithRangeXyZCurrent(x, y, z, r1, r2))) (661.5f, 109.5f, -96.45f, 8f, 0.1f);
-    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "EShapeshifter3",      new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (702.928f, 107.448f, -93.094f, 0.1f);
+    (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EShapeshifter3",      new List<string> {}, BoundsCombat(x,y,z),         () => EnemyHp0(x, y, z))) (676f, 108f, -96.5f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ETomb1",              new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (786.554f, 107.579f, -104.003f, 0.1f);
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EDad3",               new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (803f, 108f, -104f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ETomb2",              new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (920f, 88.82f, -104f, 0.1f);
+    (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EShapeshifter4",      new List<string> {}, BoundsCombat(x,y,z),         () => EnemyHp0(x, y, z))) (920f, 76f, -104f);
+    (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EDad4",               new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (1105f, 43f, -140f);
 
     goto EventsConfigDone;
 
