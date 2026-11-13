@@ -518,6 +518,7 @@ EpilogueEventsConfig:
     (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "EResetNew",           new List<string> {}, BoundsRange(x,y,z,range),  () => !InPosWithRangeOld(x, y, z, range) && InPosWithRangeCurrent(x, y, z, range))) (-137f, -480f, 23f, 5f);
 
     (actionPos=(x,y,z)                => AddEvent(SplitEvent, "EDad1",               new List<string> {}, BoundsCombat(x,y,z),       () => CombatFin(x, y, z))) (-117f, -281f, 0f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "EAlleyway",           new List<string> {}, BoundsRange(x,y,z,range),  () => InPosWithRangeCurrent(x, y, z, range))) (53f, -121f, -8f, 7f);
 
     goto EventsConfigDone;
 
