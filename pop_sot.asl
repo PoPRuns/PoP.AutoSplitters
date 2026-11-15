@@ -532,7 +532,7 @@ startup
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "HonorGlory",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (81f, 82f, -60.3f, -59.7f, 89f, 90f);
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "GrandRewind",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (660.376f, 660.378f, 190.980f, 190.983f, 0.432f, 0.434f);
 
-    (actionRangeXyZ=(x,y,z,r1,r2)     => AddEvent(SplitEvent, "SoTEndVizier",            new List<string> {}, BoundsRangeXyZ(x,y,z,r1,r2), () => InPosWithRangeXyZCurrent(x, y, z, r1, r2) && current.vizierHealth == 4)) (660f, 213f, -1f, 10f, 3f);
+    (actionRangeXyZ=(x,y,z,r1,r2)     => AddEvent(SplitEvent, "SoTEndVizier",            new List<string> {}, BoundsRangeXyZ(x,y,z,r1,r2), () => InPosWithRangeXyZCurrent(x, y, z, r1, r2) && current.vizierHealth == 4)) (660f, 213f, 0f, 10f, 3f);
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "SoTEndCredits",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.rewind == 0)) (658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f);
 
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "SoTLU",                   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && (CompletedEvents.Remove("SoTLU_Reset") | true))) (-492.608f, -492.606f, -248.833f, -248.831f, 0.219f, 0.221f);
