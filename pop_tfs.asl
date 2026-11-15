@@ -439,24 +439,24 @@ startup
 
     // ================================================== settings ==================================================
 
-    //Default:bool    Slug:string               EventSlugs:List<string>            Description:string                           ToolTip:string?                                                                                        ParentSlug:string?
-    AddSetting(true,  "Malik",                  new List<string> {"Malik"},        "Malik",                                     "Split on the checkpoint where you meet Malik",                                                        null);
-    AddSetting(true,  "PowerOfTime",            new List<string> {"PowerOfTime"},  "The Power of Time",                         "Split on obtaining the Rewind power",                                                                 null);
-    AddSetting(true,  "Works",                  new List<string> {"Works"},        "The Works",                                 "Split on reaching the room with the rising lever platform",                                           null);
-    AddSetting(true,  "Courtyard",              new List<string> {"Courtyard"},    "The Courtyard",                             "Split on reaching the top of the fortress courtyard",                                                 null);
-    AddSetting(true,  "PowerOfWater",           new List<string> {"PowerOfWater"}, "The Power of Water",                        "Split on obtaining the Freeze power",                                                                 null);
-    AddSetting(true,  "Sewers",                 new List<string> {"Sewers"},       "The Sewers",                                "Split on the checkpoint where Summoners are introduced",                                              null);
-    AddSetting(true,  "Ratash",                 new List<string> {"Ratash"},       "Ratash",                                    "Split on finishing the Ratash chase sequence",                                                        null);
-    AddSetting(true,  "Observatory",            new List<string> {"Observatory"},  "The Observatory",                           "Split on exiting the Observatory",                                                                    null);
-    AddSetting(true,  "PowerOfLight",           new List<string> {"PowerOfLight"}, "The Power of Light",                        "Split on obtaining the Dash power",                                                                   null);
-    AddSetting(true,  "Gardens",                new List<string> {"Gardens"},      "The Gardens",                               "Split on the checkpoint where Wizards are introduced",                                                null);
-    AddSetting(true,  "Possession",             new List<string> {"Possession"},   "Possession",                                "Split on completing the big fight before the second Ratash encounter",                               null);
-    AddSetting(true,  "PowerOfKnowledge",       new List<string> {"PowerOfKnowledge"}, "The Power of Knowledge",                "Split on obtaining the Memory power",                                                                 null);
-    AddSetting(true,  "Reservoir",              new List<string> {"Reservoir"},    "The Reservoir",                             "Split at the beginning of the Rekem reservoir",                                                       null);
-    AddSetting(true,  "PowerOfRazia",           new List<string> {"PowerOfRazia"}, "The Power of Razia",                        "Split when Razia becomes one with the sword",                                                         null);
-    AddSetting(true,  "Climb",                  new List<string> {"Climb"},        "The Climb",                                 "Split on starting the final climb",                                                                   null);
-    AddSetting(true,  "Storm",                  new List<string> {"Storm"},        "The Storm",                                 "Split on starting the journey through the storm",                                                     null);
-    AddSetting(true,  "End",                    new List<string> {"End"},          "The End",                                   "Split on finishing the game",                                                                         null);
+    //Default:bool    Slug:string            EventSlugs:List<string>                   Description:string           ToolTip:string?                                                             ParentSlug:string?
+    AddSetting(true,  "Malik",               new List<string> {"Malik"},               "Malik",                     "Split on the checkpoint where you meet Malik",                             null);
+    AddSetting(true,  "PowerOfTime",         new List<string> {"PowerOfTime"},         "The Power of Time",         "Split on obtaining the Rewind power",                                      null);
+    AddSetting(true,  "Works",               new List<string> {"Works"},               "The Works",                 "Split on reaching the room with the rising lever platform",                null);
+    AddSetting(true,  "Courtyard",           new List<string> {"Courtyard"},           "The Courtyard",             "Split on reaching the top of the fortress courtyard",                      null);
+    AddSetting(true,  "PowerOfWater",        new List<string> {"PowerOfWater"},        "The Power of Water",        "Split on obtaining the Freeze power",                                      null);
+    AddSetting(true,  "Sewers",              new List<string> {"Sewers"},              "The Sewers",                "Split on the checkpoint where Summoners are introduced",                   null);
+    AddSetting(true,  "Ratash",              new List<string> {"Ratash"},              "Ratash",                    "Split on finishing the Ratash chase sequence",                             null);
+    AddSetting(true,  "Observatory",         new List<string> {"Observatory"},         "The Observatory",           "Split on exiting the Observatory",                                         null);
+    AddSetting(true,  "PowerOfLight",        new List<string> {"PowerOfLight"},        "The Power of Light",        "Split on obtaining the Dash power",                                        null);
+    AddSetting(true,  "Gardens",             new List<string> {"Gardens"},             "The Gardens",               "Split on the checkpoint where Wizards are introduced",                     null);
+    AddSetting(true,  "Possession",          new List<string> {"Possession"},          "Possession",                "Split on completing the big fight before the second Ratash encounter",     null);
+    AddSetting(true,  "PowerOfKnowledge",    new List<string> {"PowerOfKnowledge"},    "The Power of Knowledge",    "Split on obtaining the Memory power",                                      null);
+    AddSetting(true,  "Reservoir",           new List<string> {"Reservoir"},           "The Reservoir",             "Split at the beginning of the Rekem reservoir",                            null);
+    AddSetting(true,  "PowerOfRazia",        new List<string> {"PowerOfRazia"},        "The Power of Razia",        "Split when Razia becomes one with the sword",                              null);
+    AddSetting(true,  "Climb",               new List<string> {"Climb"},               "The Climb",                 "Split on starting the final climb",                                        null);
+    AddSetting(true,  "Storm",               new List<string> {"Storm"},               "The Storm",                 "Split on starting the journey through the storm",                          null);
+    AddSetting(true,  "End",                 new List<string> {"End"},                 "The End",                   "Split on finishing the game",                                              null);
 
     // ================================================== events ==================================================
 
@@ -466,27 +466,25 @@ startup
     Action<float, float, float, float, float> actionRangeXyZ;
     Action<float, float, float, float, float, float> actionBounds;
     Action<int[]> actionInts;
-
-    (actionRange=(x,y,z,range) => AddEvent(StartEvent, "Start",            new List<string> {}, BoundsRange(x,y,z,range), () => InXBoundsCurrent(268.929f, 268.93f) && current.gameState == 4)) (269f, 161f, -147f, 5f);
-    (actionRange=(x,y,z,range) => AddEvent(ResetEvent, "Reset",            new List<string> {}, BoundsRange(x,y,z,range), () => InXBoundsCurrent(268.929f, 268.93f) && current.gameState == 1)) (269f, 161f, -147f, 5f);
-
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Malik",            new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (-37f, 231f, -148f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfTime",      new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (597f, -217f, -2f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Works",            new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (-513f, -408f, -167f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Courtyard",        new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (-434f, -533f, -127f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfWater",     new List<string> {}, BoundsRange(x,y,z,range), () => CompletedEvents.Contains("PowerOfTime") && CpGet(x, y, z, range))) (519f, -227f, 6f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Sewers",           new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (-228f, 245f, 20f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Ratash",           new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (-406f, 403f, 64f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Observatory",      new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (-510f, 460f, 104f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfLight",      new List<string> {}, BoundsRange(x,y,z,range), () => CompletedEvents.Contains("PowerOfWater") && CpGet(x, y, z, range))) (540f, -219f, 6f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Gardens",           new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (240f, -227f, -114f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Possession",        new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (89f, -477f, -83f, 1f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfKnowledge",  new List<string> {}, BoundsRange(x,y,z,range), () => CompletedEvents.Contains("PowerOfLight") && CpGet(x, y, z, range))) (548f, -217f, 4f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Reservoir",         new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (644f, 385f, -63f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfRazia",      new List<string> {}, BoundsRange(x,y,z,range), () => CompletedEvents.Contains("PowerOfKnowledge") && CpGet(x, y, z, range))) (430f, 268f, -99f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Climb",             new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (912f, 256f, -56f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Storm",             new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (948f, -284f, 86f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "End",               new List<string> {}, BoundsRange(x,y,z,range), () => InPosWithRangeCurrent(x, y, z, range))) (821f, -257f, -51f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "Start",               new List<string> {}, BoundsRange(x,y,z,range),  () => InXBoundsCurrent(268.929f, 268.93f) && current.gameState == 4)) (269f, 161f, -147f, 5f);
+    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "Reset",               new List<string> {}, BoundsRange(x,y,z,range),  () => InXBoundsCurrent(268.929f, 268.93f) && current.gameState == 1)) (269f, 161f, -147f, 5f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Malik",               new List<string> {}, BoundsRange(x,y,z,range),  () => CpGet(x, y, z, range))) (-37f, 231f, -148f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "PowerOfTime",         new List<string> {}, BoundsRange(x,y,z,range),  () => CpGet(x, y, z, range))) (597f, -217f, -2f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Works",               new List<string> {}, BoundsRange(x,y,z,range),  () => CpGet(x, y, z, range))) (-513f, -408f, -167f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Courtyard",           new List<string> {}, BoundsRange(x,y,z,range),  () => CpGet(x, y, z, range))) (-434f, -533f, -127f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "PowerOfWater",        new List<string> {}, BoundsRange(x,y,z,range),  () => CompletedEvents.Contains("PowerOfTime") && CpGet(x, y, z, range))) (519f, -227f, 6f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Sewers",              new List<string> {}, BoundsRange(x,y,z,range),  () => CpGet(x, y, z, range))) (-228f, 245f, 20f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Ratash",              new List<string> {}, BoundsRange(x,y,z,range),  () => CpGet(x, y, z, range))) (-406f, 403f, 64f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Observatory",         new List<string> {}, BoundsRange(x,y,z,range),  () => CpGet(x, y, z, range))) (-510f, 460f, 104f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "PowerOfLight",        new List<string> {}, BoundsRange(x,y,z,range),  () => CompletedEvents.Contains("PowerOfWater") && CpGet(x, y, z, range))) (540f, -219f, 6f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Gardens",             new List<string> {}, BoundsRange(x,y,z,range),  () => CpGet(x, y, z, range))) (240f, -227f, -114f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Possession",          new List<string> {}, BoundsRange(x,y,z,range),  () => CpGet(x, y, z, range))) (89f, -477f, -83f, 1f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "PowerOfKnowledge",    new List<string> {}, BoundsRange(x,y,z,range),  () => CompletedEvents.Contains("PowerOfLight") && CpGet(x, y, z, range))) (548f, -217f, 4f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Reservoir",           new List<string> {}, BoundsRange(x,y,z,range),  () => CpGet(x, y, z, range))) (644f, 385f, -63f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "PowerOfRazia",        new List<string> {}, BoundsRange(x,y,z,range),  () => CompletedEvents.Contains("PowerOfKnowledge") && CpGet(x, y, z, range))) (430f, 268f, -99f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Climb",               new List<string> {}, BoundsRange(x,y,z,range),  () => CpGet(x, y, z, range))) (912f, 256f, -56f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Storm",               new List<string> {}, BoundsRange(x,y,z,range),  () => CpGet(x, y, z, range))) (948f, -284f, 86f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "End",                 new List<string> {}, BoundsRange(x,y,z,range),  () => InPosWithRangeCurrent(x, y, z, range))) (821f, -257f, -51f, 10f);
 
     // ====================================================================================================================
     // ================================================== STARTUP SCRIPT ==================================================
