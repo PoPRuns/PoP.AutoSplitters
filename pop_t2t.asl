@@ -36,6 +36,12 @@ startup
     Func<float, float, bool> InXBoundsCurrent = (min, max) => current.xPos >= min && current.xPos <= max;
     Func<float, float, bool> InYBoundsCurrent = (min, max) => current.yPos >= min && current.yPos <= max;
     Func<float, float, bool> InZBoundsCurrent = (min, max) => current.zPos >= min && current.zPos <= max;
+    Func<float, float, bool> InXBoundsOldOnly = (min, max) => old.xPos >= min && old.xPos <= max && !(current.xPos >= min && current.xPos <= max);
+    Func<float, float, bool> InYBoundsOldOnly = (min, max) => old.yPos >= min && old.yPos <= max && !(current.yPos >= min && current.yPos <= max);
+    Func<float, float, bool> InZBoundsOldOnly = (min, max) => old.zPos >= min && old.zPos <= max && !(current.zPos >= min && current.zPos <= max);
+    Func<float, float, bool> InXBoundsCurrentOnly = (min, max) => !(old.xPos >= min && old.xPos <= max) && current.xPos >= min && current.xPos <= max;
+    Func<float, float, bool> InYBoundsCurrentOnly = (min, max) => !(old.yPos >= min && old.yPos <= max) && current.yPos >= min && current.yPos <= max;
+    Func<float, float, bool> InZBoundsCurrentOnly = (min, max) => !(old.zPos >= min && old.zPos <= max) && current.zPos >= min && current.zPos <= max;
 
     Func<float, float, float, float, float, float, float, float, float, bool> InPosWithBounds = (xMin, xMax, yMin, yMax, zMin, zMax, xPos, yPos, zPos)
     =>
@@ -55,6 +61,24 @@ startup
         current.yPos >= yMin && current.yPos <= yMax &&
         current.zPos >= zMin && current.zPos <= zMax;
 
+    Func<float, float, float, float, float, float, bool> InPosWithBoundsOldOnly = (xMin, xMax, yMin, yMax, zMin, zMax)
+    =>
+        old.xPos >= xMin && old.xPos <= xMax &&
+        old.yPos >= yMin && old.yPos <= yMax &&
+        old.zPos >= zMin && old.zPos <= zMax &&
+        !(current.xPos >= xMin && current.xPos <= xMax &&
+          current.yPos >= yMin && current.yPos <= yMax &&
+          current.zPos >= zMin && current.zPos <= zMax);
+    
+    Func<float, float, float, float, float, float, bool> InPosWithBoundsCurrentOnly = (xMin, xMax, yMin, yMax, zMin, zMax)
+    =>
+        !(old.xPos >= xMin && old.xPos <= xMax &&
+          old.yPos >= yMin && old.yPos <= yMax &&
+          old.zPos >= zMin && old.zPos <= zMax) &&
+        current.xPos >= xMin && current.xPos <= xMax &&
+        current.yPos >= yMin && current.yPos <= yMax &&
+        current.zPos >= zMin && current.zPos <= zMax;
+
     Func<float, float, float, bool> InRange = (targ, range, pos) => pos >= targ - range && pos <= targ + range;
     Func<float, float, bool> InXRangeOld = (targ, range) => old.xPos >= targ - range && old.xPos <= targ + range;
     Func<float, float, bool> InYRangeOld = (targ, range) => old.yPos >= targ - range && old.yPos <= targ + range;
@@ -62,6 +86,12 @@ startup
     Func<float, float, bool> InXRangeCurrent = (targ, range) => current.xPos >= targ - range && current.xPos <= targ + range;
     Func<float, float, bool> InYRangeCurrent = (targ, range) => current.yPos >= targ - range && current.yPos <= targ + range;
     Func<float, float, bool> InZRangeCurrent = (targ, range) => current.zPos >= targ - range && current.zPos <= targ + range;
+    Func<float, float, bool> InXRangeOldOnly = (targ, range) => old.xPos >= targ - range && old.xPos <= targ + range && !(current.xPos >= targ - range && current.xPos <= targ + range);
+    Func<float, float, bool> InYRangeOldOnly = (targ, range) => old.yPos >= targ - range && old.yPos <= targ + range && !(current.yPos >= targ - range && current.yPos <= targ + range);
+    Func<float, float, bool> InZRangeOldOnly = (targ, range) => old.zPos >= targ - range && old.zPos <= targ + range && !(current.zPos >= targ - range && current.zPos <= targ + range);
+    Func<float, float, bool> InXRangeCurrentOnly = (targ, range) => !(old.xPos >= targ - range && old.xPos <= targ + range) && current.xPos >= targ - range && current.xPos <= targ + range;
+    Func<float, float, bool> InYRangeCurrentOnly = (targ, range) => !(old.yPos >= targ - range && old.yPos <= targ + range) && current.yPos >= targ - range && current.yPos <= targ + range;
+    Func<float, float, bool> InZRangeCurrentOnly = (targ, range) => !(old.zPos >= targ - range && old.zPos <= targ + range) && current.zPos >= targ - range && current.zPos <= targ + range;
 
     Func<float, float, float, bool> InXyRangeOld = (xTarg, yTarg, range)
     =>
@@ -70,6 +100,20 @@ startup
     
     Func<float, float, float, bool> InXyRangeCurrent = (xTarg, yTarg, range)
     =>
+        current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
+        current.yPos >= yTarg - range && current.yPos <= yTarg + range;
+
+    Func<float, float, float, bool> InXyRangeOldOnly = (xTarg, yTarg, range)
+    =>
+        old.xPos >= xTarg - range && old.xPos <= xTarg + range &&
+        old.yPos >= yTarg - range && old.yPos <= yTarg + range &&
+        !(current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
+          current.yPos >= yTarg - range && current.yPos <= yTarg + range);
+
+    Func<float, float, float, bool> InXyRangeCurrentOnly = (xTarg, yTarg, range)
+    =>
+        !(old.xPos >= xTarg - range && old.xPos <= xTarg + range &&
+          old.yPos >= yTarg - range && old.yPos <= yTarg + range) &&
         current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
         current.yPos >= yTarg - range && current.yPos <= yTarg + range;
 
@@ -87,6 +131,24 @@ startup
 
     Func<float, float, float, float, bool> InPosWithRangeCurrent = (xTarg, yTarg, zTarg, range)
     =>
+        current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
+        current.yPos >= yTarg - range && current.yPos <= yTarg + range &&
+        current.zPos >= zTarg - range && current.zPos <= zTarg + range;
+
+    Func<float, float, float, float, bool> InPosWithRangeOldOnly = (xTarg, yTarg, zTarg, range)
+    =>
+        old.xPos >= xTarg - range && old.xPos <= xTarg + range &&
+        old.yPos >= yTarg - range && old.yPos <= yTarg + range &&
+        old.zPos >= zTarg - range && old.zPos <= zTarg + range &&
+        !(current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
+          current.yPos >= yTarg - range && current.yPos <= yTarg + range &&
+          current.zPos >= zTarg - range && current.zPos <= zTarg + range);
+
+    Func<float, float, float, float, bool> InPosWithRangeCurrentOnly = (xTarg, yTarg, zTarg, range)
+    =>
+        !(old.xPos >= xTarg - range && old.xPos <= xTarg + range &&
+          old.yPos >= yTarg - range && old.yPos <= yTarg + range &&
+          old.zPos >= zTarg - range && old.zPos <= zTarg + range) &&
         current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
         current.yPos >= yTarg - range && current.yPos <= yTarg + range &&
         current.zPos >= zTarg - range && current.zPos <= zTarg + range;
@@ -109,6 +171,24 @@ startup
         current.yPos >= yTarg - xyRange && current.yPos <= yTarg + xyRange &&
         current.zPos >= zTarg - zRange && current.zPos <= zTarg + zRange;
 
+    Func<float, float, float, float, float, bool> InPosWithRangeXyZOldOnly = (xTarg, yTarg, zTarg, xyRange, zRange)
+    =>
+        old.xPos >= xTarg - xyRange && old.xPos <= xTarg + xyRange &&
+        old.yPos >= yTarg - xyRange && old.yPos <= yTarg + xyRange &&
+        old.zPos >= zTarg - zRange && old.zPos <= zTarg + zRange &&
+        !(current.xPos >= xTarg - xyRange && current.xPos <= xTarg + xyRange &&
+          current.yPos >= yTarg - xyRange && current.yPos <= yTarg + xyRange &&
+          current.zPos >= zTarg - zRange && current.zPos <= zTarg + zRange);
+
+    Func<float, float, float, float, float, bool> InPosWithRangeXyZCurrentOnly = (xTarg, yTarg, zTarg, xyRange, zRange)
+    =>
+        !(old.xPos >= xTarg - xyRange && old.xPos <= xTarg + xyRange &&
+          old.yPos >= yTarg - xyRange && old.yPos <= yTarg + xyRange &&
+          old.zPos >= zTarg - zRange && old.zPos <= zTarg + zRange) &&
+        current.xPos >= xTarg - xyRange && current.xPos <= xTarg + xyRange &&
+        current.yPos >= yTarg - xyRange && current.yPos <= yTarg + xyRange &&
+        current.zPos >= zTarg - zRange && current.zPos <= zTarg + zRange;
+
     Func<float, float, float, float, float, float, bool> InPosExact = (xTarg, yTarg, zTarg, xPos, yPos, zPos)
     =>
         xTarg == xPos &&
@@ -126,6 +206,53 @@ startup
         xTarg == current.xPos &&
         yTarg == current.yPos &&
         zTarg == current.zPos;
+    
+    Func<float, float, float, bool> InPosExactOldOnly = (xTarg, yTarg, zTarg)
+    =>
+        xTarg == old.xPos &&
+        yTarg == old.yPos &&
+        zTarg == old.zPos &&
+        !(xTarg == current.xPos &&
+          yTarg == current.yPos &&
+          zTarg == current.zPos);
+
+    Func<float, float, float, bool> InPosExactCurrentOnly = (xTarg, yTarg, zTarg)
+    =>
+        !(xTarg == old.xPos &&
+          yTarg == old.yPos &&
+          zTarg == old.zPos) &&
+        xTarg == current.xPos &&
+        yTarg == current.yPos &&
+        zTarg == current.zPos;
+    
+    Func<float, float, float, float, bool> InPosExactXy = (xTarg, yTarg, xPos, yPos)
+    =>
+        xTarg == xPos &&
+        yTarg == yPos;
+    
+    Func<float, float, bool> InPosExactXyOld = (xTarg, yTarg)
+    =>
+        xTarg == old.xPos &&
+        yTarg == old.yPos;
+        
+    Func<float, float, bool> InPosExactXyCurrent = (xTarg, yTarg)
+    =>
+        xTarg == current.xPos &&
+        yTarg == current.yPos;
+    
+    Func<float, float, bool> InPosExactXyOldOnly = (xTarg, yTarg)
+    =>
+        xTarg == old.xPos &&
+        yTarg == old.yPos &&
+        !(xTarg == current.xPos &&
+          yTarg == current.yPos);
+    
+    Func<float, float, bool> InPosExactXyCurrentOnly = (xTarg, yTarg)
+    =>
+        !(xTarg == old.xPos &&
+          yTarg == old.yPos) &&
+        xTarg == current.xPos &&
+        yTarg == current.yPos;
 
     Func<ValueTuple<float, float, float, float, float, float>?, int[], ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> HashParams = (bounds, maps)
         => ValueTuple.Create(bounds, maps);
