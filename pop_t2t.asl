@@ -476,8 +476,11 @@ startup
     // ================================================== events ==================================================
 
     Action action;
+    Action<float, float, float> actionPos;
     Action<float, float, float, float> actionRange;
+    Action<float, float, float, float, float> actionRangeXyZ;
     Action<float, float, float, float, float, float> actionBounds;
+    Action<int[]> actionInts;
 
     (action=()                        => AddEvent(StartEvent, "Start",                   new List<string> {}, HashNull(),                () => (InXBoundsCurrent(-404.9f, -404.8f) && current.xCam <= 0.832f && current.xCam >= 0.8318f && current.yCam <= 0.1082f && current.yCam >= 0.1080f) || (current.xPos == -408.2559509f && current.yPos == 116.8504791f && old.saveLoad == 0 && current.saveLoad == 1))) ();
     (action=()                        => AddEvent(ResetEvent, "Reset",                   new List<string> {}, HashNull(),                () => InXBoundsCurrent(-443f, -442.9f) && current.yCam == 0)) ();
