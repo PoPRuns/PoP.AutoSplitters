@@ -484,8 +484,10 @@ startup
     Action<float, float, float, float, float, float> actionBounds;
     Action<int[]> actionInts;
 
-    (action=()                        => AddEvent(StartEvent, "Start",                   new List<string> {}, HashNull(),                () => (InXBoundsCurrent(-404.9f, -404.8f) && current.xCam <= 0.832f && current.xCam >= 0.8318f && current.yCam <= 0.1082f && current.yCam >= 0.1080f) || (current.xPos == -408.2559509f && current.yPos == 116.8504791f && old.saveLoad == 0 && current.saveLoad == 1))) ();
-    (action=()                        => AddEvent(ResetEvent, "Reset",                   new List<string> {}, HashNull(),                () => InXBoundsCurrent(-443f, -442.9f) && current.yCam == 0)) ();
+    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartLoad",               new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range) && old.saveLoad == 0 && current.saveLoad == 1)) (-408.3f, 116.9f, 61.9f, 0.5f);
+    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetLoad",               new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range) && current.saveLoad == 0)) (-408.3f, 116.9f, 61.9f, 0.5f);
+    (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartNew",                new List<string> {}, BoundsRange(x,y,z,range),    () => InXBoundsCurrent(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, current.xCam) && InBounds(0.108f, 0.1082f, current.yCam))) (-405f, 117f, 62f, 5f);
+    (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetNew",                new List<string> {}, BoundsRange(x,y,z,range),    () => InXBoundsCurrent(-443f, -442.9f) && current.yCam == 0)) (-443f, 123f, 57f, 5f);
 
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheRamparts",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-271f, -265f, 187f, 188f, 74f, 75f);
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "HarborDistrict",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-93f, -88f, 236.2f, 238f, 83f, 88f);
