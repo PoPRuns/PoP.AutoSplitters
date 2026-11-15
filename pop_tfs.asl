@@ -422,11 +422,14 @@ startup
 
     // ================================================== game-specific functions and helper variables ==================================================
 
-    bool cpGet = false;
+    bool Cp = false;
 
-    Func<float, float, float, float, bool> CpSplit = (xTarg, yTarg, zTarg, range)
+    Func<float, float, float, float, bool> CpGet = (xTarg, yTarg, zTarg, range)
     =>
-        cpGet && InPosWithRangeCurrent(xTarg, yTarg, zTarg, range);
+        Cp &&
+        current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
+        current.yPos >= yTarg - range && current.yPos <= yTarg + range &&
+        current.zPos >= zTarg - range && current.zPos <= zTarg + range;
 
     // ===================================================================================================================
     // ================================================== CONFIGURATION ==================================================
@@ -467,22 +470,22 @@ startup
     (action=()                 => AddEvent(StartEvent, "Start",            new List<string> {}, HashNull(),             () => InXBoundsCurrent(268.929f, 268.93f) && current.gameState == 4)) ();
     (action=()                 => AddEvent(ResetEvent, "Reset",            new List<string> {}, HashNull(),             () => InXBoundsCurrent(268.929f, 268.93f) && current.gameState == 1)) ();
 
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Malik",            new List<string> {}, BoundsRange(x,y,z,range), () => CpSplit(x, y, z, range))) (-37f, 231f, -148f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfTime",      new List<string> {}, BoundsRange(x,y,z,range), () => CpSplit(x, y, z, range))) (597f, -217f, -2f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Works",            new List<string> {}, BoundsRange(x,y,z,range), () => CpSplit(x, y, z, range))) (-513f, -408f, -167f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Courtyard",        new List<string> {}, BoundsRange(x,y,z,range), () => CpSplit(x, y, z, range))) (-434f, -533f, -127f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfWater",     new List<string> {}, BoundsRange(x,y,z,range), () => CompletedEvents.Contains("PowerOfTime") && CpSplit(x, y, z, range))) (519f, -227f, 6f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Sewers",           new List<string> {}, BoundsRange(x,y,z,range), () => CpSplit(x, y, z, range))) (-228f, 245f, 20f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Ratash",           new List<string> {}, BoundsRange(x,y,z,range), () => CpSplit(x, y, z, range))) (-406f, 403f, 64f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Observatory",      new List<string> {}, BoundsRange(x,y,z,range), () => CpSplit(x, y, z, range))) (-510f, 460f, 104f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfLight",      new List<string> {}, BoundsRange(x,y,z,range), () => CompletedEvents.Contains("PowerOfWater") && CpSplit(x, y, z, range))) (540f, -219f, 6f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Gardens",           new List<string> {}, BoundsRange(x,y,z,range), () => CpSplit(x, y, z, range))) (240f, -227f, -114f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Possession",        new List<string> {}, BoundsRange(x,y,z,range), () => CpSplit(x, y, z, range))) (89f, -477f, -83f, 1f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfKnowledge",  new List<string> {}, BoundsRange(x,y,z,range), () => CompletedEvents.Contains("PowerOfLight") && CpSplit(x, y, z, range))) (548f, -217f, 4f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Reservoir",         new List<string> {}, BoundsRange(x,y,z,range), () => CpSplit(x, y, z, range))) (644f, 385f, -63f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfRazia",      new List<string> {}, BoundsRange(x,y,z,range), () => CompletedEvents.Contains("PowerOfKnowledge") && CpSplit(x, y, z, range))) (430f, 268f, -99f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Climb",             new List<string> {}, BoundsRange(x,y,z,range), () => CpSplit(x, y, z, range))) (912f, 256f, -56f, 10f);
-    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Storm",             new List<string> {}, BoundsRange(x,y,z,range), () => CpSplit(x, y, z, range))) (948f, -284f, 86f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Malik",            new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (-37f, 231f, -148f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfTime",      new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (597f, -217f, -2f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Works",            new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (-513f, -408f, -167f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Courtyard",        new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (-434f, -533f, -127f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfWater",     new List<string> {}, BoundsRange(x,y,z,range), () => CompletedEvents.Contains("PowerOfTime") && CpGet(x, y, z, range))) (519f, -227f, 6f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Sewers",           new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (-228f, 245f, 20f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Ratash",           new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (-406f, 403f, 64f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Observatory",      new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (-510f, 460f, 104f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfLight",      new List<string> {}, BoundsRange(x,y,z,range), () => CompletedEvents.Contains("PowerOfWater") && CpGet(x, y, z, range))) (540f, -219f, 6f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Gardens",           new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (240f, -227f, -114f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Possession",        new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (89f, -477f, -83f, 1f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfKnowledge",  new List<string> {}, BoundsRange(x,y,z,range), () => CompletedEvents.Contains("PowerOfLight") && CpGet(x, y, z, range))) (548f, -217f, 4f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Reservoir",         new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (644f, 385f, -63f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfRazia",      new List<string> {}, BoundsRange(x,y,z,range), () => CompletedEvents.Contains("PowerOfKnowledge") && CpGet(x, y, z, range))) (430f, 268f, -99f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Climb",             new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (912f, 256f, -56f, 10f);
+    (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Storm",             new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (948f, -284f, 86f, 10f);
     (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "End",               new List<string> {}, BoundsRange(x,y,z,range), () => InPosWithRangeCurrent(x, y, z, range))) (821f, -257f, -51f, 10f);
 
     // ====================================================================================================================
@@ -739,7 +742,7 @@ startup
     {
         CompletedEvents.Clear();
         initCustomVariables = true;
-        cpGet = false;
+        Cp = false;
         print("CompletedEvents cleared.");
     };
     vars.OnReset = OnReset;
@@ -751,19 +754,16 @@ startup
     {
         old = newOld;
 
-        cpGet = (old.cpIcon < 1 && current.cpIcon >= 1);
+        Cp = (old.cpIcon < 1 && current.cpIcon >= 1);
         initCustomVariables = false;
 
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
+        int mapHashCode = 0;
         List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localXyzEvents;
-        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localMapEvents = null;
+        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localMapEvents;
         XyzEventHashMap.TryGetValue(xyzHashCode, out localXyzEvents);
-        if (MapEventHashMap.Count > 0)
-        {
-            int mapHashCode = current.map;
-            MapEventHashMap.TryGetValue(mapHashCode, out localMapEvents);
-        }
+        MapEventHashMap.TryGetValue(mapHashCode, out localMapEvents);
         localXyzEvents = localXyzEvents ?? EmptyEventList;
         localMapEvents = localMapEvents ?? EmptyEventList;
 

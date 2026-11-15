@@ -807,14 +807,11 @@ startup
 
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
+        int mapHashCode = 0;
         List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localXyzEvents;
-        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localMapEvents = null;
+        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localMapEvents;
         XyzEventHashMap.TryGetValue(xyzHashCode, out localXyzEvents);
-        if (MapEventHashMap.Count > 0)
-        {
-            int mapHashCode = current.map;
-            MapEventHashMap.TryGetValue(mapHashCode, out localMapEvents);
-        }
+        MapEventHashMap.TryGetValue(mapHashCode, out localMapEvents);
         localXyzEvents = localXyzEvents ?? EmptyEventList;
         localMapEvents = localMapEvents ?? EmptyEventList;
 
