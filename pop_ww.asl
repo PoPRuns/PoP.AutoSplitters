@@ -279,7 +279,6 @@ startup
     var OtherEvents = new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>();
 
     HashSet<string> CompletedEvents = null;
-    Action<string, string> SetCustomVariable = (name, value) => timer.Run.Metadata.SetCustomVariable(name, value);
     bool InitCustomVariables = true;
 
     // update block sets this to an event that is not in CompletedEvents and has been triggered on this cycle
@@ -902,25 +901,25 @@ startup
         old = newOld;
 
         if (InitCustomVariables || old.storyValue != current.storyValue)
-            SetCustomVariable("storyGate", current.storyValue.ToString());
+            timer.Run.Metadata.SetCustomVariable("storyGate", current.storyValue.ToString());
 
         if (InitCustomVariables || old.chestBits != current.chestBits)
-            SetCustomVariable("chests", GetTrackerText(current.chestBits, 0x0003FFFFFFFFFFFF));
+            timer.Run.Metadata.SetCustomVariable("chests", GetTrackerText(current.chestBits, 0x0003FFFFFFFFFFFF));
 
         if (InitCustomVariables || old.weaponBits != current.weaponBits)
         {
             if (InitCustomVariables || (old.weaponBits & MainWeaponsMask) != (current.weaponBits & MainWeaponsMask))
-                SetCustomVariable("mainWeapons",   GetTrackerText(current.weaponBits, MainWeaponsMask));
+                timer.Run.Metadata.SetCustomVariable("mainWeapons",   GetTrackerText(current.weaponBits, MainWeaponsMask));
             if (InitCustomVariables || (old.weaponBits & SwordsMask) != (current.weaponBits & SwordsMask))
-                SetCustomVariable("swords",        GetTrackerText(current.weaponBits, SwordsMask));
+                timer.Run.Metadata.SetCustomVariable("swords",        GetTrackerText(current.weaponBits, SwordsMask));
             if (InitCustomVariables || (old.weaponBits & AxesMask) != (current.weaponBits & AxesMask))
-                SetCustomVariable("axes",          GetTrackerText(current.weaponBits, AxesMask));
+                timer.Run.Metadata.SetCustomVariable("axes",          GetTrackerText(current.weaponBits, AxesMask));
             if (InitCustomVariables || (old.weaponBits & MacesMask) != (current.weaponBits & MacesMask))
-                SetCustomVariable("maces",         GetTrackerText(current.weaponBits, MacesMask));
+                timer.Run.Metadata.SetCustomVariable("maces",         GetTrackerText(current.weaponBits, MacesMask));
             if (InitCustomVariables || (old.weaponBits & DaggersMask) != (current.weaponBits & DaggersMask))
-                SetCustomVariable("daggers",       GetTrackerText(current.weaponBits, DaggersMask));
+                timer.Run.Metadata.SetCustomVariable("daggers",       GetTrackerText(current.weaponBits, DaggersMask));
             if (InitCustomVariables || (old.weaponBits & SecretWeaponsMask) != (current.weaponBits & SecretWeaponsMask))
-                SetCustomVariable("secretWeapons", GetTrackerText(current.weaponBits, SecretWeaponsMask));
+                timer.Run.Metadata.SetCustomVariable("secretWeapons", GetTrackerText(current.weaponBits, SecretWeaponsMask));
         }
 
         if (InitCustomVariables || old.chestBits != current.chestBits || old.weaponBits != current.weaponBits)
@@ -928,7 +927,7 @@ startup
             int cCount = CountBits(current.chestBits & 0x0003FFFFFFFFFFFFUL);
             int wCount = CountBits(current.weaponBits & 0x37CFFFFFFFFFFFFEUL);
             int totalCount = cCount + wCount;
-            SetCustomVariable("collectibles", totalCount + "/108\u2009-\u2009C:" + cCount + ",\u2009W:" + wCount);
+            timer.Run.Metadata.SetCustomVariable("collectibles", totalCount + "/108\u2009-\u2009C:" + cCount + ",\u2009W:" + wCount);
         }
 
         InitCustomVariables = false;
@@ -965,6 +964,7 @@ startup
                 break;
             }
         }
+
         return true;
     };
     vars.Update = Update;
