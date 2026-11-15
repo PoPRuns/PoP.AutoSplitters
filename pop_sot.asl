@@ -544,6 +544,8 @@ startup
 
     // ================================================== apply configured setting-event links ==================================================
 
+    // add each setting that references an event to that event's settings list,
+    // or throw an exception if a setting points to an event that doesn't exist
     foreach (var setting in mySettings.Values)
     {
         foreach (string eventSlug in setting.Item3)
