@@ -467,8 +467,8 @@ startup
     Action<float, float, float, float, float, float> actionBounds;
     Action<int[]> actionInts;
 
-    (action=()                 => AddEvent(StartEvent, "Start",            new List<string> {}, HashNull(),             () => InXBoundsCurrent(268.929f, 268.93f) && current.gameState == 4)) ();
-    (action=()                 => AddEvent(ResetEvent, "Reset",            new List<string> {}, HashNull(),             () => InXBoundsCurrent(268.929f, 268.93f) && current.gameState == 1)) ();
+    (actionRange=(x,y,z,range) => AddEvent(StartEvent, "Start",            new List<string> {}, BoundsRange(x,y,z,range), () => InXBoundsCurrent(268.929f, 268.93f) && current.gameState == 4)) (269f, 161f, -147f, 5f);
+    (actionRange=(x,y,z,range) => AddEvent(ResetEvent, "Reset",            new List<string> {}, BoundsRange(x,y,z,range), () => InXBoundsCurrent(268.929f, 268.93f) && current.gameState == 1)) (269f, 161f, -147f, 5f);
 
     (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "Malik",            new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (-37f, 231f, -148f, 10f);
     (actionRange=(x,y,z,range) => AddEvent(SplitEvent, "PowerOfTime",      new List<string> {}, BoundsRange(x,y,z,range), () => CpGet(x, y, z, range))) (597f, -217f, -2f, 10f);
