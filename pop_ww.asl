@@ -326,7 +326,8 @@ startup
     Func<int, int, bool> MapChange = (oldMapId, currentMapId) => old.map == oldMapId && current.map == currentMapId;
 
     // Gallery / tracker helpers (Hamming weight algorithm)
-    Func<ulong, int> CountBits = (x) => {
+    Func<ulong, int> CountBits = (x) =>
+    {
         x = x - ((x >> 1) & 0x5555555555555555UL);
         x = (x & 0x3333333333333333UL) + ((x >> 2) & 0x3333333333333333UL);
         x = (x + (x >> 4)) & 0x0F0F0F0F0F0F0F0FUL;
@@ -336,10 +337,11 @@ startup
         return (int)(x & 0x7F);
     };
 
-    Func<ulong, ulong, string> GetTrackerText = (bits, expectedBits) => {
+    Func<ulong, ulong, string> GetTrackerText = (bits, expectedBits) =>
+    {
         int count = CountBits(bits & expectedBits);
         int maxCount = CountBits(expectedBits);
-        return (count.ToString() + " / " + maxCount.ToString());
+        return count.ToString() + " / " + maxCount.ToString();
     };
 
     // ===================================================================================================================
@@ -937,14 +939,11 @@ startup
 
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
+        int mapHashCode = current.map;
         List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localXyzEvents;
-        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localMapEvents = null;
+        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localMapEvents;
         XyzEventHashMap.TryGetValue(xyzHashCode, out localXyzEvents);
-        if (MapEventHashMap.Count > 0)
-        {
-            int mapHashCode = current.map;
-            MapEventHashMap.TryGetValue(mapHashCode, out localMapEvents);
-        }
+        MapEventHashMap.TryGetValue(mapHashCode, out localMapEvents);
         localXyzEvents = localXyzEvents ?? EmptyEventList;
         localMapEvents = localMapEvents ?? EmptyEventList;
 
