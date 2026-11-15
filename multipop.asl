@@ -38,6 +38,15 @@ state("POP2")
 
     // State of the prince (11 is drinking)
     int state           : 0x90C414, 0x18, 0x4, 0x48, 0x3F8;
+
+    // Unscaled ticks, but goes back with rewind
+    long physicsTicks   : 0x5409A0;
+
+    // Slows down during slomo, but runs perfectly while rewinding
+    long scaledTicks    : 0x540990;
+
+    // Multiplier used by the game to convert ticks to seconds
+    float tickMul       : 0x4BDF1C;
 }
 
 state("POP3")
@@ -54,585 +63,1138 @@ state("POP3")
     int princeAction    : 0x005EBD78, 0x30, 0x18, 0x4, 0x48, 0x7F0;
 }
 
+// Data structures:
+// Setting: bool Default, string Slug, List<string> EventSlugs, string Description, string? ToolTip, string? ParentSlug
+// Event:   int EventType, string Slug, List<string> SettingSlugs, ((float, float, float, float, float, float)?, int[]?) HashParams, Func<bool> Condition
+
+// Data structures as tuples:
+// Setting: Tuple<bool, string, List<string>, string, string, string>
+// Event:   Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>
+
+// any temporary object that is not needed after startup should be marked with a "GC" comment and set to null before startup finishes
 startup
 {
-    vars.splitTypes = new Dictionary<string, string> {
-        { "pop_sot.asl", "Sands of Time splits" },
-        { "pop_ww.asl", "Warrior Within splits" },
-        { "pop_t2t.asl", "The Two Thrones splits" },
+    // ==========================================================================================================================
+    // ================================================== FUNCTION DEFINITIONS ==================================================
+    // ==========================================================================================================================
+
+    // ================================================== coordinate checks ==================================================
+
+    Func<float, float, float, bool> InBounds = (min, max, pos) => pos >= min && pos <= max;
+    Func<float, float, bool> InXBoundsOld = (min, max) => old.xPos >= min && old.xPos <= max;
+    Func<float, float, bool> InYBoundsOld = (min, max) => old.yPos >= min && old.yPos <= max;
+    Func<float, float, bool> InZBoundsOld = (min, max) => old.zPos >= min && old.zPos <= max;
+    Func<float, float, bool> InXBoundsCurrent = (min, max) => current.xPos >= min && current.xPos <= max;
+    Func<float, float, bool> InYBoundsCurrent = (min, max) => current.yPos >= min && current.yPos <= max;
+    Func<float, float, bool> InZBoundsCurrent = (min, max) => current.zPos >= min && current.zPos <= max;
+
+    Func<float, float, float, float, float, float, float, float, float, bool> InPosWithBounds = (xMin, xMax, yMin, yMax, zMin, zMax, xPos, yPos, zPos)
+    =>
+        xPos >= xMin && xPos <= xMax &&
+        yPos >= yMin && yPos <= yMax &&
+        zPos >= zMin && zPos <= zMax;
+
+    Func<float, float, float, float, float, float, bool> InPosWithBoundsOld = (xMin, xMax, yMin, yMax, zMin, zMax)
+    =>
+        old.xPos >= xMin && old.xPos <= xMax &&
+        old.yPos >= yMin && old.yPos <= yMax &&
+        old.zPos >= zMin && old.zPos <= zMax;
+
+    Func<float, float, float, float, float, float, bool> InPosWithBoundsCurrent = (xMin, xMax, yMin, yMax, zMin, zMax)
+    =>
+        current.xPos >= xMin && current.xPos <= xMax &&
+        current.yPos >= yMin && current.yPos <= yMax &&
+        current.zPos >= zMin && current.zPos <= zMax;
+
+    Func<float, float, float, bool> InRange = (targ, range, pos) => pos >= targ - range && pos <= targ + range;
+    Func<float, float, bool> InXRangeOld = (targ, range) => old.xPos >= targ - range && old.xPos <= targ + range;
+    Func<float, float, bool> InYRangeOld = (targ, range) => old.yPos >= targ - range && old.yPos <= targ + range;
+    Func<float, float, bool> InZRangeOld = (targ, range) => old.zPos >= targ - range && old.zPos <= targ + range;
+    Func<float, float, bool> InXRangeCurrent = (targ, range) => current.xPos >= targ - range && current.xPos <= targ + range;
+    Func<float, float, bool> InYRangeCurrent = (targ, range) => current.yPos >= targ - range && current.yPos <= targ + range;
+    Func<float, float, bool> InZRangeCurrent = (targ, range) => current.zPos >= targ - range && current.zPos <= targ + range;
+
+    Func<float, float, float, bool> InXyRangeOld = (xTarg, yTarg, range)
+    =>
+        old.xPos >= xTarg - range && old.xPos <= xTarg + range &&
+        old.yPos >= yTarg - range && old.yPos <= yTarg + range;
+    
+    Func<float, float, float, bool> InXyRangeCurrent = (xTarg, yTarg, range)
+    =>
+        current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
+        current.yPos >= yTarg - range && current.yPos <= yTarg + range;
+
+    Func<float, float, float, float, float, float, float, bool> InPosWithRange = (xTarg, yTarg, zTarg, range, xPos, yPos, zPos)
+    =>
+        xPos >= xTarg - range && xPos <= xTarg + range &&
+        yPos >= yTarg - range && yPos <= yTarg + range &&
+        zPos >= zTarg - range && zPos <= zTarg + range;
+
+    Func<float, float, float, float, bool> InPosWithRangeOld = (xTarg, yTarg, zTarg, range)
+    =>
+        old.xPos >= xTarg - range && old.xPos <= xTarg + range &&
+        old.yPos >= yTarg - range && old.yPos <= yTarg + range &&
+        old.zPos >= zTarg - range && old.zPos <= zTarg + range;
+
+    Func<float, float, float, float, bool> InPosWithRangeCurrent = (xTarg, yTarg, zTarg, range)
+    =>
+        current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
+        current.yPos >= yTarg - range && current.yPos <= yTarg + range &&
+        current.zPos >= zTarg - range && current.zPos <= zTarg + range;
+
+    Func<float, float, float, float, float, float, float, float, bool> InPosWithRangeXyZ = (xTarg, yTarg, zTarg, xyRange, zRange, xPos, yPos, zPos)
+    =>
+        xPos >= xTarg - xyRange && xPos <= xTarg + xyRange &&
+        yPos >= yTarg - xyRange && yPos <= yTarg + xyRange &&
+        zPos >= zTarg - zRange && zPos <= zTarg + zRange;
+    
+    Func<float, float, float, float, float, bool> InPosWithRangeXyZOld = (xTarg, yTarg, zTarg, xyRange, zRange)
+    =>
+        old.xPos >= xTarg - xyRange && old.xPos <= xTarg + xyRange &&
+        old.yPos >= yTarg - xyRange && old.yPos <= yTarg + xyRange &&
+        old.zPos >= zTarg - zRange && old.zPos <= zTarg + zRange;
+    
+    Func<float, float, float, float, float, bool> InPosWithRangeXyZCurrent = (xTarg, yTarg, zTarg, xyRange, zRange)
+    =>
+        current.xPos >= xTarg - xyRange && current.xPos <= xTarg + xyRange &&
+        current.yPos >= yTarg - xyRange && current.yPos <= yTarg + xyRange &&
+        current.zPos >= zTarg - zRange && current.zPos <= zTarg + zRange;
+
+    Func<float, float, float, float, float, float, bool> InPosExact = (xTarg, yTarg, zTarg, xPos, yPos, zPos)
+    =>
+        xTarg == xPos &&
+        yTarg == yPos &&
+        zTarg == zPos;
+
+    Func<float, float, float, bool> InPosExactOld = (xTarg, yTarg, zTarg)
+    =>
+        xTarg == old.xPos &&
+        yTarg == old.yPos &&
+        zTarg == old.zPos;
+        
+    Func<float, float, float, bool> InPosExactCurrent = (xTarg, yTarg, zTarg)
+    =>
+        xTarg == current.xPos &&
+        yTarg == current.yPos &&
+        zTarg == current.zPos;
+
+    Func<ValueTuple<float, float, float, float, float, float>?, int[], ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> HashParams = (bounds, maps)
+        => ValueTuple.Create(bounds, maps);
+
+    Func<ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> HashNull = () => HashParams(null, null);
+
+    Func<float, float, float, float, float, float, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> Bounds = (x1, x2, y1, y2, z1, z2)
+        => HashParams(ValueTuple.Create(x1, x2, y1, y2, z1, z2), null);
+
+    Func<float, float, float, float, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> BoundsRange = (x, y, z, range)
+        => HashParams(ValueTuple.Create(x - range, x + range, y - range, y + range, z - range, z + range), null);
+    
+    Func<float, float, float, float, float, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> BoundsRangeXyZ = (x, y, z, xyRange, zRange)
+        => HashParams(ValueTuple.Create(x - xyRange, x + xyRange, y - xyRange, y + xyRange, z - zRange, z + zRange), null);
+    
+    Func<float, float, float, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> BoundsExact = (x, y, z)
+        => HashParams(ValueTuple.Create(x, x, y, y, z, z), null);
+    
+    Func<int[], ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> Maps = maps => HashParams(null, maps);
+
+    // ================================================== runtime hash code computations ==================================================
+
+    const float BucketSize = 20f;
+
+    Func<float, int> GetCoordHashCode = coord => (int)Math.Floor(coord / BucketSize);
+
+    const uint FnvPrime = 0x01000193;
+    Func<int, int, int, int> CombineCoordHashCodes = (xHash, yHash, zHash) =>
+    {
+        uint hash = 0;
+        hash = hash * FnvPrime + (uint)xHash;
+        hash = hash * FnvPrime + (uint)yHash;
+        hash = hash * FnvPrime + (uint)zHash;
+        return (int)hash;
     };
 
-    vars.WWsplitTypes = new Dictionary<string, string> {
-        { "AnyGlitched", "Any% (Standard) and Any% (Zipless) splits" },
-        { "AnyNMG", "Any% (No Major Glitches) splits" },
-        { "TEStandard", "True Ending (Standard) splits" },
-        { "TEZipless", "True Ending (Zipless) splits" },
-        { "TENMG", "True Ending (No Major Glitches) splits" },
+    Func<int> GetXyzHashCodeCurrent = () =>
+    {
+        uint hash = 0;
+        hash = hash * FnvPrime + (uint)(int)Math.Floor(current.xPos / BucketSize);
+        hash = hash * FnvPrime + (uint)(int)Math.Floor(current.yPos / BucketSize);
+        hash = hash * FnvPrime + (uint)(int)Math.Floor(current.zPos / BucketSize);
+        return (int)hash;
     };
 
-    // Key - Setting ID, Value - Tuple of (Default setting, Description, Split type, Tooltip, Game ID and Trigger condition).
-    vars.splitsData = new Dictionary<string, Tuple<bool, string, string, string, int, Func<bool>>> {
-        // Sands of Time
-        { "GasStation",             Tuple.Create(true,  "Enter Treasure Vaults",                        "pop_sot.asl",  "Split just before the first save prompt",                                              4,  new Func<bool>(() => vars.GasStation()              )) },
-        { "SandsUnleashed",         Tuple.Create(true,  "Sands Unleashed",                              "pop_sot.asl",  "Split on starting the first fight after the CGI cutscene",                             4,  new Func<bool>(() => vars.SandsUnleashed()          )) },
-        { "FirstGuestRoom",         Tuple.Create(false, "First Guest Room",                             "pop_sot.asl",  "Split on entering the first guest room",                                               4,  new Func<bool>(() => vars.FirstGuestRoom()          )) },
-        { "SultanChamberZipless",   Tuple.Create(false, "The Sultan's Chamber",                         "pop_sot.asl",  "Split on entering the Sultan's chamber at the cutscene",                               4,  new Func<bool>(() => vars.SultanChamberZipless()    )) },
-        { "SultanChamber",          Tuple.Create(false, "The Sultan's Chamber (death)",                 "pop_sot.asl",  "Split at the death abuse in Sultan's chamber",                                         4,  new Func<bool>(() => vars.SultanChamber()           )) },
-        { "PalaceDefence",          Tuple.Create(false, "The Palace's Defence System",                  "pop_sot.asl",  "Split on exiting the palace defense system",                                           4,  new Func<bool>(() => vars.PalaceDefence()           )) },
-        { "DadStart",               Tuple.Create(false, "The Sand King",                                "pop_sot.asl",  "Split on starting the fight with the Sand King",                                       4,  new Func<bool>(() => vars.DadStart()                )) },
-        { "DadDead",                Tuple.Create(true,  "Death of the Sand King",                       "pop_sot.asl",  "Split at the end of the fight on loading the next area",                               4,  new Func<bool>(() => vars.DadDead()                 )) },
-        { "TheWarehouse",           Tuple.Create(false, "The Warehouse",                                "pop_sot.asl",  "Split on hitting the button to let Farah enter Warehouse",                             4,  new Func<bool>(() => vars.TheWarehouse()            )) },
-        { "TheZoo",                 Tuple.Create(false, "The Sultan's Zoo",                             "pop_sot.asl",  "Split on entering the zoo",                                                            4,  new Func<bool>(() => vars.TheZoo()                  )) },
-        { "BirdCage",               Tuple.Create(false, "Atop a Bird Cage",                             "pop_sot.asl",  "Split at the 'Atop a bird cage' save vortex",                                          4,  new Func<bool>(() => vars.BirdCage()                )) },
-        { "CliffWaterfalls",        Tuple.Create(false, "Cliffs and Waterfall",                         "pop_sot.asl",  "Split at the start of cliffs and waterfall",                                           4,  new Func<bool>(() => vars.CliffWaterfalls()         )) },
-        { "TheBathsZipless",        Tuple.Create(false, "The Baths",                                    "pop_sot.asl",  "Split at the end of cliffs and Waterfall",                                             4,  new Func<bool>(() => vars.TheBathsZipless()         )) },
-        { "TheBaths",               Tuple.Create(false, "The Baths (death)",                            "pop_sot.asl",  "Split on death abuse at the start of baths",                                           4,  new Func<bool>(() => vars.TheBaths()                )) },
-        { "SecondSword",            Tuple.Create(false, "Second Sword",                                 "pop_sot.asl",  "Split on obtaining the second sword at baths",                                         4,  new Func<bool>(() => vars.SecondSword()             )) },
-        { "TheDaybreak",            Tuple.Create(false, "Daybreak",                                     "pop_sot.asl",  "Split at the start of daybreak",                                                       4,  new Func<bool>(() => vars.TheDaybreak()             )) },
-        { "TheMesshall",            Tuple.Create(false, "Soldiers' Mess Hall (death)",                  "pop_sot.asl",  "Split on death abuse in the mess hall",                                                4,  new Func<bool>(() => vars.TheMesshall()             )) },
-        { "DrawbridgeTower",        Tuple.Create(false, "Drawbridge Tower",                             "pop_sot.asl",  "Split near the first lever at Drawbridge Tower",                                       4,  new Func<bool>(() => vars.DrawbridgeTower()         )) },
-        { "BrokenBridge",           Tuple.Create(false, "A Broken Bridge",                              "pop_sot.asl",  "Split at the end of the collapsing bridge",                                            4,  new Func<bool>(() => vars.BrokenBridge()            )) },
-        { "TheCavesZipless",        Tuple.Create(false, "The Caves",                                    "pop_sot.asl",  "Split on entering the caves after the door",                                           4,  new Func<bool>(() => vars.TheCavesZipless()         )) },
-        { "TheCaves",               Tuple.Create(false, "The Caves (alternate)",                        "pop_sot.asl",  "Split on the beam at the start of Waterfall",                                          4,  new Func<bool>(() => vars.TheCaves()                )) },
-        { "TheWaterfall",           Tuple.Create(false, "The Waterfall",                                "pop_sot.asl",  "Split at the end of the descent in Waterfall",                                         4,  new Func<bool>(() => vars.TheWaterfall()            )) },
-        { "TheUGReservoirZipless",  Tuple.Create(false, "Enter Underground Reservoir",                  "pop_sot.asl",  "Split on entering the underground reservoir",                                          4,  new Func<bool>(() => vars.TheUGReservoirZipless()   )) },
-        { "TheUGReservoir",         Tuple.Create(false, "Exit Underground Reservoir",                   "pop_sot.asl",  "Split on exiting the underground reservoir",                                           4,  new Func<bool>(() => vars.TheUGReservoir()          )) },
-        { "HallofLearning",         Tuple.Create(false, "The Hall of Learning",                         "pop_sot.asl",  "Split on entering the hall of learning",                                               4,  new Func<bool>(() => vars.HallofLearning()          )) },
-        { "TheObservatory",         Tuple.Create(false, "Observatory (death)",                          "pop_sot.asl",  "Split on death abuse at the end of observatory",                                       4,  new Func<bool>(() => vars.TheObservatory()          )) },
-        { "ObservatoryExit",        Tuple.Create(false, "Exit Observatory",                             "pop_sot.asl",  "Split on exiting the observatory",                                                     4,  new Func<bool>(() => vars.ObservatoryExit()         )) },
-        { "HoLCourtyardsExit",      Tuple.Create(false, "Exit Hall of Learning Courtyards",             "pop_sot.asl",  "Split on exiting hall of learning courtyards",                                         4,  new Func<bool>(() => vars.HoLCourtyardsExit()       )) },
-        { "TheAzadPrison",          Tuple.Create(false, "The Azad Prison",                              "pop_sot.asl",  "Split on entering the prison",                                                         4,  new Func<bool>(() => vars.TheAzadPrison()           )) },
-        { "TortureChamberZipless",  Tuple.Create(false, "Torture Chamber",                              "pop_sot.asl",  "Split on entering the torture chamber",                                                4,  new Func<bool>(() => vars.TortureChamberZipless()   )) },
-        { "TortureChamber",         Tuple.Create(false, "Torture Chamber (death)",                      "pop_sot.asl",  "Split on death abuse at the start of torture chamber",                                 4,  new Func<bool>(() => vars.TortureChamber()          )) },
-        { "TheElevator",            Tuple.Create(false, "The Elevator",                                 "pop_sot.asl",  "Split on entering the elevator",                                                       4,  new Func<bool>(() => vars.TheElevator()             )) },
-        { "TheDreamZipless",        Tuple.Create(false, "A Magic Cavern",                               "pop_sot.asl",  "Split at the start of the long unskippable cutscene",                                  4,  new Func<bool>(() => vars.TheDreamZipless()         )) },
-        { "TheDream",               Tuple.Create(false, "A Magic Cavern (alternate)",                   "pop_sot.asl",  "Split at the start of the 'infinite' stairs",                                          4,  new Func<bool>(() => vars.TheDream()                )) },
-        { "TheTomb",                Tuple.Create(false, "The Tomb",                                     "pop_sot.asl",  "Split at the start of the tomb",                                                       4,  new Func<bool>(() => vars.TheTomb()                 )) },
-        { "TowerofDawn",            Tuple.Create(false, "Tower of Dawn",                                "pop_sot.asl",  "Split at the start of the ascent back up the Tower of Dawn",                           4,  new Func<bool>(() => vars.TowerofDawn()             )) },
-        { "SettingSun",             Tuple.Create(false, "Setting Sun",                                  "pop_sot.asl",  "Split on the Ladder near the setting sun save",                                        4,  new Func<bool>(() => vars.SettingSun()              )) },
-        { "HonorGlory",             Tuple.Create(true,  "Honor and Glory",                              "pop_sot.asl",  "Split on starting the last fight with enemies",                                        4,  new Func<bool>(() => vars.HonorGlory()              )) },
-        { "GrandRewind",            Tuple.Create(true,  "Grand Rewind",                                 "pop_sot.asl",  "Split on starting the Vizier fight",                                                   4,  new Func<bool>(() => vars.GrandRewind()             )) },
-        { "SoTEnd",                 Tuple.Create(true,  "The End",                                      "pop_sot.asl",  "Split on defeating the Vizier or hitting the credits trigger",                         4,  new Func<bool>(() => vars.SoTEnd()                  )) },
-        { "SoTLU",                  Tuple.Create(false, "Life Upgrades",                                "pop_sot.asl",  "Split on obtaining each life upgrade",                                                 4,  new Func<bool>(() => vars.SoTLU()                   )) },
+    // ================================================== one-time hash code computations ==================================================
 
-        // Warrior Within
-        { "Any0",                   Tuple.Create(true,  "Boat",                                         "AnyGlitched",  "Split when the boat ending cutscene starts playing",                                   5,  new Func<bool>(() => vars.boat()                    )) },
-        { "Any1",                   Tuple.Create(true,  "Raven man",                                    "AnyGlitched",  "Split on the cutscene where you're introduced to a raven master",                      5,  new Func<bool>(() => vars.ravenMan()                )) },
-        { "Any2",                   Tuple.Create(true,  "Time portal",                                  "AnyGlitched",  "Split when you go through the first time portal",                                      5,  new Func<bool>(() => vars.firstPortal()             )) },
-        { "Any3",                   Tuple.Create(true,  "Foundy fountain",                              "AnyGlitched",  "Split when you drink from the foundry fountain while having 58/59 storygate",          5,  new Func<bool>(() => vars.foundryFountain()         )) },
-        { "Any4",                   Tuple.Create(true,  "Scorpion sword",                               "AnyGlitched",  "Split when you get the scorpion sword",                                                5,  new Func<bool>(() => vars.scorpionSword()           )) },
-        { "Any5",                   Tuple.Create(false, "Light sword",                                  "AnyGlitched",  "Split when you pick up the light sword in mystic caves",                               5,  new Func<bool>(() => vars.banana()                  )) },
-        { "Any6",                   Tuple.Create(true,  "Mechanical tower (63)",                        "AnyGlitched",  "Split when you acquire storygate 63",                                                  5,  new Func<bool>(() => vars.rng63()                   )) },
-        { "Any7",                   Tuple.Create(true,  "Second portal",                                "AnyGlitched",  "Split when you go through the time portal in the throne room",                         5,  new Func<bool>(() => vars.lastPortal()              )) },
-        { "Any8",                   Tuple.Create(true,  "Kaileena",                                     "AnyGlitched",  "Split when you kill Kaileena in sacred caves",                                         5,  new Func<bool>(() => vars.kaileena()                )) },
-
-        { "TeStandard0",            Tuple.Create(true,  "Boat",                                         "TEStandard",   "Split when the boat ending cutscene starts playing",                                   5,  new Func<bool>(() => vars.boat()                    )) },
-        { "TeStandard1",            Tuple.Create(true,  "Raven man",                                    "TEStandard",   "Split on the cutscene where you're introduced to a raven master",                      5,  new Func<bool>(() => vars.ravenMan()                )) },
-        { "TeStandard2",            Tuple.Create(true,  "Time portal",                                  "TEStandard",   "Split when you go through the first time portal",                                      5,  new Func<bool>(() => vars.firstPortal()             )) },
-        { "TeStandard3",            Tuple.Create(true,  "(1) fortress entrance LU",                     "TEStandard",   "Split when you acquire the life upgrade in fortress entrance",                         5,  new Func<bool>(() => vars.LUFortress()              )) },
-        { "TeStandard4",            Tuple.Create(true,  "(2) Prison LU",                                "TEStandard",   "Split when you acquire the life upgrade in prison",                                    5,  new Func<bool>(() => vars.LUPrison()                )) },
-        { "TeStandard5",            Tuple.Create(true,  "(3) Library LU",                               "TEStandard",   "Split when you acquire the life upgrade in library",                                   5,  new Func<bool>(() => vars.LULibrary()               )) },
-        { "TeStandard6",            Tuple.Create(true,  "(4) Mechanical tower LU",                      "TEStandard",   "Split when you acquire the life upgrade in mechanical tower",                          5,  new Func<bool>(() => vars.LUMechTower()             )) },
-        { "TeStandard7",            Tuple.Create(true,  "(5) Garden LU",                                "TEStandard",   "Split when you acquire the life upgrade in garden",                                    5,  new Func<bool>(() => vars.LUGarden()                )) },
-        { "TeStandard8",            Tuple.Create(true,  "(6) Waterworks LU",                            "TEStandard",   "Split when you acquire the life upgrade in waterworks",                                5,  new Func<bool>(() => vars.LUWaterworks()            )) },
-        { "TeStandard9",            Tuple.Create(true,  "(7) Sacrificial altar LU",                     "TEStandard",   "Split when you acquire the life upgrade in sacrificial altar",                         5,  new Func<bool>(() => vars.LUShahdee()               )) },
-        { "TeStandard10",           Tuple.Create(true,  "(8) Southern passage LU",                      "TEStandard",   "Split when you acquire the life upgrade in southern passage",                          5,  new Func<bool>(() => vars.LU019()                   )) },
-        { "TeStandard11",           Tuple.Create(true,  "(9) Central hall LU",                          "TEStandard",   "Split when you acquire the life upgrade in central hall",                              5,  new Func<bool>(() => vars.LUCentralHall()           )) },
-        { "TeStandard12",           Tuple.Create(true,  "Water sword",                                  "TEStandard",   "Split when you get the water sword",                                                   5,  new Func<bool>(() => vars.WaterSword()              )) },
-        { "TeStandard13",           Tuple.Create(true,  "Dahaka",                                       "TEStandard",   "Split when you defeat Dahaka",                                                         5,  new Func<bool>(() => vars.Dahaka()                  )) },
-
-        { "TeZipless0",             Tuple.Create(true,  "Boat",                                         "TEZipless",    "Split when the boat ending cutscene starts playing",                                   5,  new Func<bool>(() => vars.boat()                    )) },
-        { "TeZipless1",             Tuple.Create(true,  "Raven man",                                    "TEZipless",    "Split on the cutscene where you're introduced to a raven master",                      5,  new Func<bool>(() => vars.ravenMan()                )) },
-        { "TeZipless2",             Tuple.Create(false, "Time portal",                                  "TEZipless",    "Split when you go through the first time portal",                                      5,  new Func<bool>(() => vars.firstPortal()             )) },
-        { "TeZipless3",             Tuple.Create(true,  "(1) Central hall LU",                          "TEZipless",    "Split when you acquire the life upgrade in central hall",                              5,  new Func<bool>(() => vars.LUCentralHall()           )) },
-        { "TeZipless4",             Tuple.Create(true,  "(2) Waterworks LU",                            "TEZipless",    "Split when you acquire the life upgrade in waterworks",                                5,  new Func<bool>(() => vars.LUWaterworks()            )) },
-        { "TeZipless5",             Tuple.Create(true,  "(3) Garden LU",                                "TEZipless",    "Split when you acquire the life upgrade in garden",                                    5,  new Func<bool>(() => vars.LUGarden()                )) },
-        { "TeZipless6",             Tuple.Create(true,  "(4) Fortress entrance LU",                     "TEZipless",    "Split when you acquire the life upgrade in fortress entrance",                         5,  new Func<bool>(() => vars.LUFortress()              )) },
-        { "TeZipless7",             Tuple.Create(true,  "Foundry (59)",                                 "TEZipless",    "Split when you acquire storygate 59",                                                  5,  new Func<bool>(() => vars.rng59()                   )) },
-        { "TeZipless8",             Tuple.Create(true,  "(5) Prison LU",                                "TEZipless",    "Split when you acquire the life upgrade in prison",                                    5,  new Func<bool>(() => vars.LUPrison()                )) },
-        { "TeZipless9",             Tuple.Create(true,  "(6) Library LU",                               "TEZipless",    "Split when you acquire the life upgrade in library",                                   5,  new Func<bool>(() => vars.LULibrary()               )) },
-        { "TeZipless10",            Tuple.Create(false, "Light sword",                                  "TEZipless",    "Split when you pick up the light sword in mystic caves",                               5,  new Func<bool>(() => vars.banana()                  )) },
-        { "TeZipless11",            Tuple.Create(true,  "Mechanical tower (63)",                        "TEZipless",    "Split when you acquire storygate 63",                                                  5,  new Func<bool>(() => vars.rng63()                   )) },
-        { "TeZipless12",            Tuple.Create(true,  "(7) Mechanical tower LU",                      "TEZipless",    "Split when you acquire the life upgrade in mechanical tower",                          5,  new Func<bool>(() => vars.LUMechTower()             )) },
-        { "TeZipless13",            Tuple.Create(true,  "(8) Southern passage LU",                      "TEZipless",    "Split when you acquire the life upgrade in southern passage",                          5,  new Func<bool>(() => vars.LU019()                   )) },
-        { "TeZipless14",            Tuple.Create(true,  "(9) Sacrificial altar LU",                     "TEZipless",    "Split when you acquire the life upgrade in sacrificial altar",                         5,  new Func<bool>(() => vars.LUShahdee()               )) },
-        { "TeZipless15",            Tuple.Create(true,  "Water sword",                                  "TEZipless",    "Split when you get the water sword",                                                   5,  new Func<bool>(() => vars.WaterSword()              )) },
-        { "TeZipless16",            Tuple.Create(true,  "Dahaka",                                       "TEZipless",    "Split when you defeat Dahaka",                                                         5,  new Func<bool>(() => vars.Dahaka()                  )) },
-
-        { "AnyNmg0",                Tuple.Create(true,  "Boat",                                         "AnyNMG",       "Split when the boat ending cutscene starts playing",                                   5,  new Func<bool>(() => vars.boat()                    )) },
-        { "AnyNmg1",                Tuple.Create(true,  "Spider sword",                                 "AnyNMG",       "Split on the cutscene where you get the spider sword",                                 5,  new Func<bool>(() => vars.spiderSword()             )) },
-        { "AnyNmg2",                Tuple.Create(false, "Raven man",                                    "AnyNMG",       "Split on the cutscene where you're introduced to a raven master",                      5,  new Func<bool>(() => vars.ravenMan()                )) },
-        { "AnyNmg3",                Tuple.Create(false, "Time portal",                                  "AnyNMG",       "Split when you go through the first time portal",                                      5,  new Func<bool>(() => vars.firstPortal()             )) },
-        { "AnyNmg4",                Tuple.Create(true,  "Soutern passage (chasing Shahdee)",            "AnyNMG",       "Split when you come to southern passage past",                                         5,  new Func<bool>(() => vars.chasingShahdee()          )) },
-        { "AnyNmg5",                Tuple.Create(true,  "Shahdee (a damsel in distress)",               "AnyNMG",       "Split when you kill Shahdee",                                                          5,  new Func<bool>(() => vars.shahdee()                 )) },
-        { "AnyNmg_spPortalEnter",   Tuple.Create(false, "Enter Southern Passage Portal",                "AnyNMG",       "Split when you enter the portal in Southern Passage",                                  5,  new Func<bool>(() => vars.spPortalEnter()           )) },
-        { "AnyNmg_spPortalExit",    Tuple.Create(false, "Exit Southern Passage Portal",                 "AnyNMG",       "Split when you exit the portal in Southern Passage",                                   5,  new Func<bool>(() => vars.spPortalExit()            )) },
-        { "AnyNmg6",                Tuple.Create(true,  "The Dahaka",                                   "AnyNMG",       "Split on the cutscene before the first Dahaka chase (southern passage present)",       5,  new Func<bool>(() => vars.princeStare()             )) },
-        { "AnyNmg7",                Tuple.Create(true,  "Serpent sword",                                "AnyNMG",       "Split on the cutscene where you get the serpent sword (hourglass chamber)",            5,  new Func<bool>(() => vars.serpentSword()            )) },
-        { "AnyNmg8",                Tuple.Create(true,  "Garden hall",                                  "AnyNMG",       "Split when you come to garden hall",                                                   5,  new Func<bool>(() => vars.gardenHall()              )) },
-        { "AnyNmg9",                Tuple.Create(true,  "Waterworks",                                   "AnyNMG",       "Split when you come to garden waterworks",                                             5,  new Func<bool>(() => vars.waterworks()              )) },
-        { "AnyNmg10",               Tuple.Create(true,  "Lion sword",                                   "AnyNMG",       "Split on the cutscene where you get the lion sword (central hall)",                    5,  new Func<bool>(() => vars.lionSword()               )) },
-        { "AnyNmg11",               Tuple.Create(true,  "Mechanical tower",                             "AnyNMG",       "Split when you clilmb up into the mechanical tower",                                   5,  new Func<bool>(() => vars.mechTower()               )) },
-        { "AnyNmg12",               Tuple.Create(false, "Mechanical tower v2 (elevator cutscene)",      "AnyNMG",       "Split on the cutscene where you jump down on the elevator at the start of mech tower", 5,  new Func<bool>(() => vars.mechElevator()            )) },
-        { "AnyNmg_mpPortalEnter",   Tuple.Create(false, "Enter Mechanical Pit Portal",                  "AnyNMG",       "Split when you enter the portal in Mechanical Pit",                                    5,  new Func<bool>(() => vars.mpPortalEnter()           )) },
-        { "AnyNmg13",               Tuple.Create(true,  "Mechanical Pit Portal",                        "AnyNMG",       "Split when you go through the time portal in mechanical pit",                          5,  new Func<bool>(() => vars.mechPortal()              )) },
-        { "AnyNmg_mpPortalExit",    Tuple.Create(false, "Exit Mechanical Pit Portal",                   "AnyNMG",       "Split when you exit the portal in Mechanical Pit",                                     5,  new Func<bool>(() => vars.mpPortalExit()            )) },
-        { "AnyNmg14",               Tuple.Create(true,  "Activation room in ruin",                      "AnyNMG",       "Split when you come to the mech tower activation room in the present",                 5,  new Func<bool>(() => vars.activationRuin()          )) },
-        { "AnyNmg_arPortalEnter",   Tuple.Create(false, "Enter Activation room Portal",                 "AnyNMG",       "Split when you enter the portal in Activation room",                                   5,  new Func<bool>(() => vars.arPortalEnter()           )) },
-        { "AnyNmg_arPortalExit",    Tuple.Create(false, "Exit Activation room Portal",                  "AnyNMG",       "Split when you exit the portal in Activation room",                                    5,  new Func<bool>(() => vars.arPortalExit()            )) },
-        { "AnyNmg15",               Tuple.Create(true,  "Activation room restored",                     "AnyNMG",       "Split when you come to the mech tower activation room in the past",                    5,  new Func<bool>(() => vars.activationRestore()       )) },
-        { "AnyNmg16",               Tuple.Create(true,  "The death of a sand wraith (central hall)",    "AnyNMG",       "Split in centrall hall next to the fountain after you've activated both towers",       5,  new Func<bool>(() => vars.sandWraithDeathV1()       )) },
-        { "AnyNmg17",               Tuple.Create(false, "The death of a sand wraith v2 (central hall)", "AnyNMG",       "Alternate split deeper into the corridor so you can't hit it early when jumping down", 5, new Func<bool>(() => vars.sandWraithDeathV2()        )) },
-        { "AnyNmg18",               Tuple.Create(true,  "Death of the empress",                         "AnyNMG",       "Split when you kill Kaileena in the throne room (34->38)",                             5,  new Func<bool>(() => vars.kaileenaFirst()           )) },
-        { "AnyNmg19",               Tuple.Create(true,  "Exit the tomb",                                "AnyNMG",       "Split when you leave the tomb",                                                        5,  new Func<bool>(() => vars.exitTomb()                )) },
-        { "AnyNmg_prPortalEnter",   Tuple.Create(false, "Enter Prison Portal",                          "AnyNMG",       "Split when you enter the portal in Prison",                                            5,  new Func<bool>(() => vars.prPortalEnter()           )) },
-        { "AnyNmg_prPortalExit",    Tuple.Create(false, "Exit Prison Portal",                           "AnyNMG",       "Split when you exit the portal in Prison",                                             5,  new Func<bool>(() => vars.prPortalExit()            )) },
-        { "AnyNmg20",               Tuple.Create(true,  "Scorpion sword",                               "AnyNMG",       "Split when you get the scorpion sword",                                                5,  new Func<bool>(() => vars.scorpionSword()           )) },
-        { "AnyNmg21",               Tuple.Create(false, "Library",                                      "AnyNMG",       "Split on the library opening cutscene",                                                5,  new Func<bool>(() => vars.libraryV1()               )) },
-        { "AnyNmg22",               Tuple.Create(true,  "Library v2",                                   "AnyNMG",       "Split when you move into the library (after the opening cutscene)",                    5,  new Func<bool>(() => vars.libraryV2()               )) },
-        { "AnyNmg23",               Tuple.Create(true,  "Hourglass revisited",                          "AnyNMG",       "Split when you come back to the hourglass chamber after you've killed Kaileena",       5,  new Func<bool>(() => vars.hourglassRevisit()        )) },
-        { "AnyNmg_trPortalEnter",   Tuple.Create(false, "Enter Throne Room Portal",                     "AnyNMG",       "Split when you enter the cutscene after breaking Throne Room wall",                    5,  new Func<bool>(() => vars.trPortalEnter()           )) },
-        { "AnyNmg_trPortalExit",    Tuple.Create(false, "Exit Throne Room Portal",                      "AnyNMG",       "Split when you exit the portal in Throne Room",                                        5,  new Func<bool>(() => vars.trPortalExit()            )) },
-        { "AnyNmg24",               Tuple.Create(true,  "The mask of the wraith",                       "AnyNMG",       "Split when you get to the mask",                                                       5,  new Func<bool>(() => vars.maskOn()                  )) },
-        { "AnyNmg_scPortalEnter",   Tuple.Create(false, "Enter Sacred Caves Portal",                    "AnyNMG",       "Split when you enter the portal in Sacred Caves",                                      5,  new Func<bool>(() => vars.scPortalEnter()           )) },
-        { "AnyNmg_scPortalExit",    Tuple.Create(false, "Exit Sacred Caves Portal",                     "AnyNMG",       "Split when you exit the portal in Sacred Caves",                                       5,  new Func<bool>(() => vars.scPortalExit()            )) },
-        { "AnyNmg25",               Tuple.Create(true,  "Sand griffin",                                 "AnyNMG",       "Split when you kill the griffin",                                                      5,  new Func<bool>(() => vars.griffinV1()               )) },
-        { "AnyNmg26",               Tuple.Create(false, "Sand griffin v2",                              "AnyNMG",       "Split when you jump to the platform after you've killed the griffin",                  5,  new Func<bool>(() => vars.griffinV2()               )) },
-        { "AnyNmg_ugPortalEnter",   Tuple.Create(false, "Enter Upper Garden Portal",                    "AnyNMG",       "Split when you enter the portal in Upper Garden",                                      5,  new Func<bool>(() => vars.ugPortalEnter()           )) },
-        { "AnyNmg_ugPortalExit",    Tuple.Create(false, "Exit Upper Garden Portal",                     "AnyNMG",       "Split when you exit the portal in Upper Garden",                                       5,  new Func<bool>(() => vars.ugPortalExit()            )) },
-        { "AnyNmg27",               Tuple.Create(true,  "Mirrored fates",                               "AnyNMG",       "Split on the sacrificial altar cutscene (sand wraith pov)",                            5,  new Func<bool>(() => vars.mirroredFates()           )) },
-        { "AnyNmg28",               Tuple.Create(true,  "A favor unknown",                              "AnyNMG",       "Split on the cutscene where the sand wraith saves the prince (sand wraith pov)",       5,  new Func<bool>(() => vars.favorUnknown()            )) },
-        { "AnyNmg29",               Tuple.Create(true,  "Library revisited",                            "AnyNMG",       "Split when you enter the library",                                                     5,  new Func<bool>(() => vars.libraryRevisit()          )) },
-        { "AnyNmg30",               Tuple.Create(true,  "Light sword",                                  "AnyNMG",       "Split when you pick up the light sword in mystic caves",                               5,  new Func<bool>(() => vars.banana()                  )) },
-        { "AnyNmg31",               Tuple.Create(true,  "The death of a prince",                        "AnyNMG",       "Split on the cutscene where you take the mask off",                                    5,  new Func<bool>(() => vars.maskOff()                 )) },
-        { "AnyNmg32",               Tuple.Create(true,  "Kaileena",                                     "AnyNMG",       "Split when you kill Kaileena in sacred caves",                                         5,  new Func<bool>(() => vars.kaileena()                )) },
-
-        { "TeNmg0",                 Tuple.Create(true,  "Boat",                                         "TENMG",        "Split when the boat ending cutscene starts playing",                                   5,  new Func<bool>(() => vars.boat()                    )) },
-        { "TeNmg1",                 Tuple.Create(true,  "Spider sword",                                 "TENMG",        "Split on the cutscene where you get the spider sword",                                 5,  new Func<bool>(() => vars.spiderSword()             )) },
-        { "TeNmg2",                 Tuple.Create(false, "Raven man",                                    "TENMG",        "Split on the cutscene where you're introduced to a raven master",                      5,  new Func<bool>(() => vars.ravenMan()                )) },
-        { "TeNmg3",                 Tuple.Create(false, "Time portal",                                  "TENMG",        "Split when you go through the first time portal",                                      5,  new Func<bool>(() => vars.firstPortal()             )) },
-        { "TeNmg4",                 Tuple.Create(true,  "Soutern passage (chasing Shahdee)",            "TENMG",        "Split when you come to southern passage past",                                         5,  new Func<bool>(() => vars.chasingShahdee()          )) },
-        { "TeNmg5",                 Tuple.Create(true,  "(1) Southern passage LU",                      "TENMG",        "Split when you acquire the life upgrade in southern passage",                          5,  new Func<bool>(() => vars.LU019()                   )) },
-        { "TeNmg6",                 Tuple.Create(true,  "Shahdee (a damsel in distress)",               "TENMG",        "Split when you kill Shahdee",                                                          5,  new Func<bool>(() => vars.shahdee()                 )) },
-        { "TeNmg7",                 Tuple.Create(true,  "(2) Sacrificial alter LU",                     "TENMG",        "Split when you acquire the life upgrade in sacrificial altar",                         5,  new Func<bool>(() => vars.LUShahdee()               )) },
-        { "TeNmg_spPortalEnter",    Tuple.Create(false, "Enter Southern Passage Portal",                "TENMG",        "Split when you enter the portal in Southern Passage",                                  5,  new Func<bool>(() => vars.spPortalEnter()           )) },
-        { "TeNmg_spPortalExit",     Tuple.Create(false, "Exit Southern Passage Portal",                 "TENMG",        "Split when you exit the portal in Southern Passage",                                   5,  new Func<bool>(() => vars.spPortalExit()            )) },
-        { "TeNmg8",                 Tuple.Create(true,  "The Dahaka",                                   "TENMG",        "Split on the cutscene before the first Dahaka chase (southern passage present)",       5,  new Func<bool>(() => vars.princeStare()             )) },
-        { "TeNmg9",                 Tuple.Create(true,  "(3) Fortress entrance LU",                     "TENMG",        "Split when you acquire the life upgrade in fortress entrance",                         5,  new Func<bool>(() => vars.LUFortress()              )) },
-        { "TeNmg10",                Tuple.Create(true,  "Serpent sword",                                "TENMG",        "Split on the cutscene where you get the serpent sword (hourglass chamber)",            5,  new Func<bool>(() => vars.serpentSword()            )) },
-        { "TeNmg11",                Tuple.Create(true,  "Garden hall",                                  "TENMG",        "Split when you come to garden hall",                                                   5,  new Func<bool>(() => vars.gardenHall()              )) },
-        { "TeNmg12",                Tuple.Create(false, "Waterworks",                                   "TENMG",        "Split when you come to garden waterworks",                                             5,  new Func<bool>(() => vars.waterworks()              )) },
-        { "TeNmg13",                Tuple.Create(true,  "(4) Waterworks LU",                            "TENMG",        "Split when you acquire the life upgrade in waterworks",                                5,  new Func<bool>(() => vars.LUWaterworks()            )) },
-        { "TeNmg15",                Tuple.Create(true,  "(5) Garden LU",                                "TENMG",        "Split when you acquire the life upgrade in garden",                                    5,  new Func<bool>(() => vars.LUGarden()                )) },
-        { "TeNmg16",                Tuple.Create(true,  "(6) Central hall LU",                          "TENMG",        "Split when you acquire the life upgrade in central hall",                              5,  new Func<bool>(() => vars.LUCentralHall()           )) },
-        { "TeNmg17",                Tuple.Create(false, "Lion sword",                                   "TENMG",        "Split on the cutscene where you get the lion sword (central hall)",                    5,  new Func<bool>(() => vars.lionSword()               )) },
-        { "TeNmg18",                Tuple.Create(true,  "Mechanical tower",                             "TENMG",        "Split when you clilmb up into the mechanical tower",                                   5,  new Func<bool>(() => vars.mechTower()               )) },
-        { "TeNmg19",                Tuple.Create(false, "Mechanical tower v2 (elevator cutscene)",      "TENMG",        "Split on the cutscene where you jump down on the elevator at the start of mech tower", 5,  new Func<bool>(() => vars.mechElevator()            )) },
-        { "TeNmg_mpPortalEnter",    Tuple.Create(false, "Enter Mechanical Pit Portal",                  "TENMG",        "Split when you enter the portal in Mechanical Pit",                                    5,  new Func<bool>(() => vars.mpPortalEnter()           )) },
-        { "TeNmg20",                Tuple.Create(true,  "Mechanical Pit Portal",                        "TENMG",        "Split when you go through the time portal in mechanical pit",                          5,  new Func<bool>(() => vars.mechPortal()              )) },
-        { "TeNmg_mpPortalExit",     Tuple.Create(false, "Exit Mechanical Pit Portal",                   "TENMG",        "Split when you exit the portal in Mechanical Pit",                                     5,  new Func<bool>(() => vars.mpPortalExit()            )) },
-        { "TeNmg21",                Tuple.Create(true,  "Activation room in ruin",                      "TENMG",        "Split when you come to the mech tower activation room in the present",                 5,  new Func<bool>(() => vars.activationRuin()          )) },
-        { "TeNmg_arPortalEnter",    Tuple.Create(false, "Enter Activation room Portal",                 "TENMG",        "Split when you enter the portal in Activation room",                                   5,  new Func<bool>(() => vars.arPortalEnter()           )) },
-        { "TeNmg_arPortalExit",     Tuple.Create(false, "Exit Activation room Portal",                  "TENMG",        "Split when you exit the portal in Activation room",                                    5,  new Func<bool>(() => vars.arPortalExit()            )) },
-        { "TeNmg22",                Tuple.Create(false, "Activation room restored",                     "TENMG",        "Split when you come to the mech tower activation room in the past",                    5,  new Func<bool>(() => vars.activationRestore()       )) },
-        { "TeNmg23",                Tuple.Create(true,  "(7) Mechanical tower LU",                      "TENMG",        "Split when you acquire the life upgrade in mechanical tower",                          5,  new Func<bool>(() => vars.LUMechTower()             )) },
-        { "TeNmg24",                Tuple.Create(true,  "The death of a sand wraith (central hall)",    "TENMG",        "Split in centrall hall next to the fountain after you've activated both towers",       5,  new Func<bool>(() => vars.sandWraithDeathV1()       )) },
-        { "TeNmg25",                Tuple.Create(false, "The death of a sand wraith v2 (central hall)", "TENMG",        "Alternate split deeper into the corridor so you can't hit it early when jumping down", 5, new Func<bool>(() => vars.sandWraithDeathV2()        )) },
-        { "TeNmg26",                Tuple.Create(true,  "Death of the empress",                         "TENMG",        "Split when you kill Kaileena in the throne room (34->38)",                             5,  new Func<bool>(() => vars.kaileenaFirst()           )) },
-        { "TeNmg27",                Tuple.Create(true,  "Exit the tomb",                                "TENMG",        "Split when you leave the tomb",                                                        5,  new Func<bool>(() => vars.exitTomb()                )) },
-        { "TeNmg_prPortalEnter",    Tuple.Create(false, "Enter Prison Portal",                          "TENMG",        "Split when you enter the portal in Prison",                                            5,  new Func<bool>(() => vars.prPortalEnter()           )) },
-        { "TeNmg_prPortalExit",     Tuple.Create(false, "Exit Prison Portal",                           "TENMG",        "Split when you exit the portal in Prison",                                             5,  new Func<bool>(() => vars.prPortalExit()            )) },
-        { "TeNmg28",                Tuple.Create(true,  "Scorpion sword",                               "TENMG",        "Split when you get the scorpion sword",                                                5,  new Func<bool>(() => vars.scorpionSword()           )) },
-        { "TeNmg29",                Tuple.Create(true,  "(8) Prison LU",                                "TENMG",        "Split when you acquire the life upgrade in prison",                                    5,  new Func<bool>(() => vars.LUPrison()                )) },
-        { "TeNmg30",                Tuple.Create(false, "Library",                                      "TENMG",        "Split on the library opening cutscene",                                                5,  new Func<bool>(() => vars.libraryV1()               )) },
-        { "TeNmg31",                Tuple.Create(false, "Library v2",                                   "TENMG",        "Split when you move into the library (after the opening cutscene)",                    5,  new Func<bool>(() => vars.libraryV2()               )) },
-        { "TeNmg32",                Tuple.Create(true,  "(9) Library LU",                               "TENMG",        "Split when you acquire the life upgrade in library",                                   5,  new Func<bool>(() => vars.LULibrary()               )) },
-        { "TeNmg33",                Tuple.Create(false, "Hourglass revisited",                          "TENMG",        "Split when you come back to the hourglass chamber after you've killed Kaileena",       5,  new Func<bool>(() => vars.hourglassRevisit()        )) },
-        { "TeNmg34",                Tuple.Create(true,  "Water sword",                                  "TENMG",        "Split when you get the water sword",                                                   5,  new Func<bool>(() => vars.WaterSword()              )) },
-        { "TeNmg_trPortalEnter",    Tuple.Create(false, "Enter Throne Room Portal",                     "TENMG",        "Split when you enter the cutscene after breaking Throne Room wall",                    5,  new Func<bool>(() => vars.trPortalEnter()           )) },
-        { "TeNmg_trPortalExit",     Tuple.Create(false, "Exit Throne Room Portal",                      "TENMG",        "Split when you exit the portal in Throne Room",                                        5,  new Func<bool>(() => vars.trPortalExit()            )) },
-        { "TeNmg35",                Tuple.Create(true,  "The mask of the wraith",                       "TENMG",        "Split when you get to the mask",                                                       5,  new Func<bool>(() => vars.maskOn()                  )) },
-        { "TeNmg_scPortalEnter",    Tuple.Create(false, "Enter Sacred Caves Portal",                    "TENMG",        "Split when you enter the portal in Sacred Caves",                                      5,  new Func<bool>(() => vars.scPortalEnter()           )) },
-        { "TeNmg_scPortalExit",     Tuple.Create(false, "Exit Sacred Caves Portal",                     "TENMG",        "Split when you exit the portal in Sacred Caves",                                       5,  new Func<bool>(() => vars.scPortalExit()            )) },
-        { "TeNmg36",                Tuple.Create(true,  "Sand griffin",                                 "TENMG",        "Split when you kill the griffin",                                                      5,  new Func<bool>(() => vars.griffinV1()               )) },
-        { "TeNmg37",                Tuple.Create(false, "Sand griffin v2",                              "TENMG",        "Split when you jump to the platform after you've killed the griffin",                  5,  new Func<bool>(() => vars.griffinV2()               )) },
-        { "TeNmg_ugPortalEnter",    Tuple.Create(false, "Enter Upper Garden Portal",                    "TENMG",        "Split when you enter the portal in Upper Garden",                                      5,  new Func<bool>(() => vars.ugPortalEnter()           )) },
-        { "TeNmg_ugPortalExit",     Tuple.Create(false, "Exit Upper Garden Portal",                     "TENMG",        "Split when you exit the portal in Upper Garden",                                       5,  new Func<bool>(() => vars.ugPortalExit()            )) },
-        { "TeNmg38",                Tuple.Create(true,  "Mirrored fates",                               "TENMG",        "Split on the sacrificial altar cutscene (sand wraith pov)",                            5,  new Func<bool>(() => vars.mirroredFates()           )) },
-        { "TeNmg39",                Tuple.Create(true,  "A favor unknown",                              "TENMG",        "Split on the cutscene where the sand wraith saves the prince (sand wraith pov)",       5,  new Func<bool>(() => vars.favorUnknown()            )) },
-        { "TeNmg40",                Tuple.Create(true,  "Library revisited",                            "TENMG",        "Split when you enter the library",                                                     5,  new Func<bool>(() => vars.libraryRevisit()          )) },
-        { "TeNmg41",                Tuple.Create(true,  "Light sword",                                  "TENMG",        "Split when you pick up the light sword in mystic caves",                               5,  new Func<bool>(() => vars.banana()                  )) },
-        { "TeNmg42",                Tuple.Create(true,  "The death of a prince",                        "TENMG",        "Split on the cutscene where you take the mask off",                                    5,  new Func<bool>(() => vars.maskOff()                 )) },
-        { "TeNmg43",                Tuple.Create(true,  "Dahaka",                                       "TENMG",        "Split when you defeat Dahaka",                                                         5,  new Func<bool>(() => vars.Dahaka()                  )) },
-
-        // The Two Thrones
-        { "TheRamparts",            Tuple.Create(true,  "The Ramparts",                                 "pop_t2t.asl",  "Split after the harbor district save fountain",                                        6,  new Func<bool>(() => vars.TheRamparts()             )) },
-        { "HarborDistrict",         Tuple.Create(true,  "The Harbor District",                          "pop_t2t.asl",  "Split after first palace save fountain",                                               6,  new Func<bool>(() => vars.HarborDistrict()          )) },
-        { "ThePalace",              Tuple.Create(true,  "The Palace",                                   "pop_t2t.asl",  "Split at the end of throne room",                                                      6,  new Func<bool>(() => vars.ThePalace()               )) },
-        { "TrappedHallway",         Tuple.Create(false, "The Trapped Hallway",                          "pop_t2t.asl",  "Split at end of trapped hallway at the cutscene",                                      6,  new Func<bool>(() => vars.TrappedHallway()          )) },
-        { "TheSewers",              Tuple.Create(false, "The Sewers",                                   "pop_t2t.asl",  "Split on finishing the sewers dark prince section",                                    6,  new Func<bool>(() => vars.TheSewers()               )) },
-        { "TheSewerz",              Tuple.Create(false, "The Sewers (alternate)",                       "pop_t2t.asl",  "Split just before the tunnels save fountain",                                          6,  new Func<bool>(() => vars.TheSewerz()               )) },
-        { "TheFortress",            Tuple.Create(false, "The Fortress",                                 "pop_t2t.asl",  "Split just before entering the first Chariot",                                         6,  new Func<bool>(() => vars.TheFortress()             )) },
-        { "Chariot1",               Tuple.Create(false, "Chariot 1",                                    "pop_t2t.asl",  "Split on finishing the first chariot",                                                 6,  new Func<bool>(() => vars.Chariot1()                )) },
-        { "LowerCity",              Tuple.Create(false, "The Lower City",                               "pop_t2t.asl",  "Split after the lower city dark prince section",                                       6,  new Func<bool>(() => vars.LowerCity()               )) },
-        { "LowerCityRooftops",      Tuple.Create(false, "The Lower City Rooftops",                      "pop_t2t.asl",  "Split after killing Klompa",                                                           6,  new Func<bool>(() => vars.LowerCityRooftops()       )) },
-        { "ArenaDeload",            Tuple.Create(false, "Arena Deload",                                 "pop_t2t.asl",  "Split at the black crushers in the arena dark prince section",                         6,  new Func<bool>(() => vars.ArenaDeload()             )) },
-        { "TheBalconies",           Tuple.Create(false, "The Balconies",                                "pop_t2t.asl",  "Split on exiting the room with the slomo gate",                                        6,  new Func<bool>(() => vars.TheBalconies()            )) },
-        { "DarkAlley",              Tuple.Create(false, "The Dark Alley",                               "pop_t2t.asl",  "Split on entering the cutscene at start of temple rooftops",                           6,  new Func<bool>(() => vars.DarkAlley()               )) },
-        { "TheTempleRooftops",      Tuple.Create(true,  "The Temple Rooftops",                          "pop_t2t.asl",  "Split on entering the door into temple",                                               6,  new Func<bool>(() => vars.TheTempleRooftops()       )) },
-        { "TheTemple",              Tuple.Create(false, "The Temple",                                   "pop_t2t.asl",  "Split on finishing the temple dark prince section",                                    6,  new Func<bool>(() => vars.TheTemple()               )) },
-        { "TheMarketplace",         Tuple.Create(true,  "The Marketplace",                              "pop_t2t.asl",  "Split at save fountain before cutscene drop",                                          6,  new Func<bool>(() => vars.TheMarketplace()          )) },
-        { "MarketDistrict",         Tuple.Create(false, "The Market District",                          "pop_t2t.asl",  "Split at the save fountain after the long cutscene",                                   6,  new Func<bool>(() => vars.MarketDistrict()          )) },
-        { "TheBrothel",             Tuple.Create(false, "The Brothel",                                  "pop_t2t.asl",  "Split on finishing the brothel dark prince section",                                   6,  new Func<bool>(() => vars.TheBrothel()              )) },
-        { "ThePlaza",               Tuple.Create(true,  "The Plaza",                                    "pop_t2t.asl",  "Split at the door after Mahasti fight",                                                6,  new Func<bool>(() => vars.ThePlaza()                )) },
-        { "TheUpperCity",           Tuple.Create(false, "The Upper City",                               "pop_t2t.asl",  "Split just before the skippable Farah cutscene",                                       6,  new Func<bool>(() => vars.TheUpperCity()            )) },
-        { "CityGarderns",           Tuple.Create(false, "The City Garderns",                            "pop_t2t.asl",  "Split just before the Stone Guardian encounter",                                       6,  new Func<bool>(() => vars.CityGarderns()            )) },
-        { "ThePromenade",           Tuple.Create(false, "The Promenade",                                "pop_t2t.asl",  "Split on entering the royal workshop",                                                 6,  new Func<bool>(() => vars.ThePromenade()            )) },
-        { "RoyalWorkshop",          Tuple.Create(true,  "Royal Workshop",                               "pop_t2t.asl",  "Split on entering the king's road",                                                    6,  new Func<bool>(() => vars.RoyalWorkshop()           )) },
-        { "KingsRoad",              Tuple.Create(false, "The King's Road",                              "pop_t2t.asl",  "Split on defeating the twins",                                                         6,  new Func<bool>(() => vars.KingsRoad()               )) },
-        { "KingzRoad",              Tuple.Create(false, "The King's Road (alternate)",                  "pop_t2t.asl",  "Split on the transition to palace entrance after twins fight",                         6,  new Func<bool>(() => vars.KingzRoad()               )) },
-        { "PalaceEntrance",         Tuple.Create(false, "The Palace Entrance",                          "pop_t2t.asl",  "Split on entering the elevator cutscene",                                              6,  new Func<bool>(() => vars.PalaceEntrance()          )) },
-        { "HangingGardens",         Tuple.Create(false, "The Hanging Gardens",                          "pop_t2t.asl",  "Split at the swing pole before the last sand gate",                                    6,  new Func<bool>(() => vars.HangingGardens()          )) },
-        { "HangingGardenz",         Tuple.Create(false, "The Hanging Gardens (alternate)",              "pop_t2t.asl",  "Split at the structure's mind save fountain",                                          6,  new Func<bool>(() => vars.HangingGardenz()          )) },
-        { "StructuresMind",         Tuple.Create(false, "The Structure's Mind",                         "pop_t2t.asl",  "Split at the cutscene after the puzzle",                                               6,  new Func<bool>(() => vars.StructuresMind()          )) },
-        { "StructurezMind",         Tuple.Create(false, "The Structure's Mind (alternate)",             "pop_t2t.asl",  "Split after the transition to Well of Ancestors",                                      6,  new Func<bool>(() => vars.StructurezMind()          )) },
-        { "BottomofWell",           Tuple.Create(false, "Bottom of the Well",                           "pop_t2t.asl",  "Split after the death abuse at the bottom of the well",                                6,  new Func<bool>(() => vars.BottomofWell()            )) },
-        { "WellofAncestors",        Tuple.Create(false, "The Well of Ancestors",                        "pop_t2t.asl",  "Split on finishing the well dark prince section",                                      6,  new Func<bool>(() => vars.WellofAncestors()         )) },
-        { "TheLabyrinth",           Tuple.Create(false, "The Labyrinth",                                "pop_t2t.asl",  "Split on entering the underground cave after breakable wall",                          6,  new Func<bool>(() => vars.TheLabyrinth()            )) },
-        { "CaveDeath",              Tuple.Create(false, "Underground Cave Death",                       "pop_t2t.asl",  "Split on the death abuse at the end of underground cave (for zipping categories)",     6,  new Func<bool>(() => vars.CaveDeath()               )) },
-        { "UndergroundCave",        Tuple.Create(false, "The Underground Cave",                         "pop_t2t.asl",  "Split on entering the kitchen",                                                        6,  new Func<bool>(() => vars.UndergroundCave()         )) },
-        { "LowerTower",             Tuple.Create(false, "The Lower Tower",                              "pop_t2t.asl",  "Split on entering the trap corridor after lower tower",                                6,  new Func<bool>(() => vars.LowerTower()              )) },
-        { "MiddleTower",            Tuple.Create(false, "The Middle Tower",                             "pop_t2t.asl",  "Split on entering the trap corridor after middle tower",                               6,  new Func<bool>(() => vars.MiddleTower()             )) },
-        { "UpperTower",             Tuple.Create(true,  "The Upper Tower",                              "pop_t2t.asl",  "Split at the upper tower save fountain",                                               6,  new Func<bool>(() => vars.UpperTower()              )) },
-        { "TheTerrace",             Tuple.Create(true,  "The Terrace",                                  "pop_t2t.asl",  "Split on entering the mental realm",                                                   6,  new Func<bool>(() => vars.TheTerrace()              )) },
-        { "MentalRealm",            Tuple.Create(true,  "The Mental Realm",                             "pop_t2t.asl",  "Split on finishing the game",                                                          6,  new Func<bool>(() => vars.MentalRealm()             )) },
-
-        { "T2TLU1",                 Tuple.Create(false, "Life Upgrade 1",                               "pop_t2t.asl",  "Split after obtaining the first life upgrade in Tunnels",                              6,  new Func<bool>(() => vars.T2TLU1()                  )) },
-        { "T2TLU2",                 Tuple.Create(false, "Life Upgrade 2",                               "pop_t2t.asl",  "Split after obtaining the second life upgrade in Lower City Rooftops",                 6,  new Func<bool>(() => vars.T2TLU2()                  )) },
-        { "T2TLU3",                 Tuple.Create(false, "Life Upgrade 3",                               "pop_t2t.asl",  "Split after obtaining the third life upgrade in Temple",                               6,  new Func<bool>(() => vars.T2TLU3()                  )) },
-        { "T2TLU4",                 Tuple.Create(false, "Life Upgrade 4",                               "pop_t2t.asl",  "Split after obtaining the fourth life upgrade in Tunnels",                             6,  new Func<bool>(() => vars.T2TLU4()                  )) },
-        { "T2TLU5",                 Tuple.Create(false, "Life Upgrade 5",                               "pop_t2t.asl",  "Split after obtaining the fifth life upgrade in Canal",                                6,  new Func<bool>(() => vars.T2TLU5()                  )) },
-        { "T2TLU6",                 Tuple.Create(false, "Life Upgrade 6",                               "pop_t2t.asl",  "Split after obtaining the sixth life upgrade in Middle Tower",                         6,  new Func<bool>(() => vars.T2TLU6()                  )) },
+    Func<float, float, float, float, float, float, int[]> GetHashCodesForBounds = (xMin, xMax, yMin, yMax, zMin, zMax) =>
+    {
+        int minXBucket = GetCoordHashCode(xMin);
+        int maxXBucket = GetCoordHashCode(xMax);
+        int xBucketCount = maxXBucket - minXBucket + 1;
+        int minYBucket = GetCoordHashCode(yMin);
+        int maxYBucket = GetCoordHashCode(yMax);
+        int yBucketCount = maxYBucket - minYBucket + 1;
+        int minZBucket = GetCoordHashCode(zMin);
+        int maxZBucket = GetCoordHashCode(zMax);
+        int zBucketCount = maxZBucket - minZBucket + 1;
+        int bucketCount = xBucketCount * yBucketCount * zBucketCount;
+        int[] hashCodes = new int[bucketCount];
+        int index = 0;
+        for (int x = 0; x < xBucketCount; x++)
+        {
+            for (int y = 0; y < yBucketCount; y++)
+            {
+                for (int z = 0; z < zBucketCount; z++)
+                {
+                    int xHashCode = minXBucket + x;
+                    int yHashCode = minYBucket + y;
+                    int zHashCode = minZBucket + z;
+                    int hashCode = CombineCoordHashCodes(xHashCode, yHashCode, zHashCode);
+                    hashCodes[index] = hashCode;
+                    index++;
+                }
+            }
+        }
+        return hashCodes;
     };
 
-    settings.Add("setupSplits", true, "Split at the start of each game to record setup time");
+    // ================================================== startup functions and helper variables ==================================================
 
-    foreach (var splitType in vars.splitTypes) {
-        settings.Add(splitType.Key, true, splitType.Value);
-    }
+    // we use the name mySettings to prevent conflict with the LiveSplit variable "settings"
+    // Key: SettingSlug; Value: Setting
+    var mySettings = new Dictionary<string, Tuple<bool, string, List<string>, string, string, string>>(); // GC
+    Action<bool, string, List<string>, string, string, string> AddSetting = (@default, slug, eventSlugs, description, toolTip, parentSlug) =>
+    {
+        if (mySettings.ContainsKey(slug))
+            throw new Exception("Internal exception (ASL): setting " + slug + " has already been added.");
+        mySettings.Add(slug, Tuple.Create(@default, slug, eventSlugs, description, toolTip, parentSlug));
+        settings.Add(slug, @default, description, parentSlug);
+        settings.SetToolTip(slug, toolTip);
+    };
 
-    foreach (var splitType in vars.WWsplitTypes) {
-        settings.Add(splitType.Key, false, splitType.Value, "pop_ww.asl");
-    }
+    // Key: EventSlug; Value: Event
+    const int StartEvent = 0;
+    const int ResetEvent = 1;
+    const int SplitEvent = 2;
+    const int MiscEvent = 3;
+    var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>(); // GC
+    Action<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> AddEvent = (eventType, slug, settingSlugs, hashParams, condition) =>
+    {
+        if (events.ContainsKey(slug))
+            throw new Exception("Internal exception (ASL): event " + slug + " has already been added.");
+        events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, hashParams, condition));
+    };
 
-    foreach (var data in vars.splitsData) {
-        settings.Add(data.Key, data.Value.Item1, data.Value.Item2, data.Value.Item3);
-        settings.SetToolTip(data.Key, data.Value.Item4);
-    }
+    Func<int, string> GetEventString = eventType =>
+    {
+        switch (eventType)
+        {
+        case StartEvent: return "StartEvent";
+        case ResetEvent: return "ResetEvent";
+        case SplitEvent: return "SplitEvent";
+        case MiscEvent:  return "MiscEvent";
+        default:         return "UnknownEvent";
+        }
+    };
 
-    vars.game = 0;
+    // ================================================== runtime functions and helper variables ==================================================
+
+    // Key: Hash; Value: EventList
+    var XyzEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>();
+    var MapEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>();
+
+    // List<Event>
+    var OtherEvents = new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>();
+
+    HashSet<string> CompletedEvents = null;
+    Action<string, string> SetCustomVariable = (name, value) => timer.Run.Metadata.SetCustomVariable(name, value);
+    bool initCustomVariables = true;
+
+    // update block sets this to an event that is not in CompletedEvents and has been triggered on this cycle
+    Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> TriggeredEvent = null;
+
+    Func<int, bool> CheckEvent = eventType =>
+    {
+        if (TriggeredEvent == null)
+            return false;
+        if (TriggeredEvent.Item1 != eventType)
+            return false;
+        bool eventSetting = false;
+        if (TriggeredEvent.Item3.Count == 0)
+            eventSetting = true;
+        else foreach (string settingSlug in TriggeredEvent.Item3)
+        {
+            if (settings[settingSlug])
+            {
+                eventSetting = true;
+                break;
+            }
+        }
+        CompletedEvents.Add(TriggeredEvent.Item2);
+        print(GetEventString(eventType) + " " + TriggeredEvent.Item2 + " " + eventSetting);
+        return eventSetting;
+    };
+
+    // ================================================== game-specific functions and helper variables ==================================================
+
+    var CompletedGames = new HashSet<int>();
+    vars.CompletedGames = CompletedGames;
     vars.noGameRunning = false;
-    vars.CompletedSplits = new HashSet<string>();
-    vars.CompletedGames = new HashSet<int>();
+    vars.game = 0;
+    vars.IGTValue = 0L;
 
-    if (timer.CurrentTimingMethod != TimingMethod.GameTime) {
+    // WW helpers
+    Func<int[], bool> MapOneOfCurrent = maps => Array.Exists(maps, map => map == current.map);
+    Func<int, bool> CutsceneHitWW = map => old.cutscene == 0 && current.cutscene == 1 && current.map == map;
+    Func<int, bool> BossDieWW = map => old.cutscene == 0 && current.cutscene == 1 && current.map == map && current.bossHealth == 0;
+    Func<int, bool> StoryGateAdvWW = storyId => old.storyValue != storyId && current.storyValue == storyId;
+    Func<int, int, bool> MapChangeWW = (oldMapId, currentMapId) => old.map == oldMapId && current.map == currentMapId;
+
+    // T2T helpers
+    Func<float, float, float, float, bool> CutsceneHitT2T = (xTarg, yTarg, zTarg, range)
+    =>
+        old.princeAction != 17 && current.princeAction == 17 &&
+        InPosWithRangeCurrent(xTarg, yTarg, zTarg, range);
+    // ===================================================================================================================
+    // ================================================== CONFIGURATION ==================================================
+    // ===================================================================================================================
+
+    refreshRate = 120;
+
+    // ================================================== settings ==================================================
+
+    //Default:bool    Slug:string                EventSlugs:List<string>            Description:string                           ToolTip:string?                                                                                        ParentSlug:string?
+    // Multi-PoP Setup setting:
+    AddSetting(true,  "setupSplits",            new List<string> {"setupSplits_SoT", "setupSplits_WW", "setupSplits_T2T"}, "Split on Game Setup",                           "Split at the start of each game to record setup time",                                                null);
+
+    // Parent Categories:
+    AddSetting(true,  "pop_sot.asl",            new List<string> {},                     "Sands of Time splits",                          null,                                                                                                 null);
+    AddSetting(true,  "pop_ww.asl",             new List<string> {},                     "Warrior Within splits",                         null,                                                                                                 null);
+    AddSetting(true,  "pop_t2t.asl",            new List<string> {},                     "The Two Thrones splits",                        null,                                                                                                 null);
+
+    // Warrior Within Sub-Categories:
+    AddSetting(false, "AnyGlitched",            new List<string> {},                     "Any% (Standard) and Any% (Zipless) splits",     null,                                                                                                 "pop_ww.asl");
+    AddSetting(false, "AnyNMG",                 new List<string> {},                     "Any% (No Major Glitches) splits",               null,                                                                                                 "pop_ww.asl");
+    AddSetting(false, "TEStandard",             new List<string> {},                     "True Ending (Standard) splits",                 null,                                                                                                 "pop_ww.asl");
+    AddSetting(false, "TEZipless",              new List<string> {},                     "True Ending (Zipless) splits",                  null,                                                                                                 "pop_ww.asl");
+    AddSetting(false, "TENMG",                  new List<string> {},                     "True Ending (No Major Glitches) splits",        null,                                                                                                 "pop_ww.asl");
+
+    // Sands of Time splits:
+    AddSetting(true,  "GasStation",              new List<string> {"GasStation"},    "Enter Treasure Vaults",                      "Split just before the first save prompt",                                                      "pop_sot.asl");
+    AddSetting(true,  "SandsUnleashed",          new List<string> {"SandsUnleashed"}, "Sands Unleashed",                            "Split on starting the first fight after the CGI cutscene",                                     "pop_sot.asl");
+    AddSetting(false, "FirstGuestRoom",          new List<string> {"FirstGuestRoom"}, "First Guest Room",                           "Split on entering the first guest room",                                                       "pop_sot.asl");
+    AddSetting(false, "SultanChamberZipless",    new List<string> {"SultanChamberZipless"}, "The Sultan's Chamber",                       "Split on entering the Sultan's chamber at the cutscene",                                       "pop_sot.asl");
+    AddSetting(false, "SultanChamber",           new List<string> {"SultanChamber"}, "The Sultan's Chamber (death)",               "Split at the death abuse in Sultan's chamber",                                                 "pop_sot.asl");
+    AddSetting(false, "PalaceDefence",           new List<string> {"PalaceDefence"}, "The Palace's Defence System",                "Split on exiting the palace defense system",                                                   "pop_sot.asl");
+    AddSetting(false, "DadStart",                new List<string> {"DadStart"},      "The Sand King",                              "Split on starting the fight with the Sand King",                                               "pop_sot.asl");
+    AddSetting(true,  "DadDead",                 new List<string> {"DadDead"},       "Death of the Sand King",                     "Split at the end of the fight on loading the next area",                                       "pop_sot.asl");
+    AddSetting(false, "TheWarehouse",            new List<string> {"TheWarehouse"},  "The Warehouse",                              "Split on hitting the button to let Farah enter Warehouse",                                     "pop_sot.asl");
+    AddSetting(false, "TheZoo",                  new List<string> {"TheZoo"},        "The Sultan's Zoo",                           "Split on entering the zoo",                                                                    "pop_sot.asl");
+    AddSetting(false, "BirdCage",                new List<string> {"BirdCage"},      "Atop a Bird Cage",                           "Split at the 'Atop a bird cage' save vortex",                                                  "pop_sot.asl");
+    AddSetting(false, "CliffWaterfalls",         new List<string> {"CliffWaterfalls"}, "Cliffs and Waterfall",                       "Split at the start of cliffs and waterfall",                                                   "pop_sot.asl");
+    AddSetting(false, "TheBathsZipless",         new List<string> {"TheBathsZipless"}, "The Baths",                                  "Split at the end of cliffs and Waterfall",                                                     "pop_sot.asl");
+    AddSetting(false, "TheBaths",                new List<string> {"TheBaths"},      "The Baths (death)",                          "Split on death abuse at the start of baths",                                                   "pop_sot.asl");
+    AddSetting(false, "SecondSword",             new List<string> {"SecondSword"},   "Second Sword",                               "Split on obtaining the second sword at baths",                                                 "pop_sot.asl");
+    AddSetting(false, "TheDaybreak",             new List<string> {"TheDaybreak"},   "Daybreak",                                   "Split at the start of daybreak",                                                               "pop_sot.asl");
+    AddSetting(false, "TheMesshall",             new List<string> {"TheMesshall"},   "Soldiers' Mess Hall (death)",                "Split on death abuse in the mess hall",                                                        "pop_sot.asl");
+    AddSetting(false, "DrawbridgeTower",         new List<string> {"DrawbridgeTower"}, "Drawbridge Tower",                           "Split near the first lever at Drawbridge Tower",                                               "pop_sot.asl");
+    AddSetting(false, "BrokenBridge",            new List<string> {"BrokenBridge"},  "A Broken Bridge",                            "Split at the end of the collapsing bridge",                                                    "pop_sot.asl");
+    AddSetting(false, "TheCavesZipless",         new List<string> {"TheCavesZipless"}, "The Caves",                                  "Split on entering the caves after the door",                                                   "pop_sot.asl");
+    AddSetting(false, "TheCaves",                new List<string> {"TheCaves"},      "The Caves (alternate)",                      "Split on the beam at the start of Waterfall",                                                  "pop_sot.asl");
+    AddSetting(false, "TheWaterfall",            new List<string> {"TheWaterfall"},  "The Waterfall",                              "Split at the end of the descent in Waterfall",                                                 "pop_sot.asl");
+    AddSetting(false, "TheUGReservoirZipless",   new List<string> {"TheUGReservoirZipless"}, "Enter Underground Reservoir",                "Split on entering the underground reservoir",                                                  "pop_sot.asl");
+    AddSetting(false, "TheUGReservoir",          new List<string> {"TheUGReservoir"}, "Exit Underground Reservoir",                 "Split on exiting the underground reservoir",                                                   "pop_sot.asl");
+    AddSetting(false, "HallofLearning",          new List<string> {"HallofLearning"}, "The Hall of Learning",                       "Split on entering the hall of learning",                                                       "pop_sot.asl");
+    AddSetting(false, "TheObservatory",          new List<string> {"TheObservatory"}, "Observatory (death)",                        "Split on death abuse at the end of observatory",                                               "pop_sot.asl");
+    AddSetting(false, "ObservatoryExit",         new List<string> {"ObservatoryExit"}, "Exit Observatory",                           "Split on exiting the observatory",                                                             "pop_sot.asl");
+    AddSetting(false, "HoLCourtyardsExit",       new List<string> {"HoLCourtyardsExit"}, "Exit Hall of Learning Courtyards",           "Split on exiting hall of learning courtyards",                                                 "pop_sot.asl");
+    AddSetting(false, "TheAzadPrison",           new List<string> {"TheAzadPrison"}, "The Azad Prison",                            "Split on entering the prison",                                                                 "pop_sot.asl");
+    AddSetting(false, "TortureChamberZipless",   new List<string> {"TortureChamberZipless"}, "Torture Chamber",                            "Split on entering the torture chamber",                                                        "pop_sot.asl");
+    AddSetting(false, "TortureChamber",          new List<string> {"TortureChamber"}, "Torture Chamber (death)",                    "Split on death abuse at the start of torture chamber",                                         "pop_sot.asl");
+    AddSetting(false, "TheElevator",             new List<string> {"TheElevator"},   "The Elevator",                               "Split on entering the elevator",                                                               "pop_sot.asl");
+    AddSetting(false, "TheDreamZipless",         new List<string> {"TheDreamZipless"}, "A Magic Cavern",                             "Split at the start of the long unskippable cutscene",                                          "pop_sot.asl");
+    AddSetting(false, "TheDream",                new List<string> {"TheDream"},      "A Magic Cavern (alternate)",                 "Split at the start of the 'infinite' stairs",                                                  "pop_sot.asl");
+    AddSetting(false, "TheTomb",                 new List<string> {"TheTomb"},       "The Tomb",                                   "Split at the start of the tomb",                                                               "pop_sot.asl");
+    AddSetting(false, "TowerofDawn",             new List<string> {"TowerofDawn"},   "Tower of Dawn",                              "Split at the start of the ascent back up the Tower of Dawn",                                   "pop_sot.asl");
+    AddSetting(false, "SettingSun",              new List<string> {"SettingSun"},    "Setting Sun",                                "Split on the Ladder near the setting sun save",                                                "pop_sot.asl");
+    AddSetting(true,  "HonorGlory",              new List<string> {"HonorGlory"},    "Honor and Glory",                            "Split on starting the last fight with enemies",                                                "pop_sot.asl");
+    AddSetting(true,  "GrandRewind",             new List<string> {"GrandRewind"},   "Grand Rewind",                               "Split on starting the Vizier fight",                                                           "pop_sot.asl");
+    AddSetting(true,  "SoTEnd",                  new List<string> {"SoTEnd"},        "The End",                                    "Split on defeating the Vizier or hitting the credits trigger",                                 "pop_sot.asl");
+    AddSetting(false, "SoTLU",                   new List<string> {"SoTLU"},         "Life Upgrades",                              "Split on obtaining each life upgrade",                                                         "pop_sot.asl");
+    // Warrior Within splits:
+    AddSetting(true,  "Any0",                    new List<string> {"boat"},          "Boat",                                       "Split when the boat ending cutscene starts playing",                                           "AnyGlitched");
+    AddSetting(true,  "Any1",                    new List<string> {"ravenMan"},      "Raven man",                                  "Split on the cutscene where you're introduced to a raven master",                              "AnyGlitched");
+    AddSetting(true,  "Any2",                    new List<string> {"firstPortal"},   "Time portal",                                "Split when you go through the first time portal",                                              "AnyGlitched");
+    AddSetting(true,  "Any3",                    new List<string> {"foundryFountain"}, "Foundy fountain",                            "Split when you drink from the foundry fountain while having 58/59 storygate",                  "AnyGlitched");
+    AddSetting(true,  "Any4",                    new List<string> {"scorpionSword"}, "Scorpion sword",                             "Split when you get the scorpion sword",                                                        "AnyGlitched");
+    AddSetting(false, "Any5",                    new List<string> {"banana"},        "Light sword",                                "Split when you pick up the light sword in mystic caves",                                       "AnyGlitched");
+    AddSetting(true,  "Any6",                    new List<string> {"rng63"},         "Mechanical tower (63)",                      "Split when you acquire storygate 63",                                                          "AnyGlitched");
+    AddSetting(true,  "Any7",                    new List<string> {"lastPortal"},    "Second portal",                              "Split when you go through the time portal in the throne room",                                 "AnyGlitched");
+    AddSetting(true,  "Any8",                    new List<string> {"kaileena"},      "Kaileena",                                   "Split when you kill Kaileena in sacred caves",                                                 "AnyGlitched");
+    AddSetting(true,  "TeStandard0",             new List<string> {"boat"},          "Boat",                                       "Split when the boat ending cutscene starts playing",                                           "TEStandard");
+    AddSetting(true,  "TeStandard1",             new List<string> {"ravenMan"},      "Raven man",                                  "Split on the cutscene where you're introduced to a raven master",                              "TEStandard");
+    AddSetting(true,  "TeStandard2",             new List<string> {"firstPortal"},   "Time portal",                                "Split when you go through the first time portal",                                              "TEStandard");
+    AddSetting(true,  "TeStandard3",             new List<string> {"LUFortress"},    "(1) fortress entrance LU",                   "Split when you acquire the life upgrade in fortress entrance",                                 "TEStandard");
+    AddSetting(true,  "TeStandard4",             new List<string> {"LUPrison"},      "(2) Prison LU",                              "Split when you acquire the life upgrade in prison",                                            "TEStandard");
+    AddSetting(true,  "TeStandard5",             new List<string> {"LULibrary"},     "(3) Library LU",                             "Split when you acquire the life upgrade in library",                                           "TEStandard");
+    AddSetting(true,  "TeStandard6",             new List<string> {"LUMechTower"},   "(4) Mechanical tower LU",                    "Split when you acquire the life upgrade in mechanical tower",                                  "TEStandard");
+    AddSetting(true,  "TeStandard7",             new List<string> {"LUGarden"},      "(5) Garden LU",                              "Split when you acquire the life upgrade in garden",                                            "TEStandard");
+    AddSetting(true,  "TeStandard8",             new List<string> {"LUWaterworks"},  "(6) Waterworks LU",                          "Split when you acquire the life upgrade in waterworks",                                        "TEStandard");
+    AddSetting(true,  "TeStandard9",             new List<string> {"LUShahdee"},     "(7) Sacrificial altar LU",                   "Split when you acquire the life upgrade in sacrificial altar",                                 "TEStandard");
+    AddSetting(true,  "TeStandard10",            new List<string> {"LU019"},         "(8) Southern passage LU",                    "Split when you acquire the life upgrade in southern passage",                                  "TEStandard");
+    AddSetting(true,  "TeStandard11",            new List<string> {"LUCentralHall"}, "(9) Central hall LU",                        "Split when you acquire the life upgrade in central hall",                                      "TEStandard");
+    AddSetting(true,  "TeStandard12",            new List<string> {"WaterSword"},    "Water sword",                                "Split when you get the water sword",                                                           "TEStandard");
+    AddSetting(true,  "TeStandard13",            new List<string> {"Dahaka"},        "Dahaka",                                     "Split when you defeat Dahaka",                                                                 "TEStandard");
+    AddSetting(true,  "TeZipless0",              new List<string> {"boat"},          "Boat",                                       "Split when the boat ending cutscene starts playing",                                           "TEZipless");
+    AddSetting(true,  "TeZipless1",              new List<string> {"ravenMan"},      "Raven man",                                  "Split on the cutscene where you're introduced to a raven master",                              "TEZipless");
+    AddSetting(false, "TeZipless2",              new List<string> {"firstPortal"},   "Time portal",                                "Split when you go through the first time portal",                                              "TEZipless");
+    AddSetting(true,  "TeZipless3",              new List<string> {"LUCentralHall"}, "(1) Central hall LU",                        "Split when you acquire the life upgrade in central hall",                                      "TEZipless");
+    AddSetting(true,  "TeZipless4",              new List<string> {"LUWaterworks"},  "(2) Waterworks LU",                          "Split when you acquire the life upgrade in waterworks",                                        "TEZipless");
+    AddSetting(true,  "TeZipless5",              new List<string> {"LUGarden"},      "(3) Garden LU",                              "Split when you acquire the life upgrade in garden",                                            "TEZipless");
+    AddSetting(true,  "TeZipless6",              new List<string> {"LUFortress"},    "(4) Fortress entrance LU",                   "Split when you acquire the life upgrade in fortress entrance",                                 "TEZipless");
+    AddSetting(true,  "TeZipless7",              new List<string> {"rng59"},         "Foundry (59)",                               "Split when you acquire storygate 59",                                                          "TEZipless");
+    AddSetting(true,  "TeZipless8",              new List<string> {"LUPrison"},      "(5) Prison LU",                              "Split when you acquire the life upgrade in prison",                                            "TEZipless");
+    AddSetting(true,  "TeZipless9",              new List<string> {"LULibrary"},     "(6) Library LU",                             "Split when you acquire the life upgrade in library",                                           "TEZipless");
+    AddSetting(false, "TeZipless10",             new List<string> {"banana"},        "Light sword",                                "Split when you pick up the light sword in mystic caves",                                       "TEZipless");
+    AddSetting(true,  "TeZipless11",             new List<string> {"rng63"},         "Mechanical tower (63)",                      "Split when you acquire storygate 63",                                                          "TEZipless");
+    AddSetting(true,  "TeZipless12",             new List<string> {"LUMechTower"},   "(7) Mechanical tower LU",                    "Split when you acquire the life upgrade in mechanical tower",                                  "TEZipless");
+    AddSetting(true,  "TeZipless13",             new List<string> {"LU019"},         "(8) Southern passage LU",                    "Split when you acquire the life upgrade in southern passage",                                  "TEZipless");
+    AddSetting(true,  "TeZipless14",             new List<string> {"LUShahdee"},     "(9) Sacrificial altar LU",                   "Split when you acquire the life upgrade in sacrificial altar",                                 "TEZipless");
+    AddSetting(true,  "TeZipless15",             new List<string> {"WaterSword"},    "Water sword",                                "Split when you get the water sword",                                                           "TEZipless");
+    AddSetting(true,  "TeZipless16",             new List<string> {"Dahaka"},        "Dahaka",                                     "Split when you defeat Dahaka",                                                                 "TEZipless");
+    AddSetting(true,  "AnyNmg0",                 new List<string> {"boat"},          "Boat",                                       "Split when the boat ending cutscene starts playing",                                           "AnyNMG");
+    AddSetting(true,  "AnyNmg1",                 new List<string> {"spiderSword"},   "Spider sword",                               "Split on the cutscene where you get the spider sword",                                         "AnyNMG");
+    AddSetting(false, "AnyNmg2",                 new List<string> {"ravenMan"},      "Raven man",                                  "Split on the cutscene where you're introduced to a raven master",                              "AnyNMG");
+    AddSetting(false, "AnyNmg3",                 new List<string> {"firstPortal"},   "Time portal",                                "Split when you go through the first time portal",                                              "AnyNMG");
+    AddSetting(true,  "AnyNmg4",                 new List<string> {"chasingShahdee"}, "Soutern passage (chasing Shahdee)",          "Split when you come to southern passage past",                                                 "AnyNMG");
+    AddSetting(true,  "AnyNmg5",                 new List<string> {"shahdee"},       "Shahdee (a damsel in distress)",             "Split when you kill Shahdee",                                                                  "AnyNMG");
+    AddSetting(false, "AnyNmg_spPortalEnter",    new List<string> {"spPortalEnter"}, "Enter Southern Passage Portal",              "Split when you enter the portal in Southern Passage",                                          "AnyNMG");
+    AddSetting(false, "AnyNmg_spPortalExit",     new List<string> {"spPortalExit"},  "Exit Southern Passage Portal",               "Split when you exit the portal in Southern Passage",                                           "AnyNMG");
+    AddSetting(true,  "AnyNmg6",                 new List<string> {"princeStare"},   "The Dahaka",                                 "Split on the cutscene before the first Dahaka chase (southern passage present)",               "AnyNMG");
+    AddSetting(true,  "AnyNmg7",                 new List<string> {"serpentSword"},  "Serpent sword",                              "Split on the cutscene where you get the serpent sword (hourglass chamber)",                    "AnyNMG");
+    AddSetting(true,  "AnyNmg8",                 new List<string> {"gardenHall"},    "Garden hall",                                "Split when you come to garden hall",                                                           "AnyNMG");
+    AddSetting(true,  "AnyNmg9",                 new List<string> {"waterworks"},    "Waterworks",                                 "Split when you come to garden waterworks",                                                     "AnyNMG");
+    AddSetting(true,  "AnyNmg10",                new List<string> {"lionSword"},     "Lion sword",                                 "Split on the cutscene where you get the lion sword (central hall)",                            "AnyNMG");
+    AddSetting(true,  "AnyNmg11",                new List<string> {"mechTower"},     "Mechanical tower",                           "Split when you clilmb up into the mechanical tower",                                           "AnyNMG");
+    AddSetting(false, "AnyNmg12",                new List<string> {"mechElevator"},  "Mechanical tower v2 (elevator cutscene)",    "Split on the cutscene where you jump down on the elevator at the start of mech tower",         "AnyNMG");
+    AddSetting(false, "AnyNmg_mpPortalEnter",    new List<string> {"mpPortalEnter"}, "Enter Mechanical Pit Portal",                "Split when you enter the portal in Mechanical Pit",                                            "AnyNMG");
+    AddSetting(true,  "AnyNmg13",                new List<string> {"mechPortal"},    "Mechanical Pit Portal",                      "Split when you go through the time portal in mechanical pit",                                  "AnyNMG");
+    AddSetting(false, "AnyNmg_mpPortalExit",     new List<string> {"mpPortalExit"},  "Exit Mechanical Pit Portal",                 "Split when you exit the portal in Mechanical Pit",                                             "AnyNMG");
+    AddSetting(true,  "AnyNmg14",                new List<string> {"activationRuin"}, "Activation room in ruin",                    "Split when you come to the mech tower activation room in the present",                         "AnyNMG");
+    AddSetting(false, "AnyNmg_arPortalEnter",    new List<string> {"arPortalEnter"}, "Enter Activation room Portal",               "Split when you enter the portal in Activation room",                                           "AnyNMG");
+    AddSetting(false, "AnyNmg_arPortalExit",     new List<string> {"arPortalExit"},  "Exit Activation room Portal",                "Split when you exit the portal in Activation room",                                            "AnyNMG");
+    AddSetting(true,  "AnyNmg15",                new List<string> {"activationRestore"}, "Activation room restored",                   "Split when you come to the mech tower activation room in the past",                            "AnyNMG");
+    AddSetting(true,  "AnyNmg16",                new List<string> {"sandWraithDeathV1"}, "The death of a sand wraith (central hall)",  "Split in centrall hall next to the fountain after you've activated both towers",               "AnyNMG");
+    AddSetting(false, "AnyNmg17",                new List<string> {"sandWraithDeathV2"}, "The death of a sand wraith v2 (central hall)", "Alternate split deeper into the corridor so you can't hit it early when jumping down",         "AnyNMG");
+    AddSetting(true,  "AnyNmg18",                new List<string> {"kaileenaFirst"}, "Death of the empress",                       "Split when you kill Kaileena in the throne room (34->38)",                                     "AnyNMG");
+    AddSetting(true,  "AnyNmg19",                new List<string> {"exitTomb"},      "Exit the tomb",                              "Split when you leave the tomb",                                                                "AnyNMG");
+    AddSetting(false, "AnyNmg_prPortalEnter",    new List<string> {"prPortalEnter"}, "Enter Prison Portal",                        "Split when you enter the portal in Prison",                                                    "AnyNMG");
+    AddSetting(false, "AnyNmg_prPortalExit",     new List<string> {"prPortalExit"},  "Exit Prison Portal",                         "Split when you exit the portal in Prison",                                                     "AnyNMG");
+    AddSetting(true,  "AnyNmg20",                new List<string> {"scorpionSword"}, "Scorpion sword",                             "Split when you get the scorpion sword",                                                        "AnyNMG");
+    AddSetting(false, "AnyNmg21",                new List<string> {"libraryV1"},     "Library",                                    "Split on the library opening cutscene",                                                        "AnyNMG");
+    AddSetting(true,  "AnyNmg22",                new List<string> {"libraryV2"},     "Library v2",                                 "Split when you move into the library (after the opening cutscene)",                            "AnyNMG");
+    AddSetting(true,  "AnyNmg23",                new List<string> {"hourglassRevisit"}, "Hourglass revisited",                        "Split when you come back to the hourglass chamber after you've killed Kaileena",               "AnyNMG");
+    AddSetting(false, "AnyNmg_trPortalEnter",    new List<string> {"trPortalEnter"}, "Enter Throne Room Portal",                   "Split when you enter the cutscene after breaking Throne Room wall",                            "AnyNMG");
+    AddSetting(false, "AnyNmg_trPortalExit",     new List<string> {"trPortalExit"},  "Exit Throne Room Portal",                    "Split when you exit the portal in Throne Room",                                                "AnyNMG");
+    AddSetting(true,  "AnyNmg24",                new List<string> {"maskOn"},        "The mask of the wraith",                     "Split when you get to the mask",                                                               "AnyNMG");
+    AddSetting(false, "AnyNmg_scPortalEnter",    new List<string> {"scPortalEnter"}, "Enter Sacred Caves Portal",                  "Split when you enter the portal in Sacred Caves",                                              "AnyNMG");
+    AddSetting(false, "AnyNmg_scPortalExit",     new List<string> {"scPortalExit"},  "Exit Sacred Caves Portal",                   "Split when you exit the portal in Sacred Caves",                                               "AnyNMG");
+    AddSetting(true,  "AnyNmg25",                new List<string> {"griffinV1"},     "Sand griffin",                               "Split when you kill the griffin",                                                              "AnyNMG");
+    AddSetting(false, "AnyNmg26",                new List<string> {"griffinV2"},     "Sand griffin v2",                            "Split when you jump to the platform after you've killed the griffin",                          "AnyNMG");
+    AddSetting(false, "AnyNmg_ugPortalEnter",    new List<string> {"ugPortalEnter"}, "Enter Upper Garden Portal",                  "Split when you enter the portal in Upper Garden",                                              "AnyNMG");
+    AddSetting(false, "AnyNmg_ugPortalExit",     new List<string> {"ugPortalExit"},  "Exit Upper Garden Portal",                   "Split when you exit the portal in Upper Garden",                                               "AnyNMG");
+    AddSetting(true,  "AnyNmg27",                new List<string> {"mirroredFates"}, "Mirrored fates",                             "Split on the sacrificial altar cutscene (sand wraith pov)",                                    "AnyNMG");
+    AddSetting(true,  "AnyNmg28",                new List<string> {"favorUnknown"},  "A favor unknown",                            "Split on the cutscene where the sand wraith saves the prince (sand wraith pov)",               "AnyNMG");
+    AddSetting(true,  "AnyNmg29",                new List<string> {"libraryRevisit"}, "Library revisited",                          "Split when you enter the library",                                                             "AnyNMG");
+    AddSetting(true,  "AnyNmg30",                new List<string> {"banana"},        "Light sword",                                "Split when you pick up the light sword in mystic caves",                                       "AnyNMG");
+    AddSetting(true,  "AnyNmg31",                new List<string> {"maskOff"},       "The death of a prince",                      "Split on the cutscene where you take the mask off",                                            "AnyNMG");
+    AddSetting(true,  "AnyNmg32",                new List<string> {"kaileena"},      "Kaileena",                                   "Split when you kill Kaileena in sacred caves",                                                 "AnyNMG");
+    AddSetting(true,  "TeNmg0",                  new List<string> {"boat"},          "Boat",                                       "Split when the boat ending cutscene starts playing",                                           "TENMG");
+    AddSetting(true,  "TeNmg1",                  new List<string> {"spiderSword"},   "Spider sword",                               "Split on the cutscene where you get the spider sword",                                         "TENMG");
+    AddSetting(false, "TeNmg2",                  new List<string> {"ravenMan"},      "Raven man",                                  "Split on the cutscene where you're introduced to a raven master",                              "TENMG");
+    AddSetting(false, "TeNmg3",                  new List<string> {"firstPortal"},   "Time portal",                                "Split when you go through the first time portal",                                              "TENMG");
+    AddSetting(true,  "TeNmg4",                  new List<string> {"chasingShahdee"}, "Soutern passage (chasing Shahdee)",          "Split when you come to southern passage past",                                                 "TENMG");
+    AddSetting(true,  "TeNmg5",                  new List<string> {"LU019"},         "(1) Southern passage LU",                    "Split when you acquire the life upgrade in southern passage",                                  "TENMG");
+    AddSetting(true,  "TeNmg6",                  new List<string> {"shahdee"},       "Shahdee (a damsel in distress)",             "Split when you kill Shahdee",                                                                  "TENMG");
+    AddSetting(true,  "TeNmg7",                  new List<string> {"LUShahdee"},     "(2) Sacrificial alter LU",                   "Split when you acquire the life upgrade in sacrificial altar",                                 "TENMG");
+    AddSetting(false, "TeNmg_spPortalEnter",     new List<string> {"spPortalEnter"}, "Enter Southern Passage Portal",              "Split when you enter the portal in Southern Passage",                                          "TENMG");
+    AddSetting(false, "TeNmg_spPortalExit",      new List<string> {"spPortalExit"},  "Exit Southern Passage Portal",               "Split when you exit the portal in Southern Passage",                                           "TENMG");
+    AddSetting(true,  "TeNmg8",                  new List<string> {"princeStare"},   "The Dahaka",                                 "Split on the cutscene before the first Dahaka chase (southern passage present)",               "TENMG");
+    AddSetting(true,  "TeNmg9",                  new List<string> {"LUFortress"},    "(3) Fortress entrance LU",                   "Split when you acquire the life upgrade in fortress entrance",                                 "TENMG");
+    AddSetting(true,  "TeNmg10",                 new List<string> {"serpentSword"},  "Serpent sword",                              "Split on the cutscene where you get the serpent sword (hourglass chamber)",                    "TENMG");
+    AddSetting(true,  "TeNmg11",                 new List<string> {"gardenHall"},    "Garden hall",                                "Split when you come to garden hall",                                                           "TENMG");
+    AddSetting(false, "TeNmg12",                 new List<string> {"waterworks"},    "Waterworks",                                 "Split when you come to garden waterworks",                                                     "TENMG");
+    AddSetting(true,  "TeNmg13",                 new List<string> {"LUWaterworks"},  "(4) Waterworks LU",                          "Split when you acquire the life upgrade in waterworks",                                        "TENMG");
+    AddSetting(true,  "TeNmg15",                 new List<string> {"LUGarden"},      "(5) Garden LU",                              "Split when you acquire the life upgrade in garden",                                            "TENMG");
+    AddSetting(true,  "TeNmg16",                 new List<string> {"LUCentralHall"}, "(6) Central hall LU",                        "Split when you acquire the life upgrade in central hall",                                      "TENMG");
+    AddSetting(false, "TeNmg17",                 new List<string> {"lionSword"},     "Lion sword",                                 "Split on the cutscene where you get the lion sword (central hall)",                            "TENMG");
+    AddSetting(true,  "TeNmg18",                 new List<string> {"mechTower"},     "Mechanical tower",                           "Split when you clilmb up into the mechanical tower",                                           "TENMG");
+    AddSetting(false, "TeNmg19",                 new List<string> {"mechElevator"},  "Mechanical tower v2 (elevator cutscene)",    "Split on the cutscene where you jump down on the elevator at the start of mech tower",         "TENMG");
+    AddSetting(false, "TeNmg_mpPortalEnter",     new List<string> {"mpPortalEnter"}, "Enter Mechanical Pit Portal",                "Split when you enter the portal in Mechanical Pit",                                            "TENMG");
+    AddSetting(true,  "TeNmg20",                 new List<string> {"mechPortal"},    "Mechanical Pit Portal",                      "Split when you go through the time portal in mechanical pit",                                  "TENMG");
+    AddSetting(false, "TeNmg_mpPortalExit",      new List<string> {"mpPortalExit"},  "Exit Mechanical Pit Portal",                 "Split when you exit the portal in Mechanical Pit",                                             "TENMG");
+    AddSetting(true,  "TeNmg21",                 new List<string> {"activationRuin"}, "Activation room in ruin",                    "Split when you come to the mech tower activation room in the present",                         "TENMG");
+    AddSetting(false, "TeNmg_arPortalEnter",     new List<string> {"arPortalEnter"}, "Enter Activation room Portal",               "Split when you enter the portal in Activation room",                                           "TENMG");
+    AddSetting(false, "TeNmg_arPortalExit",      new List<string> {"arPortalExit"},  "Exit Activation room Portal",                "Split when you exit the portal in Activation room",                                            "TENMG");
+    AddSetting(false, "TeNmg22",                 new List<string> {"activationRestore"}, "Activation room restored",                   "Split when you come to the mech tower activation room in the past",                            "TENMG");
+    AddSetting(true,  "TeNmg23",                 new List<string> {"LUMechTower"},   "(7) Mechanical tower LU",                    "Split when you acquire the life upgrade in mechanical tower",                                  "TENMG");
+    AddSetting(true,  "TeNmg24",                 new List<string> {"sandWraithDeathV1"}, "The death of a sand wraith (central hall)",  "Split in centrall hall next to the fountain after you've activated both towers",               "TENMG");
+    AddSetting(false, "TeNmg25",                 new List<string> {"sandWraithDeathV2"}, "The death of a sand wraith v2 (central hall)", "Alternate split deeper into the corridor so you can't hit it early when jumping down",         "TENMG");
+    AddSetting(true,  "TeNmg26",                 new List<string> {"kaileenaFirst"}, "Death of the empress",                       "Split when you kill Kaileena in the throne room (34->38)",                                     "TENMG");
+    AddSetting(true,  "TeNmg27",                 new List<string> {"exitTomb"},      "Exit the tomb",                              "Split when you leave the tomb",                                                                "TENMG");
+    AddSetting(false, "TeNmg_prPortalEnter",     new List<string> {"prPortalEnter"}, "Enter Prison Portal",                        "Split when you enter the portal in Prison",                                                    "TENMG");
+    AddSetting(false, "TeNmg_prPortalExit",      new List<string> {"prPortalExit"},  "Exit Prison Portal",                         "Split when you exit the portal in Prison",                                                     "TENMG");
+    AddSetting(true,  "TeNmg28",                 new List<string> {"scorpionSword"}, "Scorpion sword",                             "Split when you get the scorpion sword",                                                        "TENMG");
+    AddSetting(true,  "TeNmg29",                 new List<string> {"LUPrison"},      "(8) Prison LU",                              "Split when you acquire the life upgrade in prison",                                            "TENMG");
+    AddSetting(false, "TeNmg30",                 new List<string> {"libraryV1"},     "Library",                                    "Split on the library opening cutscene",                                                        "TENMG");
+    AddSetting(false, "TeNmg31",                 new List<string> {"libraryV2"},     "Library v2",                                 "Split when you move into the library (after the opening cutscene)",                            "TENMG");
+    AddSetting(true,  "TeNmg32",                 new List<string> {"LULibrary"},     "(9) Library LU",                             "Split when you acquire the life upgrade in library",                                           "TENMG");
+    AddSetting(false, "TeNmg33",                 new List<string> {"hourglassRevisit"}, "Hourglass revisited",                        "Split when you come back to the hourglass chamber after you've killed Kaileena",               "TENMG");
+    AddSetting(true,  "TeNmg34",                 new List<string> {"WaterSword"},    "Water sword",                                "Split when you get the water sword",                                                           "TENMG");
+    AddSetting(false, "TeNmg_trPortalEnter",     new List<string> {"trPortalEnter"}, "Enter Throne Room Portal",                   "Split when you enter the cutscene after breaking Throne Room wall",                            "TENMG");
+    AddSetting(false, "TeNmg_trPortalExit",      new List<string> {"trPortalExit"},  "Exit Throne Room Portal",                    "Split when you exit the portal in Throne Room",                                                "TENMG");
+    AddSetting(true,  "TeNmg35",                 new List<string> {"maskOn"},        "The mask of the wraith",                     "Split when you get to the mask",                                                               "TENMG");
+    AddSetting(false, "TeNmg_scPortalEnter",     new List<string> {"scPortalEnter"}, "Enter Sacred Caves Portal",                  "Split when you enter the portal in Sacred Caves",                                              "TENMG");
+    AddSetting(false, "TeNmg_scPortalExit",      new List<string> {"scPortalExit"},  "Exit Sacred Caves Portal",                   "Split when you exit the portal in Sacred Caves",                                               "TENMG");
+    AddSetting(true,  "TeNmg36",                 new List<string> {"griffinV1"},     "Sand griffin",                               "Split when you kill the griffin",                                                              "TENMG");
+    AddSetting(false, "TeNmg37",                 new List<string> {"griffinV2"},     "Sand griffin v2",                            "Split when you jump to the platform after you've killed the griffin",                          "TENMG");
+    AddSetting(false, "TeNmg_ugPortalEnter",     new List<string> {"ugPortalEnter"}, "Enter Upper Garden Portal",                  "Split when you enter the portal in Upper Garden",                                              "TENMG");
+    AddSetting(false, "TeNmg_ugPortalExit",      new List<string> {"ugPortalExit"},  "Exit Upper Garden Portal",                   "Split when you exit the portal in Upper Garden",                                               "TENMG");
+    AddSetting(true,  "TeNmg38",                 new List<string> {"mirroredFates"}, "Mirrored fates",                             "Split on the sacrificial altar cutscene (sand wraith pov)",                                    "TENMG");
+    AddSetting(true,  "TeNmg39",                 new List<string> {"favorUnknown"},  "A favor unknown",                            "Split on the cutscene where the sand wraith saves the prince (sand wraith pov)",               "TENMG");
+    AddSetting(true,  "TeNmg40",                 new List<string> {"libraryRevisit"}, "Library revisited",                          "Split when you enter the library",                                                             "TENMG");
+    AddSetting(true,  "TeNmg41",                 new List<string> {"banana"},        "Light sword",                                "Split when you pick up the light sword in mystic caves",                                       "TENMG");
+    AddSetting(true,  "TeNmg42",                 new List<string> {"maskOff"},       "The death of a prince",                      "Split on the cutscene where you take the mask off",                                            "TENMG");
+    AddSetting(true,  "TeNmg43",                 new List<string> {"Dahaka"},        "Dahaka",                                     "Split when you defeat Dahaka",                                                                 "TENMG");
+    // The Two Thrones splits:
+    AddSetting(true,  "TheRamparts",             new List<string> {"TheRamparts"},   "The Ramparts",                               "Split after the harbor district save fountain",                                                "pop_t2t.asl");
+    AddSetting(true,  "HarborDistrict",          new List<string> {"HarborDistrict"}, "The Harbor District",                        "Split after first palace save fountain",                                                       "pop_t2t.asl");
+    AddSetting(true,  "ThePalace",               new List<string> {"ThePalace"},     "The Palace",                                 "Split at the end of throne room",                                                              "pop_t2t.asl");
+    AddSetting(false, "TrappedHallway",          new List<string> {"TrappedHallway"}, "The Trapped Hallway",                        "Split at end of trapped hallway at the cutscene",                                              "pop_t2t.asl");
+    AddSetting(false, "TheSewers",               new List<string> {"TheSewers"},     "The Sewers",                                 "Split on finishing the sewers dark prince section",                                            "pop_t2t.asl");
+    AddSetting(false, "TheSewerz",               new List<string> {"TheSewerz"},     "The Sewers (alternate)",                     "Split just before the tunnels save fountain",                                                  "pop_t2t.asl");
+    AddSetting(false, "TheFortress",             new List<string> {"TheFortress"},   "The Fortress",                               "Split just before entering the first Chariot",                                                 "pop_t2t.asl");
+    AddSetting(false, "Chariot1",                new List<string> {"Chariot1"},      "Chariot 1",                                  "Split on finishing the first chariot",                                                         "pop_t2t.asl");
+    AddSetting(false, "LowerCity",               new List<string> {"LowerCity"},     "The Lower City",                             "Split after the lower city dark prince section",                                               "pop_t2t.asl");
+    AddSetting(false, "LowerCityRooftops",       new List<string> {"LowerCityRooftops"}, "The Lower City Rooftops",                    "Split after killing Klompa",                                                                   "pop_t2t.asl");
+    AddSetting(false, "ArenaDeload",             new List<string> {"ArenaDeload"},   "Arena Deload",                               "Split at the black crushers in the arena dark prince section",                                 "pop_t2t.asl");
+    AddSetting(false, "TheBalconies",            new List<string> {"TheBalconies"},  "The Balconies",                              "Split on exiting the room with the slomo gate",                                                "pop_t2t.asl");
+    AddSetting(false, "DarkAlley",               new List<string> {"DarkAlley"},     "The Dark Alley",                             "Split on entering the cutscene at start of temple rooftops",                                   "pop_t2t.asl");
+    AddSetting(true,  "TheTempleRooftops",       new List<string> {"TheTempleRooftops"}, "The Temple Rooftops",                        "Split on entering the door into temple",                                                       "pop_t2t.asl");
+    AddSetting(false, "TheTemple",               new List<string> {"TheTemple"},     "The Temple",                                 "Split on finishing the temple dark prince section",                                            "pop_t2t.asl");
+    AddSetting(true,  "TheMarketplace",          new List<string> {"TheMarketplace"}, "The Marketplace",                            "Split at save fountain before cutscene drop",                                                  "pop_t2t.asl");
+    AddSetting(false, "MarketDistrict",          new List<string> {"MarketDistrict"}, "The Market District",                        "Split at the save fountain after the long cutscene",                                           "pop_t2t.asl");
+    AddSetting(false, "TheBrothel",              new List<string> {"TheBrothel"},    "The Brothel",                                "Split on finishing the brothel dark prince section",                                           "pop_t2t.asl");
+    AddSetting(true,  "ThePlaza",                new List<string> {"ThePlaza"},      "The Plaza",                                  "Split at the door after Mahasti fight",                                                        "pop_t2t.asl");
+    AddSetting(false, "TheUpperCity",            new List<string> {"TheUpperCity"},  "The Upper City",                             "Split just before the skippable Farah cutscene",                                               "pop_t2t.asl");
+    AddSetting(false, "CityGarderns",            new List<string> {"CityGarderns"},  "The City Garderns",                          "Split just before the Stone Guardian encounter",                                               "pop_t2t.asl");
+    AddSetting(false, "ThePromenade",            new List<string> {"ThePromenade"},  "The Promenade",                              "Split on entering the royal workshop",                                                         "pop_t2t.asl");
+    AddSetting(true,  "RoyalWorkshop",           new List<string> {"RoyalWorkshop"}, "Royal Workshop",                             "Split on entering the king's road",                                                            "pop_t2t.asl");
+    AddSetting(false, "KingsRoad",               new List<string> {"KingsRoad"},     "The King's Road",                            "Split on defeating the twins",                                                                 "pop_t2t.asl");
+    AddSetting(false, "KingzRoad",               new List<string> {"KingzRoad"},     "The King's Road (alternate)",                "Split on the transition to palace entrance after twins fight",                                 "pop_t2t.asl");
+    AddSetting(false, "PalaceEntrance",          new List<string> {"PalaceEntrance"}, "The Palace Entrance",                        "Split on entering the elevator cutscene",                                                      "pop_t2t.asl");
+    AddSetting(false, "HangingGardens",          new List<string> {"HangingGardens"}, "The Hanging Gardens",                        "Split at the swing pole before the last sand gate",                                            "pop_t2t.asl");
+    AddSetting(false, "HangingGardenz",          new List<string> {"HangingGardenz"}, "The Hanging Gardens (alternate)",            "Split at the structure's mind save fountain",                                                  "pop_t2t.asl");
+    AddSetting(false, "StructuresMind",          new List<string> {"StructuresMind"}, "The Structure's Mind",                       "Split at the cutscene after the puzzle",                                                       "pop_t2t.asl");
+    AddSetting(false, "StructurezMind",          new List<string> {"StructurezMind"}, "The Structure's Mind (alternate)",           "Split after the transition to Well of Ancestors",                                              "pop_t2t.asl");
+    AddSetting(false, "BottomofWell",            new List<string> {"BottomofWell"},  "Bottom of the Well",                         "Split after the death abuse at the bottom of the well",                                        "pop_t2t.asl");
+    AddSetting(false, "WellofAncestors",         new List<string> {"WellofAncestors"}, "The Well of Ancestors",                      "Split on finishing the well dark prince section",                                              "pop_t2t.asl");
+    AddSetting(false, "TheLabyrinth",            new List<string> {"TheLabyrinth"},  "The Labyrinth",                              "Split on entering the underground cave after breakable wall",                                  "pop_t2t.asl");
+    AddSetting(false, "CaveDeath",               new List<string> {"CaveDeath"},     "Underground Cave Death",                     "Split on the death abuse at the end of underground cave (for zipping categories)",             "pop_t2t.asl");
+    AddSetting(false, "UndergroundCave",         new List<string> {"UndergroundCave"}, "The Underground Cave",                       "Split on entering the kitchen",                                                                "pop_t2t.asl");
+    AddSetting(false, "LowerTower",              new List<string> {"LowerTower"},    "The Lower Tower",                            "Split on entering the trap corridor after lower tower",                                        "pop_t2t.asl");
+    AddSetting(false, "MiddleTower",             new List<string> {"MiddleTower"},   "The Middle Tower",                           "Split on entering the trap corridor after middle tower",                                       "pop_t2t.asl");
+    AddSetting(true,  "UpperTower",              new List<string> {"UpperTower"},    "The Upper Tower",                            "Split at the upper tower save fountain",                                                       "pop_t2t.asl");
+    AddSetting(true,  "TheTerrace",              new List<string> {"TheTerrace"},    "The Terrace",                                "Split on entering the mental realm",                                                           "pop_t2t.asl");
+    AddSetting(true,  "MentalRealm",             new List<string> {"MentalRealm"},   "The Mental Realm",                           "Split on finishing the game",                                                                  "pop_t2t.asl");
+    AddSetting(false, "T2TLU1",                  new List<string> {"T2TLU1"},        "Life Upgrade 1",                             "Split after obtaining the first life upgrade in Tunnels",                                      "pop_t2t.asl");
+    AddSetting(false, "T2TLU2",                  new List<string> {"T2TLU2"},        "Life Upgrade 2",                             "Split after obtaining the second life upgrade in Lower City Rooftops",                         "pop_t2t.asl");
+    AddSetting(false, "T2TLU3",                  new List<string> {"T2TLU3"},        "Life Upgrade 3",                             "Split after obtaining the third life upgrade in Temple",                                       "pop_t2t.asl");
+    AddSetting(false, "T2TLU4",                  new List<string> {"T2TLU4"},        "Life Upgrade 4",                             "Split after obtaining the fourth life upgrade in Tunnels",                                     "pop_t2t.asl");
+    AddSetting(false, "T2TLU5",                  new List<string> {"T2TLU5"},        "Life Upgrade 5",                             "Split after obtaining the fifth life upgrade in Canal",                                        "pop_t2t.asl");
+    AddSetting(false, "T2TLU6",                  new List<string> {"T2TLU6"},        "Life Upgrade 6",                             "Split after obtaining the sixth life upgrade in Middle Tower",                                 "pop_t2t.asl");
+
+    // ================================================== events ==================================================
+
+    Action action;
+    Action<float, float, float, float> actionRange;
+    Action<float, float, float, float, float, float> actionBounds;
+    Action<int[]> actionInts;
+
+    // Start Events (run starts on whichever game is launched first)
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(StartEvent, "Start_SoT",               new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => timer.CurrentPhase == TimerPhase.NotRunning && vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.startValue == 1 && current.xCam <= -92.8f)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
+    (actionInts=maps                  => AddEvent(StartEvent, "Start_WW",                new List<string> {}, Maps(maps),                () => timer.CurrentPhase == TimerPhase.NotRunning && vars.game == 5 && MapOneOfCurrent(maps) && old.cutscene == 1 && current.cutscene == 2)) (new int[] {1292342859});
+    (action=()                        => AddEvent(StartEvent, "Start_T2T",               new List<string> {}, HashNull(),                () => timer.CurrentPhase == TimerPhase.NotRunning && vars.game == 6 && InXBoundsCurrent(-404.9f, -404.8f) && current.xCam <= 0.832f && current.xCam >= 0.8318f && current.yCam <= 0.1082f && current.yCam >= 0.1080f)) ();
+
+    // Game Setup Splits (splits at the start of each subsequent game)
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "setupSplits_SoT",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => { if (vars.game == 4 && vars.noGameRunning && !CompletedGames.Contains(4) && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.startValue == 1 && current.xCam <= -92.8f) { vars.noGameRunning = false; return true; } return false; })) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
+    (actionInts=maps                  => AddEvent(SplitEvent, "setupSplits_WW",          new List<string> {}, Maps(maps),                () => { if (vars.game == 5 && vars.noGameRunning && !CompletedGames.Contains(5) && MapOneOfCurrent(maps) && old.cutscene == 1 && current.cutscene == 2) { vars.noGameRunning = false; return true; } return false; })) (new int[] {1292342859});
+    (action=()                        => AddEvent(SplitEvent, "setupSplits_T2T",         new List<string> {}, HashNull(),                () => { if (vars.game == 6 && vars.noGameRunning && !CompletedGames.Contains(6) && InXBoundsCurrent(-404.9f, -404.8f) && current.xCam <= 0.832f && current.xCam >= 0.8318f && current.yCam <= 0.1082f && current.yCam >= 0.1080f) { vars.noGameRunning = false; return true; } return false; })) ();
+
+    // SoT Misc Events
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(MiscEvent,  "AboveCredits",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (658.26f, 661.46f, 210.92f, 213.72f, 12.5f, 30f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(MiscEvent,  "SoTLU_Reset",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => { if (vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2)) { CompletedEvents.Remove("SoTLU"); return true; } return false; })) (-477.88f, -477f, -298f, -297.1f, -0.5f, -0.4f);
+
+    // ================================================== Sands of Time Events ==================================================
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "GasStation",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (252f, 258f, 130.647f, 134f, 22.999f, 23.001f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "SandsUnleashed",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-6.177f, -6.175f, 62.905f, 62.907f, 7.604f, 7.606f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "FirstGuestRoom",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (30.297f, 30.299f, 42.126f, 42.128f, 12.998f, 13f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "SultanChamberZipless",    new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (98.445f, 98.447f, 39.567f, 39.57f, -8.96f, -8.958f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "SultanChamber",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (134.137f, 134.139f, 54.990f, 54.992f, -32.791f, -32.789f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "PalaceDefence",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (4.547f, 8.851f, 40.494f, 47.519f, -39.001f, -38.999f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "DadStart",                new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (6.714f, 6.716f, 57.698f, 57.7f, 21.005f, 21.007f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "DadDead",                 new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-6.001f, -5.999f, -18.6f, -18.4f, 1.998f, 2.001f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheWarehouse",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-73.352f, -71.233f, -28.5f, -26.868f, -1.001f, -0.818f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheZoo",                  new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-141.299f, -139.797f, -47.21f, -42.801f, -31.1f, -30.9f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "BirdCage",                new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-211f, -208f, -23f, -21f, -9f, -8.8f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "CliffWaterfalls",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-233.6f, -231.4f, 33.7f, 35f, -42.6f, -42.4f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheBathsZipless",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-215.85f, -214.089f, 54.261f, 58.699f, -43.501f, -43.499f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheBaths",                new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-211.427f, -211.425f, 56.602f, 56.604f, -43.501f, -43.499f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "SecondSword",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-106.819f, -106.817f, 81.097f, 81.099f, -27.269f, -27.267f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheDaybreak",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-76f, -70f, 192.4f, 197.6f, -56.6f, -54f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheMesshall",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-183.267f, -183.265f, 234.685f, 234.687f, -37.528f, -37.526f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "DrawbridgeTower",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-267f, -262f, 232f, 267f, -35.6f, -35.5f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "BrokenBridge",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-265f, -257f, 159f, 167f, -13.6f, -13.4f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheCavesZipless",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-303f, -297.5f, 112f, 113.5f, -56.1f, -55.9f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheCaves",                new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-246.839f, -241.677f, 78.019f, 87.936f, -71.731f, -70.7f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheWaterfall",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-242f, -240.5f, 79.5f, 83f, -121f, -118f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheUGReservoirZipless",   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-121f, -110f, -9f, -7f, -154.1f, -153.9f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheUGReservoir",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-51.477f, -48.475f, 72.155f, 73.657f, -24.802f, -24.799f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "HallofLearning",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (73f, 79f, 161f, 163f, -24.1f, -23.9f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheObservatory",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (139.231f, 139.233f, 162.556f, 162.558f, -29.502f, -29.5f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "ObservatoryExit",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (137f, 141f, 164f, 164.67f, -29.5f, -29.2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "HoLCourtyardsExit",       new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (72f, 77f, 90f, 95.7f, -27.1f, -26.9f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheAzadPrison",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (190f, 195f, -21f, -19f, -17.6f, -17.3f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TortureChamberZipless",   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (187.5f, 192.5f, -39f, -37.5f, -119.1f, -118.9f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TortureChamber",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (189.999f, 190.001f, -43.278f, -43.276f, -119.001f, -118.999f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheElevator",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (74f, 75f, -46.751f, -43.252f, -34f, -33f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheDreamZipless",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (99f, 101f, -11f, -10f, -56f, -54f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheDream",                new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (95.8f, 96f, -25.1f, -24.9f, -74.9f, -74.7f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheTomb",                 new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (100.643f, 100.645f, -11.543f, -11.541f, -67.588f, -67.586f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TowerofDawn",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (35.5f, 35.7f, -50f, -39f, -32f, -30f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "SettingSun",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (60f, 61f, -58f, -57f, 30f, 32f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "HonorGlory",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (81f, 82f, -60.3f, -59.7f, 89f, 90f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "GrandRewind",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (660.376f, 660.378f, 190.980f, 190.983f, 0.432f, 0.434f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "SoTLU",                   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => { if (vars.game == 4 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2)) { CompletedEvents.Remove("SoTLU_Reset"); return true; } return false; })) (-492.608f, -492.606f, -248.833f, -248.831f, 0.219f, 0.221f);
+    (action=()                        => AddEvent(SplitEvent, "SoTEnd",                  new List<string> {}, HashNull(),                () => { if (vars.game == 4 && ((InPosWithBoundsCurrent(658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f) && CompletedEvents.Contains("AboveCredits")) || current.vizierHealth == 4)) { CompletedGames.Add(4); vars.noGameRunning = true; return true; } return false; })) ();
+
+    // ================================================== Warrior Within Events ==================================================
+    // Spatial XYZ splits (bounds-based O(1) hash lookup)
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "spPortalEnter",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 5 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (95.5f, 97.5f, -107f, -106f, 413.8f, 414.2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "spPortalExit",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 5 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (95.5f, 97.5f, -107f, -106f, 113.8f, 114.2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "mpPortalEnter",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 5 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-211f, -209f, 139f, 141f, 440.8f, 441.2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "mpPortalExit",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 5 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-211f, -209f, 139f, 141f, 140.8f, 141.2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "arPortalEnter",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 5 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-172f, -170f, 188f, 189f, 181.8f, 182.2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "arPortalExit",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 5 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-172f, -170f, 188f, 189f, 481.8f, 482.2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "prPortalEnter",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 5 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-71f, -69f, -117f, -115f, 19.8f, 20.2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "prPortalExit",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 5 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-71f, -69f, -117f, -115f, 319.8f, 320.2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "trPortalExit",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 5 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-53.5f, -51.5f, 113f, 114f, 117.8f, 118.2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "scPortalEnter",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 5 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-72f, -70f, 273f, 274f, 132.8f, 133.2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "scPortalExit",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 5 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-72f, -70f, 273f, 274f, 432.8f, 433.2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "ugPortalEnter",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 5 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (78f, 80f, 107f, 108f, 412.3f, 412.7f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "ugPortalExit",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 5 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (78f, 80f, 107f, 108f, 112.3f, 112.7f);
+
+    // Boss splits
+    (actionInts=maps                  => AddEvent(SplitEvent, "boat",                   new List<string> {}, Maps(maps),                () => vars.game == 5 && BossDieWW(maps[0]))) (new int[] {67109218});
+    (actionInts=maps                  => AddEvent(SplitEvent, "shahdee",                new List<string> {}, Maps(maps),                () => vars.game == 5 && BossDieWW(maps[0]))) (new int[] {285225347});
+    (actionInts=maps                  => AddEvent(SplitEvent, "griffinV1",              new List<string> {}, Maps(maps),                () => vars.game == 5 && BossDieWW(maps[0]))) (new int[] {285231574});
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "kaileena",               new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => { if (vars.game == 5 && (InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) || CutsceneHitWW(285233519))) { CompletedGames.Add(5); vars.noGameRunning = true; return true; } return false; })) (-69.5f, -65.5f, 290f, 292f, 432.8f, 433.2f);
+    (actionInts=maps                  => AddEvent(SplitEvent, "Dahaka",                 new List<string> {}, Maps(maps),                () => { if (vars.game == 5 && CutsceneHitWW(maps[0])) { CompletedGames.Add(5); vars.noGameRunning = true; return true; } return false; })) (new int[] {285231792});
+
+    // StoryGate splits
+    (action=()                        => AddEvent(SplitEvent, "rng59",                  new List<string> {}, HashNull(),                () => vars.game == 5 && StoryGateAdvWW(59))) ();
+    (action=()                        => AddEvent(SplitEvent, "rng63",                  new List<string> {}, HashNull(),                () => vars.game == 5 && StoryGateAdvWW(63))) ();
+    (action=()                        => AddEvent(SplitEvent, "kaileenaFirst",          new List<string> {}, HashNull(),                () => vars.game == 5 && StoryGateAdvWW(38))) ();
+
+    // Weapon & drinking splits
+    (actionInts=maps                  => AddEvent(SplitEvent, "banana",                 new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.secondaryWeapon != 50 && current.secondaryWeapon == 50)) (new int[] {587202754, 587203393});
+    (action=()                        => AddEvent(SplitEvent, "foundryFountain",        new List<string> {}, HashNull(),                () => vars.game == 5 && (current.storyValue == 58 || current.storyValue == 59) && old.state != 11 && current.state == 11)) ();
+
+    // Map transition splits
+    (actionInts=maps                  => AddEvent(SplitEvent, "hourglassRevisit",       new List<string> {}, Maps(maps),                () => vars.game == 5 && MapChangeWW(1006704427, maps[0]) && current.storyValue == 45)) (new int[] {1006704429});
+    (actionInts=maps                  => AddEvent(SplitEvent, "trPortalEnter",          new List<string> {}, Maps(maps),                () => vars.game == 5 && MapChangeWW(1006704431, maps[0]) && current.storyValue == 45)) (new int[] {-1509855113});
+
+    // Cutscene splits (single map)
+    (actionInts=maps                  => AddEvent(SplitEvent, "ravenMan",               new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {135462572});
+    (actionInts=maps                  => AddEvent(SplitEvent, "firstPortal",            new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]) && current.storyValue == 2)) (new int[] {285231807});
+    (actionInts=maps                  => AddEvent(SplitEvent, "LUFortress",             new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {135501679});
+    (actionInts=maps                  => AddEvent(SplitEvent, "LUMechTower",            new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {67145445});
+    (actionInts=maps                  => AddEvent(SplitEvent, "LUCentralHall",          new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {67144144});
+    (actionInts=maps                  => AddEvent(SplitEvent, "spiderSword",            new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {135462576});
+    (actionInts=maps                  => AddEvent(SplitEvent, "chasingShahdee",         new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {989860400});
+    (actionInts=maps                  => AddEvent(SplitEvent, "princeStare",            new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {989884886});
+    (actionInts=maps                  => AddEvent(SplitEvent, "serpentSword",           new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]) && current.storyValue == 13)) (new int[] {1006704429});
+    (actionInts=maps                  => AddEvent(SplitEvent, "waterworks",             new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {687877048});
+    (actionInts=maps                  => AddEvent(SplitEvent, "lionSword",              new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]) && current.storyValue == 21)) (new int[] {67112526});
+    (actionInts=maps                  => AddEvent(SplitEvent, "mechElevator",           new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {687876652});
+    (actionInts=maps                  => AddEvent(SplitEvent, "mechPortal",             new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {285235081});
+    (actionInts=maps                  => AddEvent(SplitEvent, "activationRuin",         new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {687876878});
+    (actionInts=maps                  => AddEvent(SplitEvent, "activationRestore",      new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {687876865});
+    (actionInts=maps                  => AddEvent(SplitEvent, "exitTomb",               new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {989863897});
+    (actionInts=maps                  => AddEvent(SplitEvent, "mirroredFates",          new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {285227786});
+    (actionInts=maps                  => AddEvent(SplitEvent, "favorUnknown",           new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {285227788});
+    (actionInts=maps                  => AddEvent(SplitEvent, "maskOn",                 new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {285234565});
+    (actionInts=maps                  => AddEvent(SplitEvent, "lastPortal",             new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]))) (new int[] {285233519});
+    (actionInts=maps                  => AddEvent(SplitEvent, "maskOff",                new List<string> {}, Maps(maps),                () => vars.game == 5 && CutsceneHitWW(maps[0]) && current.storyValue == 64)) (new int[] {67112526});
+
+    // Cutscene splits (multi map or position guarded)
+    (actionInts=maps                  => AddEvent(SplitEvent, "LUGarden",               new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.cutscene == 0 && current.cutscene == 1)) (new int[] {687877048, 687877050});
+    (actionInts=maps                  => AddEvent(SplitEvent, "LULibrary",              new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.cutscene == 0 && current.cutscene == 1)) (new int[] {67116816, 67116818});
+    (actionInts=maps                  => AddEvent(SplitEvent, "LUShahdee",              new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.cutscene == 0 && current.cutscene == 1)) (new int[] {285225347, 1006717295});
+    (actionInts=maps                  => AddEvent(SplitEvent, "LU019",                  new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.cutscene == 0 && current.cutscene == 1)) (new int[] {989860398, 1006711848});
+    (actionInts=maps                  => AddEvent(SplitEvent, "gardenHall",             new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.cutscene == 0 && current.cutscene == 1)) (new int[] {135495097, 135495099});
+    (actionInts=maps                  => AddEvent(SplitEvent, "libraryV1",              new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.cutscene == 0 && current.cutscene == 1)) (new int[] {67116816, 67116821});
+    (actionInts=maps                  => AddEvent(SplitEvent, "LUWaterworks",           new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.cutscene == 0 && current.cutscene == 1 && current.xPos > 70)) (new int[] {687877046, 687877489});
+    (actionInts=maps                  => AddEvent(SplitEvent, "WaterSword",             new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.cutscene == 0 && current.cutscene == 1 && old.xPos > -98)) (new int[] {1006704427, 1006704429});
+    (actionInts=maps                  => AddEvent(SplitEvent, "LUPrison",               new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.cutscene == 0 && current.cutscene == 1 && current.xPos > -120)) (new int[] {135483948, 135516393, 16809649});
+    (actionInts=maps                  => AddEvent(SplitEvent, "scorpionSword",          new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.cutscene == 0 && current.cutscene == 1 && current.xPos < -164)) (new int[] {135483948, 135483950, 135505359, 135516393, 16809649});
+
+    // Other coordinate / map checks
+    (actionInts=maps                  => AddEvent(SplitEvent, "mechTower",              new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.zPos < 410 && current.zPos >= 410)) (new int[] {687876481});
+    (actionInts=maps                  => AddEvent(SplitEvent, "sandWraithDeathV1",      new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.yPos < -13 && current.yPos >= -13 && current.zPos < 391 && current.storyValue == 33)) (new int[] {67112526});
+    (actionInts=maps                  => AddEvent(SplitEvent, "sandWraithDeathV2",      new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.yPos < -7 && current.yPos >= -9 && current.storyValue == 33)) (new int[] {67112526});
+    (actionInts=maps                  => AddEvent(SplitEvent, "libraryV2",              new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.xPos < -112 && current.xPos >= -112 && current.storyValue == 42)) (new int[] {67116821});
+    (actionInts=maps                  => AddEvent(SplitEvent, "griffinV2",              new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.yPos > 166.5 && current.yPos <= 166.5)) (new int[] {285231574});
+    (actionInts=maps                  => AddEvent(SplitEvent, "libraryRevisit",         new List<string> {}, Maps(maps),                () => vars.game == 5 && MapOneOfCurrent(maps) && old.xPos < -112 && current.xPos >= -112 && current.storyValue == 60)) (new int[] {67116821});
+
+    // ================================================== The Two Thrones Events ==================================================
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheRamparts",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-271f, -265f, 187f, 188f, 74f, 75f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "HarborDistrict",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-93f, -88f, 236.2f, 238f, 83f, 88f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "ThePalace",               new List<string> {}, BoundsRange(x,y,z,range),    () => vars.game == 6 && CutsceneHitT2T(x, y, z, range))) (-35f, 232f, 147f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "TrappedHallway",          new List<string> {}, BoundsRange(x,y,z,range),    () => vars.game == 6 && CutsceneHitT2T(x, y, z, range))) (-52f, 134f, 76f, 10f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheSewerz",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-100f, -96f, -83f, -79f, 19.9f, 20f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "TheSewers",               new List<string> {}, BoundsRange(x,y,z,range),    () => vars.game == 6 && CutsceneHitT2T(x, y, z, range))) (-89f, -15f, 5f, 10f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "TheFortress",             new List<string> {}, BoundsRange(x,y,z,range),    () => vars.game == 6 && CutsceneHitT2T(x, y, z, range))) (-71f, 10f, 44f, 10f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "Chariot1",               new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-443.37f, -443.36f, 355.80f, 355.81f, 57.71f, 57.72f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "LowerCity",               new List<string> {}, BoundsRange(x,y,z,range),    () => vars.game == 6 && CutsceneHitT2T(x, y, z, range))) (-318f, 330f, 96f, 10f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "LowerCityRooftops",       new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-261.5f, -261f, 318f, 319.5f, 46f, 48f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "ArenaDeload",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-256.1f, -251.9f, 358f, 361.5f, 53.9f, 63.3f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheBalconies",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-194f, -190f, 328f, 329.7f, 32.6f, 33.6f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "DarkAlley",               new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-114f, -110f, 328f, 338f, 55f, 59f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheTempleRooftops",       new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-122.6f, -117.7f, 421.6f, 423f, 107f, 108.1f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheTemple",               new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-213f, -210f, 419.0f, 421f, 80.5f, 82.5f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheMarketplace",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-213f, -207f, 484f, 490f, 101f, 103f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "MarketDistrict",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-185.5f, -175.5f, 524f, 530f, 90f, 92f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheBrothel",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-152.3f, -152.0f, 549.8f, 549.9f, 91.8f, 92f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "ThePlaza",                new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-104f, -100f, 548f, 553f, 105.5f, 106.1f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheUpperCity",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-124.5f, -122.5f, 500f, 505f, 97f, 99f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "CityGarderns",            new List<string> {}, BoundsRange(x,y,z,range),    () => vars.game == 6 && CutsceneHitT2T(x, y, z, range))) (-63f, 390f, 85f, 10f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "ThePromenade",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-3f, -1f, 515f, 519f, 72f, 75f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "RoyalWorkshop",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (58f, 62f, 470f, 480f, 79f, 81f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "KingsRoad",               new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (91.9289f, 91.9290f, 230.0479f, 230.0480f, 70.9877f, 70.9879f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "KingzRoad",               new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (53f, 70f, 240f, 250f, 70f, 73f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "PalaceEntrance",          new List<string> {}, BoundsRange(x,y,z,range),    () => vars.game == 6 && CutsceneHitT2T(x, y, z, range))) (31f, 271f, 126f, 10f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "HangingGardens",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (26f, 28f, 211f, 213f, 191f, 193f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "HangingGardenz",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (5.2f, 5.4f, 213.5f, 215.6f, 194.9f, 196.2f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "StructuresMind",          new List<string> {}, BoundsRange(x,y,z,range),    () => vars.game == 6 && CutsceneHitT2T(x, y, z, range))) (-30f, 245f, 179f, 10f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "StructurezMind",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (5f, 12f, 243f, 265f, 104f, 104.1f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "BottomofWell",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-21.35f, -21.34f, 252.67f, 252.68f, 20.95f, 20.96f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "WellofAncestors",         new List<string> {}, BoundsRange(x,y,z,range),    () => vars.game == 6 && CutsceneHitT2T(x, y, z, range))) (-13f, 241f, 1f, 10f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "CaveDeath",               new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (5.99f, 6.00f, 306.96f, 306.97f, 42f, 42.01f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheLabyrinth",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-25.5f, -23f, 325f, 338f, 35.9f, 37.5f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "UndergroundCave",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-11f, -9f, 327f, 334f, 73f, 74f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "LowerTower",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-5f, -3f, 316f, 317.5f, 139.9f, 140.1f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "MiddleTower",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-18f, -12f, 303f, 305f, 184.8f, 185.1f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "UpperTower",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-8f, -7f, 296f, 298f, 226.9f, 227f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "TheTerrace",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-7.2f, -6.9f, 245.6f, 245.9f, 677f, 679f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "MentalRealm",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => { if (vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.princeAction == 17) { CompletedGames.Add(6); vars.noGameRunning = true; return true; } return false; })) (189f, 194f, 318f, 330f, 540f, 560f);
+
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "T2TLU1",                  new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-14.9972f, -14.9970f, -112.8152f, -112.8150f, 20.0732f, 20.0734f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "T2TLU2",                  new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-302.0919f, -302.0917f, 370.8710f, 370.8712f, 52.858f, 52.8582f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "T2TLU3",                  new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-187.3369f, -187.3367f, -455.9863f, 455.9865f, 78.0330f, 78.0332f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "T2TLU4",                  new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-55.0147f, -55.0145f, 395.7608f, 395.761f, 72.0774f, 72.0776f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "T2TLU5",                  new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-30.1223f, -30.1221f, 281.8893f, 281.8895f, 104.0796f, 104.0798f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "T2TLU6",                  new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => vars.game == 6 && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-23.9663f, -23.9661f, 253.9438f, 253.944f, 183.0634f, 183.0636f);
+
+    // ====================================================================================================================
+    // ================================================== STARTUP SCRIPT ==================================================
+    // ====================================================================================================================
+
+    // ================================================== apply configured setting-event links ==================================================
+
+    foreach (var setting in mySettings.Values)
+    {
+        foreach (string eventSlug in setting.Item3)
+        {
+            Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> myEvent;
+            if (!events.TryGetValue(eventSlug, out myEvent))
+                throw new Exception("Internal exception (ASL): cannot write event " + eventSlug + " to setting " + setting.Item2 + " because this event doesn't exist");
+            myEvent.Item3.Add(setting.Item2);
+        }
+    }
+
+    var slugsTemp = new HashSet<string>(); // GC
+
+    // add each event that references a setting to that setting's events list,
+    // or throw an exception if an event points to a setting that doesn't exist
+    // and remove duplicate settings from each event's settings list
+    foreach (var @event in events.Values)
+    {
+        foreach (string settingSlug in @event.Item3)
+        {
+            Tuple<bool, string, List<string>, string, string, string> setting;
+            if (!mySettings.TryGetValue(settingSlug, out setting))
+                throw new Exception("Internal exception (ASL): cannot write setting " + settingSlug + " to event " + @event.Item2 + " because this setting doesn't exist");
+            setting.Item3.Add(@event.Item2);
+            slugsTemp.Add(settingSlug);
+        }
+        @event.Item3.Clear();
+        @event.Item3.AddRange(slugsTemp);
+        @event.Item3.TrimExcess();
+        slugsTemp.Clear();
+    }
+
+    // remove duplicate events from each setting's events list
+    foreach (var setting in mySettings.Values)
+    {
+        foreach (string eventSlug in setting.Item3)
+            slugsTemp.Add(eventSlug);
+        setting.Item3.Clear();
+        setting.Item3.AddRange(slugsTemp);
+        setting.Item3.TrimExcess();
+        slugsTemp.Clear();
+    }
+
+    // ================================================== apply configured events ==================================================
+
+    // fill XyzEventHashMap, MapEventHashMap, and OtherEvents
+    foreach (var @event in events.Values)
+    {
+        if (@event.Item4.Item1 == null && @event.Item4.Item2 == null)
+        {
+            OtherEvents.Add(@event);
+            continue;
+        }
+        int[] maps = @event.Item4.Item2 ?? Array.Empty<int>();
+        int[] hashCodesMaps = maps;
+        foreach (int hashCode in hashCodesMaps)
+        {
+            List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localEvents;
+            if (MapEventHashMap.TryGetValue(hashCode, out localEvents))
+            {
+                localEvents.Add(@event);
+                continue;
+            }
+            MapEventHashMap.Add(hashCode, new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> {@event});
+        }
+        if (@event.Item4.Item2 != null)
+            continue;
+        ValueTuple<float, float, float, float, float, float> xyzBounds = @event.Item4.Item1.Value;
+        int[] hashCodes = GetHashCodesForBounds(xyzBounds.Item1, xyzBounds.Item2, xyzBounds.Item3, xyzBounds.Item4, xyzBounds.Item5, xyzBounds.Item6);
+        foreach (int hashCode in hashCodes)
+        {
+            List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localEvents;
+            if (XyzEventHashMap.TryGetValue(hashCode, out localEvents))
+            {
+                localEvents.Add(@event);
+                continue;
+            }
+            XyzEventHashMap.Add(hashCode, new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> {@event});
+        }
+    }
+
+    foreach (var bucket in XyzEventHashMap.Values.Concat(MapEventHashMap.Values))
+        bucket.TrimExcess();
+
+    // allocate a large enough capacity at startup so that the CompletedEvents hashset does not need to be reallocated as it grows during runtime
+    CompletedEvents = new HashSet<string>(events.Count);
+
+    // ================================================== debug ==================================================
+
+    var infoBuilder = new StringBuilder(); // GC
+    var settingsWithNoEvents = new List<string>(); // GC
+    var eventsWithNoSettings = new List<string>(); // GC
+
+    infoBuilder.Append("\r\n");
+
+    // settings and events
+
+    infoBuilder.Append("Settings detected:\r\n");
+    infoBuilder.Append("\t" + "{Default} {Setting}".PadRight(36) + " : " + "{Parent}".PadRight(30) + " => {Count:[..Events]}\r\n");
+    foreach (var setting in mySettings.Values)
+    {
+        if (setting.Item3.Count == 0 && setting.Item6 != null)
+            settingsWithNoEvents.Add(setting.Item2);
+        infoBuilder.Append("\t" + setting.Item1.ToString().PadRight(5) + " " + setting.Item2.PadRight(30) + " : " + (setting.Item6 ?? "{null}").PadRight(30)
+            + " => " + setting.Item3.Count + ":[" + string.Join(", ", setting.Item3) + "]\r\n");
+    }
+    infoBuilder.Append("Total settings: " + mySettings.Count.ToString() + "\r\n\r\n");
+
+    infoBuilder.Append("Events detected:\r\n");
+    infoBuilder.Append("\t" + "{EventType}     {Event}".PadRight(46) + " {HasXyzBounds} {HasMaps} => {Count:[..Settings]}\r\n");
+    foreach (var @event in events.Values)
+    {
+        if (@event.Item3.Count == 0)
+            eventsWithNoSettings.Add(@event.Item2);
+        infoBuilder.Append("\t" + GetEventString(@event.Item1).PadRight(15) + " " + @event.Item2.PadRight(30) + " " + (@event.Item4.Item1 != null).ToString().PadRight(14) + " " + (@event.Item4.Item2 != null).ToString().PadRight(9)
+            + " => " + @event.Item3.Count + ":[" + string.Join(", ", @event.Item3) + "]\r\n");
+    }
+    infoBuilder.Append("Total events: " + events.Count.ToString() + "\r\n\r\n");
+
+    infoBuilder.Append("Settings with no events: (total=" + settingsWithNoEvents.Count.ToString() + ")\r\n");
+    foreach (string settingSlug in settingsWithNoEvents)
+        infoBuilder.Append("\t" + settingSlug + "\r\n");
+    infoBuilder.Append("\r\n");
+
+    infoBuilder.Append("Events with no settings: (total=" + eventsWithNoSettings.Count.ToString() + ")\r\n");
+    foreach (string eventSlug in eventsWithNoSettings)
+        infoBuilder.Append("\t" + eventSlug + "\r\n");
+    infoBuilder.Append("\r\n");
+
+    // buckets
+
+    infoBuilder.Append("Bucket size: " + BucketSize.ToString() + "\r\n\r\n");
+
+    int xyzEventHashMapCapacity;
+    int mapEventHashMapCapacity;
+    {
+        FieldInfo entriesField =
+            typeof(Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>)
+            .GetField("entries", BindingFlags.NonPublic | BindingFlags.Instance);
+        Array xyzBackingArray = (Array)entriesField.GetValue(XyzEventHashMap);
+        Array mapBackingArray = (Array)entriesField.GetValue(MapEventHashMap);
+        xyzEventHashMapCapacity = xyzBackingArray != null ? xyzBackingArray.Length : 0;
+        mapEventHashMapCapacity = mapBackingArray != null ? mapBackingArray.Length : 0;
+    }
+    infoBuilder.Append("XyzEventHashMap capacity: " + XyzEventHashMap.Count.ToString() + "/" + xyzEventHashMapCapacity + "\r\n");
+    infoBuilder.Append("MapEventHashMap capacity: " + MapEventHashMap.Count.ToString() + "/" + mapEventHashMapCapacity + "\r\n");
+    infoBuilder.Append("OtherEvents capacity: " + OtherEvents.Count.ToString() + "/" + OtherEvents.Capacity.ToString() + "\r\n");
+    infoBuilder.Append("\r\n");
+
+    Action<Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>> PrintBucketInfo = eventHashMap =>
+    {
+        int collisionSum = 0;
+        int maxEventsPerBucket = 0;
+        double avgEventsPerBucket;
+        var bucketGroupsPerEventCount = new List<List<List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>>();
+        var bucketCountsPerEventCount = new List<int>();
+        const int MinEventCountPerBucketToCompute = 2;
+        foreach (var bucket in eventHashMap.Values)
+        {
+            collisionSum += bucket.Count;
+            if (bucket.Count >= maxEventsPerBucket)
+                maxEventsPerBucket = bucket.Count;
+            for (int i = bucketGroupsPerEventCount.Count; i <= bucket.Count; i++)
+            {
+                bucketGroupsPerEventCount.Add(new List<List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>());
+                bucketCountsPerEventCount.Add(0);
+            }
+            if (bucket.Count >= MinEventCountPerBucketToCompute)
+                bucketGroupsPerEventCount[bucket.Count].Add(bucket);
+            bucketCountsPerEventCount[bucket.Count]++;
+        }
+        avgEventsPerBucket = eventHashMap.Count > 0 ? (double)collisionSum / (double)eventHashMap.Count : 0.0;
+
+        infoBuilder.Append("Average events per bucket: " + avgEventsPerBucket.ToString() + "\r\n");
+        infoBuilder.Append("Maximum events per bucket: " + maxEventsPerBucket.ToString() + "\r\n");
+        infoBuilder.Append("\r\n");
+
+        for (int i = bucketGroupsPerEventCount.Count - 1; i >= 1; i--)
+        {
+            bool omit = i < MinEventCountPerBucketToCompute;
+            infoBuilder.Append("Buckets with " + i + " events (total=" + bucketCountsPerEventCount[i] + "):" + (omit ? " (omitted)\r\n" : string.Empty) + "\r\n");
+            if (omit)
+                continue;
+            foreach (var bucket in bucketGroupsPerEventCount[i])
+                infoBuilder.Append("\t[" + string.Join(", ", bucket.Select(@event => @event.Item2)) + "]\r\n");
+            infoBuilder.Append("\r\n");
+        }
+    };
+
+    infoBuilder.Append("Xyz info:\r\n\r\n");
+    PrintBucketInfo(XyzEventHashMap);
+    
+    infoBuilder.Append("Map info:\r\n\r\n");
+    PrintBucketInfo(MapEventHashMap);
+
+    infoBuilder.Append("Non-location-based events: (total=" + OtherEvents.Count + ")\r\n");
+    foreach (var @event in OtherEvents)
+        infoBuilder.Append("\t" + @event.Item2 + "\r\n");
+    infoBuilder.Append("\r\n");
+
+    print(infoBuilder.ToString());
+
+    // ================================================== timing method prompt ==================================================
+
+    if (timer.CurrentTimingMethod != TimingMethod.GameTime)
+    {
         DialogResult mbox = MessageBox.Show(timer.Form,
         "Removing setup time between games requires switching to Game Time.\nWould you like to do so?",
         "LiveSplit | Multi-Prince of Persia-Runs",
         MessageBoxButtons.YesNo);
 
-        if (mbox == DialogResult.Yes) {
+        if (mbox == DialogResult.Yes)
             timer.CurrentTimingMethod = TimingMethod.GameTime;
-        }
     }
+
+    // ================================================== cleanup ==================================================
+
+    // de-reference unneeded collections to allow for garbage collection
+    mySettings = null;
+    events = null;
+    slugsTemp = null;
+    infoBuilder = null;
+    settingsWithNoEvents = null;
+    eventsWithNoSettings = null;
+
+    // =====================================================================================================================
+    // ================================================== RUNTIME ACTIONS ==================================================
+    // =====================================================================================================================
+
+    // ================================================== init ==================================================
+
+    Action<ExpandoObject, ExpandoObject, object> Init = (newOld, newCurrent, newSettings) =>
+    {
+        old = newOld;
+        current = newCurrent;
+        settings = newSettings;
+        initCustomVariables = true;
+    };
+    vars.Init = Init;
+
+    // ================================================== onReset ==================================================
+
+    Action OnReset = () =>
+    {
+        CompletedEvents.Clear();
+        initCustomVariables = true;
+        vars.IGTValue = 0L;
+        CompletedGames.Clear();
+        vars.noGameRunning = false;
+        print("CompletedEvents cleared.");
+    };
+    vars.OnReset = OnReset;
+
+    // ================================================== update ==================================================
+
+    var EmptyEventList = new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>();
+    Func<ExpandoObject, bool> Update = newOld =>
+    {
+        old = newOld;
+
+        if (initCustomVariables)
+        {
+            switch (game.ProcessName.ToLower())
+            {
+                case "pop":  vars.game = 4; break;
+                case "pop2": vars.game = 5; break;
+                case "pop3": vars.game = 6; break;
+                default:     vars.game = 0; break;
+            }
+        }
+
+        if (vars.game == 5)
+        {
+            if (initCustomVariables || old.storyValue != current.storyValue)
+                SetCustomVariable("storyGate", current.storyValue.ToString());
+        }
+
+        initCustomVariables = false;
+
+        TriggeredEvent = null;
+        int xyzHashCode = GetXyzHashCodeCurrent();
+        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localXyzEvents;
+        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localMapEvents = null;
+        XyzEventHashMap.TryGetValue(xyzHashCode, out localXyzEvents);
+        if (vars.game == 5 && MapEventHashMap.Count > 0)
+        {
+            int mapHashCode = current.map;
+            MapEventHashMap.TryGetValue(mapHashCode, out localMapEvents);
+        }
+        localXyzEvents = localXyzEvents ?? EmptyEventList;
+        localMapEvents = localMapEvents ?? EmptyEventList;
+
+        foreach (var @event in localXyzEvents.Concat(localMapEvents).Concat(OtherEvents))
+        {
+            if (CompletedEvents.Contains(@event.Item2))
+                continue;
+            if (!@event.Item5())
+                continue;
+            TriggeredEvent = @event;
+            break;
+        }
+
+        return true;
+    };
+    vars.Update = Update;
+
+    // ================================================== start ==================================================
+
+    Func<bool> Start = () => CheckEvent(StartEvent);
+    vars.Start = Start;
+
+    // ================================================== reset ==================================================
+
+    Func<bool> Reset = () => CheckEvent(ResetEvent);
+    vars.Reset = Reset;
+
+    // ================================================== split ==================================================
+
+    Func<bool> Split = () =>
+    {
+        CheckEvent(MiscEvent);
+        return CheckEvent(SplitEvent);
+    };
+    vars.Split = Split;
+
+    // ====================================================================================================
+
+    print("multipop.asl " + DateTime.Now.ToString());
 }
 
 init
 {
-    vars.inXRange = (Func<float, float, bool>)((xMin, xMax) => { return current.xPos >= xMin && current.xPos <= xMax; });
-    vars.inYRange = (Func<float, float, bool>)((yMin, yMax) => { return current.yPos >= yMin && current.yPos <= yMax; });
-    vars.inZRange = (Func<float, float, bool>)((zMin, zMax) => { return current.zPos >= zMin && current.zPos <= zMax; });
-    vars.splitByXYZ = (Func<float, float, float, float, float, float, bool>)((xMin, xMax, yMin, yMax, zMin, zMax) => {
-        return
-            vars.inXRange(xMin, xMax) &&
-            vars.inYRange(yMin, yMax) &&
-            vars.inZRange(zMin, zMax);
-    });
-
-    vars.splitCutsceneByMap = (Func<HashSet<int>, bool>)((mapIds) => {
-        return (mapIds.Contains(current.map) && vars.oldCutscene == 0 && current.cutscene == 1);
-    });
-
-    vars.splitBossByMap = (Func<HashSet<int>, bool>)((mapIds) => {
-        return (vars.splitCutsceneByMap(mapIds) && current.bossHealth == 0);
-    });
-
-    vars.splitFountainByStory = (Func<HashSet<int>, bool>)((storyGates) => {
-        return (storyGates.Contains(current.storyValue) && vars.oldState != 11 && current.state == 11);
-    });
-
-    vars.splitByMapSecondary = (Func<HashSet<int>, int, bool>)((mapIds, secondaryId) => {
-        return (mapIds.Contains(current.map) && vars.oldSecondary != secondaryId && current.secondaryWeapon == secondaryId);
-    });
-
-    vars.splitByStoryGate = (Func<int, bool>)((storyId) => {
-        return (vars.oldStory != storyId && current.storyValue == storyId);
-    });
-
-    // List of SoT Splits
-    vars.FarahBalcony           = (Func <bool>)(() => { return vars.splitByXYZ(-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);                                                       });
-    vars.GasStation             = (Func <bool>)(() => { return vars.splitByXYZ(252f, 258f, 130.647f, 134f, 22.999f, 23.001f);                                                               });
-    vars.SandsUnleashed         = (Func <bool>)(() => { return vars.splitByXYZ(-6.177f, -6.175f, 62.905f, 62.907f, 7.604f, 7.606f);                                                         });
-    vars.FirstGuestRoom         = (Func <bool>)(() => { return vars.splitByXYZ(30.297f, 30.299f, 42.126f, 42.128f, 12.998f, 13f);                                                           });
-    vars.SultanChamberZipless   = (Func <bool>)(() => { return vars.splitByXYZ(98.445f, 98.447f, 39.567f, 39.57f, -8.96f, -8.958f);                                                         });
-    vars.SultanChamber          = (Func <bool>)(() => { return vars.splitByXYZ(134.137f, 134.139f, 54.990f, 54.992f, -32.791f, -32.789f);                                                   });
-    vars.PalaceDefence          = (Func <bool>)(() => { return vars.splitByXYZ(4.547f, 8.851f, 40.494f, 47.519f, -39.001f, -38.999f);                                                       });
-    vars.DadStart               = (Func <bool>)(() => { return vars.splitByXYZ(6.714f, 6.716f, 57.698f, 57.7f, 21.005f, 21.007f);                                                           });
-    vars.DadDead                = (Func <bool>)(() => { return vars.splitByXYZ(-6.001f, -5.999f, -18.6f, -18.4f, 1.998f, 2.001f);                                                           });
-    vars.TheWarehouse           = (Func <bool>)(() => { return vars.splitByXYZ(-73.352f, -71.233f, -28.5f, -26.868f, -1.001f, -0.818f);                                                     });
-    vars.TheZoo                 = (Func <bool>)(() => { return vars.splitByXYZ(-141.299f, -139.797f, -47.21f, -42.801f, -31.1f, -30.9f);                                                    });
-    vars.BirdCage               = (Func <bool>)(() => { return vars.splitByXYZ(-211f, -208f, -23f, -21f, -9f, -8.8f);                                                                       });
-    vars.CliffWaterfalls        = (Func <bool>)(() => { return vars.splitByXYZ(-233.6f, -231.4f, 33.7f, 35f, -42.6f, -42.4f);                                                               });
-    vars.TheBathsZipless        = (Func <bool>)(() => { return vars.splitByXYZ(-215.85f, -214.089f, 54.261f, 58.699f, -43.501f, -43.499f);                                                  });
-    vars.TheBaths               = (Func <bool>)(() => { return vars.splitByXYZ(-211.427f, -211.425f, 56.602f, 56.604f, -43.501f, -43.499f);                                                 });
-    vars.SecondSword            = (Func <bool>)(() => { return vars.splitByXYZ(-106.819f, -106.817f, 81.097f, 81.099f, -27.269f, -27.267f);                                                 });
-    vars.TheDaybreak            = (Func <bool>)(() => { return vars.splitByXYZ(-76f, -70f, 192.4f, 197.6f, -56.6f, -54f);                                                                   });
-    vars.TheMesshall            = (Func <bool>)(() => { return vars.splitByXYZ(-183.267f, -183.265f, 234.685f, 234.687f, -37.528f, -37.526f);                                               });
-    vars.DrawbridgeTower        = (Func <bool>)(() => { return vars.splitByXYZ(-267f, -262f, 232f, 267f, -35.6f, -35.5f);                                                                   });
-    vars.BrokenBridge           = (Func <bool>)(() => { return vars.splitByXYZ(-265f, -257f, 159f, 167f, -13.6f, -13.4f);                                                                   });
-    vars.TheCavesZipless        = (Func <bool>)(() => { return vars.splitByXYZ(-303f, -297.5f, 112f, 113.5f, -56.1f, -55.9f);                                                               });
-    vars.TheCaves               = (Func <bool>)(() => { return vars.splitByXYZ(-246.839f, -241.677f, 78.019f, 87.936f, -71.731f, -70.7f);                                                   });
-    vars.TheWaterfall           = (Func <bool>)(() => { return vars.splitByXYZ(-242f, -240.5f, 79.5f, 83f, -121f, -118f);                                                                   });
-    vars.TheUGReservoirZipless  = (Func <bool>)(() => { return vars.splitByXYZ(-121f, -110f, -9f, -7f, -154.1f, -153.9f);                                                                   });
-    vars.TheUGReservoir         = (Func <bool>)(() => { return vars.splitByXYZ(-51.477f, -48.475f, 72.155f, 73.657f, -24.802f, -24.799f);                                                   });
-    vars.HallofLearning         = (Func <bool>)(() => { return vars.splitByXYZ(73f, 79f, 161f, 163f, -24.1f, -23.9f);                                                                       });
-    vars.TheObservatory         = (Func <bool>)(() => { return vars.splitByXYZ(139.231f, 139.233f, 162.556f, 162.558f, -29.502f, -29.5f);                                                   });
-    vars.ObservatoryExit        = (Func <bool>)(() => { return vars.splitByXYZ(137f, 141f, 164f, 164.67f, -29.5f, -29.2f);                                                                  });
-    vars.HoLCourtyardsExit      = (Func <bool>)(() => { return vars.splitByXYZ(72f, 77f, 90f, 95.7f, -27.1f, -26.9f);                                                                       });
-    vars.TheAzadPrison          = (Func <bool>)(() => { return vars.splitByXYZ(190f, 195f, -21f, -19f, -17.6f, -17.3f);                                                                     });
-    vars.TortureChamberZipless  = (Func <bool>)(() => { return vars.splitByXYZ(187.5f, 192.5f, -39f, -37.5f, -119.1f, -118.9f);                                                             });
-    vars.TortureChamber         = (Func <bool>)(() => { return vars.splitByXYZ(189.999f, 190.001f, -43.278f, -43.276f, -119.001f, -118.999f);                                               });
-    vars.TheElevator            = (Func <bool>)(() => { return vars.splitByXYZ(74f, 75f, -46.751f, -43.252f, -34f, -33f);                                                                   });
-    vars.TheDreamZipless        = (Func <bool>)(() => { return vars.splitByXYZ(99f, 101f, -11f, -10f, -56f, -54f);                                                                          });
-    vars.TheDream               = (Func <bool>)(() => { return vars.splitByXYZ(95.8f, 96f, -25.1f, -24.9f, -74.9f, -74.7f);                                                                 });
-    vars.TheTomb                = (Func <bool>)(() => { return vars.splitByXYZ(100.643f, 100.645f, -11.543f, -11.541f, -67.588f, -67.586f);                                                 });
-    vars.TowerofDawn            = (Func <bool>)(() => { return vars.splitByXYZ(35.5f, 35.7f, -50f, -39f, -32f, -30f);                                                                       });
-    vars.SettingSun             = (Func <bool>)(() => { return vars.splitByXYZ(60f, 61f, -58f, -57f, 30f, 32f);                                                                             });
-    vars.HonorGlory             = (Func <bool>)(() => { return vars.splitByXYZ(81f, 82f, -60.3f, -59.7f, 89f, 90f);                                                                         });
-    vars.GrandRewind            = (Func <bool>)(() => { return vars.splitByXYZ(660.376f, 660.378f, 190.980f, 190.983f, 0.432f, 0.434f);                                                     });
-    vars.SoTEnd                 = (Func <bool>)(() => { return (vars.splitByXYZ(658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f) && vars.CompletedSplits.Contains("AboveCredits")) || current.vizierHealth == 4; });
-    vars.SoTLU                  = (Func <bool>)(() => { return vars.splitByXYZ(-492.608f, -492.606f, -248.833f, -248.831f, 0.219f, 0.221f);                                                 });
-
-    // List of WW Splits
-    vars.boat                   = (Func<bool>)(() => { return vars.splitBossByMap(new HashSet<int> { 67109218 });                                                                           });
-    vars.ravenMan               = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 135462572 });                                                                      });
-    vars.firstPortal            = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 285231807 });                                                                      });
-    vars.foundryFountain        = (Func<bool>)(() => { return vars.splitFountainByStory(new HashSet<int> { 58, 59 });                                                                       });
-    vars.scorpionSword          = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 135483948, 135483950, 135505359, 135516393, 16809649 }) && current.xPos < -164;    });
-    vars.banana                 = (Func<bool>)(() => { return vars.splitByMapSecondary(new HashSet<int> { 587202754, 587203393 }, 50);                                                      });
-    vars.rng63                  = (Func<bool>)(() => { return vars.splitByStoryGate(63);                                                                                                    });
-    vars.lastPortal             = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { -1509855113, 285233488 });                                                         });
-    vars.kaileena               = (Func<bool>)(() => { return vars.splitBossByMap(new HashSet<int> { 989966866 });                                                                          });
-
-    vars.LUFortress             = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 135501679 });                                                                      });
-    vars.LUPrison               = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 135483948, 135516393, 16809649 }) && current.xPos > -120;                          });
-    vars.LULibrary              = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 67144064, 67144084 });                                                             });
-    vars.LUMechTower            = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 67145445 });                                                                       });
-    vars.LUGarden               = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 1006690753, 1006690755 });                                                         });
-    vars.LUWaterworks           = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 687877046, 687877489 }) && current.xPos > 70;                                      });
-    vars.LUShahdee              = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 285225347, 1006717295 });                                                          });
-    vars.LU019                  = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 989860398, 1006711848 });                                                          });
-    vars.LUCentralHall          = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 67144144 });                                                                       });
-    vars.WaterSword             = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 1006704427, 1006704429 }) && vars.oldX > -98;                                      });
-    vars.Dahaka                 = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 989966868 }) && current.yPos > 200;                                                });
-
-    vars.rng59                  = (Func<bool>)(() => { return vars.splitByStoryGate(59);                                                                                                    });
-
-    vars.spiderSword            = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 135462576 });                                                                      });
-    vars.chasingShahdee         = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 989860400 });                                                                      });
-    vars.shahdee                = (Func<bool>)(() => { return vars.splitBossByMap(new HashSet<int> { 1006801609 });                                                                         });
-    vars.spPortalEnter          = (Func<bool>)(() => { return vars.splitByXYZ(95.5f, 97.5f, -107f, -106f, 413.8f, 414.2f);                                                                  });
-    vars.spPortalExit           = (Func<bool>)(() => { return vars.splitByXYZ(95.5f, 97.5f, -107f, -106f, 113.8f, 114.2f);                                                                  });
-    vars.princeStare            = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 989884886 });                                                                      });
-    vars.serpentSword           = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 1006704429 }) && current.storyValue == 13;                                         });
-    vars.gardenHall             = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 135495097, 135495099 });                                                           });
-    vars.waterworks             = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 687877048 });                                                                      });
-    vars.lionSword              = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 67112526 }) && current.storyValue == 21;                                           });
-    vars.mechTower              = (Func<bool>)(() => { return current.map == 687876481 && vars.oldZ < 410 && current.zPos >= 410;                                                           });
-    vars.mechElevator           = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 687876652 });                                                                      });
-    vars.mpPortalEnter          = (Func<bool>)(() => { return vars.splitByXYZ(-211f, -209f, 139f, 141f, 440.8f, 441.2f);                                                                    });
-    vars.mechPortal             = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 285235400 });                                                                      });
-    vars.mpPortalExit           = (Func<bool>)(() => { return vars.splitByXYZ(-211f, -209f, 139f, 141f, 140.8f, 141.2f);                                                                    });
-    vars.activationRuin         = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 67145437 });                                                                       });
-    vars.arPortalEnter          = (Func<bool>)(() => { return vars.splitByXYZ(-172f, -170f, 188f, 189f, 181.8f, 182.2f);                                                                    });
-    vars.arPortalExit           = (Func<bool>)(() => { return vars.splitByXYZ(-172f, -170f, 188f, 189f, 481.8f, 482.2f);                                                                    });
-    vars.activationRestore      = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 67145455 });                                                                       });
-    vars.sandWraithDeathV1      = (Func<bool>)(() => { return current.map == 67112526 && vars.oldY < -13 && current.yPos >= -13 && current.zPos < 391 && current.storyValue == 33;          });
-    vars.sandWraithDeathV2      = (Func<bool>)(() => { return current.map == 67112526 && vars.oldY < -8 && current.yPos >= -8 && current.storyValue == 33;                                  });
-    vars.kaileenaFirst          = (Func<bool>)(() => { return vars.splitByStoryGate(38);                                                                                                    });
-    vars.exitTomb               = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 135464247 }) && current.zPos > 33;                                                 });
-    vars.prPortalEnter          = (Func<bool>)(() => { return vars.splitByXYZ(-71f, -69f, -117f, -115f, 19.8f, 20.2f);                                                                      });
-    vars.prPortalExit           = (Func<bool>)(() => { return vars.splitByXYZ(-71f, -69f, -117f, -115f, 319.8f, 320.2f);                                                                    });
-    vars.libraryV1              = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 67116821, 67116816 });                                                             });
-    vars.libraryV2              = (Func<bool>)(() => { return current.map == 67116821 && vars.oldX < -112 && current.xPos >= -112 && current.storyValue == 42;                              });
-    vars.hourglassRevisit       = (Func<bool>)(() => { return vars.oldMap == 1006704427 && current.map == 1006704429 && current.storyValue == 45;                                           });
-    vars.trPortalEnter          = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { -1509855113, 1006704431 });                                                        });
-    vars.trPortalExit           = (Func<bool>)(() => { return vars.splitByXYZ(-53.5f, -51.5f, 113f, 114f, 117.8f, 118.2f);                                                                  });
-    vars.maskOn                 = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 285231214 });                                                                      });
-    vars.scPortalEnter          = (Func<bool>)(() => { return vars.splitByXYZ(-72f, -70f, 273f, 274f, 132.8f, 133.2f);                                                                      });
-    vars.scPortalExit           = (Func<bool>)(() => { return vars.splitByXYZ(-72f, -70f, 273f, 274f, 432.8f, 433.2f);                                                                      });
-    vars.griffinV1              = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 285231574 }) && current.yPos < 195;                                                });
-    vars.griffinV2              = (Func<bool>)(() => { return current.map == 285231574 && vars.oldY > 166.5 && current.yPos <= 166.5;                                                       });
-    vars.ugPortalEnter          = (Func<bool>)(() => { return vars.splitByXYZ(78f, 80f, 107f, 108f, 412.3f, 412.7f);                                                                        });
-    vars.ugPortalExit           = (Func<bool>)(() => { return vars.splitByXYZ(78f, 80f, 107f, 108f, 112.3f, 112.7f);                                                                        });
-    vars.mirroredFates          = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 1006801611 });                                                                     });
-    vars.favorUnknown           = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 135501700 });                                                                      });
-    vars.libraryRevisit         = (Func<bool>)(() => { return current.map == 67116821 && vars.oldX < -112 && current.xPos >= -112 && current.storyValue == 60;                              });
-    vars.maskOff                = (Func<bool>)(() => { return vars.splitCutsceneByMap(new HashSet<int> { 67112526 }) && current.storyValue == 64;                                           });
-
-    // List of T2T Splits
-    vars.TheRamparts            = (Func <bool>)(() => { return vars.splitByXYZ(-271f, -265f, 187f, 188f, 74f, 75f);                                                                         });
-    vars.HarborDistrict         = (Func <bool>)(() => { return vars.splitByXYZ(-93f, -88f, 236.2f, 238f, 83f, 88f);                                                                         });
-    vars.ThePalace              = (Func <bool>)(() => { return vars.splitByXYZ(-35.5f, -35.4f, 232.3f, 232.4f, 146.9f, 147f);                                                               });
-    vars.TrappedHallway         = (Func <bool>)(() => { return vars.splitByXYZ(-52.1f, -52.0f, 135.8f, 135.9f, 75.8f, 76f);                                                                 });
-    vars.TheSewerz              = (Func <bool>)(() => { return vars.splitByXYZ(-100f, -96f, -83f, -79f, 19.9f, 20f);                                                                        });
-    vars.TheSewers              = (Func <bool>)(() => { return vars.splitByXYZ(-89.0f, -88.0f, -15.2f, -14.7f, 4.9f, 5.1f);                                                                 });
-    vars.TheFortress            = (Func <bool>)(() => { return vars.splitByXYZ(-71.4f, -71.3f, 9.6f, 9.7f, 44f, 44.1f);                                                                     });
-    vars.Chariot1               = (Func <bool>)(() => { return vars.splitByXYZ(-443.37f, -443.36f, 355.80f, 355.81f, 57.71f, 57.72f);                                                       });
-    vars.LowerCity              = (Func <bool>)(() => { return vars.splitByXYZ(-319f, -316.5f, 317f, 332.6f, 95.1f, 98f);                                                                   });
-    vars.LowerCityRooftops      = (Func <bool>)(() => { return vars.splitByXYZ(-261.5f, -261f, 318f, 319.5f, 46f, 48f);                                                                     });
-    vars.ArenaDeload            = (Func <bool>)(() => { return vars.splitByXYZ(-256.1f, -251.9f, 358f, 361.5f, 53.9f, 63.3f);                                                               });
-    vars.TheBalconies           = (Func <bool>)(() => { return vars.splitByXYZ(-194f, -190f, 328f, 329.7f, 32.6f, 33.6f);                                                                   });
-    vars.DarkAlley              = (Func <bool>)(() => { return vars.splitByXYZ(-114f, -110f, 328f, 338f, 55f, 59f);                                                                         });
-    vars.TheTempleRooftops      = (Func <bool>)(() => { return vars.splitByXYZ(-122.6f, -117.7f, 421.6f, 423f, 107f, 108.1f);                                                               });
-    vars.TheTemple              = (Func <bool>)(() => { return vars.splitByXYZ(-212.2f, -211.9f, 419.0f, 419.8f, 81f, 82f);                                                                 });
-    vars.TheMarketplace         = (Func <bool>)(() => { return vars.splitByXYZ(-213f, -207f, 484f, 490f, 101f, 103f);                                                                       });
-    vars.MarketDistrict         = (Func <bool>)(() => { return vars.splitByXYZ(-185.5f, -175.5f, 524f, 530f, 90f, 92f);                                                                     });
-    vars.TheBrothel             = (Func <bool>)(() => { return vars.splitByXYZ(-152.3f, -152.0f, 549.8f, 549.9f, 91.8f, 92f);                                                               });
-    vars.ThePlaza               = (Func <bool>)(() => { return vars.splitByXYZ(-104f, -100f, 548f, 553f, 105.5f, 106.1f);                                                                   });
-    vars.TheUpperCity           = (Func <bool>)(() => { return vars.splitByXYZ(-124.5f, -122.5f, 500f, 505f, 97f, 99f);                                                                     });
-    vars.CityGarderns           = (Func <bool>)(() => { return vars.splitByXYZ(-63.5f, -63.4f, 389.7f, 389.8f, 85.2f, 85.3f);                                                               });
-    vars.ThePromenade           = (Func <bool>)(() => { return vars.splitByXYZ(-3f, -1f, 515f, 519f, 72f, 75f);                                                                             });
-    vars.RoyalWorkshop          = (Func <bool>)(() => { return vars.splitByXYZ(58f, 62f, 470f, 480f, 79f, 81f);                                                                             });
-    vars.KingsRoad              = (Func <bool>)(() => { return vars.splitByXYZ(91.9289f, 91.9290f, 230.0479f, 230.0480f, 70.9877f, 70.9879f);                                               });
-    vars.KingzRoad              = (Func <bool>)(() => { return vars.splitByXYZ(53f, 70f, 240f, 250f, 70f, 73f);                                                                             });
-    vars.PalaceEntrance         = (Func <bool>)(() => { return vars.splitByXYZ(30.8f, 30.9f, 271.2f, 271.3f, 126f, 126.1f);                                                                 });
-    vars.HangingGardens         = (Func <bool>)(() => { return vars.splitByXYZ(26f, 28f, 211f, 213f, 191f, 193f);                                                                           });
-    vars.HangingGardenz         = (Func <bool>)(() => { return vars.splitByXYZ(5.2f, 5.4f, 213.5f, 215.6f, 194.9f, 196.2f);                                                                 });
-    vars.StructuresMind         = (Func <bool>)(() => { return vars.splitByXYZ(-34f, -27f, 240f, 250f, 178f, 180f);                                                                         });
-    vars.StructurezMind         = (Func <bool>)(() => { return vars.splitByXYZ(5f, 12f, 243f, 265f, 104f, 104.1f);                                                                          });
-    vars.BottomofWell           = (Func <bool>)(() => { return vars.splitByXYZ(-21.35f, -21.34f, 252.67f, 252.68f, 20.95f, 20.96f);                                                         });
-    vars.WellofAncestors        = (Func <bool>)(() => { return vars.splitByXYZ(-12.6f, -12.5f, 241.2f, 241.3f, 0.9f, 1f);                                                                   });
-    vars.CaveDeath              = (Func <bool>)(() => { return vars.splitByXYZ(5.99f, 6.00f, 306.96f, 306.97f, 42f, 42.01f);                                                                });
-    vars.TheLabyrinth           = (Func <bool>)(() => { return vars.splitByXYZ(-25.5f, -23f, 325f, 338f, 35.9f, 37.5f);                                                                     });
-    vars.UndergroundCave        = (Func <bool>)(() => { return vars.splitByXYZ(-11f, -9f, 327f, 334f, 73f, 74f);                                                                            });
-    vars.LowerTower             = (Func <bool>)(() => { return vars.splitByXYZ(-5f, -3f, 316f, 317.5f, 139.9f, 140.1f);                                                                     });
-    vars.MiddleTower            = (Func <bool>)(() => { return vars.splitByXYZ(-18f, -12f, 303f, 305f, 184.8f, 185.1f);                                                                     });
-    vars.UpperTower             = (Func <bool>)(() => { return vars.splitByXYZ(-8f, -7f, 296f, 298f, 226.9f, 227f);                                                                         });
-    vars.TheTerrace             = (Func <bool>)(() => { return vars.splitByXYZ(-7.2f, -6.9f, 245.6f, 245.9f, 677f, 679f);                                                                   });
-    vars.MentalRealm            = (Func <bool>)(() => { return vars.splitByXYZ(189f, 194f, 318f, 330f, 540f, 560f) && current.princeAction == 17;                                           });
-    vars.T2TLU1                 = (Func <bool>)(() => { return vars.splitByXYZ(-14.9972f, -14.9970f, -112.8152f, -112.8150f, 20.0732f, 20.0734f);                                           });
-    vars.T2TLU2                 = (Func <bool>)(() => { return vars.splitByXYZ(-302.0919f, -302.0917f, 370.8710f, 370.8712f, 52.858f, 52.8582f);                                            });
-    vars.T2TLU3                 = (Func <bool>)(() => { return vars.splitByXYZ(-187.3369f, -187.3367f, -455.9863f, 455.9865f, 78.0330f, 78.0332f);                                          });
-    vars.T2TLU4                 = (Func <bool>)(() => { return vars.splitByXYZ(-55.0147f, -55.0145f, 395.7608f, 395.761f, 72.0774f, 72.0776f);                                              });
-    vars.T2TLU5                 = (Func <bool>)(() => { return vars.splitByXYZ(-30.1223f, -30.1221f, 281.8893f, 281.8895f, 104.0796f, 104.0798f);                                           });
-    vars.T2TLU6                 = (Func <bool>)(() => { return vars.splitByXYZ(-23.9663f, -23.9661f, 253.9438f, 253.944f, 183.0634f, 183.0636f);                                            });
-
-    vars.CheckSplit = (Func<string, bool>)(key => {
-        return (vars.CompletedSplits.Add(key) && settings[key]);
-    });
-
-    switch(game.ProcessName.ToLower()) {
-        case "pop": vars.game = 4; break;
-        case "pop2": vars.game = 5; break;
-        case "pop3": vars.game = 6; break;
-    }
-}
-
-update
-{
-    if (game.ProcessName.ToLower() == "pop2") {
-        timer.Run.Metadata.SetCustomVariable("storyGate", current.storyValue.ToString());
-    }
-}
-
-start
-{
-    switch((short)vars.game) {
-        case 0: return false;
-        case 4: return vars.FarahBalcony() && current.startValue == 1 && current.xCam <= -92.8;
-        case 5: return current.map == 1292342859 && old.cutscene == 1 && current.cutscene == 2;
-        case 6: return vars.inXRange(-404.9f, -404.8f) && current.xCam <= 0.832 && current.xCam >= 0.8318 && current.yCam <= 0.1082 && current.yCam >= 0.1080;
-    }
+    vars.Init(old, current, settings);
 }
 
 onStart
 {
-    // Refresh all splits when we start the run, none are yet completed
-    vars.CompletedSplits.Clear();
-    vars.noGameRunning = false;
+    vars.OnReset();
 }
 
-isLoading
+onReset
 {
-    return vars.noGameRunning;
+    vars.OnReset();
+}
+
+// note that the update block - along with every other block except startup and shutdown - does not run when LiveSplit is not hooked to any game process
+update
+{
+    return vars.Update(old);
+}
+
+start
+{
+    return vars.Start();
+}
+
+reset
+{
+    return vars.Reset();
 }
 
 split
 {
-    bool justStarted = false;
-    bool justEnded = false;
+    return vars.Split();
+}
 
-    switch((short)vars.game) {
-        case 4:
-            if (vars.splitByXYZ(-477.88f, -477f, -298f, -297.1f, -0.5f, -0.4f)) vars.CompletedSplits.Remove("SoTLU");
-            if (vars.splitByXYZ(658.26f, 661.46f, 210.92f, 213.72f, 12.5f, 30f)) vars.CompletedSplits.Add("AboveCredits");
 
-            justStarted = vars.FarahBalcony() && current.startValue == 1 && current.xCam <= -92.8;
-            justEnded = vars.SoTEnd();
+isLoading
+{
+    return vars.noGameRunning || vars.game == 5;
+}
 
-            break;
+gameTime
+{
+    if (vars.game == 5)
+    {
+        long tickDelta = current.physicsTicks - old.physicsTicks;
 
-        case 5:
-            // This is a work-around for the "old" state not working as expected in the init block
-            vars.oldCutscene = old.cutscene;
-            vars.oldState = old.state;
-            vars.oldSecondary = old.secondaryWeapon;
-            vars.oldStory = old.storyValue;
-            vars.oldMap = old.map;
-            vars.oldX = old.xPos;
-            vars.oldY = old.yPos;
-            vars.oldZ = old.zPos;
+        // While rewinding, the scaled tick delta is used so that time doesn't run backwards
+        if (tickDelta < 0) tickDelta = current.scaledTicks - old.scaledTicks;
 
-            justStarted = current.map == 1292342859 && old.cutscene == 1 && current.cutscene == 2;
-            justEnded = vars.kaileena() || vars.Dahaka();
+        if (tickDelta > 0) vars.IGTValue += tickDelta;
 
-            break;
-
-        case 6:
-            justStarted = vars.inXRange(-404.9f, -404.8f) && current.xCam <= 0.832 && current.xCam >= 0.8318 && current.yCam <= 0.1082 && current.yCam >= 0.1080;
-            justEnded = vars.MentalRealm();
-
-            break;
+        return TimeSpan.FromSeconds(vars.IGTValue * current.tickMul);
     }
 
-    if (justStarted && !vars.CompletedGames.Contains(vars.game) && vars.noGameRunning) {
-        vars.noGameRunning = false;
-
-        if (settings["setupSplits"]) {
-            return true;
-        }
-    }
-
-    if (justEnded) {
-        vars.CompletedGames.Add(vars.game);
-        vars.noGameRunning = true;
-    }
-
-    foreach (var data in vars.splitsData) {
-        if (vars.game == data.Value.Item5 && data.Value.Item6() && vars.CheckSplit(data.Key)) {
-            print(data.Key);
-            return true;
-        }
-    }
+    return null;
 }
