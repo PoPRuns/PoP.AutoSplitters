@@ -414,7 +414,9 @@ startup
     Func<float, float, float, float, bool> CutsceneHit = (xTarg, yTarg, zTarg, range)
     =>
         old.princeAction != 17 && current.princeAction == 17 &&
-        InPosWithRangeCurrent(xTarg, yTarg, zTarg, range);
+        current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
+        current.yPos >= yTarg - range && current.yPos <= yTarg + range &&
+        current.zPos >= zTarg - range && current.zPos <= zTarg + range;
 
     // ===================================================================================================================
     // ================================================== CONFIGURATION ==================================================
