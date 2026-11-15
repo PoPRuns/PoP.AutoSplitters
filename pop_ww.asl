@@ -28,10 +28,10 @@ state("POP2")
     ulong weaponBits    : 0x8D2EB0;
 
     // Unscaled ticks, but goes back with rewind
-    long physicsTicks   : 0x5409A0;
+    ulong physicsTicks   : 0x5409A0;
 
     // Slows down during slomo, but runs perfectly while rewinding
-    long scaledTicks    : 0x540990;
+    ulong scaledTicks    : 0x540990;
 
     // Multiplier used by the game to convert ticks to seconds
     float tickMul       : 0x4BDF1C;
@@ -1019,11 +1019,11 @@ startup
     {
         CompletedEvents.Clear();
         InitCustomVariables = true;
-        vars.IGTValue = 0;
+        vars.IGTValue = (ulong)0;
         print("CompletedEvents cleared.");
     };
     vars.OnReset = OnReset;
-    vars.IGTValue = 0;
+    vars.IGTValue = (ulong)0;
 
     // ================================================== update ==================================================
 
@@ -1165,7 +1165,7 @@ isLoading
 
 gameTime
 {
-    long tickDelta = current.physicsTicks - old.physicsTicks;
+    ulong tickDelta = current.physicsTicks - old.physicsTicks;
 
     // While rewinding, the scaled tick delta is used so that time doesn't run backwards
     if (tickDelta < 0) tickDelta = current.scaledTicks - old.scaledTicks;
