@@ -343,19 +343,23 @@ startup
     AddSetting(false, "SettingSun",              new List<string> {"SettingSun"},    "Setting Sun",                                "Split on the Ladder near the setting sun save",                                                null);
     AddSetting(true,  "HonorGlory",              new List<string> {"HonorGlory"},    "Honor and Glory",                            "Split on starting the last fight with enemies",                                                null);
     AddSetting(true,  "GrandRewind",             new List<string> {"GrandRewind"},   "Grand Rewind",                               "Split on starting the Vizier fight",                                                           null);
-    AddSetting(true,  "SoTEnd",                  new List<string> {"SoTEnd"},        "The End",                                    "Split on defeating the Vizier or hitting the credits trigger",                                 null);
+    AddSetting(true,  "SoTEnd",                  new List<string> {"SoTEndCredits","SoTEndVizier"},        "The End",                                    "Split on defeating the Vizier or hitting the credits trigger",                                 null);
     AddSetting(false, "SoTLU",                   new List<string> {"SoTLU"},         "Life Upgrades",                              "Split on obtaining each life upgrade",                                                         null);
 
     // ================================================== events ==================================================
 
     Action action;
+    Action<float, float, float> actionPos;
+    Action<float, float, float, float> actionRange;
+    Action<float, float, float, float, float> actionRangeXyZ;
     Action<float, float, float, float, float, float> actionBounds;
+    Action<int[]> actionInts;
 
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(StartEvent, "Start",                   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.startValue == 1 && current.xCam <= -92.8f)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(ResetEvent, "Reset",                   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.xCam <= -92f && current.xCam > -92.8f)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
 
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(MiscEvent,  "AboveCredits",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (658.26f, 661.46f, 210.92f, 213.72f, 12.5f, 30f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(MiscEvent,  "SoTLU_Reset",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => { if (InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2)) { CompletedEvents.Remove("SoTLU"); return true; } return false; })) (-477.88f, -477f, -298f, -297.1f, -0.5f, -0.4f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(MiscEvent,  "SoTLU_Reset",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && (CompletedEvents.Remove("SoTLU") | true))) (-477.88f, -477f, -298f, -297.1f, -0.5f, -0.4f);
 
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "GasStation",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (252f, 258f, 130.647f, 134f, 22.999f, 23.001f);
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "SandsUnleashed",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-6.177f, -6.175f, 62.905f, 62.907f, 7.604f, 7.606f);
@@ -400,8 +404,9 @@ startup
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "SettingSun",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (60f, 61f, -58f, -57f, 30f, 32f);
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "HonorGlory",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (81f, 82f, -60.3f, -59.7f, 89f, 90f);
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "GrandRewind",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (660.376f, 660.378f, 190.980f, 190.983f, 0.432f, 0.434f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "SoTLU",                   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => { if (InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2)) { CompletedEvents.Remove("SoTLU_Reset"); return true; } return false; })) (-492.608f, -492.606f, -248.833f, -248.831f, 0.219f, 0.221f);
-    (action=()                        => AddEvent(SplitEvent, "SoTEnd",                  new List<string> {}, HashNull(),                () => (InPosWithBoundsCurrent(658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f) && CompletedEvents.Contains("AboveCredits")) || current.vizierHealth == 4)) ();
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "SoTLU",                   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && (CompletedEvents.Remove("SoTLU_Reset") | true))) (-492.608f, -492.606f, -248.833f, -248.831f, 0.219f, 0.221f);
+    (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "SoTEndVizier",            new List<string> {}, BoundsRange(x,y,z,range),  () => InPosWithRangeCurrent(x, y, z, range) && current.vizierHealth == 4)) (660f, 213f, -1f, 10f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "SoTEndCredits",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2), () => CompletedEvents.Contains("AboveCredits") && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f);
 
     // ====================================================================================================================
     // ================================================== STARTUP SCRIPT ==================================================
