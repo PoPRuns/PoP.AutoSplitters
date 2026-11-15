@@ -444,7 +444,6 @@ startup
     const ulong ChestsMask        = 0x0003FFFFFFFFFFFFUL;
     const ulong WeaponsMask       = 0x37CFFFFFFFFFFFFEUL;
 
-
     Func<int[], bool> MapOneOfCurrent = maps => Array.Exists(maps, map => map == current.map);
 
     Func<int, bool> CutsceneHit = map => old.cutscene == 0 && current.cutscene == 1 && current.map == map;
@@ -470,6 +469,8 @@ startup
         int maxCount = CountBits(expectedBits);
         return count.ToString() + " / " + maxCount.ToString();
     };
+
+    ulong IgtValue = 0;
 
     // ===================================================================================================================
     // ================================================== CONFIGURATION ==================================================
@@ -1019,11 +1020,10 @@ startup
     {
         CompletedEvents.Clear();
         InitCustomVariables = true;
-        vars.IGTValue = (ulong)0;
+        IgtValue = 0;
         print("CompletedEvents cleared.");
     };
     vars.OnReset = OnReset;
-    vars.IGTValue = (ulong)0;
 
     // ================================================== update ==================================================
 
@@ -1117,6 +1117,21 @@ startup
     };
     vars.Split = Split;
 
+    // ================================================== gameTime ==================================================
+
+    Func<TimeSpan> GameTime = () =>
+    {
+        ulong tickDelta = current.physicsTicks - old.physicsTicks;
+
+        // While rewinding, the scaled tick delta is used so that time doesn't run backwards
+        if (tickDelta < 0) tickDelta = current.scaledTicks - old.scaledTicks;
+
+        if (tickDelta > 0) IgtValue += tickDelta;
+
+        return TimeSpan.FromSeconds(IgtValue * current.tickMul);
+    };
+    vars.GameTime = GameTime;
+
     // ====================================================================================================
 
     print("pop_ww.asl " + DateTime.Now.ToString());
@@ -1125,11 +1140,6 @@ startup
 init
 {
     vars.Init(old, current, settings);
-}
-
-onStart
-{
-    vars.OnReset();
 }
 
 onReset
@@ -1165,12 +1175,5 @@ isLoading
 
 gameTime
 {
-    ulong tickDelta = current.physicsTicks - old.physicsTicks;
-
-    // While rewinding, the scaled tick delta is used so that time doesn't run backwards
-    if (tickDelta < 0) tickDelta = current.scaledTicks - old.scaledTicks;
-
-    if (tickDelta > 0) vars.IGTValue += tickDelta;
-
-    return TimeSpan.FromSeconds(vars.IGTValue * current.tickMul);
+    return vars.GameTime();
 }
