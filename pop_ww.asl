@@ -280,7 +280,7 @@ startup
 
     HashSet<string> CompletedEvents = null;
     Action<string, string> SetCustomVariable = (name, value) => timer.Run.Metadata.SetCustomVariable(name, value);
-    bool initCustomVariables = true;
+    bool InitCustomVariables = true;
 
     // update block sets this to an event that is not in CompletedEvents and has been triggered on this cycle
     Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> TriggeredEvent = null;
@@ -309,12 +309,12 @@ startup
 
     // ================================================== game-specific functions and helper variables ==================================================
 
-    const ulong mainWeaponsMask   = 0x37C0000000000000UL;
-    const ulong swordsMask        = 0x0005FFFF00000000UL;
-    const ulong axesMask          = 0x0002000000003FFEUL;
-    const ulong macesMask         = 0x000000000FF00000UL;
-    const ulong daggersMask       = 0x00000000000FC000UL;
-    const ulong secretWeaponsMask = 0x00080000F0000000UL;
+    const ulong MainWeaponsMask   = 0x37C0000000000000UL;
+    const ulong SwordsMask        = 0x0005FFFF00000000UL;
+    const ulong AxesMask          = 0x0002000000003FFEUL;
+    const ulong MacesMask         = 0x000000000FF00000UL;
+    const ulong DaggersMask       = 0x00000000000FC000UL;
+    const ulong SecretWeaponsMask = 0x00080000F0000000UL;
 
     Func<int[], bool> MapOneOfCurrent = maps => Array.Exists(maps, map => map == current.map);
 
@@ -878,7 +878,7 @@ startup
         old = newOld;
         current = newCurrent;
         settings = newSettings;
-        initCustomVariables = true;
+        InitCustomVariables = true;
     };
     vars.Init = Init;
 
@@ -887,7 +887,7 @@ startup
     Action OnReset = () =>
     {
         CompletedEvents.Clear();
-        initCustomVariables = true;
+        InitCustomVariables = true;
         vars.IGTValue = 0;
         print("CompletedEvents cleared.");
     };
@@ -901,29 +901,29 @@ startup
     {
         old = newOld;
 
-        if (initCustomVariables || old.storyValue != current.storyValue)
+        if (InitCustomVariables || old.storyValue != current.storyValue)
             SetCustomVariable("storyGate", current.storyValue.ToString());
 
-        if (initCustomVariables || old.chestBits != current.chestBits)
+        if (InitCustomVariables || old.chestBits != current.chestBits)
             SetCustomVariable("chests", GetTrackerText(current.chestBits, 0x0003FFFFFFFFFFFF));
 
-        if (initCustomVariables || old.weaponBits != current.weaponBits)
+        if (InitCustomVariables || old.weaponBits != current.weaponBits)
         {
-            if (initCustomVariables || (old.weaponBits & mainWeaponsMask) != (current.weaponBits & mainWeaponsMask))
-                SetCustomVariable("mainWeapons",   GetTrackerText(current.weaponBits, mainWeaponsMask));
-            if (initCustomVariables || (old.weaponBits & swordsMask) != (current.weaponBits & swordsMask))
-                SetCustomVariable("swords",        GetTrackerText(current.weaponBits, swordsMask));
-            if (initCustomVariables || (old.weaponBits & axesMask) != (current.weaponBits & axesMask))
-                SetCustomVariable("axes",          GetTrackerText(current.weaponBits, axesMask));
-            if (initCustomVariables || (old.weaponBits & macesMask) != (current.weaponBits & macesMask))
-                SetCustomVariable("maces",         GetTrackerText(current.weaponBits, macesMask));
-            if (initCustomVariables || (old.weaponBits & daggersMask) != (current.weaponBits & daggersMask))
-                SetCustomVariable("daggers",       GetTrackerText(current.weaponBits, daggersMask));
-            if (initCustomVariables || (old.weaponBits & secretWeaponsMask) != (current.weaponBits & secretWeaponsMask))
-                SetCustomVariable("secretWeapons", GetTrackerText(current.weaponBits, secretWeaponsMask));
+            if (InitCustomVariables || (old.weaponBits & MainWeaponsMask) != (current.weaponBits & MainWeaponsMask))
+                SetCustomVariable("mainWeapons",   GetTrackerText(current.weaponBits, MainWeaponsMask));
+            if (InitCustomVariables || (old.weaponBits & SwordsMask) != (current.weaponBits & SwordsMask))
+                SetCustomVariable("swords",        GetTrackerText(current.weaponBits, SwordsMask));
+            if (InitCustomVariables || (old.weaponBits & AxesMask) != (current.weaponBits & AxesMask))
+                SetCustomVariable("axes",          GetTrackerText(current.weaponBits, AxesMask));
+            if (InitCustomVariables || (old.weaponBits & MacesMask) != (current.weaponBits & MacesMask))
+                SetCustomVariable("maces",         GetTrackerText(current.weaponBits, MacesMask));
+            if (InitCustomVariables || (old.weaponBits & DaggersMask) != (current.weaponBits & DaggersMask))
+                SetCustomVariable("daggers",       GetTrackerText(current.weaponBits, DaggersMask));
+            if (InitCustomVariables || (old.weaponBits & SecretWeaponsMask) != (current.weaponBits & SecretWeaponsMask))
+                SetCustomVariable("secretWeapons", GetTrackerText(current.weaponBits, SecretWeaponsMask));
         }
 
-        if (initCustomVariables || old.chestBits != current.chestBits || old.weaponBits != current.weaponBits)
+        if (InitCustomVariables || old.chestBits != current.chestBits || old.weaponBits != current.weaponBits)
         {
             int cCount = CountBits(current.chestBits & 0x0003FFFFFFFFFFFFUL);
             int wCount = CountBits(current.weaponBits & 0x37CFFFFFFFFFFFFEUL);
@@ -931,7 +931,7 @@ startup
             SetCustomVariable("collectibles", totalCount + "/108\u2009-\u2009C:" + cCount + ",\u2009W:" + wCount);
         }
 
-        initCustomVariables = false;
+        InitCustomVariables = false;
 
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
