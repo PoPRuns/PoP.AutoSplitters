@@ -314,6 +314,9 @@ startup
     const ulong MacesMask         = 0x000000000FF00000UL;
     const ulong DaggersMask       = 0x00000000000FC000UL;
     const ulong SecretWeaponsMask = 0x00080000F0000000UL;
+    const ulong ChestsMask        = 0x0003FFFFFFFFFFFFUL;
+    const ulong WeaponsMask       = 0x37CFFFFFFFFFFFFEUL;
+
 
     Func<int[], bool> MapOneOfCurrent = maps => Array.Exists(maps, map => map == current.map);
 
@@ -904,28 +907,28 @@ startup
             timer.Run.Metadata.SetCustomVariable("storyGate", current.storyValue.ToString());
 
         if (InitCustomVariables || old.chestBits != current.chestBits)
-            timer.Run.Metadata.SetCustomVariable("chests", GetTrackerText(current.chestBits, 0x0003FFFFFFFFFFFF));
+            timer.Run.Metadata.SetCustomVariable("chests", GetTrackerText(current.chestBits, ChestsMask));
 
         if (InitCustomVariables || old.weaponBits != current.weaponBits)
         {
             if (InitCustomVariables || (old.weaponBits & MainWeaponsMask) != (current.weaponBits & MainWeaponsMask))
-                timer.Run.Metadata.SetCustomVariable("mainWeapons",   GetTrackerText(current.weaponBits, MainWeaponsMask));
+                timer.Run.Metadata.SetCustomVariable("mainWeapons", GetTrackerText(current.weaponBits, MainWeaponsMask));
             if (InitCustomVariables || (old.weaponBits & SwordsMask) != (current.weaponBits & SwordsMask))
-                timer.Run.Metadata.SetCustomVariable("swords",        GetTrackerText(current.weaponBits, SwordsMask));
+                timer.Run.Metadata.SetCustomVariable("swords", GetTrackerText(current.weaponBits, SwordsMask));
             if (InitCustomVariables || (old.weaponBits & AxesMask) != (current.weaponBits & AxesMask))
-                timer.Run.Metadata.SetCustomVariable("axes",          GetTrackerText(current.weaponBits, AxesMask));
+                timer.Run.Metadata.SetCustomVariable("axes", GetTrackerText(current.weaponBits, AxesMask));
             if (InitCustomVariables || (old.weaponBits & MacesMask) != (current.weaponBits & MacesMask))
-                timer.Run.Metadata.SetCustomVariable("maces",         GetTrackerText(current.weaponBits, MacesMask));
+                timer.Run.Metadata.SetCustomVariable("maces", GetTrackerText(current.weaponBits, MacesMask));
             if (InitCustomVariables || (old.weaponBits & DaggersMask) != (current.weaponBits & DaggersMask))
-                timer.Run.Metadata.SetCustomVariable("daggers",       GetTrackerText(current.weaponBits, DaggersMask));
+                timer.Run.Metadata.SetCustomVariable("daggers", GetTrackerText(current.weaponBits, DaggersMask));
             if (InitCustomVariables || (old.weaponBits & SecretWeaponsMask) != (current.weaponBits & SecretWeaponsMask))
                 timer.Run.Metadata.SetCustomVariable("secretWeapons", GetTrackerText(current.weaponBits, SecretWeaponsMask));
         }
 
         if (InitCustomVariables || old.chestBits != current.chestBits || old.weaponBits != current.weaponBits)
         {
-            int cCount = CountBits(current.chestBits & 0x0003FFFFFFFFFFFFUL);
-            int wCount = CountBits(current.weaponBits & 0x37CFFFFFFFFFFFFEUL);
+            int cCount = CountBits(current.chestBits & ChestsMask);
+            int wCount = CountBits(current.weaponBits & WeaponsMask);
             int totalCount = cCount + wCount;
             timer.Run.Metadata.SetCustomVariable("collectibles", totalCount + "/108\u2009-\u2009C:" + cCount + ",\u2009W:" + wCount);
         }
