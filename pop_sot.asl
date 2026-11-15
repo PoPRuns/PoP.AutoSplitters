@@ -260,8 +260,7 @@ startup
     var OtherEvents = new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>();
 
     HashSet<string> CompletedEvents = null;
-    Action<string, string> SetCustomVariable = (name, value) => timer.Run.Metadata.SetCustomVariable(name, value);
-    bool initCustomVariables = true;
+    bool InitCustomVariables = true;
 
     // update block sets this to an event that is not in CompletedEvents and has been triggered on this cycle
     Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> TriggeredEvent = null;
@@ -290,7 +289,7 @@ startup
 
     // ================================================== game-specific functions and helper variables ==================================================
 
-    int prevSandClouds = -1;
+    int PrevSandClouds = -1;
 
     // ===================================================================================================================
     // ================================================== CONFIGURATION ==================================================
@@ -646,7 +645,7 @@ startup
         old = newOld;
         current = newCurrent;
         settings = newSettings;
-        initCustomVariables = true;
+        InitCustomVariables = true;
     };
     vars.Init = Init;
 
@@ -655,8 +654,8 @@ startup
     Action OnReset = () =>
     {
         CompletedEvents.Clear();
-        initCustomVariables = true;
-        prevSandClouds = -1;
+        InitCustomVariables = true;
+        PrevSandClouds = -1;
         print("CompletedEvents cleared.");
     };
     vars.OnReset = OnReset;
@@ -671,35 +670,31 @@ startup
         int sandClouds = (current.maxSands - 4) * 8 + current.sandPieces;
         sandClouds = sandClouds > 0 ? sandClouds : 0;
 
-        if (initCustomVariables || sandClouds != prevSandClouds)
+        if (InitCustomVariables || sandClouds != PrevSandClouds)
         {
-            prevSandClouds = sandClouds;
-            SetCustomVariable("sandClouds", sandClouds.ToString() + " / 48");
+            PrevSandClouds = sandClouds;
+            timer.Run.Metadata.SetCustomVariable("sandClouds", sandClouds.ToString() + " / 48");
         }
 
-        initCustomVariables = false;
+        InitCustomVariables = false;
 
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
+        int mapHashCode = 0;
         List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localXyzEvents;
-        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localMapEvents = null;
+        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localMapEvents;
         XyzEventHashMap.TryGetValue(xyzHashCode, out localXyzEvents);
-        if (MapEventHashMap.Count > 0)
-        {
-            int mapHashCode = current.map;
-            MapEventHashMap.TryGetValue(mapHashCode, out localMapEvents);
-        }
+        MapEventHashMap.TryGetValue(mapHashCode, out localMapEvents);
         localXyzEvents = localXyzEvents ?? EmptyEventList;
         localMapEvents = localMapEvents ?? EmptyEventList;
 
         foreach (var @event in localXyzEvents.Concat(localMapEvents).Concat(OtherEvents))
         {
-            if (CompletedEvents.Contains(@event.Item2))
-                continue;
-            if (!@event.Item5())
-                continue;
-            TriggeredEvent = @event;
-            break;
+            if (!CompletedEvents.Contains(@event.Item2) && @event.Item5())
+            {
+                TriggeredEvent = @event;
+                break;
+            }
         }
 
         return true;
