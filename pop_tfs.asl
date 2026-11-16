@@ -805,5 +805,5 @@ exit
 
 isLoading
 {
-    return (current.isMenu == 0 || current.isLoading);
+    return current.isMenu == 0 || current.isLoading;
 }
