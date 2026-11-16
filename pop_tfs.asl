@@ -609,6 +609,8 @@ startup
 
     infoBuilder.Append("Bucket size: " + BucketSize.ToString() + "\r\n\r\n");
 
+    // the hash map count is how many keys it actually stores
+    // while its capacity is the total number of keys that it can hold based on how much memory it has been allocated
     int xyzEventHashMapCapacity;
     int mapEventHashMapCapacity;
     {

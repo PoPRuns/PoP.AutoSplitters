@@ -851,8 +851,8 @@ startup
         if (@event.Item4.Item2 != null)
             continue;
         ValueTuple<float, float, float, float, float, float> xyzBounds = @event.Item4.Item1.Value;
-        int[] hashCodes = GetHashCodesForBounds(xyzBounds.Item1, xyzBounds.Item2, xyzBounds.Item3, xyzBounds.Item4, xyzBounds.Item5, xyzBounds.Item6);
-        foreach (int hashCode in hashCodes)
+        int[] hashCodesXyz = GetHashCodesForBounds(xyzBounds.Item1, xyzBounds.Item2, xyzBounds.Item3, xyzBounds.Item4, xyzBounds.Item5, xyzBounds.Item6);
+        foreach (int hashCode in hashCodesXyz)
         {
             List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localEvents;
             if (XyzEventHashMap.TryGetValue(hashCode, out localEvents))
@@ -920,6 +920,8 @@ startup
 
     infoBuilder.Append("Bucket size: " + BucketSize.ToString() + "\r\n\r\n");
 
+    // the hash map count is how many keys it actually stores
+    // while its capacity is the total number of keys that it can hold based on how much memory it has been allocated
     int xyzEventHashMapCapacity;
     int mapEventHashMapCapacity;
     {
@@ -982,7 +984,7 @@ startup
     infoBuilder.Append("Map info:\r\n\r\n");
     PrintBucketInfo(MapEventHashMap);
 
-    infoBuilder.Append("Non-location-based events: (total=" + OtherEvents.Count + ")\r\n");
+    infoBuilder.Append("Non-hash-based events: (total=" + OtherEvents.Count + ")\r\n");
     foreach (var @event in OtherEvents)
         infoBuilder.Append("\t" + @event.Item2 + "\r\n");
     infoBuilder.Append("\r\n");
