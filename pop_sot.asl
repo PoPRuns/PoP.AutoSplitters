@@ -880,11 +880,6 @@ init
     vars.Init(old, current, settings);
 }
 
-onStart
-{
-    vars.OnReset();
-}
-
 onReset
 {
     vars.OnReset();
