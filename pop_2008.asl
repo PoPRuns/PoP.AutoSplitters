@@ -858,6 +858,9 @@ startup
 
     for (myGameType = 0; myGameType < GameCount; myGameType++)
     {
+        if (myGameType == NoGame)
+            continue;
+        
         infoBuilder.Append(GetGameTypeString(myGameType) + ":\r\n\r\n");
 
         var xyzEventHashMap = XyzEventHashMaps[myGameType];
