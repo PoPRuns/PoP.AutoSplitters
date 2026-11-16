@@ -671,6 +671,10 @@ startup
     Action<float, float, float, float, float, float> actionBounds;
     Action<int[]> actionInts;
 
+
+    //                                                                                                  HashParams:
+    //                                                                             SettingSlugs:         (float,float,float,
+    //                                   EventType:int        Slug:string           List<string>         float,float,float)?       Condition:Func<bool>
     (actionInts=maps                  => AddEvent(StartEvent, "Start",             new List<string> {}, Maps(maps),                () => MapOneOfCurrent(maps) && old.cutscene == 1 && current.cutscene == 2)) (new int[] {1292342859});
     (actionInts=maps                  => AddEvent(ResetEvent, "Reset",             new List<string> {}, Maps(maps),                () => old.map == 234881388 && MapOneOfCurrent(maps))) (new int[] {1292342859});
 

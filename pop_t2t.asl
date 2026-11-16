@@ -481,6 +481,10 @@ startup
     Action<float, float, float, float, float> actionRangeXyZ;
     Action<float, float, float, float, float, float> actionBounds;
     Action<int[]> actionInts;
+
+    //                                                                                                    HashParams:
+    //                                                                               SettingSlugs:         (float,float,float,
+    //                                   EventType:int        Slug:string             List<string>         float,float,float)?       Condition:Func<bool>
     (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartLoad",           new List<string> {}, BoundsRange(x,y,z,range),  () => InPosWithRangeCurrent(x, y, z, range) && old.saveLoad == 0 && current.saveLoad == 1)) (-408.3f, 116.9f, 61.9f, 0.5f);
     (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetLoad",           new List<string> {}, BoundsRange(x,y,z,range),  () => InPosWithRangeCurrent(x, y, z, range) && current.saveLoad == 0)) (-408.3f, 116.9f, 61.9f, 0.5f);
     (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "StartNew",            new List<string> {}, BoundsRange(x,y,z,range),  () => InXBoundsCurrent(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, current.xCam) && InBounds(0.108f, 0.1082f, current.yCam))) (-405f, 117f, 62f, 5f);

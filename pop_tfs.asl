@@ -464,6 +464,10 @@ startup
     Action<float, float, float, float, float> actionRangeXyZ;
     Action<float, float, float, float, float, float> actionBounds;
     Action<int[]> actionInts;
+
+    //                                                                                                    HashParams:
+    //                                                                               SettingSlugs:         (float,float,float,
+    //                                   EventType:int        Slug:string             List<string>         float,float,float)?       Condition:Func<bool>
     (actionRange=(x,y,z,range)        => AddEvent(StartEvent, "Start",               new List<string> {}, BoundsRange(x,y,z,range),  () => InXBoundsCurrent(268.929f, 268.93f) && current.gameState == 4)) (269f, 161f, -147f, 5f);
     (actionRange=(x,y,z,range)        => AddEvent(ResetEvent, "Reset",               new List<string> {}, BoundsRange(x,y,z,range),  () => InXBoundsCurrent(268.929f, 268.93f) && current.gameState == 1)) (269f, 161f, -147f, 5f);
     (actionRange=(x,y,z,range)        => AddEvent(SplitEvent, "Malik",               new List<string> {}, BoundsRange(x,y,z,range),  () => CpGet(x, y, z, range))) (-37f, 231f, -148f, 10f);

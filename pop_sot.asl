@@ -483,6 +483,9 @@ startup
     Action<float, float, float, float, float, float> actionBounds;
     Action<int[]> actionInts;
 
+    //                                                                                                        HashParams:
+    //                                                                                   SettingSlugs:         (float,float,float,
+    //                                   EventType:int        Slug:string                 List<string>         float,float,float)?         Condition:Func<bool>
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(StartEvent, "Start",                   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.startValue == 1 && current.xCam <= -92.8f)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(ResetEvent, "Reset",                   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.xCam <= -92f && current.xCam > -92.8f)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
 

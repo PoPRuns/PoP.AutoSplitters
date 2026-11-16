@@ -611,9 +611,9 @@ startup
     Action<float, float, float, float, float> actionRangeXyZ;
     Action<float, float, float, float, float, float> actionBounds;
 
-    //                                                                                                               XyzBounds:
-    //                                                                               SettingSlugs:                    (float,float,float,
-    //                                   EventType:int        Slug:string             List<string>                    float,float,float)?         Condition:Func<bool>
+    //                                                                                                                XyzBounds:
+    //                                                                                SettingSlugs:                    (float,float,float,
+    //                                   EventType:int         Slug:string             List<string>                    float,float,float)?        Condition:Func<bool>
     (actionRange=(x,y,z,range)        => AddEventB(StartEvent, "StartLoad",           new List<string> {"baseGame"}, BoundsRange(x,y,z,range),    () => InPosExactXyOldOnly(x, y))) (-465f, -351f, -24f, 5f);
     (actionRange=(x,y,z,range)        => AddEventB(ResetEvent, "ResetLoad",           new List<string> {"baseGame"}, BoundsRange(x,y,z,range),    () => InPosExactXyCurrentOnly(x, y))) (-465f, -351f, -24f, 5f);
     (actionRange=(x,y,z,range)        => AddEventB(StartEvent, "StartNew",            new List<string> {"baseGame"}, BoundsRange(x,y,z,5f),       () => InPosWithRangeOldOnly(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
