@@ -419,7 +419,6 @@ startup
         OtherEventLists[i] = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
     var OtherEvents = OtherEventLists[NoGame];
 
-    bool GameTypeUpdateRequired = false;
     Action<int> ConfigureGameType = gameType =>
     {
         XyzEventHashMap = XyzEventHashMaps[gameType];
@@ -455,6 +454,8 @@ startup
     };
 
     // ================================================== game-specific functions and helper variables ==================================================
+
+    bool GameTypeUpdateRequired = true;
 
     const float SeedRange = 5f;
     Func<float, float, float, bool> SeedGet = (xTarg, yTarg, zTarg)
@@ -805,6 +806,9 @@ startup
     // since most of the lists in XyzEventHashMap contain only one value and likely have a capacity of 4, it is worth reducing the capacity of the lists
     //      to the actual desired size and reduce memory usage from these lists by almost 4 times
     foreach (var bucket in XyzEventHashMaps.SelectMany(eventMap => eventMap.Values))
+        bucket.TrimExcess();
+    
+    foreach (var bucket in OtherEventLists)
         bucket.TrimExcess();
 
     // allocate a large enough capacity at startup so that the CompletedEvents hashset does not need to be reallocated as it grows during runtime

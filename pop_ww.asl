@@ -408,7 +408,6 @@ startup
     var OtherEvents = new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>();
 
     HashSet<string> CompletedEvents = null;
-    bool InitCustomVariables = true;
 
     // update block sets this to an event that is not in CompletedEvents and has been triggered on this cycle
     Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> TriggeredEvent = null;
@@ -436,6 +435,8 @@ startup
     };
 
     // ================================================== game-specific functions and helper variables ==================================================
+
+    bool InitCustomVariables = true;
 
     const ulong MainWeaponsMask   = 0x37C0000000000000UL;
     const ulong SwordsMask        = 0x0005FFFF00000000UL;
@@ -863,8 +864,12 @@ startup
         }
     }
 
+    // since most of the lists in our event hash maps contain only one value and likely have a capacity of 4, it is worth reducing the capacity of the lists
+    //      to the actual desired size and reduce memory usage from these lists by almost 4 times
     foreach (var bucket in XyzEventHashMap.Values.Concat(MapEventHashMap.Values))
         bucket.TrimExcess();
+    
+    OtherEvents.TrimExcess();
 
     // allocate a large enough capacity at startup so that the CompletedEvents hashset does not need to be reallocated as it grows during runtime
     CompletedEvents = new HashSet<string>(events.Count);

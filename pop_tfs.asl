@@ -24,12 +24,12 @@ state("prince of persia")
 }
 
 // Data structures:
-// Setting: bool Default, string Slug, List<string> EventSlugs, string Description, string? ToolTip, string? ParentSlug
-// Event:   int EventType, string Slug, List<string> SettingSlugs, ((float, float, float, float, float, float)?, int[]?) HashParams, Func<bool> Condition
+// record class Setting: bool Default, string Slug, List<string> EventSlugs, string Description, string? ToolTip, string? ParentSlug
+// record class Event:   int EventType, string Slug, List<string> SettingSlugs, (float, float, float, float, float, float)? XyzBounds, Func<bool> Condition
 
 // Data structures as tuples:
 // Setting: Tuple<bool, string, List<string>, string, string, string>
-// Event:   Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>
+// Event:   Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>
 
 // any temporary object that is not needed after startup should be marked with a "GC" comment and set to null before startup finishes
 startup
@@ -265,24 +265,17 @@ startup
         xTarg == current.xPos &&
         yTarg == current.yPos;
 
-    Func<ValueTuple<float, float, float, float, float, float>?, int[], ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> HashParams = (bounds, maps)
-        => ValueTuple.Create(bounds, maps);
+    Func<float, float, float, float, float, float, ValueTuple<float, float, float, float, float, float>> Bounds = (x1, x2, y1, y2, z1, z2)
+        => ValueTuple.Create(x1, x2, y1, y2, z1, z2);
 
-    Func<ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> HashNull = () => HashParams(null, null);
-
-    Func<float, float, float, float, float, float, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> Bounds = (x1, x2, y1, y2, z1, z2)
-        => HashParams(ValueTuple.Create(x1, x2, y1, y2, z1, z2), null);
-
-    Func<float, float, float, float, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> BoundsRange = (x, y, z, range)
-        => HashParams(ValueTuple.Create(x - range, x + range, y - range, y + range, z - range, z + range), null);
+    Func<float, float, float, float, ValueTuple<float, float, float, float, float, float>> BoundsRange = (x, y, z, range)
+        => ValueTuple.Create(x - range, x + range, y - range, y + range, z - range, z + range);
     
-    Func<float, float, float, float, float, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> BoundsRangeXyZ = (x, y, z, xyRange, zRange)
-        => HashParams(ValueTuple.Create(x - xyRange, x + xyRange, y - xyRange, y + xyRange, z - zRange, z + zRange), null);
+    Func<float, float, float, float, float, ValueTuple<float, float, float, float, float, float>> BoundsRangeXyZ = (x, y, z, xyRange, zRange)
+        => ValueTuple.Create(x - xyRange, x + xyRange, y - xyRange, y + xyRange, z - zRange, z + zRange);
     
-    Func<float, float, float, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> BoundsExact = (x, y, z)
-        => HashParams(ValueTuple.Create(x, x, y, y, z, z), null);
-    
-    Func<int[], ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> Maps = maps => HashParams(null, maps);
+    Func<float, float, float, ValueTuple<float, float, float, float, float, float>> BoundsExact = (x, y, z)
+        => ValueTuple.Create(x, x, y, y, z, z);
 
     // ================================================== runtime hash code computations ==================================================
 
@@ -362,12 +355,12 @@ startup
     const int ResetEvent = 1;
     const int SplitEvent = 2;
     const int MiscEvent = 3;
-    var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>(); // GC
-    Action<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> AddEvent = (eventType, slug, settingSlugs, hashParams, condition) =>
+    var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>(); // GC
+    Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> AddEvent = (eventType, slug, settingSlugs, xyzBounds, condition) =>
     {
         if (events.ContainsKey(slug))
             throw new Exception("Internal exception (ASL): event " + slug + " has already been added.");
-        events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, hashParams, condition));
+        events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, xyzBounds, condition));
     };
 
     Func<int, string> GetEventString = eventType =>
@@ -385,18 +378,15 @@ startup
     // ================================================== runtime functions and helper variables ==================================================
 
     // Key: Hash; Value: EventList
-    var XyzEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>();
-    var MapEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>();
+    var XyzEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>();
 
     // List<Event>
-    var OtherEvents = new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>();
+    var OtherEvents = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
 
     HashSet<string> CompletedEvents = null;
-    Action<string, string> SetCustomVariable = (name, value) => timer.Run.Metadata.SetCustomVariable(name, value);
-    bool initCustomVariables = true;
 
     // update block sets this to an event that is not in CompletedEvents and has been triggered on this cycle
-    Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> TriggeredEvent = null;
+    Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> TriggeredEvent = null;
 
     Func<int, bool> CheckEvent = eventType =>
     {
@@ -422,11 +412,9 @@ startup
 
     // ================================================== game-specific functions and helper variables ==================================================
 
-    bool Cp = false;
-
     Func<float, float, float, float, bool> CpGet = (xTarg, yTarg, zTarg, range)
     =>
-        Cp &&
+        old.cpIcon < 1 && current.cpIcon >= 1 &&
         current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
         current.yPos >= yTarg - range && current.yPos <= yTarg + range &&
         current.zPos >= zTarg - range && current.zPos <= zTarg + range;
@@ -502,7 +490,7 @@ startup
     {
         foreach (string eventSlug in setting.Item3)
         {
-            Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> myEvent;
+            Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> myEvent;
             if (!events.TryGetValue(eventSlug, out myEvent))
                 throw new Exception("Internal exception (ASL): cannot write event " + eventSlug + " to setting " + setting.Item2 + " because this event doesn't exist");
             myEvent.Item3.Add(setting.Item2);
@@ -543,44 +531,34 @@ startup
 
     // ================================================== apply configured events ==================================================
 
-    // fill XyzEventHashMap, MapEventHashMap, and OtherEvents
+    // fill XyzEventHashMap and OtherEvents
     foreach (var @event in events.Values)
     {
-        if (@event.Item4.Item1 == null && @event.Item4.Item2 == null)
+        if (@event.Item4 == null)
         {
             OtherEvents.Add(@event);
             continue;
         }
-        int[] maps = @event.Item4.Item2 ?? Array.Empty<int>();
-        int[] hashCodesMaps = maps;
-        foreach (int hashCode in hashCodesMaps)
-        {
-            List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localEvents;
-            if (MapEventHashMap.TryGetValue(hashCode, out localEvents))
-            {
-                localEvents.Add(@event);
-                continue;
-            }
-            MapEventHashMap.Add(hashCode, new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> {@event});
-        }
-        if (@event.Item4.Item2 != null)
-            continue;
-        ValueTuple<float, float, float, float, float, float> xyzBounds = @event.Item4.Item1.Value;
+        ValueTuple<float, float, float, float, float, float> xyzBounds = @event.Item4.Value;
         int[] hashCodes = GetHashCodesForBounds(xyzBounds.Item1, xyzBounds.Item2, xyzBounds.Item3, xyzBounds.Item4, xyzBounds.Item5, xyzBounds.Item6);
         foreach (int hashCode in hashCodes)
         {
-            List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localEvents;
+            List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>> localEvents;
             if (XyzEventHashMap.TryGetValue(hashCode, out localEvents))
             {
                 localEvents.Add(@event);
                 continue;
             }
-            XyzEventHashMap.Add(hashCode, new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> {@event});
+            XyzEventHashMap.Add(hashCode, new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>> {@event});
         }
     }
 
-    foreach (var bucket in XyzEventHashMap.Values.Concat(MapEventHashMap.Values))
+    // since most of the lists in XyzEventHashMap contain only one value and likely have a capacity of 4, it is worth reducing the capacity of the lists
+    //      to the actual desired size and reduce memory usage from these lists by almost 4 times
+    foreach (var bucket in XyzEventHashMap.Values)
         bucket.TrimExcess();
+    
+    OtherEvents.TrimExcess();
 
     // allocate a large enough capacity at startup so that the CompletedEvents hashset does not need to be reallocated as it grows during runtime
     CompletedEvents = new HashSet<string>(events.Count);
@@ -607,12 +585,12 @@ startup
     infoBuilder.Append("Total settings: " + mySettings.Count.ToString() + "\r\n\r\n");
 
     infoBuilder.Append("Events detected:\r\n");
-    infoBuilder.Append("\t" + "{EventType}     {Event}".PadRight(46) + " {HasXyzBounds} {HasMaps} => {Count:[..Settings]}\r\n");
+    infoBuilder.Append("\t" + "{EventType}     {Event}".PadRight(46) + " {HasXyzBounds} => {Count:[..Settings]}\r\n");
     foreach (var @event in events.Values)
     {
         if (@event.Item3.Count == 0)
             eventsWithNoSettings.Add(@event.Item2);
-        infoBuilder.Append("\t" + GetEventString(@event.Item1).PadRight(15) + " " + @event.Item2.PadRight(30) + " " + (@event.Item4.Item1 != null).ToString().PadRight(14) + " " + (@event.Item4.Item2 != null).ToString().PadRight(9)
+        infoBuilder.Append("\t" + GetEventString(@event.Item1).PadRight(15) + " " + @event.Item2.PadRight(30) + " " + (@event.Item4 != null).ToString().PadRight(5)
             + " => " + @event.Item3.Count + ":[" + string.Join(", ", @event.Item3) + "]\r\n");
     }
     infoBuilder.Append("Total events: " + events.Count.ToString() + "\r\n\r\n");
@@ -635,65 +613,53 @@ startup
     int mapEventHashMapCapacity;
     {
         FieldInfo entriesField =
-            typeof(Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>)
+            typeof(Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>)
             .GetField("entries", BindingFlags.NonPublic | BindingFlags.Instance);
-        Array xyzBackingArray = (Array)entriesField.GetValue(XyzEventHashMap);
-        Array mapBackingArray = (Array)entriesField.GetValue(MapEventHashMap);
-        xyzEventHashMapCapacity = xyzBackingArray != null ? xyzBackingArray.Length : 0;
-        mapEventHashMapCapacity = mapBackingArray != null ? mapBackingArray.Length : 0;
+        Array backingArray = (Array)entriesField.GetValue(XyzEventHashMap);
+        xyzEventHashMapCapacity = backingArray != null ? backingArray.Length : 0;
     }
     infoBuilder.Append("XyzEventHashMap capacity: " + XyzEventHashMap.Count.ToString() + "/" + xyzEventHashMapCapacity + "\r\n");
-    infoBuilder.Append("MapEventHashMap capacity: " + MapEventHashMap.Count.ToString() + "/" + mapEventHashMapCapacity + "\r\n");
     infoBuilder.Append("OtherEvents capacity: " + OtherEvents.Count.ToString() + "/" + OtherEvents.Capacity.ToString() + "\r\n");
     infoBuilder.Append("\r\n");
 
-    Action<Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>> PrintBucketInfo = eventHashMap =>
+    int collisionSum = 0;
+    int maxEventsPerBucket = 0;
+    double avgEventsPerBucket;
+    var bucketGroupsPerEventCount = new List<List<List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>>();
+    var bucketCountsPerEventCount = new List<int>();
+    const int MinEventCountPerBucketToCompute = 2;
+    foreach (var bucket in XyzEventHashMap.Values)
     {
-        int collisionSum = 0;
-        int maxEventsPerBucket = 0;
-        double avgEventsPerBucket;
-        var bucketGroupsPerEventCount = new List<List<List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>>();
-        var bucketCountsPerEventCount = new List<int>();
-        const int MinEventCountPerBucketToCompute = 2;
-        foreach (var bucket in eventHashMap.Values)
+        collisionSum += bucket.Count;
+        if (bucket.Count >= maxEventsPerBucket)
+            maxEventsPerBucket = bucket.Count;
+        for (int i = bucketGroupsPerEventCount.Count; i <= bucket.Count; i++)
         {
-            collisionSum += bucket.Count;
-            if (bucket.Count >= maxEventsPerBucket)
-                maxEventsPerBucket = bucket.Count;
-            for (int i = bucketGroupsPerEventCount.Count; i <= bucket.Count; i++)
-            {
-                bucketGroupsPerEventCount.Add(new List<List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>());
-                bucketCountsPerEventCount.Add(0);
-            }
-            if (bucket.Count >= MinEventCountPerBucketToCompute)
-                bucketGroupsPerEventCount[bucket.Count].Add(bucket);
-            bucketCountsPerEventCount[bucket.Count]++;
+            bucketGroupsPerEventCount.Add(new List<List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>());
+            bucketCountsPerEventCount.Add(0);
         }
-        avgEventsPerBucket = eventHashMap.Count > 0 ? (double)collisionSum / (double)eventHashMap.Count : 0.0;
+        if (bucket.Count >= MinEventCountPerBucketToCompute)
+            bucketGroupsPerEventCount[bucket.Count].Add(bucket);
+        bucketCountsPerEventCount[bucket.Count]++;
+    }
+    avgEventsPerBucket = XyzEventHashMap.Count > 0 ? (double)collisionSum / (double)XyzEventHashMap.Count : 0.0;
 
-        infoBuilder.Append("Average events per bucket: " + avgEventsPerBucket.ToString() + "\r\n");
-        infoBuilder.Append("Maximum events per bucket: " + maxEventsPerBucket.ToString() + "\r\n");
+    infoBuilder.Append("Average events per bucket: " + avgEventsPerBucket.ToString() + "\r\n");
+    infoBuilder.Append("Maximum events per bucket: " + maxEventsPerBucket.ToString() + "\r\n");
+    infoBuilder.Append("\r\n");
+
+    for (int i = bucketGroupsPerEventCount.Count - 1; i >= 1; i--)
+    {
+        bool omit = i < MinEventCountPerBucketToCompute;
+        infoBuilder.Append("Buckets with " + i + " events (total=" + bucketCountsPerEventCount[i] + "):" + (omit ? " (omitted)\r\n" : string.Empty) + "\r\n");
+        if (omit)
+            continue;
+        foreach (var bucket in bucketGroupsPerEventCount[i])
+            infoBuilder.Append("\t[" + string.Join(", ", bucket.Select(@event => @event.Item2)) + "]\r\n");
         infoBuilder.Append("\r\n");
+    }
 
-        for (int i = bucketGroupsPerEventCount.Count - 1; i >= 1; i--)
-        {
-            bool omit = i < MinEventCountPerBucketToCompute;
-            infoBuilder.Append("Buckets with " + i + " events (total=" + bucketCountsPerEventCount[i] + "):" + (omit ? " (omitted)\r\n" : string.Empty) + "\r\n");
-            if (omit)
-                continue;
-            foreach (var bucket in bucketGroupsPerEventCount[i])
-                infoBuilder.Append("\t[" + string.Join(", ", bucket.Select(@event => @event.Item2)) + "]\r\n");
-            infoBuilder.Append("\r\n");
-        }
-    };
-
-    infoBuilder.Append("Xyz info:\r\n\r\n");
-    PrintBucketInfo(XyzEventHashMap);
-    
-    infoBuilder.Append("Map info:\r\n\r\n");
-    PrintBucketInfo(MapEventHashMap);
-
-    infoBuilder.Append("Non-location-based events: (total=" + OtherEvents.Count + ")\r\n");
+    infoBuilder.Append("Non-hash-based events: (total=" + OtherEvents.Count + ")\r\n");
     foreach (var @event in OtherEvents)
         infoBuilder.Append("\t" + @event.Item2 + "\r\n");
     infoBuilder.Append("\r\n");
@@ -734,7 +700,6 @@ startup
         old = newOld;
         current = newCurrent;
         settings = newSettings;
-        initCustomVariables = true;
     };
     vars.Init = Init;
 
@@ -743,33 +708,25 @@ startup
     Action OnReset = () =>
     {
         CompletedEvents.Clear();
-        initCustomVariables = true;
-        Cp = false;
         print("CompletedEvents cleared.");
     };
     vars.OnReset = OnReset;
 
     // ================================================== update ==================================================
 
-    var EmptyEventList = new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>();
+    var EmptyEventList = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
     Func<ExpandoObject, bool> Update = newOld =>
     {
         old = newOld;
 
-        Cp = (old.cpIcon < 1 && current.cpIcon >= 1);
-        initCustomVariables = false;
-
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
-        int mapHashCode = 0;
-        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localXyzEvents;
-        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localMapEvents;
-        XyzEventHashMap.TryGetValue(xyzHashCode, out localXyzEvents);
-        MapEventHashMap.TryGetValue(mapHashCode, out localMapEvents);
-        localXyzEvents = localXyzEvents ?? EmptyEventList;
-        localMapEvents = localMapEvents ?? EmptyEventList;
+        List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>> localEvents;
+        XyzEventHashMap.TryGetValue(xyzHashCode, out localEvents);
+        localEvents = localEvents ?? EmptyEventList;
 
-        foreach (var @event in localXyzEvents.Concat(localMapEvents).Concat(OtherEvents))
+        // Concat function means we iterate through the lists one after the other; it does not create a concatenated list
+        foreach (var @event in localEvents.Concat(OtherEvents))
         {
             if (CompletedEvents.Contains(@event.Item2))
                 continue;

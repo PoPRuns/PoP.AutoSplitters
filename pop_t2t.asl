@@ -383,8 +383,6 @@ startup
     var OtherEvents = new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>();
 
     HashSet<string> CompletedEvents = null;
-    Action<string, string> SetCustomVariable = (name, value) => timer.Run.Metadata.SetCustomVariable(name, value);
-    bool initCustomVariables = true;
 
     // update block sets this to an event that is not in CompletedEvents and has been triggered on this cycle
     Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> TriggeredEvent = null;
@@ -630,8 +628,12 @@ startup
         }
     }
 
+    // since most of the lists in our event hash maps contain only one value and likely have a capacity of 4, it is worth reducing the capacity of the lists
+    //      to the actual desired size and reduce memory usage from these lists by almost 4 times
     foreach (var bucket in XyzEventHashMap.Values.Concat(MapEventHashMap.Values))
         bucket.TrimExcess();
+    
+    OtherEvents.TrimExcess();
 
     // allocate a large enough capacity at startup so that the CompletedEvents hashset does not need to be reallocated as it grows during runtime
     CompletedEvents = new HashSet<string>(events.Count);
@@ -785,7 +787,6 @@ startup
         old = newOld;
         current = newCurrent;
         settings = newSettings;
-        initCustomVariables = true;
     };
     vars.Init = Init;
 
@@ -794,7 +795,6 @@ startup
     Action OnReset = () =>
     {
         CompletedEvents.Clear();
-        initCustomVariables = true;
         print("CompletedEvents cleared.");
     };
     vars.OnReset = OnReset;
@@ -806,8 +806,6 @@ startup
     {
         old = newOld;
 
-        initCustomVariables = false;
-
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
         int mapHashCode = 0;
@@ -818,6 +816,7 @@ startup
         localXyzEvents = localXyzEvents ?? EmptyEventList;
         localMapEvents = localMapEvents ?? EmptyEventList;
 
+        // Concat function means we iterate through the lists one after the other; it does not create a concatenated list
         foreach (var @event in localXyzEvents.Concat(localMapEvents).Concat(OtherEvents))
         {
             if (CompletedEvents.Contains(@event.Item2))
