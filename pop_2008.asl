@@ -969,6 +969,8 @@ startup
     };
     vars.Init = Init;
 
+    // ================================================== exit ==================================================
+
     Action Exit = () => ConfigureGameType(NoGame);
     vars.Exit = Exit;
 
