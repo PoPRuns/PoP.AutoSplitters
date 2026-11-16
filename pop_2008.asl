@@ -23,8 +23,8 @@ state("Prince of Persia", "DRM Free")
 state("Prince of Persia", "Unknown") { }
 
 // Data structures:
-// Setting: bool Default, string Slug, List<string> EventSlugs, string Description, string? ToolTip, string? ParentSlug
-// Event:   int EventType, string Slug, List<string> SettingSlugs, (float, float, float, float, float, float)? XyzBounds, Func<bool> Condition
+// record class Setting: bool Default, string Slug, List<string> EventSlugs, string Description, string? ToolTip, string? ParentSlug
+// record class Event:   int EventType, string Slug, List<string> SettingSlugs, (float, float, float, float, float, float)? XyzBounds, Func<bool> Condition
 
 // Data structures as tuples:
 // Setting: Tuple<bool, string, List<string>, string, string, string>

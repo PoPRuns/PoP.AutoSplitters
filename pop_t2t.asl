@@ -13,12 +13,14 @@ state("POP3")
 }
 
 // Data structures:
-// Setting: bool Default, string Slug, List<string> EventSlugs, string Description, string? ToolTip, string? ParentSlug
-// Event:   int EventType, string Slug, List<string> SettingSlugs, ((float, float, float, float, float, float)?, int[]?) HashParams, Func<bool> Condition
+// record class  Setting:    bool Default, string Slug, List<string> EventSlugs, string Description, string? ToolTip, string? ParentSlug
+// record class  Event:      int EventType, string Slug, List<string> SettingSlugs, HashParams HashParams, Func<bool> Condition
+// record struct HashParams: (float, float, float, float, float, float)? XyzBounds, int[]? Map
 
 // Data structures as tuples:
-// Setting: Tuple<bool, string, List<string>, string, string, string>
-// Event:   Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>
+// Setting:    Tuple<bool, string, List<string>, string, string, string>
+// Event:      Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>
+// HashParams: ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>
 
 // any temporary object that is not needed after startup should be marked with a "GC" comment and set to null before startup finishes
 startup
