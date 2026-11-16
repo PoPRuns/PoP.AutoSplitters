@@ -1,5 +1,6 @@
 state("PrinceOfPersia_Launcher", "Digital")
 {
+    uint seedPtr  : 0x00B37F64; // pointer to seed object, is non-zero as soon as title screen starts playing
     int seedCount : 0x00B37F64, 0xDC;
     float xPos    : 0x00B30D08, 0x40;
     float yPos    : 0x00B30D08, 0x44;
@@ -10,11 +11,12 @@ state("PrinceOfPersia_Launcher", "Digital")
 
 state("Prince of Persia", "DRM Free")
 {
+    uint seedPtr  : 0x00B37F64;
     int seedCount : 0x00B37F64, 0xDC;
     float xPos    : 0x00B30D08, 0x40;
     float yPos    : 0x00B30D08, 0x44;
     float zPos    : 0x00B30D08, 0x48;
-    uint enemyPtr : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8; // see comment above
+    uint enemyPtr : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8;
     int enemyHp   : 0x00B38130, 0x4E4, 0x444, 0x60, 0x8, 0x250;
 }
 
@@ -353,20 +355,23 @@ startup
     const int SplitEvent = 2;
     const int MiscEvent = 3;
 
-    const int BaseGame = 0;
-    const int Epilogue = 1;
-    const int GameCount = 2;
+    const int NoGame = 0;
+    const int BaseGame = 1;
+    const int Epilogue = 2;
+    const int GameCount = 3;
 
     // Key: EventSlug; Value: Event
-    var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>(); // GC
     var eventMaps = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>[GameCount]; // GC
-    eventMaps[BaseGame] = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
-    eventMaps[Epilogue] = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
-    Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>, int> AddEvent = (eventType, slug, settingSlugs, xyzBounds, condition, gameType) =>
+    for (int i = 0; i < GameCount; i++)
+        eventMaps[i] = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
+    var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>(); // GC
+    Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>, int> AddEvent =
+        (eventType, slug, settingSlugs, xyzBounds, condition, gameType) =>
     {
         if (events.ContainsKey(slug))
             throw new Exception("Internal exception (ASL): event " + slug + " has already been added.");
-        Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> myEvent = Tuple.Create(eventType, slug, settingSlugs, xyzBounds, condition);
+        Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>> myEvent =
+            Tuple.Create(eventType, slug, settingSlugs, xyzBounds, condition);
         events.Add(slug, myEvent);
         eventMaps[gameType].Add(slug, myEvent);
     };
@@ -393,6 +398,7 @@ startup
     {
         switch (gameType)
         {
+        case NoGame:   return "NoGame";
         case BaseGame: return "BaseGame";
         case Epilogue: return "Epilogue";
         default:       return "UnknownGame";
@@ -402,16 +408,24 @@ startup
     // ================================================== runtime functions and helper variables ==================================================
 
     // Key: Hash; Value: EventList
-    Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>> XyzEventHashMap = null;
     var XyzEventHashMaps = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>[GameCount];
-    XyzEventHashMaps[BaseGame] = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>();
-    XyzEventHashMaps[Epilogue] = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>();
+    for (int i = 0; i < GameCount; i++)
+        XyzEventHashMaps[i] = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>>();
+    var XyzEventHashMap = XyzEventHashMaps[NoGame];
 
     // List<Event>
-    List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>> OtherEvents = null;
     var OtherEventLists = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>[GameCount];
-    OtherEventLists[BaseGame] = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
-    OtherEventLists[Epilogue] = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
+    for (int i = 0; i < GameCount; i++)
+        OtherEventLists[i] = new List<Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>>>();
+    var OtherEvents = OtherEventLists[NoGame];
+
+    bool GameTypeUpdateRequired = false;
+    Action<int> ConfigureGameType = gameType =>
+    {
+        XyzEventHashMap = XyzEventHashMaps[gameType];
+        OtherEvents = OtherEventLists[gameType];
+        print("Configuration for " + GetGameTypeString(gameType) + " done.");
+    };
 
     HashSet<string> CompletedEvents = null;
 
@@ -484,8 +498,8 @@ startup
     // ================================================== settings ==================================================
 
     //Default:bool    Slug:string            EventSlugs:List<string>                   Description:string                               ToolTip:string?                                                   ParentSlug:string?
-    AddSetting(true,  "baseGame",            new List<string> {},                      "Base Game",                                     null,                                                             null);
-    AddSetting(false, "epilogue",            new List<string> {},                      "Epilogue",                                      null,                                                             null);
+    AddSetting(true,  "baseGame",            new List<string> {},                      "Base Game",                                     "May need to restart LiveSplit to activate",                      null);
+    AddSetting(false, "epilogue",            new List<string> {},                      "Epilogue",                                      "May need to restart LiveSplit to activate",                      null);
     
     AddSetting(true,  "specialEvents",       new List<string> {},                      "Split on scripted game events",                 null,                                                             "baseGame");
     AddSetting(true,  "combatEvents",        new List<string> {},                      "Split on defeating enemies in specific levels", null,                                                             "baseGame");
@@ -597,114 +611,114 @@ startup
     Action<float, float, float, float, float> actionRangeXyZ;
     Action<float, float, float, float, float, float> actionBounds;
 
-    //                                                                                                    XyzBounds:
-    //                                                                               SettingSlugs:         (float,float,float,
-    //                                   EventType:int        Slug:string             List<string>         float,float,float)?         Condition:Func<bool>
-    (actionRange=(x,y,z,range)        => AddEventB(StartEvent, "StartLoad",           new List<string> {}, BoundsRange(x,y,z,range),    () => InPosExactXyOldOnly(x, y))) (-465f, -351f, -24f, 5f);
-    (actionRange=(x,y,z,range)        => AddEventB(ResetEvent, "ResetLoad",           new List<string> {}, BoundsRange(x,y,z,range),    () => InPosExactXyCurrentOnly(x, y))) (-465f, -351f, -24f, 5f);
-    (actionRange=(x,y,z,range)        => AddEventB(StartEvent, "StartNew",            new List<string> {}, BoundsRange(x,y,z,5f),       () => InPosWithRangeOldOnly(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
-    (actionRange=(x,y,z,range)        => AddEventB(ResetEvent, "ResetNew",            new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrentOnly(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
+    //                                                                                                               XyzBounds:
+    //                                                                               SettingSlugs:                    (float,float,float,
+    //                                   EventType:int        Slug:string             List<string>                    float,float,float)?         Condition:Func<bool>
+    (actionRange=(x,y,z,range)        => AddEventB(StartEvent, "StartLoad",           new List<string> {"baseGame"}, BoundsRange(x,y,z,range),    () => InPosExactXyOldOnly(x, y))) (-465f, -351f, -24f, 5f);
+    (actionRange=(x,y,z,range)        => AddEventB(ResetEvent, "ResetLoad",           new List<string> {"baseGame"}, BoundsRange(x,y,z,range),    () => InPosExactXyCurrentOnly(x, y))) (-465f, -351f, -24f, 5f);
+    (actionRange=(x,y,z,range)        => AddEventB(StartEvent, "StartNew",            new List<string> {"baseGame"}, BoundsRange(x,y,z,5f),       () => InPosWithRangeOldOnly(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
+    (actionRange=(x,y,z,range)        => AddEventB(ResetEvent, "ResetNew",            new List<string> {"baseGame"}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrentOnly(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
 
-    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "CollapsingBridge",    new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-310.25f, -241.0f, -30.2f, 0.2f);
-    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "PreDad1",             new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (4f, -388.6f, -40f, 2f);
-    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "ThiccCutscene",       new List<string> {}, BoundsRange(x,y,z,range),    () => CompletedEvents.Contains("Dad1") && old.yPos < -238f && InPosWithRangeCurrent(x, y, z, range))) (6f, -233.5f, -33f, 2f);
-    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "RedPlate",            new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-55f, -447f, -180f, 2f);
-    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "BluePlate",           new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (45f, -456f, -180f, 2f);
-    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "YellowPlate",         new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-156f, -413f, -180f, 2f);
-    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "GreenPlate",          new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (150f, -444f, -182f, 2f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEventB(SplitEvent, "TheGod",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (7.129f, 7.131f, -401.502f, -401.5f, -31.4f, -21f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEventB(SplitEvent, "Resurrection",        new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (5.562f, 5.566f, -222.745f, -222.517f, -33.1f, -21f);
+    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "CollapsingBridge",    new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-310.25f, -241.0f, -30.2f, 0.2f);
+    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "PreDad1",             new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (4f, -388.6f, -40f, 2f);
+    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "ThiccCutscene",       new List<string> {},           BoundsRange(x,y,z,range),    () => CompletedEvents.Contains("Dad1") && old.yPos < -238f && InPosWithRangeCurrent(x, y, z, range))) (6f, -233.5f, -33f, 2f);
+    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "RedPlate",            new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-55f, -447f, -180f, 2f);
+    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "BluePlate",           new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (45f, -456f, -180f, 2f);
+    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "YellowPlate",         new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-156f, -413f, -180f, 2f);
+    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "GreenPlate",          new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (150f, -444f, -182f, 2f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEventB(SplitEvent, "TheGod",              new List<string> {},           Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (7.129f, 7.131f, -401.502f, -401.5f, -31.4f, -21f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEventB(SplitEvent, "Resurrection",        new List<string> {},           Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (5.562f, 5.566f, -222.745f, -222.517f, -33.1f, -21f);
 
-    (actionPos=(x,y,z)                => AddEventB(MiscEvent,  "Fight3_1",            new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-186f, -140f, -32f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "ThirdFight",          new List<string> {}, BoundsCombat(x,y,z),         () => CompletedEvents.Contains("Fight3_1") && CombatFin(x, y, z))) (-186f, -140f, -32f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Dad1",                new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (5f, -402f, -40f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Dad2",                new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (6f, -187f, -48f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Dad3",                new List<string> {}, BoundsCombat(x,y,z),         () => CompletedEvents.Contains("Dad2") && CombatFin(x, y, z))) (6f, -187f, -48f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "KingsGateH",          new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-413.5f, -66.5f, 25f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "SunTempleH",          new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-554.5f, -54f, 34f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MarshallingGroundH",  new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-761.5f, -17.5f, 19f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MartyrsTowerH",       new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-559.5f, 193.5f, 35f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "WindmillsH",          new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-761f, 150f, 45f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Hunter",              new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-929.415f, 320.888f, -90.3f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CauldronH",           new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-168f, 225f, 20f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "ConstructionYardH",   new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-251.5f, 456.5f, 31f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MachineryGroundH",    new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-400f, 457f, 18f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MachineryGroundH2",   new List<string> {}, BoundsExact(x,y,z),          () => InPosExactCurrent(x, y, z))) (-393.2969971f, 517.6463623f, 56.27552414f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "ReservoirH",          new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-156.5f, 571.5f, 8f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "HeavensStairH",       new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-291f, 651.5f, 99.2f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Alchemist",           new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-296.593f, 697.233f, 296.199f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CavernH",             new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (155f, 180.5f, -22.5f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "RoyalGardensH",       new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (265f, 381.5f, 35.5f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "SpireOfDreamsH",      new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (187.5f, 550f, 141.5f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "RoyalSpireH",         new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (468.5f, 426f, 141.5f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CoronationHallH",     new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (340f, 582.5f, 32.5f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Concubine",           new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (352.792f, 801.051f, 150.260f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CityGateH",           new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (421.5f, -87.5f, -24f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "TowerOfAhrimanH",     new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (598.5f, 13.5f, 86f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "TowerOfOrmazdH",      new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (654f, 208f, -7f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "QueensTowerH",        new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (787f, -32.5f, 98.5f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CityOfLightH",        new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (804f, 113f, -42.5f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Warrior",             new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (1070.478f, 279.147f, -29.571f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "King",                new List<string> {}, BoundsCombat(x,y,z),         () => CompletedEvents.Contains("ThiccCutscene") && CombatFin(x, y, z))) (5f, -365f, -32f);
+    (actionPos=(x,y,z)                => AddEventB(MiscEvent,  "Fight3_1",            new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-186f, -140f, -32f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "ThirdFight",          new List<string> {},           BoundsCombat(x,y,z),         () => CompletedEvents.Contains("Fight3_1") && CombatFin(x, y, z))) (-186f, -140f, -32f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Dad1",                new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (5f, -402f, -40f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Dad2",                new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (6f, -187f, -48f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Dad3",                new List<string> {},           BoundsCombat(x,y,z),         () => CompletedEvents.Contains("Dad2") && CombatFin(x, y, z))) (6f, -187f, -48f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "KingsGateH",          new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-413.5f, -66.5f, 25f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "SunTempleH",          new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-554.5f, -54f, 34f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MarshallingGroundH",  new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-761.5f, -17.5f, 19f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MartyrsTowerH",       new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-559.5f, 193.5f, 35f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "WindmillsH",          new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-761f, 150f, 45f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Hunter",              new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-929.415f, 320.888f, -90.3f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CauldronH",           new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-168f, 225f, 20f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "ConstructionYardH",   new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-251.5f, 456.5f, 31f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MachineryGroundH",    new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-400f, 457f, 18f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MachineryGroundH2",   new List<string> {},           BoundsExact(x,y,z),          () => InPosExactCurrent(x, y, z))) (-393.2969971f, 517.6463623f, 56.27552414f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "ReservoirH",          new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-156.5f, 571.5f, 8f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "HeavensStairH",       new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-291f, 651.5f, 99.2f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Alchemist",           new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-296.593f, 697.233f, 296.199f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CavernH",             new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (155f, 180.5f, -22.5f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "RoyalGardensH",       new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (265f, 381.5f, 35.5f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "SpireOfDreamsH",      new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (187.5f, 550f, 141.5f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "RoyalSpireH",         new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (468.5f, 426f, 141.5f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CoronationHallH",     new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (340f, 582.5f, 32.5f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Concubine",           new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (352.792f, 801.051f, 150.260f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CityGateH",           new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (421.5f, -87.5f, -24f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "TowerOfAhrimanH",     new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (598.5f, 13.5f, 86f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "TowerOfOrmazdH",      new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (654f, 208f, -7f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "QueensTowerH",        new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (787f, -32.5f, 98.5f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CityOfLightH",        new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (804f, 113f, -42.5f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Warrior",             new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (1070.478f, 279.147f, -29.571f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "King",                new List<string> {},           BoundsCombat(x,y,z),         () => CompletedEvents.Contains("ThiccCutscene") && CombatFin(x, y, z))) (5f, -365f, -32f);
 
-    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "NeoBarrierSkip",      new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-331.5f, -4.5f, -9.9f, 1f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "KingsGate",           new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-538.834f, -67.159f, 12.732f);
-    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "SunTemple",           new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-673.8f, -53.9f, 16.3f, 1f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MarshGrounds",        new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-806.671f, 112.803f, 21.645f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Windmills",           new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-597.945f, 209.241f, 23.339f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MartyrsTower",        new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-548f, 230f, 26f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MachineryGround",     new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-370f, 468f, 17f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "HeavensStair",        new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-85.968f, 573.338f, 30.558f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "SpireOfDreams",       new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (266f, 602f, 36f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CoronationHall",      new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (399f, 535f, 39.5f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "RoyalSpire1",         new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-88.5f, 538.5f, 44.5f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Reservoir",           new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-150.082f, 406.606f, 34.673f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "ConstructionYard",    new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-166f, 293f, 20.5f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Cauldron",            new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-12f, 135f, -15f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Cavern",              new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (251.741f, 65.773f, -13.616f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CityGate",            new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (547.488f, 45.41f, -27.107f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "TowerOfAhriman",      new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (667f, -14f, -30f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "QueensTower",         new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (842f, -16f, -40f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CityOfLight",         new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (735f, 166f, -35f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "TowerOfOrmazd",       new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (655f, 227f, -37f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "RoyalSpire2",         new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (407f, 399f, 34f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "RoyalGardens",        new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (152f, 244f, 9f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Cavern2",             new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (80f, 182f, -8f);
+    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "NeoBarrierSkip",      new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-331.5f, -4.5f, -9.9f, 1f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "KingsGate",           new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-538.834f, -67.159f, 12.732f);
+    (actionRange=(x,y,z,range)        => AddEventB(SplitEvent, "SunTemple",           new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-673.8f, -53.9f, 16.3f, 1f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MarshGrounds",        new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-806.671f, 112.803f, 21.645f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Windmills",           new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-597.945f, 209.241f, 23.339f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MartyrsTower",        new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-548f, 230f, 26f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MachineryGround",     new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-370f, 468f, 17f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "HeavensStair",        new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-85.968f, 573.338f, 30.558f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "SpireOfDreams",       new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (266f, 602f, 36f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CoronationHall",      new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (399f, 535f, 39.5f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "RoyalSpire1",         new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-88.5f, 538.5f, 44.5f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Reservoir",           new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-150.082f, 406.606f, 34.673f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "ConstructionYard",    new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-166f, 293f, 20.5f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Cauldron",            new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-12f, 135f, -15f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Cavern",              new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (251.741f, 65.773f, -13.616f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CityGate",            new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (547.488f, 45.41f, -27.107f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "TowerOfAhriman",      new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (667f, -14f, -30f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "QueensTower",         new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (842f, -16f, -40f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CityOfLight",         new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (735f, 166f, -35f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "TowerOfOrmazd",       new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (655f, 227f, -37f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "RoyalSpire2",         new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (407f, 399f, 34f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "RoyalGardens",        new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (152f, 244f, 9f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Cavern2",             new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (80f, 182f, -8f);
 
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEventB(SplitEvent, "DoubleJump",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => CompletedEvents.Contains("PreDad1") && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (0f, 10f, -253f, -243f, -70f, -43f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEventB(SplitEvent, "DoubleJump",          new List<string> {},           Bounds(x1,x2,y1,y2,z1,z2),   () => CompletedEvents.Contains("PreDad1") && InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (0f, 10f, -253f, -243f, -70f, -43f);
 
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEventB(SplitEvent, "BarrierSkip",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-208f, -200f, -38f, -27.5f, -51f, -41f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "SunTempleNDJE",       new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-664f, -58f, 12f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MartyrsTowerNDJE",    new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-564.202f, 207.312f, 22f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MTtoMG",              new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-454.824f, 398.571f, 27.028f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MachineryGroundNDJE", new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-361.121f, 480.114f, 12.928f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "TowerOfOrmazdNDJE",   new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (609.907f, 61.905f, -35.001f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "QueensTowerNDJE",     new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (637.262f, 27.224f, -28.603f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CoronationHallNDJE",  new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (340f, 590f, 19f);
-    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Seed540",             new List<string> {}, BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-280f, 696f, 87f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEventB(SplitEvent, "BarrierSkip",         new List<string> {},           Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-208f, -200f, -38f, -27.5f, -51f, -41f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "SunTempleNDJE",       new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-664f, -58f, 12f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MartyrsTowerNDJE",    new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-564.202f, 207.312f, 22f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MTtoMG",              new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-454.824f, 398.571f, 27.028f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "MachineryGroundNDJE", new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-361.121f, 480.114f, 12.928f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "TowerOfOrmazdNDJE",   new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (609.907f, 61.905f, -35.001f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "QueensTowerNDJE",     new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (637.262f, 27.224f, -28.603f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "CoronationHallNDJE",  new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (340f, 590f, 19f);
+    (actionPos=(x,y,z)                => AddEventB(SplitEvent, "Seed540",             new List<string> {},           BoundsSeed(x,y,z),           () => SeedGet(x, y, z))) (-280f, 696f, 87f);
 
     // Epilogue
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEventE(StartEvent, "EStart",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrentOnly(x1, x2, y1, y2, z1, z2))) (-117.9f, -117.4f, -433f, -432.5f, 19f, 19.027f);
-    (actionRange=(x,y,z,range)        => AddEventE(ResetEvent, "EResetNew",           new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrentOnly(x, y, z, range))) (-137f, -480f, 23f, 5f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEventE(StartEvent, "EStart",              new List<string> {"epilogue"}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrentOnly(x1, x2, y1, y2, z1, z2))) (-117.9f, -117.4f, -433f, -432.5f, 19f, 19.027f);
+    (actionRange=(x,y,z,range)        => AddEventE(ResetEvent, "EResetNew",           new List<string> {"epilogue"}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrentOnly(x, y, z, range))) (-137f, -480f, 23f, 5f);
 
-    (actionPos=(x,y,z)                => AddEventE(SplitEvent, "EDad1",               new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-117f, -281f, 0f);
-    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "EAlleyway",           new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (53f, -121f, -8f, 7f);
-    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "EWaterTank",          new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-47.2f, -71f, 22f, 0.1f);
-    (actionPos=(x,y,z)                => AddEventE(SplitEvent, "EShapeshifter1",      new List<string> {}, BoundsCombat(x,y,z),         () => EnemyHp0(x, y, z))) (-60f, -71, 22f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEventE(SplitEvent, "EChimney",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-118f, -115f, -73f, -68.9f, -125f, -123f);
-    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "EPurplePlate",        new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (14.9f, 3.9f, -111.6f, 0.1f);
-    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "EHammam",             new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-5.7f, 25.6f, -136.1f, 0.1f);
-    (actionPos=(x,y,z)                => AddEventE(SplitEvent, "EShapeshifter2",      new List<string> {}, BoundsCombat(x,y,z),         () => EnemyHp0(x, y, z))) (-15f, 29f, -136f);
-    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "EAvenue",             new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (330.3f, 61.6f, -126.2f, 1f);
-    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "EDad2",               new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (387.867f, 64.639f, -142.15f, 0.1f); // B2 B1^2 and B2 B2* yield different combat state ends, so we use coords only for this fight
-    (actionRangeXyZ=(x,y,z,r1,r2)     => AddEventE(SplitEvent, "ETunnel",             new List<string> {}, BoundsRangeXyZ(x,y,z,r1,r2), () => InPosWithRangeXyZCurrent(x, y, z, r1, r2))) (661.5f, 109.5f, -96.45f, 8f, 0.1f);
-    (actionPos=(x,y,z)                => AddEventE(SplitEvent, "EShapeshifter3",      new List<string> {}, BoundsCombat(x,y,z),         () => EnemyHp0(x, y, z))) (676f, 108f, -96.5f);
-    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "ETomb1",              new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (786.554f, 107.579f, -104.003f, 0.1f);
-    (actionPos=(x,y,z)                => AddEventE(SplitEvent, "EDad3",               new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (803f, 108f, -104f);
-    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "ETomb2",              new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (920f, 88.82f, -104f, 0.1f);
-    (actionPos=(x,y,z)                => AddEventE(SplitEvent, "EShapeshifter4",      new List<string> {}, BoundsCombat(x,y,z),         () => EnemyHp0(x, y, z))) (920f, 76f, -104f);
-    (actionPos=(x,y,z)                => AddEventE(SplitEvent, "EDad4",               new List<string> {}, BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (1105f, 43f, -140f);
-    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "EBallroom",           new List<string> {}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (1247.5f, 43f, -55.8f, 0.1f);
+    (actionPos=(x,y,z)                => AddEventE(SplitEvent, "EDad1",               new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (-117f, -281f, 0f);
+    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "EAlleyway",           new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (53f, -121f, -8f, 7f);
+    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "EWaterTank",          new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-47.2f, -71f, 22f, 0.1f);
+    (actionPos=(x,y,z)                => AddEventE(SplitEvent, "EShapeshifter1",      new List<string> {},           BoundsCombat(x,y,z),         () => EnemyHp0(x, y, z))) (-60f, -71, 22f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEventE(SplitEvent, "EChimney",            new List<string> {},           Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-118f, -115f, -73f, -68.9f, -125f, -123f);
+    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "EPurplePlate",        new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (14.9f, 3.9f, -111.6f, 0.1f);
+    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "EHammam",             new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-5.7f, 25.6f, -136.1f, 0.1f);
+    (actionPos=(x,y,z)                => AddEventE(SplitEvent, "EShapeshifter2",      new List<string> {},           BoundsCombat(x,y,z),         () => EnemyHp0(x, y, z))) (-15f, 29f, -136f);
+    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "EAvenue",             new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (330.3f, 61.6f, -126.2f, 1f);
+    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "EDad2",               new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (387.867f, 64.639f, -142.15f, 0.1f); // B2 B1^2 and B2 B2* yield different combat state ends, so we use coords only for this fight
+    (actionRangeXyZ=(x,y,z,r1,r2)     => AddEventE(SplitEvent, "ETunnel",             new List<string> {},           BoundsRangeXyZ(x,y,z,r1,r2), () => InPosWithRangeXyZCurrent(x, y, z, r1, r2))) (661.5f, 109.5f, -96.45f, 8f, 0.1f);
+    (actionPos=(x,y,z)                => AddEventE(SplitEvent, "EShapeshifter3",      new List<string> {},           BoundsCombat(x,y,z),         () => EnemyHp0(x, y, z))) (676f, 108f, -96.5f);
+    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "ETomb1",              new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (786.554f, 107.579f, -104.003f, 0.1f);
+    (actionPos=(x,y,z)                => AddEventE(SplitEvent, "EDad3",               new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (803f, 108f, -104f);
+    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "ETomb2",              new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (920f, 88.82f, -104f, 0.1f);
+    (actionPos=(x,y,z)                => AddEventE(SplitEvent, "EShapeshifter4",      new List<string> {},           BoundsCombat(x,y,z),         () => EnemyHp0(x, y, z))) (920f, 76f, -104f);
+    (actionPos=(x,y,z)                => AddEventE(SplitEvent, "EDad4",               new List<string> {},           BoundsCombat(x,y,z),         () => CombatFin(x, y, z))) (1105f, 43f, -140f);
+    (actionRange=(x,y,z,range)        => AddEventE(SplitEvent, "EBallroom",           new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (1247.5f, 43f, -55.8f, 0.1f);
 
     // ====================================================================================================================
     // ================================================== STARTUP SCRIPT ==================================================
@@ -937,13 +951,19 @@ startup
 
     // ================================================== init ==================================================
 
-    Action<ExpandoObject, ExpandoObject, object> Init = (newOld, newCurrent, newSettings) =>
+    Action<ExpandoObject, ExpandoObject, object, Process> Init = (newOld, newCurrent, newSettings, newGame) =>
     {
         old = newOld;
         current = newCurrent;
         settings = newSettings;
+        game = newGame;
+
+        GameTypeUpdateRequired = true;
     };
     vars.Init = Init;
+
+    Action Exit = () => ConfigureGameType(NoGame);
+    vars.Exit = Exit;
 
     // ================================================== onReset ==================================================
 
@@ -960,6 +980,13 @@ startup
     Func<ExpandoObject, bool> Update = newOld =>
     {
         old = newOld;
+
+        if (GameTypeUpdateRequired && current.seedPtr != 0)
+        {
+            int gameType = game.MainWindowTitle.ToLower().Contains("reenergized") ? Epilogue : BaseGame;
+            ConfigureGameType(gameType);
+            GameTypeUpdateRequired = false;
+        }
 
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
@@ -1027,7 +1054,12 @@ init
         }
     }
 
-    vars.Init(old, current, settings);
+    vars.Init(old, current, settings, game);
+}
+
+exit
+{
+    vars.Exit();
 }
 
 onReset
