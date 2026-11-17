@@ -639,7 +639,7 @@ startup
     Action<int[]> actionInts;
 
     //                                                                                   SettingSlugs:
-    //                                   EventType:int            Slug:string             List<string>                  HashCodes:int[]                   Condition:Func<bool>
+    //                                      EventType:int         Slug:string             List<string>                  HashCodes:int[]                   Condition:Func<bool>
     (actionXyzRange=(x,y,z,range)        => AddEventB(StartEvent, "StartLoad",           new List<string> {"baseGame"}, HashXyzRange(x,y,z,range),        () => InXyExactOldOnly(x, y))) (-465f, -351f, -24f, 5f);
     (actionXyzRange=(x,y,z,range)        => AddEventB(ResetEvent, "ResetLoad",           new List<string> {"baseGame"}, HashXyzRange(x,y,z,range),        () => InXyExactCurrentOnly(x, y))) (-465f, -351f, -24f, 5f);
     (actionXyzRange=(x,y,z,range)        => AddEventB(StartEvent, "StartNew",            new List<string> {"baseGame"}, HashXyzRange(x,y,z,5f),           () => InXyzRangeOldOnly(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
