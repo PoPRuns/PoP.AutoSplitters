@@ -457,17 +457,18 @@ startup
     const ulong DaggerMask       = 0x00000000000FC000UL;
     const ulong SecretWeaponMask = 0x00080000F0000000UL;
 
-    int StoryValue = 0;
-    ulong VirtualChestBits = 0; // virtual means before mask is applied
-    ulong ChestBits = 0;
-    ulong VirtualWeaponBits = 0;
-    ulong WeaponBits = 0;
-    ulong MainWeaponBits = 0;
-    ulong SwordBits = 0;
-    ulong AxeBits = 0;
-    ulong MaceBits = 0;
-    ulong DaggerBits = 0;
-    ulong SecretWeaponBits = 0;
+    // we set non-zero values to force an update on first game launch when they're all set to 0
+    int StoryValue          = -1;
+    ulong VirtualChestBits  = ulong.MaxValue; // virtual means before mask is applied
+    ulong ChestBits         = ulong.MaxValue;
+    ulong VirtualWeaponBits = ulong.MaxValue;
+    ulong WeaponBits        = ulong.MaxValue;
+    ulong MainWeaponBits    = ulong.MaxValue;
+    ulong SwordBits         = ulong.MaxValue;
+    ulong AxeBits           = ulong.MaxValue;
+    ulong MaceBits          = ulong.MaxValue;
+    ulong DaggerBits        = ulong.MaxValue;
+    ulong SecretWeaponBits  = ulong.MaxValue;
 
     string MaxChests        = CountBits(ChestMask).ToString();
     string MaxWeapons       = CountBits(WeaponMask).ToString();

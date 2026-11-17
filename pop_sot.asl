@@ -420,9 +420,7 @@ startup
 
     // ================================================== game-specific functions and helper variables ==================================================
 
-    bool InitCustomVariables = true;
-
-    int PrevSandClouds = -1;
+    int SandClouds = -1;
 
     // ===================================================================================================================
     // ================================================== CONFIGURATION ==================================================
@@ -794,7 +792,6 @@ startup
         old = newOld;
         current = newCurrent;
         settings = newSettings;
-        InitCustomVariables = true;
     };
     vars.Init = Init;
 
@@ -803,8 +800,6 @@ startup
     Action OnReset = () =>
     {
         CompletedEvents.Clear();
-        InitCustomVariables = true;
-        PrevSandClouds = -1;
         print("CompletedEvents cleared.");
     };
     vars.OnReset = OnReset;
@@ -818,14 +813,8 @@ startup
 
         int sandClouds = (current.maxSands - 4) * 8 + current.sandPieces;
         sandClouds = sandClouds > 0 ? sandClouds : 0;
-
-        if (InitCustomVariables || sandClouds != PrevSandClouds)
-        {
-            PrevSandClouds = sandClouds;
-            timer.Run.Metadata.SetCustomVariable("sandClouds", sandClouds.ToString() + " / 48");
-        }
-
-        InitCustomVariables = false;
+        if (SandClouds != (SandClouds = sandClouds))
+            timer.Run.Metadata.SetCustomVariable("sandClouds", SandClouds + " / 48");
 
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
