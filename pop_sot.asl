@@ -4,9 +4,9 @@ state("POP")
     int startValue      : 0x6BC980;
 
     // Prince's position
-    float xPos          : 0x00699474, 0xC, 0x30;
-    float yPos          : 0x00699474, 0xC, 0x34;
-    float zPos          : 0x00699474, 0xC, 0x38;
+    float x             : 0x00699474, 0xC, 0x30;
+    float y             : 0x00699474, 0xC, 0x34;
+    float z             : 0x00699474, 0xC, 0x38;
 
     float xCam          : 0x006DA1B0, 0xC, 0x30;
 
@@ -22,14 +22,12 @@ state("POP")
 }
 
 // Data structures:
-// record class  Setting:    bool Default, string Slug, List<string> EventSlugs, string Description, string? ToolTip, string? ParentSlug
-// record class  Event:      int EventType, string Slug, List<string> SettingSlugs, HashParams HashParams, Func<bool> Condition, Action<bool> PostAction
-// record struct HashParams: (float, float, float, float, float, float)? XyzBounds, int[]? Map
+// record class Setting: bool Default, string Slug, List<string> EventSlugs, string Description, string? ToolTip, string? ParentSlug
+// record class Event:   int EventType, string Slug, List<string> SettingSlugs, int[]? HashCodes, Func<bool> Condition, Action<bool> PostAction
 
 // Data structures as tuples:
-// Setting:    Tuple<bool, string, List<string>, string, string, string>
-// Event:      Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>
-// HashParams: ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>
+// Setting: Tuple<bool, string, List<string>, string, string, string>
+// Event:   Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>
 
 // any temporary object that is not needed after startup should be marked with a "GC" comment and set to null before startup finishes
 startup
@@ -40,278 +38,273 @@ startup
 
     // ================================================== coordinate checks ==================================================
 
-    Func<float, float, float, bool> InBounds = (min, max, pos) => pos >= min && pos <= max;
-    Func<float, float, bool> InXBoundsOld = (min, max) => old.xPos >= min && old.xPos <= max;
-    Func<float, float, bool> InYBoundsOld = (min, max) => old.yPos >= min && old.yPos <= max;
-    Func<float, float, bool> InZBoundsOld = (min, max) => old.zPos >= min && old.zPos <= max;
-    Func<float, float, bool> InXBoundsCurrent = (min, max) => current.xPos >= min && current.xPos <= max;
-    Func<float, float, bool> InYBoundsCurrent = (min, max) => current.yPos >= min && current.yPos <= max;
-    Func<float, float, bool> InZBoundsCurrent = (min, max) => current.zPos >= min && current.zPos <= max;
-    Func<float, float, bool> InXBoundsOldOnly = (min, max) => old.xPos >= min && old.xPos <= max && !(current.xPos >= min && current.xPos <= max);
-    Func<float, float, bool> InYBoundsOldOnly = (min, max) => old.yPos >= min && old.yPos <= max && !(current.yPos >= min && current.yPos <= max);
-    Func<float, float, bool> InZBoundsOldOnly = (min, max) => old.zPos >= min && old.zPos <= max && !(current.zPos >= min && current.zPos <= max);
-    Func<float, float, bool> InXBoundsCurrentOnly = (min, max) => !(old.xPos >= min && old.xPos <= max) && current.xPos >= min && current.xPos <= max;
-    Func<float, float, bool> InYBoundsCurrentOnly = (min, max) => !(old.yPos >= min && old.yPos <= max) && current.yPos >= min && current.yPos <= max;
-    Func<float, float, bool> InZBoundsCurrentOnly = (min, max) => !(old.zPos >= min && old.zPos <= max) && current.zPos >= min && current.zPos <= max;
+    Func<float, float, float, bool> InBounds = (min, max, coord) => coord >= min && coord <= max;
+    Func<float, float, bool> InXBoundsOld = (min, max) => old.x >= min && old.x <= max;
+    Func<float, float, bool> InYBoundsOld = (min, max) => old.y >= min && old.y <= max;
+    Func<float, float, bool> InZBoundsOld = (min, max) => old.z >= min && old.z <= max;
+    Func<float, float, bool> InXBoundsCurrent = (min, max) => current.x >= min && current.x <= max;
+    Func<float, float, bool> InYBoundsCurrent = (min, max) => current.y >= min && current.y <= max;
+    Func<float, float, bool> InZBoundsCurrent = (min, max) => current.z >= min && current.z <= max;
+    Func<float, float, bool> InXBoundsOldOnly = (min, max) => old.x >= min && old.x <= max && !(current.x >= min && current.x <= max);
+    Func<float, float, bool> InYBoundsOldOnly = (min, max) => old.y >= min && old.y <= max && !(current.y >= min && current.y <= max);
+    Func<float, float, bool> InZBoundsOldOnly = (min, max) => old.z >= min && old.z <= max && !(current.z >= min && current.z <= max);
+    Func<float, float, bool> InXBoundsCurrentOnly = (min, max) => !(old.x >= min && old.x <= max) && current.x >= min && current.x <= max;
+    Func<float, float, bool> InYBoundsCurrentOnly = (min, max) => !(old.y >= min && old.y <= max) && current.y >= min && current.y <= max;
+    Func<float, float, bool> InZBoundsCurrentOnly = (min, max) => !(old.z >= min && old.z <= max) && current.z >= min && current.z <= max;
 
-    Func<float, float, float, float, float, float, float, float, float, bool> InPosWithBounds = (xMin, xMax, yMin, yMax, zMin, zMax, xPos, yPos, zPos)
+    Func<float, float, float, float, float, float, float, float, float, bool> InXyzBounds = (xMin, xMax, yMin, yMax, zMin, zMax, x, y, z)
     =>
-        xPos >= xMin && xPos <= xMax &&
-        yPos >= yMin && yPos <= yMax &&
-        zPos >= zMin && zPos <= zMax;
+        x >= xMin && x <= xMax &&
+        y >= yMin && y <= yMax &&
+        z >= zMin && z <= zMax;
 
-    Func<float, float, float, float, float, float, bool> InPosWithBoundsOld = (xMin, xMax, yMin, yMax, zMin, zMax)
+    Func<float, float, float, float, float, float, bool> InXyzBoundsOld = (xMin, xMax, yMin, yMax, zMin, zMax)
     =>
-        old.xPos >= xMin && old.xPos <= xMax &&
-        old.yPos >= yMin && old.yPos <= yMax &&
-        old.zPos >= zMin && old.zPos <= zMax;
+        old.x >= xMin && old.x <= xMax &&
+        old.y >= yMin && old.y <= yMax &&
+        old.z >= zMin && old.z <= zMax;
 
-    Func<float, float, float, float, float, float, bool> InPosWithBoundsCurrent = (xMin, xMax, yMin, yMax, zMin, zMax)
+    Func<float, float, float, float, float, float, bool> InXyzBoundsCurrent = (xMin, xMax, yMin, yMax, zMin, zMax)
     =>
-        current.xPos >= xMin && current.xPos <= xMax &&
-        current.yPos >= yMin && current.yPos <= yMax &&
-        current.zPos >= zMin && current.zPos <= zMax;
+        current.x >= xMin && current.x <= xMax &&
+        current.y >= yMin && current.y <= yMax &&
+        current.z >= zMin && current.z <= zMax;
 
-    Func<float, float, float, float, float, float, bool> InPosWithBoundsOldOnly = (xMin, xMax, yMin, yMax, zMin, zMax)
+    Func<float, float, float, float, float, float, bool> InXyzBoundsOldOnly = (xMin, xMax, yMin, yMax, zMin, zMax)
     =>
-        old.xPos >= xMin && old.xPos <= xMax &&
-        old.yPos >= yMin && old.yPos <= yMax &&
-        old.zPos >= zMin && old.zPos <= zMax &&
-        !(current.xPos >= xMin && current.xPos <= xMax &&
-          current.yPos >= yMin && current.yPos <= yMax &&
-          current.zPos >= zMin && current.zPos <= zMax);
+        old.x >= xMin && old.x <= xMax &&
+        old.y >= yMin && old.y <= yMax &&
+        old.z >= zMin && old.z <= zMax &&
+        !(current.x >= xMin && current.x <= xMax &&
+          current.y >= yMin && current.y <= yMax &&
+          current.z >= zMin && current.z <= zMax);
     
-    Func<float, float, float, float, float, float, bool> InPosWithBoundsCurrentOnly = (xMin, xMax, yMin, yMax, zMin, zMax)
+    Func<float, float, float, float, float, float, bool> InXyzBoundsCurrentOnly = (xMin, xMax, yMin, yMax, zMin, zMax)
     =>
-        !(old.xPos >= xMin && old.xPos <= xMax &&
-          old.yPos >= yMin && old.yPos <= yMax &&
-          old.zPos >= zMin && old.zPos <= zMax) &&
-        current.xPos >= xMin && current.xPos <= xMax &&
-        current.yPos >= yMin && current.yPos <= yMax &&
-        current.zPos >= zMin && current.zPos <= zMax;
+        !(old.x >= xMin && old.x <= xMax &&
+          old.y >= yMin && old.y <= yMax &&
+          old.z >= zMin && old.z <= zMax) &&
+        current.x >= xMin && current.x <= xMax &&
+        current.y >= yMin && current.y <= yMax &&
+        current.z >= zMin && current.z <= zMax;
 
-    Func<float, float, float, bool> InRange = (targ, range, pos) => pos >= targ - range && pos <= targ + range;
-    Func<float, float, bool> InXRangeOld = (targ, range) => old.xPos >= targ - range && old.xPos <= targ + range;
-    Func<float, float, bool> InYRangeOld = (targ, range) => old.yPos >= targ - range && old.yPos <= targ + range;
-    Func<float, float, bool> InZRangeOld = (targ, range) => old.zPos >= targ - range && old.zPos <= targ + range;
-    Func<float, float, bool> InXRangeCurrent = (targ, range) => current.xPos >= targ - range && current.xPos <= targ + range;
-    Func<float, float, bool> InYRangeCurrent = (targ, range) => current.yPos >= targ - range && current.yPos <= targ + range;
-    Func<float, float, bool> InZRangeCurrent = (targ, range) => current.zPos >= targ - range && current.zPos <= targ + range;
-    Func<float, float, bool> InXRangeOldOnly = (targ, range) => old.xPos >= targ - range && old.xPos <= targ + range && !(current.xPos >= targ - range && current.xPos <= targ + range);
-    Func<float, float, bool> InYRangeOldOnly = (targ, range) => old.yPos >= targ - range && old.yPos <= targ + range && !(current.yPos >= targ - range && current.yPos <= targ + range);
-    Func<float, float, bool> InZRangeOldOnly = (targ, range) => old.zPos >= targ - range && old.zPos <= targ + range && !(current.zPos >= targ - range && current.zPos <= targ + range);
-    Func<float, float, bool> InXRangeCurrentOnly = (targ, range) => !(old.xPos >= targ - range && old.xPos <= targ + range) && current.xPos >= targ - range && current.xPos <= targ + range;
-    Func<float, float, bool> InYRangeCurrentOnly = (targ, range) => !(old.yPos >= targ - range && old.yPos <= targ + range) && current.yPos >= targ - range && current.yPos <= targ + range;
-    Func<float, float, bool> InZRangeCurrentOnly = (targ, range) => !(old.zPos >= targ - range && old.zPos <= targ + range) && current.zPos >= targ - range && current.zPos <= targ + range;
+    Func<float, float, float, bool> InRange = (targ, range, coord) => coord >= targ - range && coord <= targ + range;
+    Func<float, float, bool> InXRangeOld = (targ, range) => old.x >= targ - range && old.x <= targ + range;
+    Func<float, float, bool> InYRangeOld = (targ, range) => old.y >= targ - range && old.y <= targ + range;
+    Func<float, float, bool> InZRangeOld = (targ, range) => old.z >= targ - range && old.z <= targ + range;
+    Func<float, float, bool> InXRangeCurrent = (targ, range) => current.x >= targ - range && current.x <= targ + range;
+    Func<float, float, bool> InYRangeCurrent = (targ, range) => current.y >= targ - range && current.y <= targ + range;
+    Func<float, float, bool> InZRangeCurrent = (targ, range) => current.z >= targ - range && current.z <= targ + range;
+    Func<float, float, bool> InXRangeOldOnly = (targ, range) => old.x >= targ - range && old.x <= targ + range && !(current.x >= targ - range && current.x <= targ + range);
+    Func<float, float, bool> InYRangeOldOnly = (targ, range) => old.y >= targ - range && old.y <= targ + range && !(current.y >= targ - range && current.y <= targ + range);
+    Func<float, float, bool> InZRangeOldOnly = (targ, range) => old.z >= targ - range && old.z <= targ + range && !(current.z >= targ - range && current.z <= targ + range);
+    Func<float, float, bool> InXRangeCurrentOnly = (targ, range) => !(old.x >= targ - range && old.x <= targ + range) && current.x >= targ - range && current.x <= targ + range;
+    Func<float, float, bool> InYRangeCurrentOnly = (targ, range) => !(old.y >= targ - range && old.y <= targ + range) && current.y >= targ - range && current.y <= targ + range;
+    Func<float, float, bool> InZRangeCurrentOnly = (targ, range) => !(old.z >= targ - range && old.z <= targ + range) && current.z >= targ - range && current.z <= targ + range;
 
     Func<float, float, float, bool> InXyRangeOld = (xTarg, yTarg, range)
     =>
-        old.xPos >= xTarg - range && old.xPos <= xTarg + range &&
-        old.yPos >= yTarg - range && old.yPos <= yTarg + range;
+        old.x >= xTarg - range && old.x <= xTarg + range &&
+        old.y >= yTarg - range && old.y <= yTarg + range;
     
     Func<float, float, float, bool> InXyRangeCurrent = (xTarg, yTarg, range)
     =>
-        current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
-        current.yPos >= yTarg - range && current.yPos <= yTarg + range;
+        current.x >= xTarg - range && current.x <= xTarg + range &&
+        current.y >= yTarg - range && current.y <= yTarg + range;
 
     Func<float, float, float, bool> InXyRangeOldOnly = (xTarg, yTarg, range)
     =>
-        old.xPos >= xTarg - range && old.xPos <= xTarg + range &&
-        old.yPos >= yTarg - range && old.yPos <= yTarg + range &&
-        !(current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
-          current.yPos >= yTarg - range && current.yPos <= yTarg + range);
+        old.x >= xTarg - range && old.x <= xTarg + range &&
+        old.y >= yTarg - range && old.y <= yTarg + range &&
+        !(current.x >= xTarg - range && current.x <= xTarg + range &&
+          current.y >= yTarg - range && current.y <= yTarg + range);
 
     Func<float, float, float, bool> InXyRangeCurrentOnly = (xTarg, yTarg, range)
     =>
-        !(old.xPos >= xTarg - range && old.xPos <= xTarg + range &&
-          old.yPos >= yTarg - range && old.yPos <= yTarg + range) &&
-        current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
-        current.yPos >= yTarg - range && current.yPos <= yTarg + range;
+        !(old.x >= xTarg - range && old.x <= xTarg + range &&
+          old.y >= yTarg - range && old.y <= yTarg + range) &&
+        current.x >= xTarg - range && current.x <= xTarg + range &&
+        current.y >= yTarg - range && current.y <= yTarg + range;
 
-    Func<float, float, float, float, float, float, float, bool> InPosWithRange = (xTarg, yTarg, zTarg, range, xPos, yPos, zPos)
+    Func<float, float, float, float, float, float, float, bool> InXyzRange = (xTarg, yTarg, zTarg, range, x, y, z)
     =>
-        xPos >= xTarg - range && xPos <= xTarg + range &&
-        yPos >= yTarg - range && yPos <= yTarg + range &&
-        zPos >= zTarg - range && zPos <= zTarg + range;
+        x >= xTarg - range && x <= xTarg + range &&
+        y >= yTarg - range && y <= yTarg + range &&
+        z >= zTarg - range && z <= zTarg + range;
 
-    Func<float, float, float, float, bool> InPosWithRangeOld = (xTarg, yTarg, zTarg, range)
+    Func<float, float, float, float, bool> InXyzRangeOld = (xTarg, yTarg, zTarg, range)
     =>
-        old.xPos >= xTarg - range && old.xPos <= xTarg + range &&
-        old.yPos >= yTarg - range && old.yPos <= yTarg + range &&
-        old.zPos >= zTarg - range && old.zPos <= zTarg + range;
+        old.x >= xTarg - range && old.x <= xTarg + range &&
+        old.y >= yTarg - range && old.y <= yTarg + range &&
+        old.z >= zTarg - range && old.z <= zTarg + range;
 
-    Func<float, float, float, float, bool> InPosWithRangeCurrent = (xTarg, yTarg, zTarg, range)
+    Func<float, float, float, float, bool> InXyzRangeCurrent = (xTarg, yTarg, zTarg, range)
     =>
-        current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
-        current.yPos >= yTarg - range && current.yPos <= yTarg + range &&
-        current.zPos >= zTarg - range && current.zPos <= zTarg + range;
+        current.x >= xTarg - range && current.x <= xTarg + range &&
+        current.y >= yTarg - range && current.y <= yTarg + range &&
+        current.z >= zTarg - range && current.z <= zTarg + range;
 
-    Func<float, float, float, float, bool> InPosWithRangeOldOnly = (xTarg, yTarg, zTarg, range)
+    Func<float, float, float, float, bool> InXyzRangeOldOnly = (xTarg, yTarg, zTarg, range)
     =>
-        old.xPos >= xTarg - range && old.xPos <= xTarg + range &&
-        old.yPos >= yTarg - range && old.yPos <= yTarg + range &&
-        old.zPos >= zTarg - range && old.zPos <= zTarg + range &&
-        !(current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
-          current.yPos >= yTarg - range && current.yPos <= yTarg + range &&
-          current.zPos >= zTarg - range && current.zPos <= zTarg + range);
+        old.x >= xTarg - range && old.x <= xTarg + range &&
+        old.y >= yTarg - range && old.y <= yTarg + range &&
+        old.z >= zTarg - range && old.z <= zTarg + range &&
+        !(current.x >= xTarg - range && current.x <= xTarg + range &&
+          current.y >= yTarg - range && current.y <= yTarg + range &&
+          current.z >= zTarg - range && current.z <= zTarg + range);
 
-    Func<float, float, float, float, bool> InPosWithRangeCurrentOnly = (xTarg, yTarg, zTarg, range)
+    Func<float, float, float, float, bool> InXyzRangeCurrentOnly = (xTarg, yTarg, zTarg, range)
     =>
-        !(old.xPos >= xTarg - range && old.xPos <= xTarg + range &&
-          old.yPos >= yTarg - range && old.yPos <= yTarg + range &&
-          old.zPos >= zTarg - range && old.zPos <= zTarg + range) &&
-        current.xPos >= xTarg - range && current.xPos <= xTarg + range &&
-        current.yPos >= yTarg - range && current.yPos <= yTarg + range &&
-        current.zPos >= zTarg - range && current.zPos <= zTarg + range;
+        !(old.x >= xTarg - range && old.x <= xTarg + range &&
+          old.y >= yTarg - range && old.y <= yTarg + range &&
+          old.z >= zTarg - range && old.z <= zTarg + range) &&
+        current.x >= xTarg - range && current.x <= xTarg + range &&
+        current.y >= yTarg - range && current.y <= yTarg + range &&
+        current.z >= zTarg - range && current.z <= zTarg + range;
 
-    Func<float, float, float, float, float, float, float, float, bool> InPosWithRangeXyZ = (xTarg, yTarg, zTarg, xyRange, zRange, xPos, yPos, zPos)
+    Func<float, float, float, float, float, float, float, float, bool> InXyZRange = (xTarg, yTarg, zTarg, xyRange, zRange, x, y, z)
     =>
-        xPos >= xTarg - xyRange && xPos <= xTarg + xyRange &&
-        yPos >= yTarg - xyRange && yPos <= yTarg + xyRange &&
-        zPos >= zTarg - zRange && zPos <= zTarg + zRange;
+        x >= xTarg - xyRange && x <= xTarg + xyRange &&
+        y >= yTarg - xyRange && y <= yTarg + xyRange &&
+        z >= zTarg - zRange && z <= zTarg + zRange;
     
-    Func<float, float, float, float, float, bool> InPosWithRangeXyZOld = (xTarg, yTarg, zTarg, xyRange, zRange)
+    Func<float, float, float, float, float, bool> InXyZRangeOld = (xTarg, yTarg, zTarg, xyRange, zRange)
     =>
-        old.xPos >= xTarg - xyRange && old.xPos <= xTarg + xyRange &&
-        old.yPos >= yTarg - xyRange && old.yPos <= yTarg + xyRange &&
-        old.zPos >= zTarg - zRange && old.zPos <= zTarg + zRange;
+        old.x >= xTarg - xyRange && old.x <= xTarg + xyRange &&
+        old.y >= yTarg - xyRange && old.y <= yTarg + xyRange &&
+        old.z >= zTarg - zRange && old.z <= zTarg + zRange;
     
-    Func<float, float, float, float, float, bool> InPosWithRangeXyZCurrent = (xTarg, yTarg, zTarg, xyRange, zRange)
+    Func<float, float, float, float, float, bool> InXyZRangeCurrent = (xTarg, yTarg, zTarg, xyRange, zRange)
     =>
-        current.xPos >= xTarg - xyRange && current.xPos <= xTarg + xyRange &&
-        current.yPos >= yTarg - xyRange && current.yPos <= yTarg + xyRange &&
-        current.zPos >= zTarg - zRange && current.zPos <= zTarg + zRange;
+        current.x >= xTarg - xyRange && current.x <= xTarg + xyRange &&
+        current.y >= yTarg - xyRange && current.y <= yTarg + xyRange &&
+        current.z >= zTarg - zRange && current.z <= zTarg + zRange;
 
-    Func<float, float, float, float, float, bool> InPosWithRangeXyZOldOnly = (xTarg, yTarg, zTarg, xyRange, zRange)
+    Func<float, float, float, float, float, bool> InXyZRangeOldOnly = (xTarg, yTarg, zTarg, xyRange, zRange)
     =>
-        old.xPos >= xTarg - xyRange && old.xPos <= xTarg + xyRange &&
-        old.yPos >= yTarg - xyRange && old.yPos <= yTarg + xyRange &&
-        old.zPos >= zTarg - zRange && old.zPos <= zTarg + zRange &&
-        !(current.xPos >= xTarg - xyRange && current.xPos <= xTarg + xyRange &&
-          current.yPos >= yTarg - xyRange && current.yPos <= yTarg + xyRange &&
-          current.zPos >= zTarg - zRange && current.zPos <= zTarg + zRange);
+        old.x >= xTarg - xyRange && old.x <= xTarg + xyRange &&
+        old.y >= yTarg - xyRange && old.y <= yTarg + xyRange &&
+        old.z >= zTarg - zRange && old.z <= zTarg + zRange &&
+        !(current.x >= xTarg - xyRange && current.x <= xTarg + xyRange &&
+          current.y >= yTarg - xyRange && current.y <= yTarg + xyRange &&
+          current.z >= zTarg - zRange && current.z <= zTarg + zRange);
 
-    Func<float, float, float, float, float, bool> InPosWithRangeXyZCurrentOnly = (xTarg, yTarg, zTarg, xyRange, zRange)
+    Func<float, float, float, float, float, bool> InXyZRangeCurrentOnly = (xTarg, yTarg, zTarg, xyRange, zRange)
     =>
-        !(old.xPos >= xTarg - xyRange && old.xPos <= xTarg + xyRange &&
-          old.yPos >= yTarg - xyRange && old.yPos <= yTarg + xyRange &&
-          old.zPos >= zTarg - zRange && old.zPos <= zTarg + zRange) &&
-        current.xPos >= xTarg - xyRange && current.xPos <= xTarg + xyRange &&
-        current.yPos >= yTarg - xyRange && current.yPos <= yTarg + xyRange &&
-        current.zPos >= zTarg - zRange && current.zPos <= zTarg + zRange;
+        !(old.x >= xTarg - xyRange && old.x <= xTarg + xyRange &&
+          old.y >= yTarg - xyRange && old.y <= yTarg + xyRange &&
+          old.z >= zTarg - zRange && old.z <= zTarg + zRange) &&
+        current.x >= xTarg - xyRange && current.x <= xTarg + xyRange &&
+        current.y >= yTarg - xyRange && current.y <= yTarg + xyRange &&
+        current.z >= zTarg - zRange && current.z <= zTarg + zRange;
 
-    Func<float, float, float, float, float, float, bool> InPosExact = (xTarg, yTarg, zTarg, xPos, yPos, zPos)
+    Func<float, float, float, float, float, float, bool> InXyzExact = (xTarg, yTarg, zTarg, x, y, z)
     =>
-        xTarg == xPos &&
-        yTarg == yPos &&
-        zTarg == zPos;
+        xTarg == x &&
+        yTarg == y &&
+        zTarg == z;
 
-    Func<float, float, float, bool> InPosExactOld = (xTarg, yTarg, zTarg)
+    Func<float, float, float, bool> InXyzExactOld = (xTarg, yTarg, zTarg)
     =>
-        xTarg == old.xPos &&
-        yTarg == old.yPos &&
-        zTarg == old.zPos;
+        xTarg == old.x &&
+        yTarg == old.y &&
+        zTarg == old.z;
         
-    Func<float, float, float, bool> InPosExactCurrent = (xTarg, yTarg, zTarg)
+    Func<float, float, float, bool> InXyzExactCurrent = (xTarg, yTarg, zTarg)
     =>
-        xTarg == current.xPos &&
-        yTarg == current.yPos &&
-        zTarg == current.zPos;
+        xTarg == current.x &&
+        yTarg == current.y &&
+        zTarg == current.z;
     
-    Func<float, float, float, bool> InPosExactOldOnly = (xTarg, yTarg, zTarg)
+    Func<float, float, float, bool> InXyzExactOldOnly = (xTarg, yTarg, zTarg)
     =>
-        xTarg == old.xPos &&
-        yTarg == old.yPos &&
-        zTarg == old.zPos &&
-        !(xTarg == current.xPos &&
-          yTarg == current.yPos &&
-          zTarg == current.zPos);
+        xTarg == old.x &&
+        yTarg == old.y &&
+        zTarg == old.z &&
+        !(xTarg == current.x &&
+          yTarg == current.y &&
+          zTarg == current.z);
 
-    Func<float, float, float, bool> InPosExactCurrentOnly = (xTarg, yTarg, zTarg)
+    Func<float, float, float, bool> InXyzExactCurrentOnly = (xTarg, yTarg, zTarg)
     =>
-        !(xTarg == old.xPos &&
-          yTarg == old.yPos &&
-          zTarg == old.zPos) &&
-        xTarg == current.xPos &&
-        yTarg == current.yPos &&
-        zTarg == current.zPos;
+        !(xTarg == old.x &&
+          yTarg == old.y &&
+          zTarg == old.z) &&
+        xTarg == current.x &&
+        yTarg == current.y &&
+        zTarg == current.z;
     
-    Func<float, float, float, float, bool> InPosExactXy = (xTarg, yTarg, xPos, yPos)
+    Func<float, float, float, float, bool> InXyExact = (xTarg, yTarg, x, y)
     =>
-        xTarg == xPos &&
-        yTarg == yPos;
+        xTarg == x &&
+        yTarg == y;
     
-    Func<float, float, bool> InPosExactXyOld = (xTarg, yTarg)
+    Func<float, float, bool> InXyExactOld = (xTarg, yTarg)
     =>
-        xTarg == old.xPos &&
-        yTarg == old.yPos;
+        xTarg == old.x &&
+        yTarg == old.y;
         
-    Func<float, float, bool> InPosExactXyCurrent = (xTarg, yTarg)
+    Func<float, float, bool> InXyExactCurrent = (xTarg, yTarg)
     =>
-        xTarg == current.xPos &&
-        yTarg == current.yPos;
+        xTarg == current.x &&
+        yTarg == current.y;
     
-    Func<float, float, bool> InPosExactXyOldOnly = (xTarg, yTarg)
+    Func<float, float, bool> InXyExactOldOnly = (xTarg, yTarg)
     =>
-        xTarg == old.xPos &&
-        yTarg == old.yPos &&
-        !(xTarg == current.xPos &&
-          yTarg == current.yPos);
+        xTarg == old.x &&
+        yTarg == old.y &&
+        !(xTarg == current.x &&
+          yTarg == current.y);
     
-    Func<float, float, bool> InPosExactXyCurrentOnly = (xTarg, yTarg)
+    Func<float, float, bool> InXyExactCurrentOnly = (xTarg, yTarg)
     =>
-        !(xTarg == old.xPos &&
-          yTarg == old.yPos) &&
-        xTarg == current.xPos &&
-        yTarg == current.yPos;
-
-    Func<ValueTuple<float, float, float, float, float, float>?, int[], ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> HashParams = (bounds, maps)
-        => ValueTuple.Create(bounds, maps);
-
-    Func<ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> HashNull = () => HashParams(null, null);
-
-    Func<float, float, float, float, float, float, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> Bounds = (x1, x2, y1, y2, z1, z2)
-        => HashParams(ValueTuple.Create(x1, x2, y1, y2, z1, z2), null);
-
-    Func<float, float, float, float, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> BoundsRange = (x, y, z, range)
-        => HashParams(ValueTuple.Create(x - range, x + range, y - range, y + range, z - range, z + range), null);
-    
-    Func<float, float, float, float, float, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> BoundsRangeXyZ = (x, y, z, xyRange, zRange)
-        => HashParams(ValueTuple.Create(x - xyRange, x + xyRange, y - xyRange, y + xyRange, z - zRange, z + zRange), null);
-    
-    Func<float, float, float, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> BoundsExact = (x, y, z)
-        => HashParams(ValueTuple.Create(x, x, y, y, z, z), null);
-    
-    Func<int[], ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>> Maps = maps => HashParams(null, maps);
+        !(xTarg == old.x &&
+          yTarg == old.y) &&
+        xTarg == current.x &&
+        yTarg == current.y;
 
     // ================================================== runtime hash code computations ==================================================
 
-    const float BucketSize = 20f;
+    // general hashing
 
-    Func<float, int> GetCoordHashCode = coord => (int)Math.Floor(coord / BucketSize);
+    const uint FnvPrime = 0x01000193;   // https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV_prime
 
-    const uint FnvPrime = 0x01000193;
-    Func<int, int, int, int> CombineCoordHashCodes = (xHash, yHash, zHash) =>
-    {
-        uint hash = 0;
-        hash = hash * FnvPrime + (uint)xHash;
-        hash = hash * FnvPrime + (uint)yHash;
-        hash = hash * FnvPrime + (uint)zHash;
-        return (int)hash;
-    };
+    // xyz hashing
 
+    // see the hashing section in DOCUMENTATION.md for guidance on what bucket size to choose for each game
+    const float BucketSize = 20f; // <---------------------------------------------------------------------------------------------------- game-specific
+
+    const uint XyzSeed = 17;
     Func<int> GetXyzHashCodeCurrent = () =>
     {
-        uint hash = 0;
-        hash = hash * FnvPrime + (uint)(int)Math.Floor(current.xPos / BucketSize);
-        hash = hash * FnvPrime + (uint)(int)Math.Floor(current.yPos / BucketSize);
-        hash = hash * FnvPrime + (uint)(int)Math.Floor(current.zPos / BucketSize);
+        uint hash = XyzSeed;
+        hash = hash * FnvPrime + (uint)(int)Math.Floor(current.x / BucketSize);
+        hash = hash * FnvPrime + (uint)(int)Math.Floor(current.y / BucketSize);
+        hash = hash * FnvPrime + (uint)(int)Math.Floor(current.z / BucketSize);
         return (int)hash;
     };
 
     // ================================================== one-time hash code computations ==================================================
 
-    Func<float, float, float, float, float, float, int[]> GetHashCodesForBounds = (xMin, xMax, yMin, yMax, zMin, zMax) =>
+    // general hashing
+
+    // do not call at run time; rather make a separate runtime version of this method that uses a const seed and unrolls the loop and inlines individual hash code computations
+    // e.g. see GetXyzHashCodeCurrent above; seed should be a different prime number for each implementation, (optimally of the form 2^n +/- 1, but it's not a big deal)
+    Func<uint, int[], int> ScrambleHashCodes = (seed, hashCodes) =>
+    {
+        uint hash = seed;
+        foreach (int hashCode in hashCodes)
+            hash = hash * FnvPrime + (uint)hashCode;
+        return (int)hash;
+    };
+
+    Func<uint, int[], int[]> HashHashes = (seed, weakHashes) => weakHashes.Select(weakHash => ScrambleHashCodes(seed, new int[] {weakHash})).ToArray();
+
+    // xyz hashing
+
+    Func<float, int> GetCoordHashCode = coord => (int)Math.Floor(coord / BucketSize);
+
+    Func<float, float, float, float, float, float, int[]> HashXyzBounds = (xMin, xMax, yMin, yMax, zMin, zMax) =>
     {
         int minXBucket = GetCoordHashCode(xMin);
         int maxXBucket = GetCoordHashCode(xMax);
@@ -334,7 +327,7 @@ startup
                     int xHashCode = minXBucket + x;
                     int yHashCode = minYBucket + y;
                     int zHashCode = minZBucket + z;
-                    int hashCode = CombineCoordHashCodes(xHashCode, yHashCode, zHashCode);
+                    int hashCode = ScrambleHashCodes(XyzSeed, new int[] {xHashCode, yHashCode, zHashCode});
                     hashCodes[index] = hashCode;
                     index++;
                 }
@@ -342,6 +335,10 @@ startup
         }
         return hashCodes;
     };
+
+    Func<float, float, float, float, int[]> HashXyzRange = (x, y, z, range) => HashXyzBounds(x - range, x + range, y - range, y + range, z - range, z + range);
+    Func<float, float, float, float, float, int[]> HashXyZRange = (x, y, z, xyRange, zRange) => HashXyzBounds(x - xyRange, x + xyRange, y - xyRange, y + xyRange, z - zRange, z + zRange);
+    Func<float, float, float, int[]> HashXyzExact = (x, y, z) => HashXyzBounds(x, x, y, y, z, z);
 
     // ================================================== startup functions and helper variables ==================================================
 
@@ -356,25 +353,40 @@ startup
         settings.Add(slug, @default, description, parentSlug);
         settings.SetToolTip(slug, toolTip);
     };
-
-    // Key: EventSlug; Value: Event
+    
     const int StartEvent = 0;
     const int ResetEvent = 1;
     const int SplitEvent = 2;
     const int MiscEvent = 3;
-    var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>(); // GC
+
+    const int NoGame = 0;
+    const int SoT = 1;
+    const int GameCount = 2; // <---------------------------------------------------------------------------------------------------- game-specific (and AddEvent overloads, GetGameTypeString below)
+
+    // Key: EventSlug; Value: Event
+    var eventMaps = new Dictionary<string, Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>[GameCount]; // GC
+    for (int i = 0; i < GameCount; i++)
+        eventMaps[i] = new Dictionary<string, Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>();
+    var events = new Dictionary<string, Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>(); // GC
     Action<bool> emptyPostAction = _ => { };
-    Action<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>> AddEvent_ =
-        (eventType, slug, settingSlugs, hashParams, condition, postAction) =>
+    Action<int, string, List<string>, int[], Func<bool>, Action<bool>, int> AddEventBase =
+        (eventType, slug, settingSlugs, hashCodes, condition, postAction, gameType) =>
     {
         if (events.ContainsKey(slug))
             throw new Exception("Internal exception (ASL): event " + slug + " has already been added.");
-        events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, hashParams, condition, postAction));
+        Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>> myEvent =
+            Tuple.Create(eventType, slug, settingSlugs, hashCodes, condition, postAction);
+        events.Add(slug, myEvent);
+        eventMaps[gameType].Add(slug, myEvent);
     };
 
-    Action<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> AddEvent =
-        (eventType, slug, settingSlugs, hashParams, condition) => AddEvent_(eventType, slug, settingSlugs, hashParams, condition, emptyPostAction);
-
+    Action<int, string, List<string>, int[], Func<bool>> AddEvent = (eventType, slug, settingSlugs, hashCodes, condition)
+        => AddEventBase(eventType, slug, settingSlugs, hashCodes, condition, emptyPostAction, SoT);
+    
+    Action<int, string, List<string>, int[], Func<bool>, Action<bool>> AddEvent_ = 
+        (eventType, slug, settingSlugs, hashCodes, condition, postAction)
+        => AddEventBase(eventType, slug, settingSlugs, hashCodes, condition, postAction, SoT);
+    
     Func<int, string> GetEventString = eventType =>
     {
         switch (eventType)
@@ -387,19 +399,41 @@ startup
         }
     };
 
+    Func<int, string> GetGameTypeString = gameType =>
+    {
+        switch (gameType)
+        {
+        case NoGame:   return "NoGame";
+        case SoT:      return "SoT";
+        default:       return "UnknownGame";
+        }
+    };
+
     // ================================================== runtime functions and helper variables ==================================================
 
     // Key: Hash; Value: EventList
-    var XyzEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>>();
-    var MapEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>>();
+    var EventHashMaps = new Dictionary<int, List<Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>>[GameCount];
+    for (int i = 0; i < GameCount; i++)
+        EventHashMaps[i] = new Dictionary<int, List<Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>>();
+    var EventHashMap = EventHashMaps[NoGame];
 
     // List<Event>
-    var OtherEvents = new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>();
+    var OtherEventLists = new List<Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>[GameCount];
+    for (int i = 0; i < GameCount; i++)
+        OtherEventLists[i] = new List<Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>();
+    var OtherEvents = OtherEventLists[NoGame];
+
+    Action<int> ConfigureGameType = gameType =>
+    {
+        EventHashMap = EventHashMaps[gameType];
+        OtherEvents = OtherEventLists[gameType];
+        print("Configuration for " + GetGameTypeString(gameType) + " done.");
+    };
 
     HashSet<string> CompletedEvents = null;
 
     // update block sets this to an event that is not in CompletedEvents and has been triggered on this cycle
-    Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>> TriggeredEvent = null;
+    Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>> TriggeredEvent = null;
 
     Action OnReset = null;
     Func<int, bool> CheckEvent = eventType =>
@@ -497,66 +531,65 @@ startup
     // ================================================== events ==================================================
 
     Action action;
-    Action<float, float, float> actionPos;
-    Action<float, float, float, float> actionRange;
-    Action<float, float, float, float, float> actionRangeXyZ;
-    Action<float, float, float, float, float, float> actionBounds;
+    Action<float, float, float> actionXyz;
+    Action<float, float, float, float> actionXyzRange;
+    Action<float, float, float, float, float> actionXyZRange;
+    Action<float, float, float, float, float, float> actionXyzBounds;
     Action<int[]> actionInts;
 
-    //                                                                                                         HashParams:
-    //                                                                                    SettingSlugs:         (float,float,float,
-    //                                   EventType:int         Slug:string                 List<string>         float,float,float)?         Condition:Func<bool>
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(StartEvent,  "Start",                   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && old.startValue != 1 && current.startValue == 1 && current.xCam <= -92.8f)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(ResetEvent,  "Reset",                   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.xCam <= -92f && current.xCam > -92.8f)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
+    //                                                                                       SettingSlugs:
+    //                                      EventType:int         Slug:string                 List<string>        HashCodes:int[]?                 Condition:Func<bool>
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(StartEvent,  "Start",                   new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && old.startValue != 1 && current.startValue == 1 && current.xCam <= -92.8f)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(ResetEvent,  "Reset",                   new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.xCam <= -92f && current.xCam > -92.8f)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
 
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "GasStation",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (252f, 258f, 130.647f, 134f, 22.999f, 23.001f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "SandsUnleashed",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-6.177f, -6.175f, 62.905f, 62.907f, 7.604f, 7.606f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "FirstGuestRoom",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (30.297f, 30.299f, 42.126f, 42.128f, 12.998f, 13f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "SultanChamberZipless",    new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (98.445f, 98.447f, 39.567f, 39.57f, -8.96f, -8.958f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "SultanChamber",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (134.137f, 134.139f, 54.990f, 54.992f, -32.791f, -32.789f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "PalaceDefence",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (4.547f, 8.851f, 40.494f, 47.519f, -39.001f, -38.999f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "DadStart",                new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (6.714f, 6.716f, 57.698f, 57.7f, 21.005f, 21.007f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "DadDead",                 new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-6.001f, -5.999f, -18.6f, -18.4f, 1.998f, 2.001f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheWarehouse",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-73.352f, -71.233f, -28.5f, -26.868f, -1.001f, -0.818f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheZoo",                  new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-141.299f, -139.797f, -47.21f, -42.801f, -31.1f, -30.9f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "BirdCage",                new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-211f, -208f, -23f, -21f, -9f, -8.8f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "CliffWaterfalls",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-233.6f, -231.4f, 33.7f, 35f, -42.6f, -42.4f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheBathsZipless",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-215.85f, -214.089f, 54.261f, 58.699f, -43.501f, -43.499f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheBaths",                new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-211.427f, -211.425f, 56.602f, 56.604f, -43.501f, -43.499f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "SecondSword",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-106.819f, -106.817f, 81.097f, 81.099f, -27.269f, -27.267f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheDaybreak",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-76f, -70f, 192.4f, 197.6f, -56.6f, -54f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheMesshall",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-183.267f, -183.265f, 234.685f, 234.687f, -37.528f, -37.526f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "DrawbridgeTower",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-267f, -262f, 232f, 267f, -35.6f, -35.5f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "BrokenBridge",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-265f, -257f, 159f, 167f, -13.6f, -13.4f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheCavesZipless",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-303f, -297.5f, 112f, 113.5f, -56.1f, -55.9f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheCaves",                new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-246.839f, -241.677f, 78.019f, 87.936f, -71.731f, -70.7f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheWaterfall",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-242f, -240.5f, 79.5f, 83f, -121f, -118f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheUGReservoirZipless",   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-121f, -110f, -9f, -7f, -154.1f, -153.9f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "OutOfTheWell",            new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-62.93f, -62.61f, 58.10f, 58.12f, -26.18f, -24.09f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheUGReservoir",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-51.477f, -48.475f, 72.155f, 73.657f, -24.802f, -24.799f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheSultanHarem",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-9.3f, -6.604f, 148.46f, 151.7f, -24f, -23.8f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "WhatDidYouCallMe",        new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (35.90f, 38f, 134.01f, 137f, -23.99f, -23.8f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "HallofLearning",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (73f, 79f, 161f, 163f, -24.1f, -23.9f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheObservatory",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (139.231f, 139.233f, 162.556f, 162.558f, -29.502f, -29.5f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "ObservatoryEnter",        new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (86.778f, 88.996f, 183.5f, 186.2f, -23.5f, -23.5f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "ObservatoryExit",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (137f, 141f, 164f, 164.67f, -29.5f, -29.2f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "HoLCourtyardsExit",       new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (72f, 77f, 90f, 95.7f, -27.1f, -26.9f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheAzadPrison",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (190f, 195f, -21f, -19f, -17.6f, -17.3f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TortureChamberZipless",   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (187.5f, 192.5f, -39f, -37.5f, -119.1f, -118.9f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TortureChamber",          new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (189.999f, 190.001f, -43.278f, -43.276f, -119.001f, -118.999f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheElevator",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (74f, 75f, -46.751f, -43.252f, -34f, -33f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheDreamZipless",         new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (99f, 101f, -11f, -10f, -56f, -54f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheDream",                new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (95.8f, 96f, -25.1f, -24.9f, -74.9f, -74.7f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheTomb",                 new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (100.643f, 100.645f, -11.543f, -11.541f, -67.588f, -67.586f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TowerofDawn",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (35.5f, 35.7f, -50f, -39f, -32f, -30f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "SettingSun",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (60f, 61f, -58f, -57f, 30f, 32f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "HonorGlory",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (81f, 82f, -60.3f, -59.7f, 89f, 90f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "GrandRewind",             new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (660.376f, 660.378f, 190.980f, 190.983f, 0.432f, 0.434f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "GasStation",              new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (252f, 258f, 130.647f, 134f, 22.999f, 23.001f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "SandsUnleashed",          new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-6.177f, -6.175f, 62.905f, 62.907f, 7.604f, 7.606f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "FirstGuestRoom",          new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (30.297f, 30.299f, 42.126f, 42.128f, 12.998f, 13f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "SultanChamberZipless",    new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (98.445f, 98.447f, 39.567f, 39.57f, -8.96f, -8.958f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "SultanChamber",           new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (134.137f, 134.139f, 54.990f, 54.992f, -32.791f, -32.789f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "PalaceDefence",           new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (4.547f, 8.851f, 40.494f, 47.519f, -39.001f, -38.999f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "DadStart",                new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (6.714f, 6.716f, 57.698f, 57.7f, 21.005f, 21.007f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "DadDead",                 new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-6.001f, -5.999f, -18.6f, -18.4f, 1.998f, 2.001f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheWarehouse",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-73.352f, -71.233f, -28.5f, -26.868f, -1.001f, -0.818f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheZoo",                  new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-141.299f, -139.797f, -47.21f, -42.801f, -31.1f, -30.9f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "BirdCage",                new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-211f, -208f, -23f, -21f, -9f, -8.8f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "CliffWaterfalls",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-233.6f, -231.4f, 33.7f, 35f, -42.6f, -42.4f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheBathsZipless",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-215.85f, -214.089f, 54.261f, 58.699f, -43.501f, -43.499f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheBaths",                new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-211.427f, -211.425f, 56.602f, 56.604f, -43.501f, -43.499f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "SecondSword",             new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-106.819f, -106.817f, 81.097f, 81.099f, -27.269f, -27.267f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheDaybreak",             new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-76f, -70f, 192.4f, 197.6f, -56.6f, -54f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheMesshall",             new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-183.267f, -183.265f, 234.685f, 234.687f, -37.528f, -37.526f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "DrawbridgeTower",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-267f, -262f, 232f, 267f, -35.6f, -35.5f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "BrokenBridge",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-265f, -257f, 159f, 167f, -13.6f, -13.4f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheCavesZipless",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-303f, -297.5f, 112f, 113.5f, -56.1f, -55.9f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheCaves",                new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-246.839f, -241.677f, 78.019f, 87.936f, -71.731f, -70.7f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheWaterfall",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-242f, -240.5f, 79.5f, 83f, -121f, -118f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheUGReservoirZipless",   new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-121f, -110f, -9f, -7f, -154.1f, -153.9f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "OutOfTheWell",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-62.93f, -62.61f, 58.10f, 58.12f, -26.18f, -24.09f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheUGReservoir",          new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-51.477f, -48.475f, 72.155f, 73.657f, -24.802f, -24.799f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheSultanHarem",          new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-9.3f, -6.604f, 148.46f, 151.7f, -24f, -23.8f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "WhatDidYouCallMe",        new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (35.90f, 38f, 134.01f, 137f, -23.99f, -23.8f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "HallofLearning",          new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (73f, 79f, 161f, 163f, -24.1f, -23.9f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheObservatory",          new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (139.231f, 139.233f, 162.556f, 162.558f, -29.502f, -29.5f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "ObservatoryEnter",        new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (86.778f, 88.996f, 183.5f, 186.2f, -23.5f, -23.5f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "ObservatoryExit",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (137f, 141f, 164f, 164.67f, -29.5f, -29.2f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "HoLCourtyardsExit",       new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (72f, 77f, 90f, 95.7f, -27.1f, -26.9f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheAzadPrison",           new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (190f, 195f, -21f, -19f, -17.6f, -17.3f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TortureChamberZipless",   new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (187.5f, 192.5f, -39f, -37.5f, -119.1f, -118.9f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TortureChamber",          new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (189.999f, 190.001f, -43.278f, -43.276f, -119.001f, -118.999f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheElevator",             new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (74f, 75f, -46.751f, -43.252f, -34f, -33f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheDreamZipless",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (99f, 101f, -11f, -10f, -56f, -54f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheDream",                new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (95.8f, 96f, -25.1f, -24.9f, -74.9f, -74.7f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TheTomb",                 new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (100.643f, 100.645f, -11.543f, -11.541f, -67.588f, -67.586f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "TowerofDawn",             new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (35.5f, 35.7f, -50f, -39f, -32f, -30f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "SettingSun",              new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (60f, 61f, -58f, -57f, 30f, 32f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "HonorGlory",              new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (81f, 82f, -60.3f, -59.7f, 89f, 90f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "GrandRewind",             new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (660.376f, 660.378f, 190.980f, 190.983f, 0.432f, 0.434f);
 
-    (actionRangeXyZ=(x,y,z,r1,r2)     => AddEvent(SplitEvent,  "SoTEndVizier",            new List<string> {}, BoundsRangeXyZ(x,y,z,r1,r2), () => InPosWithRangeXyZCurrent(x, y, z, r1, r2) && current.vizierHealth == 4)) (660f, 213f, 0f, 10f, 3f);
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "SoTEndCredits",           new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.rewind == 0)) (658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f);
+    (actionXyZRange=(x,y,z,r1,r2)        => AddEvent(SplitEvent,  "SoTEndVizier",            new List<string> {}, HashXyZRange(x,y,z,r1,r2),       () => InXyZRangeCurrent(x, y, z, r1, r2) && current.vizierHealth == 4)) (660f, 213f, 0f, 10f, 3f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent,  "SoTEndCredits",           new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.rewind == 0)) (658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f);
 
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent_(SplitEvent, "SoTLU",                   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrentOnly(x1, x2, y1, y2, z1, z2), _ => CompletedEvents.Remove("SoTLU"))) (-492.608f, -492.606f, -248.833f, -248.831f, 0.219f, 0.221f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEvent_(SplitEvent, "SoTLU",                   new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2),   () => InXyzBoundsCurrentOnly(x1, x2, y1, y2, z1, z2), _ => CompletedEvents.Remove("SoTLU"))) (-492.608f, -492.606f, -248.833f, -248.831f, 0.219f, 0.221f);
 
     // ====================================================================================================================
     // ================================================== STARTUP SCRIPT ==================================================
@@ -572,7 +605,9 @@ startup
     {
         foreach (string eventSlug in setting.Item3)
         {
-            Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>> myEvent;
+            // for some reason if a type declaration has both a "?" and an "@" it breaks the colour scheme for the rest of the script when using the VSCode ASL plugin
+            // which is why here specifically we name the variable "myEvent" instead of "@event"
+            Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>> myEvent;
             if (!events.TryGetValue(eventSlug, out myEvent))
                 throw new Exception("Internal exception (ASL): cannot write event " + eventSlug + " to setting " + setting.Item2 + " because this event doesn't exist");
             myEvent.Item3.Add(setting.Item2);
@@ -613,48 +648,36 @@ startup
 
     // ================================================== apply configured events ==================================================
 
-    // fill XyzEventHashMap, MapEventHashMap, and OtherEvents
-    foreach (var @event in events.Values)
+    // fill EventHashMap and OtherEvents for each game type
+    int myGameType = -1;
+    foreach (var @event in eventMaps.SelectMany(eventMap => { myGameType++; return eventMap.Values; }))
     {
-        if (@event.Item4.Item1 == null && @event.Item4.Item2 == null)
+        var eventHashMap = EventHashMaps[myGameType];
+        var otherEvents = OtherEventLists[myGameType];
+        if (@event.Item4 == null)
         {
-            OtherEvents.Add(@event);
+            otherEvents.Add(@event);
             continue;
         }
-        int[] maps = @event.Item4.Item2 ?? Array.Empty<int>();
-        int[] hashCodesMaps = maps;
-        foreach (int hashCode in hashCodesMaps)
+        foreach (int hashCode in @event.Item4)
         {
-            List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>> localEvents;
-            if (MapEventHashMap.TryGetValue(hashCode, out localEvents))
+            List<Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>> localEvents;
+            if (eventHashMap.TryGetValue(hashCode, out localEvents))
             {
                 localEvents.Add(@event);
                 continue;
             }
-            MapEventHashMap.Add(hashCode, new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>> {@event});
-        }
-        if (@event.Item4.Item2 != null)
-            continue;
-        ValueTuple<float, float, float, float, float, float> xyzBounds = @event.Item4.Item1.Value;
-        int[] hashCodesXyz = GetHashCodesForBounds(xyzBounds.Item1, xyzBounds.Item2, xyzBounds.Item3, xyzBounds.Item4, xyzBounds.Item5, xyzBounds.Item6);
-        foreach (int hashCode in hashCodesXyz)
-        {
-            List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>> localEvents;
-            if (XyzEventHashMap.TryGetValue(hashCode, out localEvents))
-            {
-                localEvents.Add(@event);
-                continue;
-            }
-            XyzEventHashMap.Add(hashCode, new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>> {@event});
+            eventHashMap.Add(hashCode, new List<Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>> {@event});
         }
     }
 
-    // since most of the lists in our event hash maps contain only one value and likely have a capacity of 4, it is worth reducing the capacity of the lists
+    // since most of the lists in EventHashMap contain only one value and likely have a capacity of 4, it is worth reducing the capacity of the lists
     //      to the actual desired size and reduce memory usage from these lists by almost 4 times
-    foreach (var bucket in XyzEventHashMap.Values.Concat(MapEventHashMap.Values))
+    foreach (var bucket in EventHashMaps.SelectMany(eventMap => eventMap.Values))
         bucket.TrimExcess();
     
-    OtherEvents.TrimExcess();
+    foreach (var bucket in OtherEventLists)
+        bucket.TrimExcess();
 
     // allocate a large enough capacity at startup so that the CompletedEvents hashset does not need to be reallocated as it grows during runtime
     CompletedEvents = new HashSet<string>(events.Count);
@@ -665,72 +688,79 @@ startup
     var settingsWithNoEvents = new List<string>(); // GC
     var eventsWithNoSettings = new List<string>(); // GC
 
-    infoBuilder.Append("\r\n");
+    infoBuilder.AppendLine();
 
     // settings and events
 
-    infoBuilder.Append("Settings detected:\r\n");
-    infoBuilder.Append("\t" + "{Default} {Setting}".PadRight(36) + " : " + "{Parent}".PadRight(30) + " => {Count:[..Events]}\r\n");
+    infoBuilder.AppendLine("Settings detected:");
+    infoBuilder.AppendLine("\t" + "{Default} {Setting}".PadRight(36) + " : " + "{Parent}".PadRight(30) + " => {Count:[..Events]}");
     foreach (var setting in mySettings.Values)
     {
-        if (setting.Item3.Count == 0 && setting.Item6 != null)
+        if (setting.Item3.Count == 0)
             settingsWithNoEvents.Add(setting.Item2);
-        infoBuilder.Append("\t" + setting.Item1.ToString().PadRight(5) + " " + setting.Item2.PadRight(30) + " : " + (setting.Item6 ?? "{null}").PadRight(30)
-            + " => " + setting.Item3.Count + ":[" + string.Join(", ", setting.Item3) + "]\r\n");
+        infoBuilder.AppendLine("\t" + setting.Item1.ToString().PadRight(5) + " " + setting.Item2.PadRight(30) + " : " + (setting.Item6 ?? "{null}").PadRight(30)
+            + " => " + setting.Item3.Count + ":[" + string.Join(", ", setting.Item3) + "]");
     }
-    infoBuilder.Append("Total settings: " + mySettings.Count.ToString() + "\r\n\r\n");
+    infoBuilder.AppendLine("Total settings: " + mySettings.Count);
+    infoBuilder.AppendLine();
 
-    infoBuilder.Append("Events detected:\r\n");
-    infoBuilder.Append("\t" + "{EventType}     {Event}".PadRight(46) + " {HasXyzBounds} {HasMaps} => {Count:[..Settings]}\r\n");
+    infoBuilder.AppendLine("Events detected:");
+    infoBuilder.AppendLine("\t" + "{EventType}     {Event}".PadRight(46) + " {HasXyzBounds} => {Count:[..Settings]}");
     foreach (var @event in events.Values)
     {
         if (@event.Item3.Count == 0)
             eventsWithNoSettings.Add(@event.Item2);
-        infoBuilder.Append("\t" + GetEventString(@event.Item1).PadRight(15) + " " + @event.Item2.PadRight(30) + " " + (@event.Item4.Item1 != null).ToString().PadRight(14) + " " + (@event.Item4.Item2 != null).ToString().PadRight(9)
-            + " => " + @event.Item3.Count + ":[" + string.Join(", ", @event.Item3) + "]\r\n");
+        infoBuilder.AppendLine("\t" + GetEventString(@event.Item1).PadRight(15) + " " + @event.Item2.PadRight(30) + " " + (@event.Item4 != null).ToString().PadRight(5)
+            + " => " + @event.Item3.Count + ":[" + string.Join(", ", @event.Item3) + "]");
     }
-    infoBuilder.Append("Total events: " + events.Count.ToString() + "\r\n\r\n");
+    infoBuilder.AppendLine("Total events: " + events.Count);
+    infoBuilder.AppendLine();
 
-    infoBuilder.Append("Settings with no events: (total=" + settingsWithNoEvents.Count.ToString() + ")\r\n");
+    infoBuilder.AppendLine("Settings with no events: (total=" + settingsWithNoEvents.Count + ")");
     foreach (string settingSlug in settingsWithNoEvents)
-        infoBuilder.Append("\t" + settingSlug + "\r\n");
-    infoBuilder.Append("\r\n");
-
-    infoBuilder.Append("Events with no settings: (total=" + eventsWithNoSettings.Count.ToString() + ")\r\n");
+        infoBuilder.AppendLine("\t" + settingSlug);
+    infoBuilder.AppendLine();
+    
+    infoBuilder.AppendLine("Events with no settings: (total=" + eventsWithNoSettings.Count + ")");
     foreach (string eventSlug in eventsWithNoSettings)
-        infoBuilder.Append("\t" + eventSlug + "\r\n");
-    infoBuilder.Append("\r\n");
+        infoBuilder.AppendLine("\t" + eventSlug);
+    infoBuilder.AppendLine();
 
     // buckets
 
-    infoBuilder.Append("Bucket size: " + BucketSize.ToString() + "\r\n\r\n");
+    infoBuilder.AppendLine("Bucket size: " + BucketSize);
+    infoBuilder.AppendLine();
 
-    // the hash map count is how many keys it actually stores
-    // while its capacity is the total number of keys that it can hold based on how much memory it has been allocated
-    int xyzEventHashMapCapacity;
-    int mapEventHashMapCapacity;
+    for (myGameType = 0; myGameType < GameCount; myGameType++)
     {
-        FieldInfo entriesField =
-            typeof(Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>>)
-            .GetField("entries", BindingFlags.NonPublic | BindingFlags.Instance);
-        Array xyzBackingArray = (Array)entriesField.GetValue(XyzEventHashMap);
-        Array mapBackingArray = (Array)entriesField.GetValue(MapEventHashMap);
-        xyzEventHashMapCapacity = xyzBackingArray != null ? xyzBackingArray.Length : 0;
-        mapEventHashMapCapacity = mapBackingArray != null ? mapBackingArray.Length : 0;
-    }
-    infoBuilder.Append("XyzEventHashMap capacity: " + XyzEventHashMap.Count.ToString() + "/" + xyzEventHashMapCapacity + "\r\n");
-    infoBuilder.Append("MapEventHashMap capacity: " + MapEventHashMap.Count.ToString() + "/" + mapEventHashMapCapacity + "\r\n");
-    infoBuilder.Append("OtherEvents capacity: " + OtherEvents.Count.ToString() + "/" + OtherEvents.Capacity.ToString() + "\r\n");
-    infoBuilder.Append("\r\n");
+        if (myGameType == NoGame)
+            continue;
+        
+        infoBuilder.AppendLine(GetGameTypeString(myGameType) + ":");
+        infoBuilder.AppendLine();
 
-    Action<Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>>> PrintBucketInfo = eventHashMap =>
-    {
+        var eventHashMap = EventHashMaps[myGameType];
+        var otherEvents = OtherEventLists[myGameType];
+
+        // the hash map count is how many keys it actually stores
+        // while its capacity is the total number of keys that it can hold based on how much memory it has been allocated
+        int eventHashMapCapacity;
+        Array backingArray =
+            (Array)
+            typeof(Dictionary<int, List<Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>>)
+            .GetField("entries", BindingFlags.NonPublic | BindingFlags.Instance)
+            .GetValue(eventHashMap);
+        eventHashMapCapacity = backingArray != null ? backingArray.Length : 0;
+        infoBuilder.AppendLine("\tEventHashMap capacity: " + eventHashMap.Count + "/" + eventHashMapCapacity);
+        infoBuilder.AppendLine("\tOtherEvents capacity: " + otherEvents.Count + "/" + otherEvents.Capacity);
+        infoBuilder.AppendLine();
+
         int collisionSum = 0;
         int maxEventsPerBucket = 0;
         double avgEventsPerBucket;
-        var bucketGroupsPerEventCount = new List<List<List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>>>();
+        var bucketGroupsPerEventCount = new List<List<List<Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>>>();
         var bucketCountsPerEventCount = new List<int>();
-        const int MinEventCountPerBucketToCompute = 2;
+        const int MinEventCountPerBucketToCompute = 2; // change to a higher number if startup script lags or debug info gets too spammy
         foreach (var bucket in eventHashMap.Values)
         {
             collisionSum += bucket.Count;
@@ -738,41 +768,35 @@ startup
                 maxEventsPerBucket = bucket.Count;
             for (int i = bucketGroupsPerEventCount.Count; i <= bucket.Count; i++)
             {
-                bucketGroupsPerEventCount.Add(new List<List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>>());
+                bucketGroupsPerEventCount.Add(new List<List<Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>>());
                 bucketCountsPerEventCount.Add(0);
             }
             if (bucket.Count >= MinEventCountPerBucketToCompute)
                 bucketGroupsPerEventCount[bucket.Count].Add(bucket);
             bucketCountsPerEventCount[bucket.Count]++;
         }
-        avgEventsPerBucket = eventHashMap.Count > 0 ? (double)collisionSum / (double)eventHashMap.Count : 0.0;
+        avgEventsPerBucket = (double)collisionSum / (double)eventHashMap.Count;
 
-        infoBuilder.Append("Average events per bucket: " + avgEventsPerBucket.ToString() + "\r\n");
-        infoBuilder.Append("Maximum events per bucket: " + maxEventsPerBucket.ToString() + "\r\n");
-        infoBuilder.Append("\r\n");
+        infoBuilder.AppendLine("\tAverage events per bucket: " + avgEventsPerBucket);
+        infoBuilder.AppendLine("\tMaximum events per bucket: " + maxEventsPerBucket);
+        infoBuilder.AppendLine();
 
         for (int i = bucketGroupsPerEventCount.Count - 1; i >= 1; i--)
         {
             bool omit = i < MinEventCountPerBucketToCompute;
-            infoBuilder.Append("Buckets with " + i + " events (total=" + bucketCountsPerEventCount[i] + "):" + (omit ? " (omitted)\r\n" : string.Empty) + "\r\n");
+            infoBuilder.AppendLine("\tBuckets with " + i + " events (total=" + bucketCountsPerEventCount[i] + "):" + (omit ? " (omitted)\r\n" : string.Empty));
             if (omit)
                 continue;
             foreach (var bucket in bucketGroupsPerEventCount[i])
-                infoBuilder.Append("\t[" + string.Join(", ", bucket.Select(@event => @event.Item2)) + "]\r\n");
-            infoBuilder.Append("\r\n");
+                infoBuilder.AppendLine("\t\t[" + string.Join(", ", bucket.Select(@event => @event.Item2)) + "]");
+            infoBuilder.AppendLine();
         }
-    };
 
-    infoBuilder.Append("Xyz info:\r\n\r\n");
-    PrintBucketInfo(XyzEventHashMap);
-    
-    infoBuilder.Append("Map info:\r\n\r\n");
-    PrintBucketInfo(MapEventHashMap);
-
-    infoBuilder.Append("Non-hash-based events: (total=" + OtherEvents.Count + ")\r\n");
-    foreach (var @event in OtherEvents)
-        infoBuilder.Append("\t" + @event.Item2 + "\r\n");
-    infoBuilder.Append("\r\n");
+        infoBuilder.AppendLine("\tNon-hash-based events: (total=" + otherEvents.Count + ")");
+        foreach (var @event in otherEvents)
+            infoBuilder.AppendLine("\t\t" + @event.Item2);
+        infoBuilder.AppendLine();
+    }
 
     print(infoBuilder.ToString());
 
@@ -794,6 +818,7 @@ startup
     // de-reference unneeded collections to allow for garbage collection
     mySettings = null;
     events = null;
+    eventMaps = null;
     slugsTemp = null;
     infoBuilder = null;
     settingsWithNoEvents = null;
@@ -810,8 +835,15 @@ startup
         old = newOld;
         current = newCurrent;
         settings = newSettings;
+
+        ConfigureGameType(SoT);
     };
     vars.Init = Init;
+
+    // ================================================== exit ==================================================
+
+    Action Exit = () => ConfigureGameType(NoGame);
+    vars.Exit = Exit;
 
     // ================================================== onReset ==================================================
 
@@ -824,7 +856,7 @@ startup
 
     // ================================================== update ==================================================
 
-    var EmptyEventList = new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>();
+    var EmptyEventList = new List<Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>();
     Func<ExpandoObject, bool> Update = newOld =>
     {
         old = newOld;
@@ -836,16 +868,15 @@ startup
 
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
-        int mapHashCode = 0;
-        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>> localXyzEvents;
-        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>> localMapEvents;
-        XyzEventHashMap.TryGetValue(xyzHashCode, out localXyzEvents);
-        MapEventHashMap.TryGetValue(mapHashCode, out localMapEvents);
+        List<Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>> localXyzEvents;
+        EventHashMap.TryGetValue(xyzHashCode, out localXyzEvents);
         localXyzEvents = localXyzEvents ?? EmptyEventList;
-        localMapEvents = localMapEvents ?? EmptyEventList;
+        
+        // print local events:
+        //if (localXyzEvents.Count > 0) print("xyz: " + string.Join(", ", localXyzEvents.Select(@event => @event.Item2)));
 
         // Concat function means we iterate through the lists one after the other; it does not create a concatenated list
-        foreach (var @event in localXyzEvents.Concat(localMapEvents).Concat(OtherEvents))
+        foreach (var @event in localXyzEvents.Concat(OtherEvents))
         {
             if (!CompletedEvents.Contains(@event.Item2) && @event.Item5())
             {
@@ -853,7 +884,7 @@ startup
                 break;
             }
         }
-
+        
         return true;
     };
     vars.Update = Update;
@@ -885,6 +916,11 @@ startup
 init
 {
     vars.Init(old, current, settings);
+}
+
+exit
+{
+    vars.Exit();
 }
 
 onReset
