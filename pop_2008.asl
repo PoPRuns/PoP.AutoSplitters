@@ -39,7 +39,7 @@ startup
 
     // ================================================== coordinate checks ==================================================
 
-    Func<float, float, float, bool> InBounds = (min, max, pos) => pos >= min && pos <= max;
+    Func<float, float, float, bool> InBounds = (min, max, coord) => coord >= min && coord <= max;
     Func<float, float, bool> InXBoundsOld = (min, max) => old.x >= min && old.x <= max;
     Func<float, float, bool> InYBoundsOld = (min, max) => old.y >= min && old.y <= max;
     Func<float, float, bool> InZBoundsOld = (min, max) => old.z >= min && old.z <= max;
@@ -89,7 +89,7 @@ startup
         current.y >= yMin && current.y <= yMax &&
         current.z >= zMin && current.z <= zMax;
 
-    Func<float, float, float, bool> InRange = (targ, range, pos) => pos >= targ - range && pos <= targ + range;
+    Func<float, float, float, bool> InRange = (targ, range, coord) => coord >= targ - range && coord <= targ + range;
     Func<float, float, bool> InXRangeOld = (targ, range) => old.x >= targ - range && old.x <= targ + range;
     Func<float, float, bool> InYRangeOld = (targ, range) => old.y >= targ - range && old.y <= targ + range;
     Func<float, float, bool> InZRangeOld = (targ, range) => old.z >= targ - range && old.z <= targ + range;
