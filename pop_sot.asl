@@ -23,12 +23,12 @@ state("POP")
 
 // Data structures:
 // record class  Setting:    bool Default, string Slug, List<string> EventSlugs, string Description, string? ToolTip, string? ParentSlug
-// record class  Event:      int EventType, string Slug, List<string> SettingSlugs, HashParams HashParams, Func<bool> Condition
+// record class  Event:      int EventType, string Slug, List<string> SettingSlugs, HashParams HashParams, Func<bool> Condition, Action<bool> PostAction
 // record struct HashParams: (float, float, float, float, float, float)? XyzBounds, int[]? Map
 
 // Data structures as tuples:
 // Setting:    Tuple<bool, string, List<string>, string, string, string>
-// Event:      Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>
+// Event:      Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>
 // HashParams: ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>
 
 // any temporary object that is not needed after startup should be marked with a "GC" comment and set to null before startup finishes
@@ -362,13 +362,19 @@ startup
     const int ResetEvent = 1;
     const int SplitEvent = 2;
     const int MiscEvent = 3;
-    var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>(); // GC
-    Action<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> AddEvent = (eventType, slug, settingSlugs, hashParams, condition) =>
+    var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>(); // GC
+    Action<bool> emptyPostAction = s => { };
+    Action<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>> AddEvent_ =
+        (eventType, slug, settingSlugs, hashParams, condition, postAction) =>
     {
         if (events.ContainsKey(slug))
             throw new Exception("Internal exception (ASL): event " + slug + " has already been added.");
-        events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, hashParams, condition));
+        events.Add(slug, Tuple.Create(eventType, slug, settingSlugs, hashParams, condition, postAction));
     };
+
+    Action<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> AddEvent =
+        (eventType, slug, settingSlugs, hashParams, condition) => AddEvent_(eventType, slug, settingSlugs, hashParams, condition, emptyPostAction);
+
 
     Func<int, string> GetEventString = eventType =>
     {
@@ -385,36 +391,50 @@ startup
     // ================================================== runtime functions and helper variables ==================================================
 
     // Key: Hash; Value: EventList
-    var XyzEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>();
-    var MapEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>();
+    var XyzEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>>();
+    var MapEventHashMap = new Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>>();
 
     // List<Event>
-    var OtherEvents = new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>();
+    var OtherEvents = new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>();
 
     HashSet<string> CompletedEvents = null;
 
     // update block sets this to an event that is not in CompletedEvents and has been triggered on this cycle
-    Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> TriggeredEvent = null;
+    Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>> TriggeredEvent = null;
 
+    Action OnReset = null;
     Func<int, bool> CheckEvent = eventType =>
     {
         if (TriggeredEvent == null)
             return false;
         if (TriggeredEvent.Item1 != eventType)
             return false;
-        bool eventSetting = false;
-        if (TriggeredEvent.Item3.Count == 0)
-            eventSetting = true;
-        else foreach (string settingSlug in TriggeredEvent.Item3)
+        bool eventTypeEnabled = true;
+        switch (eventType)
         {
-            if (settings[settingSlug])
-            {
+        case StartEvent: eventTypeEnabled = settings.StartEnabled; break;
+        case ResetEvent: eventTypeEnabled = settings.ResetEnabled; break;
+        case SplitEvent: eventTypeEnabled = settings.SplitEnabled; break;
+        }
+        bool eventSetting = false;
+        if (eventTypeEnabled)
+        {
+            if (TriggeredEvent.Item3.Count == 0)
                 eventSetting = true;
-                break;
+            else foreach (string settingSlug in TriggeredEvent.Item3)
+            {
+                if (settings[settingSlug])
+                {
+                    eventSetting = true;
+                    break;
+                }
             }
         }
         CompletedEvents.Add(TriggeredEvent.Item2);
+        TriggeredEvent.Item6(eventSetting);
         print(GetEventString(eventType) + " " + TriggeredEvent.Item2 + " " + eventSetting);
+        if (eventType == StartEvent && !eventSetting) // if start is not enabled then the timer won't start and so a reset will never happen,
+            OnReset(); // and then start won't work even when it does get enabled; so we manually simulate a reset condition to clear CompletedEvents
         return eventSetting;
     };
 
@@ -487,7 +507,7 @@ startup
     //                                                                                                        HashParams:
     //                                                                                   SettingSlugs:         (float,float,float,
     //                                   EventType:int        Slug:string                 List<string>         float,float,float)?         Condition:Func<bool>
-    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(StartEvent, "Start",                   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.startValue == 1 && current.xCam <= -92.8f)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
+    (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(StartEvent, "Start",                   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && old.startValue != 1 && current.startValue == 1 && current.xCam <= -92.8f)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(ResetEvent, "Reset",                   new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.xCam <= -92f && current.xCam > -92.8f)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
 
     (actionBounds=(x1,x2,y1,y2,z1,z2) => AddEvent(SplitEvent, "GasStation",              new List<string> {}, Bounds(x1,x2,y1,y2,z1,z2),   () => InPosWithBoundsCurrent(x1, x2, y1, y2, z1, z2))) (252f, 258f, 130.647f, 134f, 22.999f, 23.001f);
@@ -554,7 +574,7 @@ startup
     {
         foreach (string eventSlug in setting.Item3)
         {
-            Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> myEvent;
+            Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>> myEvent;
             if (!events.TryGetValue(eventSlug, out myEvent))
                 throw new Exception("Internal exception (ASL): cannot write event " + eventSlug + " to setting " + setting.Item2 + " because this event doesn't exist");
             myEvent.Item3.Add(setting.Item2);
@@ -607,13 +627,13 @@ startup
         int[] hashCodesMaps = maps;
         foreach (int hashCode in hashCodesMaps)
         {
-            List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localEvents;
+            List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>> localEvents;
             if (MapEventHashMap.TryGetValue(hashCode, out localEvents))
             {
                 localEvents.Add(@event);
                 continue;
             }
-            MapEventHashMap.Add(hashCode, new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> {@event});
+            MapEventHashMap.Add(hashCode, new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>> {@event});
         }
         if (@event.Item4.Item2 != null)
             continue;
@@ -621,13 +641,13 @@ startup
         int[] hashCodesXyz = GetHashCodesForBounds(xyzBounds.Item1, xyzBounds.Item2, xyzBounds.Item3, xyzBounds.Item4, xyzBounds.Item5, xyzBounds.Item6);
         foreach (int hashCode in hashCodesXyz)
         {
-            List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localEvents;
+            List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>> localEvents;
             if (XyzEventHashMap.TryGetValue(hashCode, out localEvents))
             {
                 localEvents.Add(@event);
                 continue;
             }
-            XyzEventHashMap.Add(hashCode, new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> {@event});
+            XyzEventHashMap.Add(hashCode, new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>> {@event});
         }
     }
 
@@ -693,7 +713,7 @@ startup
     int mapEventHashMapCapacity;
     {
         FieldInfo entriesField =
-            typeof(Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>)
+            typeof(Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>>)
             .GetField("entries", BindingFlags.NonPublic | BindingFlags.Instance);
         Array xyzBackingArray = (Array)entriesField.GetValue(XyzEventHashMap);
         Array mapBackingArray = (Array)entriesField.GetValue(MapEventHashMap);
@@ -705,12 +725,12 @@ startup
     infoBuilder.Append("OtherEvents capacity: " + OtherEvents.Count.ToString() + "/" + OtherEvents.Capacity.ToString() + "\r\n");
     infoBuilder.Append("\r\n");
 
-    Action<Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>> PrintBucketInfo = eventHashMap =>
+    Action<Dictionary<int, List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>>> PrintBucketInfo = eventHashMap =>
     {
         int collisionSum = 0;
         int maxEventsPerBucket = 0;
         double avgEventsPerBucket;
-        var bucketGroupsPerEventCount = new List<List<List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>>();
+        var bucketGroupsPerEventCount = new List<List<List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>>>();
         var bucketCountsPerEventCount = new List<int>();
         const int MinEventCountPerBucketToCompute = 2;
         foreach (var bucket in eventHashMap.Values)
@@ -720,7 +740,7 @@ startup
                 maxEventsPerBucket = bucket.Count;
             for (int i = bucketGroupsPerEventCount.Count; i <= bucket.Count; i++)
             {
-                bucketGroupsPerEventCount.Add(new List<List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>>());
+                bucketGroupsPerEventCount.Add(new List<List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>>());
                 bucketCountsPerEventCount.Add(0);
             }
             if (bucket.Count >= MinEventCountPerBucketToCompute)
@@ -797,7 +817,7 @@ startup
 
     // ================================================== onReset ==================================================
 
-    Action OnReset = () =>
+    OnReset = () =>
     {
         CompletedEvents.Clear();
         print("CompletedEvents cleared.");
@@ -806,7 +826,7 @@ startup
 
     // ================================================== update ==================================================
 
-    var EmptyEventList = new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>>();
+    var EmptyEventList = new List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>>();
     Func<ExpandoObject, bool> Update = newOld =>
     {
         old = newOld;
@@ -819,8 +839,8 @@ startup
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
         int mapHashCode = 0;
-        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localXyzEvents;
-        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>>> localMapEvents;
+        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>> localXyzEvents;
+        List<Tuple<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>, Action<bool>>> localMapEvents;
         XyzEventHashMap.TryGetValue(xyzHashCode, out localXyzEvents);
         MapEventHashMap.TryGetValue(mapHashCode, out localMapEvents);
         localXyzEvents = localXyzEvents ?? EmptyEventList;
