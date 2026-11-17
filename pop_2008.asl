@@ -273,7 +273,7 @@ startup
     // xyz hashing
 
     // see the hashing section in DOCUMENTATION.md for guidance on what bucket size to choose for each game
-    const float BucketSize = 20f; // <----------------------------------------------------------------------------------------------------- game-specific
+    const float BucketSize = 20f; // <---------------------------------------------------------------------------------------------------- game-specific
 
     const uint XyzSeed = 17;
     Func<int> GetXyzHashCodeCurrent = () =>
@@ -290,7 +290,7 @@ startup
     // general hashing
 
     // do not call at run time; rather make a separate runtime version of this method that uses a const seed and unrolls the loop and inlines individual hash code computations
-    // e.g. see GetXyzHashCodeCurrent above; seed should be a different prime number for each implementation
+    // e.g. see GetXyzHashCodeCurrent above; seed should be a different prime number for each implementation, (optimally of the form 2^n +/- 1, but it's not a big deal)
     Func<uint, int[], int> ScrambleHashCodes = (seed, hashCodes) =>
     {
         uint hash = seed;
@@ -298,6 +298,8 @@ startup
             hash = hash * FnvPrime + (uint)hashCode;
         return (int)hash;
     };
+
+    Func<uint, int[], int[]> HashHashes = (seed, weakHashes) => weakHashes.Select(weakHash => ScrambleHashCodes(seed, new int[] {weakHash})).ToArray();
 
     // xyz hashing
 
@@ -361,7 +363,7 @@ startup
     const int NoGame = 0;
     const int BaseGame = 1;
     const int Epilogue = 2;
-    const int GameCount = 3;
+    const int GameCount = 3; // <---------------------------------------------------------------------------------------------------- game-specific (and AddEvent overloads, GetGameTypeString below)
 
     // Key: EventSlug; Value: Event
     var eventMaps = new Dictionary<string, Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>[GameCount]; // GC
@@ -634,6 +636,7 @@ startup
     Action<float, float, float, float> actionXyzRange;
     Action<float, float, float, float, float> actionXyZRange;
     Action<float, float, float, float, float, float> actionXyzBounds;
+    Action<int[]> actionInts;
 
     //                                                                                   SettingSlugs:
     //                                   EventType:int            Slug:string             List<string>                  HashCodes:int[]                   Condition:Func<bool>
