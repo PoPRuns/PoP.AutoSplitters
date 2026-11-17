@@ -436,24 +436,6 @@ startup
 
     // ================================================== game-specific functions and helper variables ==================================================
 
-    bool InitCustomVariables = true;
-
-    const ulong MainWeaponsMask   = 0x37C0000000000000UL;
-    const ulong SwordsMask        = 0x0005FFFF00000000UL;
-    const ulong AxesMask          = 0x0002000000003FFEUL;
-    const ulong MacesMask         = 0x000000000FF00000UL;
-    const ulong DaggersMask       = 0x00000000000FC000UL;
-    const ulong SecretWeaponsMask = 0x00080000F0000000UL;
-    const ulong ChestsMask        = 0x0003FFFFFFFFFFFFUL;
-    const ulong WeaponsMask       = 0x37CFFFFFFFFFFFFEUL;
-
-    Func<int[], bool> MapOneOfCurrent = maps => Array.Exists(maps, map => map == current.map);
-
-    Func<int, bool> CutsceneHit = map => old.cutscene == 0 && current.cutscene == 1 && current.map == map;
-    Func<int, bool> BossDie = map => old.cutscene == 0 && current.cutscene == 1 && current.map == map && current.bossHealth == 0;
-    Func<int, bool> StoryGateAdv = storyId => old.storyValue != storyId && current.storyValue == storyId;
-    Func<int, int, bool> MapChange = (oldMapId, currentMapId) => old.map == oldMapId && current.map == currentMapId;
-
     // Gallery / tracker helpers (Hamming weight algorithm)
     Func<ulong, int> CountBits = (x) =>
     {
@@ -466,12 +448,43 @@ startup
         return (int)(x & 0x7F);
     };
 
-    Func<ulong, ulong, string> GetTrackerText = (bits, expectedBits) =>
-    {
-        int count = CountBits(bits & expectedBits);
-        int maxCount = CountBits(expectedBits);
-        return count.ToString() + " / " + maxCount.ToString();
-    };
+    const ulong ChestMask        = 0x0003FFFFFFFFFFFFUL;
+    const ulong WeaponMask       = 0x37CFFFFFFFFFFFFEUL;
+    const ulong MainWeaponMask   = 0x37C0000000000000UL;
+    const ulong SwordMask        = 0x0005FFFF00000000UL;
+    const ulong AxeMask          = 0x0002000000003FFEUL;
+    const ulong MaceMask         = 0x000000000FF00000UL;
+    const ulong DaggerMask       = 0x00000000000FC000UL;
+    const ulong SecretWeaponMask = 0x00080000F0000000UL;
+
+    int StoryValue = 0;
+    ulong VirtualChestBits = 0; // virtual means before mask is applied
+    ulong ChestBits = 0;
+    ulong VirtualWeaponBits = 0;
+    ulong WeaponBits = 0;
+    ulong MainWeaponBits = 0;
+    ulong SwordBits = 0;
+    ulong AxeBits = 0;
+    ulong MaceBits = 0;
+    ulong DaggerBits = 0;
+    ulong SecretWeaponBits = 0;
+
+    string MaxChests        = CountBits(ChestMask).ToString();
+    string MaxWeapons       = CountBits(WeaponMask).ToString();
+    string MaxMainWeapons   = CountBits(MainWeaponMask).ToString();
+    string MaxSwords        = CountBits(SwordMask).ToString();
+    string MaxAxes          = CountBits(AxeMask).ToString();
+    string MaxMaces         = CountBits(MaceMask).ToString();
+    string MaxDaggers       = CountBits(DaggerMask).ToString();
+    string MaxSecretWeapons = CountBits(SecretWeaponMask).ToString();
+    string MaxCollectibles  = (CountBits(ChestMask) + CountBits(WeaponMask)).ToString();
+
+    Func<int[], bool> MapOneOfCurrent = maps => Array.Exists(maps, map => map == current.map);
+
+    Func<int, bool> CutsceneHit = map => old.cutscene == 0 && current.cutscene == 1 && current.map == map;
+    Func<int, bool> BossDie = map => old.cutscene == 0 && current.cutscene == 1 && current.map == map && current.bossHealth == 0;
+    Func<int, bool> StoryGateAdv = storyId => old.storyValue != storyId && current.storyValue == storyId;
+    Func<int, int, bool> MapChange = (oldMapId, currentMapId) => old.map == oldMapId && current.map == currentMapId;
 
     ulong IgtValue = 0;
 
@@ -1025,7 +1038,6 @@ startup
         old = newOld;
         current = newCurrent;
         settings = newSettings;
-        InitCustomVariables = true;
     };
     vars.Init = Init;
 
@@ -1034,7 +1046,6 @@ startup
     Action OnReset = () =>
     {
         CompletedEvents.Clear();
-        InitCustomVariables = true;
         IgtValue = 0;
         print("CompletedEvents cleared.");
     };
@@ -1047,37 +1058,30 @@ startup
     {
         old = newOld;
 
-        if (InitCustomVariables || old.storyValue != current.storyValue)
-            timer.Run.Metadata.SetCustomVariable("storyGate", current.storyValue.ToString());
-
-        if (InitCustomVariables || old.chestBits != current.chestBits)
-            timer.Run.Metadata.SetCustomVariable("chests", GetTrackerText(current.chestBits, ChestsMask));
-
-        if (InitCustomVariables || old.weaponBits != current.weaponBits)
+        bool collectiblesUpdated = false;
+        if (StoryValue        != (StoryValue        = current.storyValue))                    timer.Run.Metadata.SetCustomVariable("storyGate",     StoryValue.ToString());
+        if (VirtualChestBits  != (VirtualChestBits  = current.chestBits)  && (collectiblesUpdated = true))
         {
-            if (InitCustomVariables || (old.weaponBits & MainWeaponsMask) != (current.weaponBits & MainWeaponsMask))
-                timer.Run.Metadata.SetCustomVariable("mainWeapons", GetTrackerText(current.weaponBits, MainWeaponsMask));
-            if (InitCustomVariables || (old.weaponBits & SwordsMask) != (current.weaponBits & SwordsMask))
-                timer.Run.Metadata.SetCustomVariable("swords", GetTrackerText(current.weaponBits, SwordsMask));
-            if (InitCustomVariables || (old.weaponBits & AxesMask) != (current.weaponBits & AxesMask))
-                timer.Run.Metadata.SetCustomVariable("axes", GetTrackerText(current.weaponBits, AxesMask));
-            if (InitCustomVariables || (old.weaponBits & MacesMask) != (current.weaponBits & MacesMask))
-                timer.Run.Metadata.SetCustomVariable("maces", GetTrackerText(current.weaponBits, MacesMask));
-            if (InitCustomVariables || (old.weaponBits & DaggersMask) != (current.weaponBits & DaggersMask))
-                timer.Run.Metadata.SetCustomVariable("daggers", GetTrackerText(current.weaponBits, DaggersMask));
-            if (InitCustomVariables || (old.weaponBits & SecretWeaponsMask) != (current.weaponBits & SecretWeaponsMask))
-                timer.Run.Metadata.SetCustomVariable("secretWeapons", GetTrackerText(current.weaponBits, SecretWeaponsMask));
+            if (ChestBits        != (ChestBits        = ChestMask        & VirtualChestBits)) timer.Run.Metadata.SetCustomVariable("chests",        CountBits(ChestBits)        + " / " + MaxChests);
         }
-
-        if (InitCustomVariables || old.chestBits != current.chestBits || old.weaponBits != current.weaponBits)
+        if (VirtualWeaponBits != (VirtualWeaponBits = current.weaponBits) && (collectiblesUpdated = true))
         {
-            int cCount = CountBits(current.chestBits & ChestsMask);
-            int wCount = CountBits(current.weaponBits & WeaponsMask);
-            int totalCount = cCount + wCount;
-            timer.Run.Metadata.SetCustomVariable("collectibles", totalCount + "/108\u2009-\u2009C:" + cCount + ",\u2009W:" + wCount);
+            if (WeaponBits       != (WeaponBits       = WeaponMask       & VirtualWeaponBits));
+            if (MainWeaponBits   != (MainWeaponBits   = MainWeaponMask   & WeaponBits))       timer.Run.Metadata.SetCustomVariable("mainWeapons",   CountBits(MainWeaponBits)   + " / " + MaxMainWeapons);
+            if (SwordBits        != (SwordBits        = SwordMask        & WeaponBits))       timer.Run.Metadata.SetCustomVariable("swords",        CountBits(SwordBits)        + " / " + MaxSwords);
+            if (AxeBits          != (AxeBits          = AxeMask          & WeaponBits))       timer.Run.Metadata.SetCustomVariable("axes",          CountBits(AxeBits)          + " / " + MaxAxes);
+            if (MaceBits         != (MaceBits         = MaceMask         & WeaponBits))       timer.Run.Metadata.SetCustomVariable("maces",         CountBits(MaceBits)         + " / " + MaxMaces);
+            if (DaggerBits       != (DaggerBits       = DaggerMask       & WeaponBits))       timer.Run.Metadata.SetCustomVariable("daggers",       CountBits(DaggerBits)       + " / " + MaxDaggers);
+            if (SecretWeaponBits != (SecretWeaponBits = SecretWeaponMask & WeaponBits))       timer.Run.Metadata.SetCustomVariable("secretWeapons", CountBits(SecretWeaponBits) + " / " + MaxSecretWeapons);
         }
-
-        InitCustomVariables = false;
+        if (collectiblesUpdated)
+        {
+            int chests = CountBits(ChestBits);
+            int weapons = CountBits(WeaponBits);
+            int total = chests + weapons;
+            string collectiblesText = total + "/" + MaxCollectibles + "\u2009-\u2009C:" + chests + ",\u2009W:" + weapons;
+                                                                                              timer.Run.Metadata.SetCustomVariable("collectibles",  collectiblesText);
+        }
 
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
