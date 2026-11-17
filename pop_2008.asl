@@ -370,7 +370,7 @@ startup
     for (int i = 0; i < GameCount; i++)
         eventMaps[i] = new Dictionary<string, Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>();
     var events = new Dictionary<string, Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>(); // GC
-    Action<bool> emptytAction = _ => { };
+    Action<bool> emptyPostAction = _ => { };
     Action<int, string, List<string>, int[], Func<bool>, Action<bool>, int> AddEventBase =
         (eventType, slug, settingSlugs, hashCodes, condition, postAction, gameType) =>
     {
@@ -383,10 +383,10 @@ startup
     };
 
     Action<int, string, List<string>, int[], Func<bool>> AddEventB = (eventType, slug, settingSlugs, hashCodes, condition)
-        => AddEventBase(eventType, slug, settingSlugs, hashCodes, condition, emptytAction, BaseGame);
+        => AddEventBase(eventType, slug, settingSlugs, hashCodes, condition, emptyPostAction, BaseGame);
 
     Action<int, string, List<string>, int[], Func<bool>> AddEventE = (eventType, slug, settingSlugs, hashCodes, condition)
-        => AddEventBase(eventType, slug, settingSlugs, hashCodes, condition, emptytAction, Epilogue);
+        => AddEventBase(eventType, slug, settingSlugs, hashCodes, condition, emptyPostAction, Epilogue);
     
     Action<int, string, List<string>, int[], Func<bool>, Action<bool>> AddEventB_ = 
         (eventType, slug, settingSlugs, hashCodes, condition, postAction)
