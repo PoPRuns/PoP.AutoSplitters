@@ -375,7 +375,6 @@ startup
     Action<int, string, List<string>, ValueTuple<ValueTuple<float, float, float, float, float, float>?, int[]>, Func<bool>> AddEvent =
         (eventType, slug, settingSlugs, hashParams, condition) => AddEvent_(eventType, slug, settingSlugs, hashParams, condition, emptyPostAction);
 
-
     Func<int, string> GetEventString = eventType =>
     {
         switch (eventType)
