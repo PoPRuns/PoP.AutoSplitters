@@ -356,7 +356,7 @@ startup
     const int SplitEvent = 2;
     const int MiscEvent = 3;
     var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>, Action<bool>>>(); // GC
-    Action<bool> emptyPostAction = s => { };
+    Action<bool> emptyPostAction = _ => { };
     Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>, Action<bool>> AddEvent_ =
         (eventType, slug, settingSlugs, xyzBounds, condition, postAction) =>
     {

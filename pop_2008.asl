@@ -365,7 +365,7 @@ startup
     for (int i = 0; i < GameCount; i++)
         eventMaps[i] = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>, Action<bool>>>();
     var events = new Dictionary<string, Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>, Action<bool>>>(); // GC
-    Action<bool> emptyPostAction = s => { };
+    Action<bool> emptyPostAction = _ => { };
     Action<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>, Action<bool>, int> AddEvent =
         (eventType, slug, settingSlugs, xyzBounds, condition, postAction, gameType) =>
     {
