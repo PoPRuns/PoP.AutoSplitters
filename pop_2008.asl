@@ -440,26 +440,39 @@ startup
     // update block sets this to an event that is not in CompletedEvents and has been triggered on this cycle
     Tuple<int, string, List<string>, ValueTuple<float, float, float, float, float, float>?, Func<bool>, Action<bool>> TriggeredEvent = null;
 
+    Action OnReset = null;
     Func<int, bool> CheckEvent = eventType =>
     {
         if (TriggeredEvent == null)
             return false;
         if (TriggeredEvent.Item1 != eventType)
             return false;
-        bool eventSetting = false;
-        if (TriggeredEvent.Item3.Count == 0)
-            eventSetting = true;
-        else foreach (string settingSlug in TriggeredEvent.Item3)
+        bool eventTypeEnabled = true;
+        switch (eventType)
         {
-            if (settings[settingSlug])
-            {
+        case StartEvent: eventTypeEnabled = settings.StartEnabled; break;
+        case ResetEvent: eventTypeEnabled = settings.ResetEnabled; break;
+        case SplitEvent: eventTypeEnabled = settings.SplitEnabled; break;
+        }
+        bool eventSetting = false;
+        if (eventTypeEnabled)
+        {
+            if (TriggeredEvent.Item3.Count == 0)
                 eventSetting = true;
-                break;
+            else foreach (string settingSlug in TriggeredEvent.Item3)
+            {
+                if (settings[settingSlug])
+                {
+                    eventSetting = true;
+                    break;
+                }
             }
         }
         CompletedEvents.Add(TriggeredEvent.Item2);
         TriggeredEvent.Item6(eventSetting);
         print(GetEventString(eventType) + " " + TriggeredEvent.Item2 + " " + eventSetting);
+        if (eventType == StartEvent && !eventSetting) // if start is not enabled then the timer won't start and so a reset will never happen,
+            OnReset(); // and then start won't work even when it does get enabled; so we manually simulate a reset condition to clear CompletedEvents
         return eventSetting;
     };
 
@@ -625,9 +638,9 @@ startup
     //                                                                                                                 XyzBounds:
     //                                                                                 SettingSlugs:                    (float,float,float,
     //                                   EventType:int          Slug:string             List<string>                    float,float,float)?        Condition:Func<bool>
-    (actionRange=(x,y,z,range)        => AddEventB_(StartEvent, "StartLoad",           new List<string> {"baseGame"}, BoundsRange(x,y,z,range),    () => InPosExactXyOldOnly(x, y), s => { if (!s) CompletedEvents.Remove("StartLoad"); })) (-465f, -351f, -24f, 5f);
+    (actionRange=(x,y,z,range)        => AddEventB(StartEvent, "StartLoad",           new List<string> {"baseGame"}, BoundsRange(x,y,z,range),    () => InPosExactXyOldOnly(x, y))) (-465f, -351f, -24f, 5f);
     (actionRange=(x,y,z,range)        => AddEventB(ResetEvent,  "ResetLoad",           new List<string> {"baseGame"}, BoundsRange(x,y,z,range),    () => InPosExactXyCurrentOnly(x, y))) (-465f, -351f, -24f, 5f);
-    (actionRange=(x,y,z,range)        => AddEventB_(StartEvent, "StartNew",            new List<string> {"baseGame"}, BoundsRange(x,y,z,5f),       () => InPosWithRangeOldOnly(x, y, z, range), s => { if (!s) CompletedEvents.Remove("StartNew"); })) (-462.302f, -348.223f, -23.956f, 0.003f);
+    (actionRange=(x,y,z,range)        => AddEventB(StartEvent, "StartNew",            new List<string> {"baseGame"}, BoundsRange(x,y,z,5f),       () => InPosWithRangeOldOnly(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
     (actionRange=(x,y,z,range)        => AddEventB(ResetEvent,  "ResetNew",            new List<string> {"baseGame"}, BoundsRange(x,y,z,range),    () => InPosWithRangeCurrentOnly(x, y, z, range))) (-462.302f, -348.223f, -23.956f, 0.003f);
 
     (actionRange=(x,y,z,range)        => AddEventB(SplitEvent,  "CollapsingBridge",    new List<string> {},           BoundsRange(x,y,z,range),    () => InPosWithRangeCurrent(x, y, z, range))) (-310.25f, -241.0f, -30.2f, 0.2f);
@@ -986,7 +999,7 @@ startup
 
     // ================================================== onReset ==================================================
 
-    Action OnReset = () =>
+    OnReset = () =>
     {
         CompletedEvents.Clear();
         print("CompletedEvents cleared.");
