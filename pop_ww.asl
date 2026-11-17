@@ -1059,20 +1059,17 @@ startup
         old = newOld;
 
         bool collectiblesUpdated = false;
-        if (StoryValue        != (StoryValue        = current.storyValue))                    timer.Run.Metadata.SetCustomVariable("storyGate",     StoryValue.ToString());
-        if (VirtualChestBits  != (VirtualChestBits  = current.chestBits)  && (collectiblesUpdated = true))
+        if (StoryValue        != (StoryValue        = current.storyValue))              timer.Run.Metadata.SetCustomVariable("storyGate",     StoryValue.ToString());
+        if (VirtualChestBits  != (VirtualChestBits  = current.chestBits)  && ChestBits  != (ChestBits  = ChestMask  & VirtualChestBits)  && (collectiblesUpdated = true))
+                                                                                        timer.Run.Metadata.SetCustomVariable("chests",        CountBits(ChestBits)        + " / " + MaxChests);
+        if (VirtualWeaponBits != (VirtualWeaponBits = current.weaponBits) && WeaponBits != (WeaponBits = WeaponMask & VirtualWeaponBits) && (collectiblesUpdated = true))
         {
-            if (ChestBits        != (ChestBits        = ChestMask        & VirtualChestBits)) timer.Run.Metadata.SetCustomVariable("chests",        CountBits(ChestBits)        + " / " + MaxChests);
-        }
-        if (VirtualWeaponBits != (VirtualWeaponBits = current.weaponBits) && (collectiblesUpdated = true))
-        {
-            if (WeaponBits       != (WeaponBits       = WeaponMask       & VirtualWeaponBits));
-            if (MainWeaponBits   != (MainWeaponBits   = MainWeaponMask   & WeaponBits))       timer.Run.Metadata.SetCustomVariable("mainWeapons",   CountBits(MainWeaponBits)   + " / " + MaxMainWeapons);
-            if (SwordBits        != (SwordBits        = SwordMask        & WeaponBits))       timer.Run.Metadata.SetCustomVariable("swords",        CountBits(SwordBits)        + " / " + MaxSwords);
-            if (AxeBits          != (AxeBits          = AxeMask          & WeaponBits))       timer.Run.Metadata.SetCustomVariable("axes",          CountBits(AxeBits)          + " / " + MaxAxes);
-            if (MaceBits         != (MaceBits         = MaceMask         & WeaponBits))       timer.Run.Metadata.SetCustomVariable("maces",         CountBits(MaceBits)         + " / " + MaxMaces);
-            if (DaggerBits       != (DaggerBits       = DaggerMask       & WeaponBits))       timer.Run.Metadata.SetCustomVariable("daggers",       CountBits(DaggerBits)       + " / " + MaxDaggers);
-            if (SecretWeaponBits != (SecretWeaponBits = SecretWeaponMask & WeaponBits))       timer.Run.Metadata.SetCustomVariable("secretWeapons", CountBits(SecretWeaponBits) + " / " + MaxSecretWeapons);
+            if (MainWeaponBits   != (MainWeaponBits   = MainWeaponMask   & WeaponBits)) timer.Run.Metadata.SetCustomVariable("mainWeapons",   CountBits(MainWeaponBits)   + " / " + MaxMainWeapons);
+            if (SwordBits        != (SwordBits        = SwordMask        & WeaponBits)) timer.Run.Metadata.SetCustomVariable("swords",        CountBits(SwordBits)        + " / " + MaxSwords);
+            if (AxeBits          != (AxeBits          = AxeMask          & WeaponBits)) timer.Run.Metadata.SetCustomVariable("axes",          CountBits(AxeBits)          + " / " + MaxAxes);
+            if (MaceBits         != (MaceBits         = MaceMask         & WeaponBits)) timer.Run.Metadata.SetCustomVariable("maces",         CountBits(MaceBits)         + " / " + MaxMaces);
+            if (DaggerBits       != (DaggerBits       = DaggerMask       & WeaponBits)) timer.Run.Metadata.SetCustomVariable("daggers",       CountBits(DaggerBits)       + " / " + MaxDaggers);
+            if (SecretWeaponBits != (SecretWeaponBits = SecretWeaponMask & WeaponBits)) timer.Run.Metadata.SetCustomVariable("secretWeapons", CountBits(SecretWeaponBits) + " / " + MaxSecretWeapons);
         }
         if (collectiblesUpdated)
         {
@@ -1080,7 +1077,7 @@ startup
             int weapons = CountBits(WeaponBits);
             int total = chests + weapons;
             string collectiblesText = total + "/" + MaxCollectibles + "\u2009-\u2009C:" + chests + ",\u2009W:" + weapons;
-                                                                                              timer.Run.Metadata.SetCustomVariable("collectibles",  collectiblesText);
+                                                                                        timer.Run.Metadata.SetCustomVariable("collectibles",  collectiblesText);
         }
 
         TriggeredEvent = null;
