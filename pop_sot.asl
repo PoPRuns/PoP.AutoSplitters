@@ -705,7 +705,7 @@ startup
     infoBuilder.AppendLine();
 
     infoBuilder.AppendLine("Events detected:");
-    infoBuilder.AppendLine("\t" + "{EventType}     {Event}".PadRight(46) + " {HasXyzBounds} => {Count:[..Settings]}");
+    infoBuilder.AppendLine("\t" + "{EventType}     {Event}".PadRight(46) + " {HasHash} => {Count:[..Settings]}");
     foreach (var @event in events.Values)
     {
         if (@event.Item3.Count == 0)
