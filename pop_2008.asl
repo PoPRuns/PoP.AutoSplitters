@@ -361,8 +361,8 @@ startup
     const int MiscEvent = 3;
 
     const int NoGame = 0;
-    const int BaseGame = 1;
-    const int Epilogue = 2;
+    const int PoP2k8Base = 1;
+    const int PoP2k8Epilogue = 2;
     const int GameCount = 3; // <---------------------------------------------------------------------------------------------------- game-specific (and AddEvent overloads, GetGameTypeString below)
 
     // Key: EventSlug; Value: Event
@@ -383,18 +383,18 @@ startup
     };
 
     Action<int, string, List<string>, int[], Func<bool>> AddEventB = (eventType, slug, settingSlugs, hashCodes, condition)
-        => AddEventBase(eventType, slug, settingSlugs, hashCodes, condition, emptyPostAction, BaseGame);
+        => AddEventBase(eventType, slug, settingSlugs, hashCodes, condition, emptyPostAction, PoP2k8Base);
 
     Action<int, string, List<string>, int[], Func<bool>> AddEventE = (eventType, slug, settingSlugs, hashCodes, condition)
-        => AddEventBase(eventType, slug, settingSlugs, hashCodes, condition, emptyPostAction, Epilogue);
+        => AddEventBase(eventType, slug, settingSlugs, hashCodes, condition, emptyPostAction, PoP2k8Epilogue);
     
     Action<int, string, List<string>, int[], Func<bool>, Action<bool>> AddEventB_ = 
         (eventType, slug, settingSlugs, hashCodes, condition, postAction)
-        => AddEventBase(eventType, slug, settingSlugs, hashCodes, condition, postAction, BaseGame);
+        => AddEventBase(eventType, slug, settingSlugs, hashCodes, condition, postAction, PoP2k8Base);
 
     Action<int, string, List<string>, int[], Func<bool>, Action<bool>> AddEventE_ =
         (eventType, slug, settingSlugs, hashCodes, condition, postAction)
-        => AddEventBase(eventType, slug, settingSlugs, hashCodes, condition, postAction, Epilogue);
+        => AddEventBase(eventType, slug, settingSlugs, hashCodes, condition, postAction, PoP2k8Epilogue);
     
     Func<int, string> GetEventString = eventType =>
     {
@@ -412,10 +412,10 @@ startup
     {
         switch (gameType)
         {
-        case NoGame:   return "NoGame";
-        case BaseGame: return "BaseGame";
-        case Epilogue: return "Epilogue";
-        default:       return "UnknownGame";
+        case NoGame:         return "NoGame";
+        case PoP2k8Base:     return "PoP2k8Base";
+        case PoP2k8Epilogue: return "PoP2k8Epilogue";
+        default:             return "UnknownGame";
         }
     };
 
@@ -1019,7 +1019,7 @@ startup
 
         if (GameTypeUpdateRequired && current.seedPtr != 0)
         {
-            int gameType = game.MainWindowTitle.ToLower().Contains("reenergized") ? Epilogue : BaseGame;
+            int gameType = game.MainWindowTitle.ToLower().Contains("reenergized") ? PoP2k8Epilogue : PoP2k8Base;
             ConfigureGameType(gameType);
             GameTypeUpdateRequired = false;
         }
@@ -1042,6 +1042,7 @@ startup
                 break;
             }
         }
+
         return true;
     };
     vars.Update = Update;
