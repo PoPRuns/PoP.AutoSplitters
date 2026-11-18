@@ -1026,12 +1026,12 @@ startup
     (actionInts=maps                     => AddEventWW_(SplitEvent, "kaileena",          new List<string> {}, maps,                             () => WWIsBossDie(maps), _ => EndRun())) (new int[] {989966866});
     (actionInts=maps                     => AddEventWW(SplitEvent,  "shahdee",           new List<string> {}, maps,                             () => WWIsBossDie(maps))) (new int[] {1006801609});
 
-    (action=()                           => AddEventWW(SplitEvent,  "rng59",             new List<string> {}, null,                             () => WWIsStoryGateAdv(59))) ();
-    (action=()                           => AddEventWW(SplitEvent,  "rng63",             new List<string> {}, null,                             () => WWIsStoryGateAdv(63))) ();
-    (action=()                           => AddEventWW(SplitEvent,  "kaileenaFirst",     new List<string> {}, null,                             () => WWIsStoryGateAdv(38))) ();
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "rng59",             new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => WWIsStoryGateAdv(59))) (-173f, -163f, -180f, -170f, 353f, 363f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "rng63",             new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => WWIsStoryGateAdv(63))) (-170f, -160f, -32f, -22f, 435f, 445f);
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "kaileenaFirst",     new List<string> {}, maps,                             () => WWIsStoryGateAdv(38))) (new int[] {1006704431});
 
     (actionInts=maps                     => AddEventWW(SplitEvent,  "banana",            new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.secondaryWeapon != 50 && current.secondaryWeapon == 50)) (new int[] {587202754, 587203393});
-    (action=()                           => AddEventWW(SplitEvent,  "foundryFountain",   new List<string> {}, null,                             () => (current.storyValue == 58 || current.storyValue == 59) && old.state != 11 && current.state == 11)) ();
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "foundryFountain",   new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => (current.storyValue == 58 || current.storyValue == 59) && old.state != 11 && current.state == 11)) (-173f, -163f, -180f, -170f, 353f, 363f);
 
     (actionInts=maps                     => AddEventWW(SplitEvent,  "hourglassRevisit",  new List<string> {}, maps,                             () => WWIsMapChange(1006704427, maps[0]) && current.storyValue == 45)) (new int[] {1006704429});
     (actionInts=maps                     => AddEventWW(SplitEvent,  "trPortalEnter",     new List<string> {}, maps,                             () => WWIsMapChange(1006704431, maps[0]) && current.storyValue == 45)) (new int[] {-1509855113});
