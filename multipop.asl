@@ -1414,6 +1414,7 @@ startup
     {
         CompletedEvents.Clear();
         print("CompletedEvents cleared.");
+        WWIgtValue = 0;
         EndRun();
     };
     vars.OnReset = OnReset;
@@ -1523,6 +1524,8 @@ startup
 
     Func<TimeSpan?> GameTime = () =>
     {
+        if (CurrentRun != CurrentGame)
+            return null;
         switch (CurrentRun)
         {
         case NoGame:
