@@ -242,6 +242,8 @@ tempList = null;
 Now, the `tempList` variable no longer references the actual list object that lives on the heap, thus that object no longer has a single reference, and the runtime will automatically free it during its garbage collection routine.
 
 So, if we have any large temporary collections that are no longer needed after their temporary usage, we should de-reference them once we are done using them.
+
+Finally, after de-referencing all unneeded collections, it is good practice to call `GC.Collect()` to force garbage collection. As [this](https://youtu.be/eZuMpzqnfMM) video and its description show, this can actually decrease memory usage for the first few minutes after the script is loaded by tenfold, and can prevent a lag spike after the run starts by transferring that lag spike to the script's startup. (Realistically, LiveSplit itself should be doing this after compiling the ASL script and invoking the `startup` block, but it's not so we can do it manually instead.) ***WARNING: `GC.Collect()` is an expensive operation and should only be called once from the `startup` block, NOT many times throughout the lifetime of the script.***
 ### Which Block?
 When we create a lambda function and assign it to a variable, we are performing a heap allocation every time. And if the function captures some variable, then we are also performing an extra heap allocation for the required closure (though this is only done once per code block if the lambdas are created on the outer layer of the code block, i.e. not in a code block within a code block, in which case an extra closure for the nested code block may be created).
 
