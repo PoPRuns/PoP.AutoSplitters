@@ -405,9 +405,9 @@ startup
     {
         switch (gameType)
         {
-        case NoGame:  return "NoGame";
-        case TFS:     return "TFS";
-        default:      return "UnknownGame";
+        case NoGame: return "NoGame";
+        case TFS:    return "TFS";
+        default:     return "UnknownGame";
         }
     };
 

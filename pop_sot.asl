@@ -403,9 +403,9 @@ startup
     {
         switch (gameType)
         {
-        case NoGame:   return "NoGame";
-        case SoT:      return "SoT";
-        default:       return "UnknownGame";
+        case NoGame: return "NoGame";
+        case SoT:    return "SoT";
+        default:     return "UnknownGame";
         }
     };
 

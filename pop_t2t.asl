@@ -394,9 +394,9 @@ startup
     {
         switch (gameType)
         {
-        case NoGame:  return "NoGame";
-        case T2T:     return "T2T";
-        default:      return "UnknownGame";
+        case NoGame: return "NoGame";
+        case T2T:    return "T2T";
+        default:     return "UnknownGame";
         }
     };
 
