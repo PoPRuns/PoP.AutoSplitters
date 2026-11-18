@@ -549,6 +549,8 @@ startup
 
     // ================================================== game-specific functions and helper variables ==================================================
 
+    bool BetweenGames = false;
+
     // SoT
 
     int SoTSandClouds = -1;
@@ -626,6 +628,10 @@ startup
     AddSetting(true, "MultiPoPSoT", new List<string> {"SoTStart"},                   "Prince of Persia: The Sands of Time", "Start/split for SoT", null);
     AddSetting(true, "MultiPoPWW",  new List<string> {"WWStart"},                    "Prince of Persia: Warrior Within",    "Start/split for WW",  null);
     AddSetting(true, "MultiPoPT2T", new List<string> {"T2TStartLoad","T2TStartNew"}, "Prince of Persia: The Two Thrones",   "Start/split for T2T", null);
+
+    AddSetting(true, "SoTStartSplit", new List<string> {"SoTStartSplit"},                        "Start New Game", "Split on starting an SoT run", "MultiPoPSoT");
+    AddSetting(true, "WWStartSplit",  new List<string> {"WWStartSplit"},                         "Start New Game", "Split on starting a WW run",   "MultiPoPWW");
+    AddSetting(true, "T2TStartSplit", new List<string> {"T2TStartLoadSplit","T2TStartNewSplit"}, "Start New Game", "Split on starting a T2T run",  "MultiPoPT2T");
 
     // SoT
 
@@ -924,9 +930,10 @@ startup
 
     // SoT
 
-    //                                                                                     SettingSlugs:
-    //                                      EventType:int         Slug:string               List<string>        HashCodes:int[]?                  Condition:Func<bool>
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT(StartEvent,  "SoTStart",              new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && old.startValue != 1 && current.startValue == 1 && current.xCam <= -92.8f)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
+    //                                                                                        SettingSlugs:
+    //                                      EventType:int            Slug:string               List<string>        HashCodes:int[]?                  Condition:Func<bool>
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT_(StartEvent, "SoTStart",              new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => timer.CurrentPhase == TimerPhase.NotRunning && InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && old.startValue != 1 && current.startValue == 1 && current.xCam <= -92.8f, _ => CompletedEvents.Add("SoTStartSplit"))) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT_(SplitEvent, "SoTStartSplit",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => timer.CurrentPhase != TimerPhase.NotRunning && InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && old.startValue != 1 && current.startValue == 1 && current.xCam <= -92.8f, _ => BetweenGames = false)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
 
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT(SplitEvent,  "GasStation",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (252f, 258f, 130.647f, 134f, 22.999f, 23.001f);
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT(SplitEvent,  "SandsUnleashed",        new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-6.177f, -6.175f, 62.905f, 62.907f, 7.604f, 7.606f);
@@ -972,156 +979,159 @@ startup
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT(SplitEvent,  "HonorGlory",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (81f, 82f, -60.3f, -59.7f, 89f, 90f);
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT(SplitEvent,  "GrandRewind",           new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (660.376f, 660.378f, 190.980f, 190.983f, 0.432f, 0.434f);
 
-    (actionXyZRange=(x,y,z,r1,r2)        => AddEventSoT(SplitEvent,  "SoTEndVizier",          new List<string> {}, HashXyZRange(x,y,z,r1,r2),        () => InXyZRangeCurrent(x, y, z, r1, r2) && current.vizierHealth == 4)) (660f, 213f, 0f, 10f, 3f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT(SplitEvent,  "SoTEndCredits",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.rewind == 0)) (658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f);
+    (actionXyZRange=(x,y,z,r1,r2)        => AddEventSoT_(SplitEvent, "SoTEndVizier",          new List<string> {}, HashXyZRange(x,y,z,r1,r2),        () => InXyZRangeCurrent(x, y, z, r1, r2) && current.vizierHealth == 4, _ => BetweenGames = true)) (660f, 213f, 0f, 10f, 3f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT_(SplitEvent, "SoTEndCredits",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.rewind == 0, _ => BetweenGames = true)) (658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f);
 
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT_(SplitEvent, "SoTLU",                 new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrentOnly(x1, x2, y1, y2, z1, z2), _ => CompletedEvents.Remove("SoTLU"))) (-492.608f, -492.606f, -248.833f, -248.831f, 0.219f, 0.221f);
 
     // WW
 
-    //                                                                                SettingSlugs:
-    //                                      EventType:int        Slug:string           List<string>        HashCodes:int[]?                  Condition:Func<bool>
-    (actionInts=maps                     => AddEventWW(StartEvent, "WWStart",           new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.cutscene == 1 && current.cutscene == 2)) (new int[] {1292342859});
+    //                                                                                   SettingSlugs:
+    //                                      EventType:int           Slug:string           List<string>        HashCodes:int[]?                  Condition:Func<bool>
+    (actionInts=maps                     => AddEventWW_(StartEvent, "WWStart",           new List<string> {}, maps,                             () => timer.CurrentPhase == TimerPhase.NotRunning && WWIsMapOneOfCurrent(maps) && old.cutscene == 1 && current.cutscene == 2, _ => CompletedEvents.Add("WWStartSplit"))) (new int[] {1292342859});
+    (actionInts=maps                     => AddEventWW_(SplitEvent, "WWStartSplit",      new List<string> {}, maps,                             () => timer.CurrentPhase != TimerPhase.NotRunning && WWIsMapOneOfCurrent(maps) && old.cutscene == 1 && current.cutscene == 2, _ => BetweenGames = false)) (new int[] {1292342859});
 
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "spPortalEnter",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (95.5f, 97.5f, -107f, -106f, 413.8f, 414.2f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "spPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (95.5f, 97.5f, -107f, -106f, 113.8f, 114.2f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "mpPortalEnter",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-211f, -209f, 139f, 141f, 440.8f, 441.2f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "mpPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-211f, -209f, 139f, 141f, 140.8f, 141.2f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "arPortalEnter",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-172f, -170f, 188f, 189f, 181.8f, 182.2f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "arPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-172f, -170f, 188f, 189f, 481.8f, 482.2f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "Tomb",              new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.storyValue == 39)) (-94f, -93.5f, -193f, -185f, 18f, 18.1f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "prPortalEnter",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-71f, -69f, -117f, -115f, 19.8f, 20.2f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "prPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-71f, -69f, -117f, -115f, 319.8f, 320.2f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "trPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-53.5f, -51.5f, 113f, 114f, 117.8f, 118.2f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "scPortalEnter",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-72f, -70f, 273f, 274f, 132.8f, 133.2f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "scPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-72f, -70f, 273f, 274f, 432.8f, 433.2f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "ugPortalEnter",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (78f, 80f, 107f, 108f, 412.3f, 412.7f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "ugPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (78f, 80f, 107f, 108f, 112.3f, 112.7f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent, "mechtowercave",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.map == 67111336 && current.storyValue == 61)) (-218f, -216f, 0.4f, 4f, 445f, 446f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "spPortalEnter",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (95.5f, 97.5f, -107f, -106f, 413.8f, 414.2f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "spPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (95.5f, 97.5f, -107f, -106f, 113.8f, 114.2f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "mpPortalEnter",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-211f, -209f, 139f, 141f, 440.8f, 441.2f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "mpPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-211f, -209f, 139f, 141f, 140.8f, 141.2f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "arPortalEnter",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-172f, -170f, 188f, 189f, 181.8f, 182.2f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "arPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-172f, -170f, 188f, 189f, 481.8f, 482.2f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "Tomb",              new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.storyValue == 39)) (-94f, -93.5f, -193f, -185f, 18f, 18.1f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "prPortalEnter",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-71f, -69f, -117f, -115f, 19.8f, 20.2f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "prPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-71f, -69f, -117f, -115f, 319.8f, 320.2f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "trPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-53.5f, -51.5f, 113f, 114f, 117.8f, 118.2f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "scPortalEnter",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-72f, -70f, 273f, 274f, 132.8f, 133.2f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "scPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-72f, -70f, 273f, 274f, 432.8f, 433.2f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "ugPortalEnter",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (78f, 80f, 107f, 108f, 412.3f, 412.7f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "ugPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (78f, 80f, 107f, 108f, 112.3f, 112.7f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "mechtowercave",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.map == 67111336 && current.storyValue == 61)) (-218f, -216f, 0.4f, 4f, 445f, 446f);
 
-    (actionInts=maps                     => AddEventWW(SplitEvent, "boat",              new List<string> {}, maps,                             () => WWIsBossDie(maps))) (new int[] {67109218});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "kaileena",          new List<string> {}, maps,                             () => WWIsBossDie(maps))) (new int[] {989966866});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "shahdee",           new List<string> {}, maps,                             () => WWIsBossDie(maps))) (new int[] {1006801609});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "boat",              new List<string> {}, maps,                             () => WWIsBossDie(maps))) (new int[] {67109218});
+    (actionInts=maps                     => AddEventWW_(SplitEvent, "kaileena",          new List<string> {}, maps,                             () => WWIsBossDie(maps), _ => BetweenGames = true)) (new int[] {989966866});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "shahdee",           new List<string> {}, maps,                             () => WWIsBossDie(maps))) (new int[] {1006801609});
 
-    (action=()                           => AddEventWW(SplitEvent, "rng59",             new List<string> {}, null,                             () => WWIsStoryGateAdv(59))) ();
-    (action=()                           => AddEventWW(SplitEvent, "rng63",             new List<string> {}, null,                             () => WWIsStoryGateAdv(63))) ();
-    (action=()                           => AddEventWW(SplitEvent, "kaileenaFirst",     new List<string> {}, null,                             () => WWIsStoryGateAdv(38))) ();
+    (action=()                           => AddEventWW(SplitEvent,  "rng59",             new List<string> {}, null,                             () => WWIsStoryGateAdv(59))) ();
+    (action=()                           => AddEventWW(SplitEvent,  "rng63",             new List<string> {}, null,                             () => WWIsStoryGateAdv(63))) ();
+    (action=()                           => AddEventWW(SplitEvent,  "kaileenaFirst",     new List<string> {}, null,                             () => WWIsStoryGateAdv(38))) ();
 
-    (actionInts=maps                     => AddEventWW(SplitEvent, "banana",            new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.secondaryWeapon != 50 && current.secondaryWeapon == 50)) (new int[] {587202754, 587203393});
-    (action=()                           => AddEventWW(SplitEvent, "foundryFountain",   new List<string> {}, null,                             () => (current.storyValue == 58 || current.storyValue == 59) && old.state != 11 && current.state == 11)) ();
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "banana",            new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.secondaryWeapon != 50 && current.secondaryWeapon == 50)) (new int[] {587202754, 587203393});
+    (action=()                           => AddEventWW(SplitEvent,  "foundryFountain",   new List<string> {}, null,                             () => (current.storyValue == 58 || current.storyValue == 59) && old.state != 11 && current.state == 11)) ();
 
-    (actionInts=maps                     => AddEventWW(SplitEvent, "hourglassRevisit",  new List<string> {}, maps,                             () => WWIsMapChange(1006704427, maps[0]) && current.storyValue == 45)) (new int[] {1006704429});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "trPortalEnter",     new List<string> {}, maps,                             () => WWIsMapChange(1006704431, maps[0]) && current.storyValue == 45)) (new int[] {-1509855113});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "trPortal",          new List<string> {}, maps,                             () => WWIsMapChange(-1509855113, maps[0]) && current.storyValue == 45)) (new int[] {285233488});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "mysticcaves",       new List<string> {}, maps,                             () => WWIsMapChange(67116810, maps[0]) && current.storyValue == 60)) (new int[] {1006801523});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "kaileenaPresent",   new List<string> {}, maps,                             () => WWIsMapChange(-1509855113, maps[0]) && current.storyValue == 66)) (new int[] {285233488});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "hourglassRevisit",  new List<string> {}, maps,                             () => WWIsMapChange(1006704427, maps[0]) && current.storyValue == 45)) (new int[] {1006704429});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "trPortalEnter",     new List<string> {}, maps,                             () => WWIsMapChange(1006704431, maps[0]) && current.storyValue == 45)) (new int[] {-1509855113});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "trPortal",          new List<string> {}, maps,                             () => WWIsMapChange(-1509855113, maps[0]) && current.storyValue == 45)) (new int[] {285233488});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "mysticcaves",       new List<string> {}, maps,                             () => WWIsMapChange(67116810, maps[0]) && current.storyValue == 60)) (new int[] {1006801523});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "kaileenaPresent",   new List<string> {}, maps,                             () => WWIsMapChange(-1509855113, maps[0]) && current.storyValue == 66)) (new int[] {285233488});
 
-    (actionInts=maps                     => AddEventWW(SplitEvent, "ravenMan",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {135462572});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "firstPortal",       new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 2)) (new int[] {285231807});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "LUFortress",        new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {135501679});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "LUMechTower",       new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {67145445});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "LUCentralHall",     new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {67144144});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "spiderSword",       new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {135462576});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "chasingShahdee",    new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {989860400});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "shahdeeFight",      new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 8)) (new int[] {285225353});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "spPortal",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 8)) (new int[] {285235301});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "princeStare",       new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {989884886});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "EscapeDahaka01",    new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 10)) (new int[] {285231807});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "serpentSword",      new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 13)) (new int[] {1006704429});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "waterworks",        new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {687877048});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "lionSword",         new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 21)) (new int[] {67112526});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "mechElevator",      new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {687876652});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "mechPortal",        new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {285235400});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "activationRuin",    new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {67145437});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "arPortal",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 18)) (new int[] {285235369});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "activationRestore", new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {67145455});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "exitTomb",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.z > 33)) (new int[] {135464247});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "prPortal",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 40)) (new int[] {285235334});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "maskOn",            new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {285231214});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "scPortal",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 47)) (new int[] {285233531});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "griffinV1",         new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.y < 195)) (new int[] {285231574});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "ugPortal",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 50)) (new int[] {285235445});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "mirroredFates",     new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {1006801611});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "favorUnknown",      new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {135501700});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "maskOff",           new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 64)) (new int[] {67112526});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "Dahaka",            new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.y > 200)) (new int[] {989966868});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "ravenMan",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {135462572});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "firstPortal",       new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 2)) (new int[] {285231807});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "LUFortress",        new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {135501679});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "LUMechTower",       new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {67145445});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "LUCentralHall",     new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {67144144});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "spiderSword",       new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {135462576});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "chasingShahdee",    new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {989860400});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "shahdeeFight",      new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 8)) (new int[] {285225353});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "spPortal",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 8)) (new int[] {285235301});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "princeStare",       new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {989884886});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "EscapeDahaka01",    new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 10)) (new int[] {285231807});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "serpentSword",      new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 13)) (new int[] {1006704429});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "waterworks",        new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {687877048});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "lionSword",         new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 21)) (new int[] {67112526});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "mechElevator",      new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {687876652});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "mechPortal",        new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {285235400});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "activationRuin",    new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {67145437});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "arPortal",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 18)) (new int[] {285235369});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "activationRestore", new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {67145455});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "exitTomb",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.z > 33)) (new int[] {135464247});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "prPortal",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 40)) (new int[] {285235334});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "maskOn",            new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {285231214});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "scPortal",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 47)) (new int[] {285233531});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "griffinV1",         new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.y < 195)) (new int[] {285231574});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "ugPortal",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 50)) (new int[] {285235445});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "mirroredFates",     new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {1006801611});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "favorUnknown",      new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {135501700});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "maskOff",           new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 64)) (new int[] {67112526});
+    (actionInts=maps                     => AddEventWW_(SplitEvent, "Dahaka",            new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.y > 200, _ => BetweenGames = true)) (new int[] {989966868});
 
-    (actionInts=maps                     => AddEventWW(SplitEvent, "lastPortal",        new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {-1509855113, 285233488});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "LULibrary",         new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {67144064, 67144084});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "LUGarden",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {1006690753, 1006690755});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "LUShahdee",         new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {285225347, 1006717295});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "LU019",             new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {989860398, 1006711848});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "gardenHall",        new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {135495097, 135495099});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "libraryV1",         new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {67116816, 67116821});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "LUWaterworks",      new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.x > 70)) (new int[] {687877046, 687877489});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "WaterSword",        new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && old.x > -98)) (new int[] {1006704427, 1006704429});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "LUPrison",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.x > -120)) (new int[] {135483948, 135516393, 16809649});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "scorpionSword",     new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.x < -164)) (new int[] {135483948, 135483950, 135505359, 135516393, 16809649});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "lastPortal",        new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {-1509855113, 285233488});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "LULibrary",         new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {67144064, 67144084});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "LUGarden",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {1006690753, 1006690755});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "LUShahdee",         new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {285225347, 1006717295});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "LU019",             new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {989860398, 1006711848});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "gardenHall",        new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {135495097, 135495099});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "libraryV1",         new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {67116816, 67116821});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "LUWaterworks",      new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.x > 70)) (new int[] {687877046, 687877489});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "WaterSword",        new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && old.x > -98)) (new int[] {1006704427, 1006704429});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "LUPrison",          new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.x > -120)) (new int[] {135483948, 135516393, 16809649});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "scorpionSword",     new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.x < -164)) (new int[] {135483948, 135483950, 135505359, 135516393, 16809649});
 
-    (actionInts=maps                     => AddEventWW(SplitEvent, "theSecondTower",    new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.z < 402 && current.z >= 400 && current.storyValue == 15)) (new int[] {687907863});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "mechTower",         new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.z < 410 && current.z >= 410)) (new int[] {687876481});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "sandWraithDeathV1", new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.y < -13 && current.y >= -13 && current.z < 391 && current.storyValue == 33)) (new int[] {67112526});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "sandWraithDeathV2", new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.y < -7 && current.y >= -9 && current.storyValue == 33)) (new int[] {67112526});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "libraryV2",         new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.x < -112 && current.x >= -112 && current.storyValue == 42)) (new int[] {67116821});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "libraryV3",         new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && current.storyValue == 42 && old.x < -114 && current.x >= -115)) (new int[] {67116821});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "griffinV2",         new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.y > 166.5 && current.y <= 166.5)) (new int[] {285231574});
-    (actionInts=maps                     => AddEventWW(SplitEvent, "libraryRevisit",    new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.x < -112 && current.x >= -112 && current.storyValue == 60)) (new int[] {67116821});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "theSecondTower",    new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.z < 402 && current.z >= 400 && current.storyValue == 15)) (new int[] {687907863});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "mechTower",         new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.z < 410 && current.z >= 410)) (new int[] {687876481});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "sandWraithDeathV1", new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.y < -13 && current.y >= -13 && current.z < 391 && current.storyValue == 33)) (new int[] {67112526});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "sandWraithDeathV2", new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.y < -7 && current.y >= -9 && current.storyValue == 33)) (new int[] {67112526});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "libraryV2",         new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.x < -112 && current.x >= -112 && current.storyValue == 42)) (new int[] {67116821});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "libraryV3",         new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && current.storyValue == 42 && old.x < -114 && current.x >= -115)) (new int[] {67116821});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "griffinV2",         new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.y > 166.5 && current.y <= 166.5)) (new int[] {285231574});
+    (actionInts=maps                     => AddEventWW(SplitEvent,  "libraryRevisit",    new List<string> {}, maps,                             () => WWIsMapOneOfCurrent(maps) && old.x < -112 && current.x >= -112 && current.storyValue == 60)) (new int[] {67116821});
 
     // T2T
 
-    //                                                                                SettingSlugs:
-    //                                      EventType:int        Slug:string           List<string>        HashCodes:int[]?                  Condition:Func<bool>
-    (actionXyzRange=(x,y,z,range)        => AddEventT2T(StartEvent, "T2TStartLoad",      new List<string> {}, HashXyzRange(x,y,z,range),        () => InXyzRangeCurrent(x, y, z, range) && old.saveLoad == 0 && current.saveLoad == 1)) (-408.3f, 116.9f, 61.9f, 0.5f);
-    (actionXyzRange=(x,y,z,range)        => AddEventT2T(StartEvent, "T2TStartNew",       new List<string> {}, HashXyzRange(x,y,z,range),        () => InXBoundsCurrent(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, current.xCam) && InBounds(0.108f, 0.1082f, current.yCam) && !(InXBoundsOld(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, old.xCam) && InBounds(0.108f, 0.1082f, old.yCam)))) (-405f, 117f, 62f, 5f);
+    //                                                                                    SettingSlugs:
+    //                                      EventType:int            Slug:string           List<string>        HashCodes:int[]?                  Condition:Func<bool>
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T_(StartEvent, "T2TStartLoad",      new List<string> {}, HashXyzRange(x,y,z,range),        () => timer.CurrentPhase == TimerPhase.NotRunning && InXyzRangeCurrent(x, y, z, range) && old.saveLoad == 0 && current.saveLoad == 1, _ => { CompletedEvents.Add("T2TStartLoadSplit"); CompletedEvents.Add("T2TStartNewSplit"); })) (-408.3f, 116.9f, 61.9f, 0.5f);
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T_(SplitEvent, "T2TStartLoadSplit", new List<string> {}, HashXyzRange(x,y,z,range),        () => timer.CurrentPhase != TimerPhase.NotRunning && InXyzRangeCurrent(x, y, z, range) && old.saveLoad == 0 && current.saveLoad == 1, _ => { CompletedEvents.Add("T2TStartNewSplit"); BetweenGames = false; })) (-408.3f, 116.9f, 61.9f, 0.5f);
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T_(StartEvent, "T2TStartNew",       new List<string> {}, HashXyzRange(x,y,z,range),        () => timer.CurrentPhase == TimerPhase.NotRunning && InXBoundsCurrent(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, current.xCam) && InBounds(0.108f, 0.1082f, current.yCam) && !(InXBoundsOld(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, old.xCam) && InBounds(0.108f, 0.1082f, old.yCam)), _ => { CompletedEvents.Add("T2TStartLoadSplit"); CompletedEvents.Add("T2TStartNewSplit"); })) (-405f, 117f, 62f, 5f);
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T_(SplitEvent, "T2TStartNewSplit",  new List<string> {}, HashXyzRange(x,y,z,range),        () => timer.CurrentPhase != TimerPhase.NotRunning && InXBoundsCurrent(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, current.xCam) && InBounds(0.108f, 0.1082f, current.yCam) && !(InXBoundsOld(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, old.xCam) && InBounds(0.108f, 0.1082f, old.yCam)), _ => { CompletedEvents.Add("T2TStartLoadSplit"); BetweenGames = false; })) (-405f, 117f, 62f, 5f);
 
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "TheRamparts",       new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-271f, -265f, 187f, 188f, 74f, 75f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "HarborDistrict",    new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-93f, -88f, 236.2f, 238f, 83f, 88f);
-    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent, "ThePalace",         new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-35f, 232f, 147f, 10f);
-    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent, "TrappedHallway",    new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-52f, 134f, 76f, 10f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "TheSewerz",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-100f, -96f, -83f, -79f, 19.9f, 20f);
-    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent, "TheSewers",         new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-89f, -15f, 5f, 10f);
-    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent, "TheFortress",       new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-71f, 10f, 44f, 10f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "Chariot1",          new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-443.37f, -443.36f, 355.80f, 355.81f, 57.71f, 57.72f);
-    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent, "LowerCity",         new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-318f, 330f, 96f, 10f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "LowerCityRooftops", new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-261.5f, -261f, 318f, 319.5f, 46f, 48f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "ArenaDeload",       new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-256.1f, -251.9f, 358f, 361.5f, 53.9f, 63.3f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "TheBalconies",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-194f, -190f, 328f, 329.7f, 32.6f, 33.6f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "DarkAlley",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-114f, -110f, 328f, 338f, 55f, 59f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "TheTempleRooftops", new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-122.6f, -117.7f, 421.6f, 423f, 107f, 108.1f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "TheTempleRooftopz", new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-126f, -125f, 424f, 426f, 100f, 100.1f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "TheTemple",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-213f, -210f, 419.0f, 421f, 80.5f, 82.5f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "TheMarketplace",    new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-213f, -207f, 484f, 490f, 101f, 103f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "MarketDistrict",    new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-185.5f, -175.5f, 524f, 530f, 90f, 92f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "TheBrothel",        new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-152.3f, -152.0f, 549.8f, 549.9f, 91.8f, 92f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "ThePlaza",          new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-104f, -100f, 548f, 553f, 105.5f, 106.1f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "TheUpperCity",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-124.5f, -122.5f, 500f, 505f, 97f, 99f);
-    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent, "CityGarderns",      new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-63f, 390f, 85f, 10f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "ThePromenade",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-3f, -1f, 515f, 519f, 72f, 75f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "RoyalWorkshop",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (58f, 62f, 470f, 480f, 79f, 81f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "KingsRoad",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (91.9289f, 91.9290f, 230.0479f, 230.0480f, 70.9877f, 70.9879f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "KingzRoad",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (53f, 70f, 240f, 250f, 70f, 73f);
-    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent, "PalaceEntrance",    new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (31f, 271f, 126f, 10f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "HangingGardens",    new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (26f, 28f, 211f, 213f, 191f, 193f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "HangingGardenz",    new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (5.2f, 5.4f, 213.5f, 215.6f, 194.9f, 196.2f);
-    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent, "StructuresMind",    new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-30f, 245f, 179f, 10f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "StructurezMind",    new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (5f, 12f, 243f, 265f, 104f, 104.1f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "BottomofWell",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-21.35f, -21.34f, 252.67f, 252.68f, 20.95f, 20.96f);
-    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent, "WellofAncestors",   new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-13f, 241f, 1f, 10f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "CaveDeath",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (5.99f, 6.00f, 306.96f, 306.97f, 42f, 42.01f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "TheLabyrinth",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-25.5f, -23f, 325f, 338f, 35.9f, 37.5f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "UndergroundCave",   new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-11f, -9f, 327f, 334f, 73f, 74f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "LowerTower",        new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-5f, -3f, 316f, 317.5f, 139.9f, 140.1f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "MiddleTower",       new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-18f, -12f, 303f, 305f, 184.8f, 185.1f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "UpperTower",        new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-8f, -7f, 296f, 298f, 226.9f, 227f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "TheTerrace",        new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-7.2f, -6.9f, 245.6f, 245.9f, 677f, 679f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "MentalRealm",       new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.princeAction == 17)) (189f, 194f, 318f, 330f, 540f, 560f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "TheRamparts",       new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-271f, -265f, 187f, 188f, 74f, 75f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "HarborDistrict",    new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-93f, -88f, 236.2f, 238f, 83f, 88f);
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent,  "ThePalace",         new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-35f, 232f, 147f, 10f);
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent,  "TrappedHallway",    new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-52f, 134f, 76f, 10f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "TheSewerz",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-100f, -96f, -83f, -79f, 19.9f, 20f);
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent,  "TheSewers",         new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-89f, -15f, 5f, 10f);
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent,  "TheFortress",       new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-71f, 10f, 44f, 10f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "Chariot1",          new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-443.37f, -443.36f, 355.80f, 355.81f, 57.71f, 57.72f);
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent,  "LowerCity",         new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-318f, 330f, 96f, 10f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "LowerCityRooftops", new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-261.5f, -261f, 318f, 319.5f, 46f, 48f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "ArenaDeload",       new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-256.1f, -251.9f, 358f, 361.5f, 53.9f, 63.3f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "TheBalconies",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-194f, -190f, 328f, 329.7f, 32.6f, 33.6f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "DarkAlley",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-114f, -110f, 328f, 338f, 55f, 59f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "TheTempleRooftops", new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-122.6f, -117.7f, 421.6f, 423f, 107f, 108.1f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "TheTempleRooftopz", new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-126f, -125f, 424f, 426f, 100f, 100.1f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "TheTemple",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-213f, -210f, 419.0f, 421f, 80.5f, 82.5f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "TheMarketplace",    new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-213f, -207f, 484f, 490f, 101f, 103f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "MarketDistrict",    new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-185.5f, -175.5f, 524f, 530f, 90f, 92f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "TheBrothel",        new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-152.3f, -152.0f, 549.8f, 549.9f, 91.8f, 92f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "ThePlaza",          new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-104f, -100f, 548f, 553f, 105.5f, 106.1f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "TheUpperCity",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-124.5f, -122.5f, 500f, 505f, 97f, 99f);
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent,  "CityGarderns",      new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-63f, 390f, 85f, 10f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "ThePromenade",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-3f, -1f, 515f, 519f, 72f, 75f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "RoyalWorkshop",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (58f, 62f, 470f, 480f, 79f, 81f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "KingsRoad",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (91.9289f, 91.9290f, 230.0479f, 230.0480f, 70.9877f, 70.9879f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "KingzRoad",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (53f, 70f, 240f, 250f, 70f, 73f);
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent,  "PalaceEntrance",    new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (31f, 271f, 126f, 10f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "HangingGardens",    new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (26f, 28f, 211f, 213f, 191f, 193f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "HangingGardenz",    new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (5.2f, 5.4f, 213.5f, 215.6f, 194.9f, 196.2f);
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent,  "StructuresMind",    new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-30f, 245f, 179f, 10f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "StructurezMind",    new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (5f, 12f, 243f, 265f, 104f, 104.1f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "BottomofWell",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-21.35f, -21.34f, 252.67f, 252.68f, 20.95f, 20.96f);
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T(SplitEvent,  "WellofAncestors",   new List<string> {}, HashXyzRange(x,y,z,range),        () => T2TIsCutsceneHit(x, y, z, range))) (-13f, 241f, 1f, 10f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "CaveDeath",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (5.99f, 6.00f, 306.96f, 306.97f, 42f, 42.01f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "TheLabyrinth",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-25.5f, -23f, 325f, 338f, 35.9f, 37.5f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "UndergroundCave",   new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-11f, -9f, 327f, 334f, 73f, 74f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "LowerTower",        new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-5f, -3f, 316f, 317.5f, 139.9f, 140.1f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "MiddleTower",       new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-18f, -12f, 303f, 305f, 184.8f, 185.1f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "UpperTower",        new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-8f, -7f, 296f, 298f, 226.9f, 227f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "TheTerrace",        new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-7.2f, -6.9f, 245.6f, 245.9f, 677f, 679f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T_(SplitEvent, "MentalRealm",       new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.princeAction == 17, _ => BetweenGames = true)) (189f, 194f, 318f, 330f, 540f, 560f);
 
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "T2TLU1",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-14.9972f, -14.9970f, -112.8152f, -112.8150f, 20.0732f, 20.0734f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "T2TLU2",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-302.0919f, -302.0917f, 370.8710f, 370.8712f, 52.858f, 52.8582f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "T2TLU3",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-187.3369f, -187.3367f, -455.9863f, 455.9865f, 78.0330f, 78.0332f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "T2TLU4",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-55.0147f, -55.0145f, 395.7608f, 395.761f, 72.0774f, 72.0776f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "T2TLU5",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-30.1223f, -30.1221f, 281.8893f, 281.8895f, 104.0796f, 104.0798f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent, "T2TLU6",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-23.9663f, -23.9661f, 253.9438f, 253.944f, 183.0634f, 183.0636f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "T2TLU1",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-14.9972f, -14.9970f, -112.8152f, -112.8150f, 20.0732f, 20.0734f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "T2TLU2",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-302.0919f, -302.0917f, 370.8710f, 370.8712f, 52.858f, 52.8582f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "T2TLU3",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-187.3369f, -187.3367f, -455.9863f, 455.9865f, 78.0330f, 78.0332f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "T2TLU4",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-55.0147f, -55.0145f, 395.7608f, 395.761f, 72.0774f, 72.0776f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "T2TLU5",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-30.1223f, -30.1221f, 281.8893f, 281.8895f, 104.0796f, 104.0798f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "T2TLU6",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-23.9663f, -23.9661f, 253.9438f, 253.944f, 183.0634f, 183.0636f);
 
     // ====================================================================================================================
     // ================================================== STARTUP SCRIPT ==================================================
@@ -1390,6 +1400,7 @@ startup
     {
         CompletedEvents.Clear();
         print("CompletedEvents cleared.");
+        BetweenGames = false;
     };
     vars.OnReset = OnReset;
 
@@ -1484,7 +1495,7 @@ startup
 
     Func<bool> IsLoading = () =>
     {
-        return false;
+        return BetweenGames;
     };
     vars.IsLoading = IsLoading;
 
@@ -1539,5 +1550,5 @@ isLoading
 
 gameTime
 {
-    return vars.GameTime();
+    //return vars.GameTime();
 }
