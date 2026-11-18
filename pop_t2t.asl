@@ -536,7 +536,7 @@ startup
     Action<int[]> actionInts;
 
     //                                                                                SettingSlugs:
-    //                                   EventType:int        Slug:string              List<string>        HashCodes:int[]?                  Condition:Func<bool>
+    //                                      EventType:int        Slug:string           List<string>        HashCodes:int[]?                  Condition:Func<bool>
     (actionXyzRange=(x,y,z,range)        => AddEvent(StartEvent, "StartLoad",         new List<string> {}, HashXyzRange(x,y,z,range),        () => InXyzRangeCurrent(x, y, z, range) && old.saveLoad == 0 && current.saveLoad == 1)) (-408.3f, 116.9f, 61.9f, 0.5f);
     (actionXyzRange=(x,y,z,range)        => AddEvent(ResetEvent, "ResetLoad",         new List<string> {}, HashXyzRange(x,y,z,range),        () => InXyzRangeCurrent(x, y, z, range) && current.saveLoad == 0)) (-408.3f, 116.9f, 61.9f, 0.5f);
     (actionXyzRange=(x,y,z,range)        => AddEvent(StartEvent, "StartNew",          new List<string> {}, HashXyzRange(x,y,z,range),        () => InXBoundsCurrent(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, current.xCam) && InBounds(0.108f, 0.1082f, current.yCam) && !(InXBoundsOld(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, old.xCam) && InBounds(0.108f, 0.1082f, old.yCam)))) (-405f, 117f, 62f, 5f);
