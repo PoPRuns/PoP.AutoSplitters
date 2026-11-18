@@ -768,12 +768,12 @@ startup
     (actionInts=maps                     => AddEvent(SplitEvent, "kaileena",          new List<string> {}, maps,                             () => IsBossDie(maps))) (new int[] {989966866});
     (actionInts=maps                     => AddEvent(SplitEvent, "shahdee",           new List<string> {}, maps,                             () => IsBossDie(maps))) (new int[] {1006801609});
 
-    (action=()                           => AddEvent(SplitEvent, "rng59",             new List<string> {}, null,                             () => IsStoryGateAdv(59))) ();
-    (action=()                           => AddEvent(SplitEvent, "rng63",             new List<string> {}, null,                             () => IsStoryGateAdv(63))) ();
-    (action=()                           => AddEvent(SplitEvent, "kaileenaFirst",     new List<string> {}, null,                             () => IsStoryGateAdv(38))) ();
+    (action=()                           => AddEvent(SplitEvent, "rng59",             new List<string> {}, HashXyzBounds(-173f, -163f, -180f, -170f, 353f, 363f), () => IsStoryGateAdv(59))) ();
+    (action=()                           => AddEvent(SplitEvent, "rng63",             new List<string> {}, HashXyzBounds(-170f, -160f, -32f, -22f, 435f, 445f),   () => IsStoryGateAdv(63))) ();
+    (actionInts=maps                     => AddEvent(SplitEvent, "kaileenaFirst",     new List<string> {}, maps,                             () => IsStoryGateAdv(38))) (new int[] {1006704431});
 
     (actionInts=maps                     => AddEvent(SplitEvent, "banana",            new List<string> {}, maps,                             () => IsMapOneOfCurrent(maps) && old.secondaryWeapon != 50 && current.secondaryWeapon == 50)) (new int[] {587202754, 587203393});
-    (action=()                           => AddEvent(SplitEvent, "foundryFountain",   new List<string> {}, null,                             () => (current.storyValue == 58 || current.storyValue == 59) && old.state != 11 && current.state == 11)) ();
+    (action=()                           => AddEvent(SplitEvent, "foundryFountain",   new List<string> {}, HashXyzBounds(-173f, -163f, -180f, -170f, 353f, 363f), () => (current.storyValue == 58 || current.storyValue == 59) && old.state != 11 && current.state == 11)) ();
 
     (actionInts=maps                     => AddEvent(SplitEvent, "hourglassRevisit",  new List<string> {}, maps,                             () => IsMapChange(1006704427, maps[0]) && current.storyValue == 45)) (new int[] {1006704429});
     (actionInts=maps                     => AddEvent(SplitEvent, "trPortalEnter",     new List<string> {}, maps,                             () => IsMapChange(1006704431, maps[0]) && current.storyValue == 45)) (new int[] {-1509855113});
