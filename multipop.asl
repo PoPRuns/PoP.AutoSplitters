@@ -549,7 +549,16 @@ startup
 
     // ================================================== game-specific functions and helper variables ==================================================
 
-    bool BetweenGames = false;
+    int CurrentRun = NoGame; // this differs from CurrentGame in that it is NoGame between runs even when a game is opened
+    TimeSpan GameTimeAtCurrentRunStart = TimeSpan.Zero;
+
+    Action StartRun = () =>
+    {
+        CurrentRun = CurrentGame;
+        GameTimeAtCurrentRunStart = timer.CurrentTime.GameTime ?? TimeSpan.Zero;
+    };
+
+    Action EndRun = () => CurrentRun = NoGame;
 
     // SoT
 
@@ -933,7 +942,7 @@ startup
     //                                                                                        SettingSlugs:
     //                                      EventType:int            Slug:string               List<string>        HashCodes:int[]?                  Condition:Func<bool>
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT_(StartEvent, "SoTStart",              new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => timer.CurrentPhase == TimerPhase.NotRunning && InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && old.startValue != 1 && current.startValue == 1 && current.xCam <= -92.8f, _ => CompletedEvents.Add("SoTStartSplit"))) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT_(SplitEvent, "SoTStartSplit",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => timer.CurrentPhase != TimerPhase.NotRunning && InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && old.startValue != 1 && current.startValue == 1 && current.xCam <= -92.8f, _ => BetweenGames = false)) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT_(SplitEvent, "SoTStartSplit",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => timer.CurrentPhase != TimerPhase.NotRunning && InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && old.startValue != 1 && current.startValue == 1 && current.xCam <= -92.8f, _ => StartRun())) (-103.264f, -103.262f, -4.8f, -4.798f, 1.341f, 1.343f);
 
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT(SplitEvent,  "GasStation",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (252f, 258f, 130.647f, 134f, 22.999f, 23.001f);
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT(SplitEvent,  "SandsUnleashed",        new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-6.177f, -6.175f, 62.905f, 62.907f, 7.604f, 7.606f);
@@ -979,8 +988,8 @@ startup
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT(SplitEvent,  "HonorGlory",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (81f, 82f, -60.3f, -59.7f, 89f, 90f);
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT(SplitEvent,  "GrandRewind",           new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (660.376f, 660.378f, 190.980f, 190.983f, 0.432f, 0.434f);
 
-    (actionXyZRange=(x,y,z,r1,r2)        => AddEventSoT_(SplitEvent, "SoTEndVizier",          new List<string> {}, HashXyZRange(x,y,z,r1,r2),        () => InXyZRangeCurrent(x, y, z, r1, r2) && current.vizierHealth == 4, _ => BetweenGames = true)) (660f, 213f, 0f, 10f, 3f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT_(SplitEvent, "SoTEndCredits",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.rewind == 0, _ => BetweenGames = true)) (658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f);
+    (actionXyZRange=(x,y,z,r1,r2)        => AddEventSoT_(SplitEvent, "SoTEndVizier",          new List<string> {}, HashXyZRange(x,y,z,r1,r2),        () => InXyZRangeCurrent(x, y, z, r1, r2) && current.vizierHealth == 4, _ => EndRun())) (660f, 213f, 0f, 10f, 3f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT_(SplitEvent, "SoTEndCredits",         new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.rewind == 0, _ => EndRun())) (658.26f, 661.46f, 210.92f, 213.72f, 9.8f, 12.5f);
 
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventSoT_(SplitEvent, "SoTLU",                 new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrentOnly(x1, x2, y1, y2, z1, z2), _ => CompletedEvents.Remove("SoTLU"))) (-492.608f, -492.606f, -248.833f, -248.831f, 0.219f, 0.221f);
 
@@ -989,7 +998,7 @@ startup
     //                                                                                   SettingSlugs:
     //                                      EventType:int           Slug:string           List<string>        HashCodes:int[]?                  Condition:Func<bool>
     (actionInts=maps                     => AddEventWW_(StartEvent, "WWStart",           new List<string> {}, maps,                             () => timer.CurrentPhase == TimerPhase.NotRunning && WWIsMapOneOfCurrent(maps) && old.cutscene == 1 && current.cutscene == 2, _ => CompletedEvents.Add("WWStartSplit"))) (new int[] {1292342859});
-    (actionInts=maps                     => AddEventWW_(SplitEvent, "WWStartSplit",      new List<string> {}, maps,                             () => timer.CurrentPhase != TimerPhase.NotRunning && WWIsMapOneOfCurrent(maps) && old.cutscene == 1 && current.cutscene == 2, _ => BetweenGames = false)) (new int[] {1292342859});
+    (actionInts=maps                     => AddEventWW_(SplitEvent, "WWStartSplit",      new List<string> {}, maps,                             () => timer.CurrentPhase != TimerPhase.NotRunning && WWIsMapOneOfCurrent(maps) && old.cutscene == 1 && current.cutscene == 2, _ => StartRun())) (new int[] {1292342859});
 
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "spPortalEnter",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (95.5f, 97.5f, -107f, -106f, 413.8f, 414.2f);
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "spPortalExit",      new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (95.5f, 97.5f, -107f, -106f, 113.8f, 114.2f);
@@ -1008,7 +1017,7 @@ startup
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventWW(SplitEvent,  "mechtowercave",     new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.map == 67111336 && current.storyValue == 61)) (-218f, -216f, 0.4f, 4f, 445f, 446f);
 
     (actionInts=maps                     => AddEventWW(SplitEvent,  "boat",              new List<string> {}, maps,                             () => WWIsBossDie(maps))) (new int[] {67109218});
-    (actionInts=maps                     => AddEventWW_(SplitEvent, "kaileena",          new List<string> {}, maps,                             () => WWIsBossDie(maps), _ => BetweenGames = true)) (new int[] {989966866});
+    (actionInts=maps                     => AddEventWW_(SplitEvent, "kaileena",          new List<string> {}, maps,                             () => WWIsBossDie(maps), _ => EndRun())) (new int[] {989966866});
     (actionInts=maps                     => AddEventWW(SplitEvent,  "shahdee",           new List<string> {}, maps,                             () => WWIsBossDie(maps))) (new int[] {1006801609});
 
     (action=()                           => AddEventWW(SplitEvent,  "rng59",             new List<string> {}, null,                             () => WWIsStoryGateAdv(59))) ();
@@ -1052,7 +1061,7 @@ startup
     (actionInts=maps                     => AddEventWW(SplitEvent,  "mirroredFates",     new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {1006801611});
     (actionInts=maps                     => AddEventWW(SplitEvent,  "favorUnknown",      new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {135501700});
     (actionInts=maps                     => AddEventWW(SplitEvent,  "maskOff",           new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.storyValue == 64)) (new int[] {67112526});
-    (actionInts=maps                     => AddEventWW_(SplitEvent, "Dahaka",            new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.y > 200, _ => BetweenGames = true)) (new int[] {989966868});
+    (actionInts=maps                     => AddEventWW_(SplitEvent, "Dahaka",            new List<string> {}, maps,                             () => WWIsCutsceneHit(maps) && current.y > 200, _ => EndRun())) (new int[] {989966868});
 
     (actionInts=maps                     => AddEventWW(SplitEvent,  "lastPortal",        new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {-1509855113, 285233488});
     (actionInts=maps                     => AddEventWW(SplitEvent,  "LULibrary",         new List<string> {}, maps,                             () => WWIsCutsceneHit(maps))) (new int[] {67144064, 67144084});
@@ -1080,9 +1089,9 @@ startup
     //                                                                                    SettingSlugs:
     //                                      EventType:int            Slug:string           List<string>        HashCodes:int[]?                  Condition:Func<bool>
     (actionXyzRange=(x,y,z,range)        => AddEventT2T_(StartEvent, "T2TStartLoad",      new List<string> {}, HashXyzRange(x,y,z,range),        () => timer.CurrentPhase == TimerPhase.NotRunning && InXyzRangeCurrent(x, y, z, range) && old.saveLoad == 0 && current.saveLoad == 1, _ => { CompletedEvents.Add("T2TStartLoadSplit"); CompletedEvents.Add("T2TStartNewSplit"); })) (-408.3f, 116.9f, 61.9f, 0.5f);
-    (actionXyzRange=(x,y,z,range)        => AddEventT2T_(SplitEvent, "T2TStartLoadSplit", new List<string> {}, HashXyzRange(x,y,z,range),        () => timer.CurrentPhase != TimerPhase.NotRunning && InXyzRangeCurrent(x, y, z, range) && old.saveLoad == 0 && current.saveLoad == 1, _ => { CompletedEvents.Add("T2TStartNewSplit"); BetweenGames = false; })) (-408.3f, 116.9f, 61.9f, 0.5f);
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T_(SplitEvent, "T2TStartLoadSplit", new List<string> {}, HashXyzRange(x,y,z,range),        () => timer.CurrentPhase != TimerPhase.NotRunning && InXyzRangeCurrent(x, y, z, range) && old.saveLoad == 0 && current.saveLoad == 1, _ => { CompletedEvents.Add("T2TStartNewSplit"); StartRun(); })) (-408.3f, 116.9f, 61.9f, 0.5f);
     (actionXyzRange=(x,y,z,range)        => AddEventT2T_(StartEvent, "T2TStartNew",       new List<string> {}, HashXyzRange(x,y,z,range),        () => timer.CurrentPhase == TimerPhase.NotRunning && InXBoundsCurrent(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, current.xCam) && InBounds(0.108f, 0.1082f, current.yCam) && !(InXBoundsOld(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, old.xCam) && InBounds(0.108f, 0.1082f, old.yCam)), _ => { CompletedEvents.Add("T2TStartLoadSplit"); CompletedEvents.Add("T2TStartNewSplit"); })) (-405f, 117f, 62f, 5f);
-    (actionXyzRange=(x,y,z,range)        => AddEventT2T_(SplitEvent, "T2TStartNewSplit",  new List<string> {}, HashXyzRange(x,y,z,range),        () => timer.CurrentPhase != TimerPhase.NotRunning && InXBoundsCurrent(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, current.xCam) && InBounds(0.108f, 0.1082f, current.yCam) && !(InXBoundsOld(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, old.xCam) && InBounds(0.108f, 0.1082f, old.yCam)), _ => { CompletedEvents.Add("T2TStartLoadSplit"); BetweenGames = false; })) (-405f, 117f, 62f, 5f);
+    (actionXyzRange=(x,y,z,range)        => AddEventT2T_(SplitEvent, "T2TStartNewSplit",  new List<string> {}, HashXyzRange(x,y,z,range),        () => timer.CurrentPhase != TimerPhase.NotRunning && InXBoundsCurrent(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, current.xCam) && InBounds(0.108f, 0.1082f, current.yCam) && !(InXBoundsOld(-404.9f, -404.8f) && InBounds(0.8318f, 0.832f, old.xCam) && InBounds(0.108f, 0.1082f, old.yCam)), _ => { CompletedEvents.Add("T2TStartLoadSplit"); StartRun(); })) (-405f, 117f, 62f, 5f);
 
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "TheRamparts",       new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-271f, -265f, 187f, 188f, 74f, 75f);
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "HarborDistrict",    new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-93f, -88f, 236.2f, 238f, 83f, 88f);
@@ -1124,7 +1133,7 @@ startup
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "MiddleTower",       new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-18f, -12f, 303f, 305f, 184.8f, 185.1f);
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "UpperTower",        new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-8f, -7f, 296f, 298f, 226.9f, 227f);
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "TheTerrace",        new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-7.2f, -6.9f, 245.6f, 245.9f, 677f, 679f);
-    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T_(SplitEvent, "MentalRealm",       new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.princeAction == 17, _ => BetweenGames = true)) (189f, 194f, 318f, 330f, 540f, 560f);
+    (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T_(SplitEvent, "MentalRealm",       new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2) && current.princeAction == 17, _ => EndRun())) (189f, 194f, 318f, 330f, 540f, 560f);
 
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "T2TLU1",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-14.9972f, -14.9970f, -112.8152f, -112.8150f, 20.0732f, 20.0734f);
     (actionXyzBounds=(x1,x2,y1,y2,z1,z2) => AddEventT2T(SplitEvent,  "T2TLU2",            new List<string> {}, HashXyzBounds(x1,x2,y1,y2,z1,z2), () => InXyzBoundsCurrent(x1, x2, y1, y2, z1, z2))) (-302.0919f, -302.0917f, 370.8710f, 370.8712f, 52.858f, 52.8582f);
@@ -1394,13 +1403,18 @@ startup
     Action Exit = () => ConfigureGameType(NoGame);
     vars.Exit = Exit;
 
+    // ================================================== onStart ==================================================
+
+    Action OnStart = () => StartRun();
+    vars.OnStart = OnStart;
+
     // ================================================== onReset ==================================================
 
     OnReset = () =>
     {
         CompletedEvents.Clear();
         print("CompletedEvents cleared.");
-        BetweenGames = false;
+        EndRun();
     };
     vars.OnReset = OnReset;
 
@@ -1446,11 +1460,10 @@ startup
 
         TriggeredEvent = null;
         int xyzHashCode = GetXyzHashCodeCurrent();
-        int mapHashCode;
+        int mapHashCode = 0;
         switch (CurrentGame)
         {
         case WW: mapHashCode = current.map; break;
-        default: mapHashCode = 0;           break;
         }
         List<Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>> localXyzEvents;
         List<Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>> localMapEvents;
@@ -1495,15 +1508,37 @@ startup
 
     Func<bool> IsLoading = () =>
     {
-        return BetweenGames;
+        switch (CurrentRun)
+        {
+        case NoGame: return true;
+        case SoT:    return false;
+        case WW:     return true;
+        case T2T:    return false;
+        default:     return false;
+        }
     };
     vars.IsLoading = IsLoading;
 
     // ================================================== gameTime ==================================================
 
-    Func<TimeSpan> GameTime = () =>
+    Func<TimeSpan?> GameTime = () =>
     {
-        return TimeSpan.Zero;
+        switch (CurrentRun)
+        {
+        case NoGame:
+            return null;
+        case SoT:
+            return null;
+        case WW:
+            ulong tickDelta = current.physicsTicks - old.physicsTicks;
+            if (tickDelta < 0) tickDelta = current.scaledTicks - old.scaledTicks;
+            if (tickDelta > 0) WWIgtValue += tickDelta;
+            return GameTimeAtCurrentRunStart + TimeSpan.FromSeconds(WWIgtValue * current.tickMul);
+        case T2T:
+            return null;
+        default:
+            return null;
+        }
     };
     vars.GameTime = GameTime;
 
@@ -1520,6 +1555,11 @@ init
 exit
 {
     vars.Exit();
+}
+
+onStart
+{
+    vars.OnStart();
 }
 
 onReset
@@ -1550,5 +1590,5 @@ isLoading
 
 gameTime
 {
-    //return vars.GameTime();
+    return vars.GameTime();
 }
