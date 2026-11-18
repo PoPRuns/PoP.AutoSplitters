@@ -1,5 +1,6 @@
 - [Introduction](#introduction)
 - [ASL](#asl)
+  - [Debugging](#debugging)
   - [Action Variables](#action-variables)
   - [Writing Methods](#writing-methods)
     - [Notation](#notation)
@@ -31,6 +32,22 @@ ASL uses .NET Framework 4.8.1.
 This document explains some niche yet highly important aspects of working with ASL that aren't covered in the official documentation, though it is assumed that the reader already has a basic understanding of ASL, .NET, and programming in general.
 
 To see a concrete implementation of the techniques discussed in this section, refer to the [Prince of Persia 2008](pop_2008.asl) autosplitter.
+## Debugging
+To debug our ASL code, we need to run a debugging app that captures the logs that we print from ASL using the `print()` function.
+
+The official ASL documentation recommends the Microsoft DebugView app, however it is not very good for several reasons, most notably that if we try to print a lot of data in a single string, it can add unneeded line breaks or even delete some of the data.
+
+So instead, it is better to use [DebugView++](https://github.com/CobaltFusion/DebugViewPP). It has a GUI application and a console application. For our purposes, the console application is perfectly sufficient. Simply download the latest release and add the extracted directory to our PATH environment variable, and then to debug open a terminal and run:
+```ps1
+DebugViewConsole -c --include-process LiveSplit
+```
+This will filter out debug from all other processes and only display debug output from LiveSplit.
+
+One downside of the console app is that there is no auto-scroll toggle so it can be difficult to go back and view some logs if more logs are still actively being generated, as the terminal auto-scrolls to the bottom as more output is generated. But there are two workarounds to prevent the terminal from printing more outputs and then finish printing them later:
+1. Highlight something (literally anything) in the terminal to stop printing outputs, then press `Enter` to continue printing outputs.
+2. Press `Ctrl+S` to toggle printing outputs, and/or `Ctrl+Q` to enable printing outputs.
+
+With both of the above solutions, the terminal temporarily stops printing new debug outputs, but those inputs are still stored in memory, so once we re-enable printing, any inputs that were logged during the time printing was frozen get printed retroactively.
 ## Action Variables
 The ASL *action variables* (`old`, `current`, `settings`, etc.) are accessible from all code blocks, thus giving the appearance that these variables are global. However, they are not global at all.
 
