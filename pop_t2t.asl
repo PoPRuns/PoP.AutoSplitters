@@ -414,8 +414,10 @@ startup
         OtherEventLists[i] = new List<Tuple<int, string, List<string>, int[], Func<bool>, Action<bool>>>();
     var OtherEvents = OtherEventLists[NoGame];
 
+    int CurrentGame = NoGame;
     Action<int> ConfigureGameType = gameType =>
     {
+        CurrentGame = gameType;
         EventHashMap = EventHashMaps[gameType];
         OtherEvents = OtherEventLists[gameType];
         print("Configuration for " + GetGameTypeString(gameType) + " done.");
