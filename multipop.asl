@@ -556,9 +556,14 @@ startup
     {
         CurrentRun = CurrentGame;
         GameTimeAtCurrentRunStart = timer.CurrentTime.GameTime ?? TimeSpan.Zero;
+        print("Run started: " + GetGameTypeString(CurrentGame));
     };
 
-    Action EndRun = () => CurrentRun = NoGame;
+    Action EndRun = () =>
+    {
+        CurrentRun = NoGame;
+        print("Run ended: " + GetGameTypeString(CurrentGame));
+    };
 
     // SoT
 
